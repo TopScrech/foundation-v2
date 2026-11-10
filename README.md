@@ -1,9 +1,9 @@
 # Foundation v2
 
-- `galacticraft/` — original micdoodle8 Galacticraft, Minecraft 1.12 branch, with the TopScrech fork as origin
-- `galaxyspace/` — original BlesseNtumble GalaxySpace, dev_1.12.2 branch, with the TopScrech fork as origin
+- `galacticraft/` — original micdoodle8 Galacticraft, Minecraft 1.12 branch, with `TopScrech/foundation-v2-galactic-craft` as origin
+- `galaxyspace/` — original BlesseNtumble GalaxySpace, dev_1.12.2 branch, with `TopScrech/foundation-v2-galaxy-space` as origin
 
-Both checkouts use the `foundation-v2` branch and retain their upstream Git history
+Both checkouts use the `main` branch in their dedicated Foundation v2 repositories and retain their upstream Git history
 
 GalaxySpace contains the Core code it uses under `src/embeddedCore`, without a separate Asmodeus Core jar dependency
 
