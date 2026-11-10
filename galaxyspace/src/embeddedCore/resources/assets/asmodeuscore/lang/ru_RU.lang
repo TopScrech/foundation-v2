@@ -1,0 +1,91 @@
+#Russian (RU)
+#|/////////////////////////////////////////|
+#||||||||||Celestial Bodies INFO||||||||||||
+#|\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|
+gui.info.brown.name=Коричневый
+gui.info.red.name=Красный
+gui.info.orange.name=Оранжевый
+gui.info.yellow.name=Желтый
+gui.info.white.name=Белый
+gui.info.lightblue.name=Светло-синий
+gui.info.blue.name=Синий
+
+gui.info.subdwarf.name=Суб-Карлик
+gui.info.dwarf.name=Карлик
+gui.info.subgiant.name=Суб-Гигант
+gui.info.giant.name=Гигант
+gui.info.supergiant.name=Сверхгигант
+gui.info.hypergiant.name=Гипергигант
+gui.info.blachole.name=Черная дыра
+
+gui.info.star.name=Звезда
+gui.info.planet.name=Планета
+gui.info.moon.name=Луна
+gui.info.satellite.name=Станция
+
+gui.info.selena.name=Селена
+gui.info.desert.name=Пустыня
+gui.info.terra.name=Терра
+gui.info.gasgiant.name=Газовый Гигант
+gui.info.icegiant.name=Ледяной Гигант
+gui.info.iceworld.name=Ледяной Мир
+gui.info.asteroid.name=Астероид
+gui.info.oceanide.name=Океанида
+gui.info.titan.name=Титан
+gui.info.icy.name=Ледяной
+
+gui.info.hot.name=Горячая
+gui.info.warm.name=Теплая
+gui.info.comfort.name=Комфортная
+gui.info.cool.name=Прохладная
+gui.info.cold.name=Холодная
+
+gui.message.generalinformation=Главная Информация:
+gui.message.physicalparameters=Физические Параметры:
+gui.message.atmosphericparameters=Атмоферные Параметры:
+gui.message.atmosphericcomponents=Состав Атмосферы:
+gui.message.type=Тип:
+gui.message.planets=Планет:
+gui.message.satellite=Спутник
+gui.message.moons=Спутников:
+gui.message.class=Класс:
+gui.message.gravity=Гравитация:
+gui.message.daylength=Сутки:
+gui.message.atmopressure=Атм. Давление:
+gui.message.temperature=Температура:
+gui.message.windspeed=Модиф. Ветра:
+gui.message.breathableatmo=Обитаема:
+gui.message.solarradiation=Солнечная Радиация:
+gui.message.solarenergy=Модиф. Солнца:
+gui.message.windenergy=Модиф. Сол. Ветра:
+gui.message.unknown=Неизвестно
+gui.message.traveltime=Время полета:
+gui.message.noatmosphere=Нет атмосферы
+gui.message.hasdungeons=Подземелья:
+gui.message.corrosiveatmo=Губительная Атм.:
+gui.message.required_equipment.name=Необходимое снаряжение:
+gui.message.fuelset=Остаток Топлива:
+
+gui.message.engine=Необходимый двигатель:
+
+gui.message.yes=Да
+gui.message.no=Нет
+
+death.attack.solar=%1$s был облучен солнечной радиацией.
+death.attack.pressure=%1$s был раздавлен атмосферным давлением.
+
+gui.warning.atmosphericpressure=Высокое атмосферное давление!
+gui.warning.solarradiation=Критический уровень облучения!
+
+gui.engine_type.fuel_engine=Топливный двигатель
+gui.engine_type.ion_engine=Ионный двигатель
+gui.engine_type.plasma_engine=Плазменный двигатель
+gui.engine_type.sublight_engine=Субсветовой двигатель
+gui.engine_type.blackhole_engine=Подпространственный двигатель
+|/////////////////////////////////////////|
+#||||||||||||Celestial Bodies||||||||||||||
+|\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\|
+
+galaxy.andromeda=Андромеда
+galaxy.smc=Малое Магелланово Облако
+galaxy.lmc=Большое Магелланово Облако
