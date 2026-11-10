@@ -95,13 +95,10 @@ dependencies {
 	annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 	testAnnotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
-	implementation files('libs/buildcraft-api-7.99.24.8.jar')
-	implementation files('libs/industrialcraft-2-2.8.222-ex112-api.jar')
 	implementation files('libs/CraftTweaker2-1.12-4.1.20.696.jar')
 
 
 	implementation files('libs/jei_1.12.2-4.13.1.220.jar')
-	implementation files('libs/Mekanism-1.12.2-9.4.13.349-api.jar')
 	implementation files('libs/PlanetProgression-1.12.2-0.4.8-api.jar')
 	implementation files('libs/RedstoneFlux-1.12-2.1.0.6-universal.jar')
 	

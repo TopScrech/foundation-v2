@@ -3,14 +3,10 @@ package galaxyspace.core.prefab.items;
 import cofh.redstoneflux.api.IEnergyContainerItem;
 import galaxyspace.GalaxySpace;
 import galaxyspace.core.util.GSCreativeTabs;
-import ic2.api.item.IElectricItem;
-import ic2.api.item.IElectricItemManager;
-import ic2.api.item.ISpecialElectricItem;
-import mekanism.api.energy.IEnergizedItem;
+
 import micdoodle8.mods.galacticraft.api.item.IItemElectricBase;
 import micdoodle8.mods.galacticraft.core.energy.EnergyConfigHandler;
-import micdoodle8.mods.galacticraft.core.energy.item.ElectricItemManagerIC2;
-import micdoodle8.mods.galacticraft.core.items.ItemBatteryInfinite;
+
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -31,22 +27,17 @@ import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.fml.common.Optional;
 
 @Optional.Interface(modid = "redstoneflux", iface = "cofh.redstoneflux.api.IEnergyContainerItem")
-@Optional.Interface(modid = "mekanism", iface = "mekanism.api.energy.IEnergizedItem")
-@Optional.Interface(modid = "ic2", iface = "ic2.api.item.IElectricItem")
-@Optional.Interface(modid = "ic2", iface = "ic2.api.item.ISpecialElectricItem")
-public class ItemElectricArmor extends ItemArmor implements IEnergyContainerItem, IElectricItem, ISpecialElectricItem, IEnergizedItem, IItemElectricBase {
+
+public class ItemElectricArmor extends ItemArmor implements IEnergyContainerItem, IItemElectricBase {
 
 	public float transferMax = 200.0F;
-	private static Object itemManagerIC2;
-	
+
 	public ItemElectricArmor(ArmorMaterial materialIn, EntityEquipmentSlot armorIndex) {
 		super(materialIn, 0, armorIndex);
 		this.setMaxDamage(200);
 		this.setNoRepair();
-		
-		if (EnergyConfigHandler.isIndustrialCraft2Loaded()) {
-			itemManagerIC2 = new ElectricItemManagerIC2();
-		}
+
+		{}
 
 	}
 	
@@ -150,12 +141,6 @@ public class ItemElectricArmor extends ItemArmor implements IEnergyContainerItem
 			return true;
 		}
 
-		if (EnergyConfigHandler.isIndustrialCraft2Loaded()) {
-			if (item instanceof ic2.api.item.ISpecialElectricItem) {
-				return true;
-			}
-		}
-
 		return false;
 	}
 
@@ -169,12 +154,6 @@ public class ItemElectricArmor extends ItemArmor implements IEnergyContainerItem
 			return ((IItemElectricBase) item).getElectricityStored(itemstack) <= 0;
 		}
 
-		if (EnergyConfigHandler.isIndustrialCraft2Loaded()) {
-			if (item instanceof ic2.api.item.IElectricItem) {
-				return !((ic2.api.item.IElectricItem) item).canProvideEnergy(itemstack);
-			}
-		}
-
 		return false;
 	}
 
@@ -185,12 +164,6 @@ public class ItemElectricArmor extends ItemArmor implements IEnergyContainerItem
 
 		if (item instanceof IItemElectricBase) {
 			return ((IItemElectricBase) item).getElectricityStored(itemstack) > 0;
-		}
-
-		if (EnergyConfigHandler.isIndustrialCraft2Loaded()) {
-			if (item instanceof ic2.api.item.IElectricItem) {
-				return ((ic2.api.item.IElectricItem) item).canProvideEnergy(itemstack);
-			}
 		}
 
 		return false;
@@ -215,62 +188,6 @@ public class ItemElectricArmor extends ItemArmor implements IEnergyContainerItem
 	@Override
 	public int getMaxEnergyStored(ItemStack container) {
 		return (int) (this.getMaxElectricityStored(container) * EnergyConfigHandler.TO_RF_RATIO);
-	}
-
-	// Mekanism Compat
-	@Override
-	public double getEnergy(ItemStack itemStack) {
-		return this.getElectricityStored(itemStack) * EnergyConfigHandler.TO_MEKANISM_RATIO;
-	}
-
-	@Override
-	public void setEnergy(ItemStack itemStack, double amount) {
-		this.setElectricity(itemStack, (float) amount * EnergyConfigHandler.MEKANISM_RATIO);
-	}
-
-	@Override
-	public double getMaxEnergy(ItemStack itemStack) {
-		return this.getMaxElectricityStored(itemStack) * EnergyConfigHandler.TO_MEKANISM_RATIO;
-	}
-
-	@Override
-	public double getMaxTransfer(ItemStack itemStack) {
-		return this.transferMax * EnergyConfigHandler.TO_MEKANISM_RATIO;
-	}
-
-	@Override
-	public boolean canReceive(ItemStack itemStack) {
-		return (itemStack != null && !(itemStack.getItem() instanceof ItemBatteryInfinite));
-	}
-
-	public boolean canSend(ItemStack itemStack) {
-		return true;
-	}
-
-	// IC2 Compact
-	@Override
-	public IElectricItemManager getManager(ItemStack itemstack) {
-		return (IElectricItemManager) this.itemManagerIC2;
-	}
-
-	@Override
-	public boolean canProvideEnergy(ItemStack itemStack) {
-		return true;
-	}
-
-	@Override
-	public int getTier(ItemStack itemStack) {
-		return 1;
-	}
-
-	@Override
-	public double getMaxCharge(ItemStack itemStack) {
-		return this.getMaxElectricityStored(itemStack) / EnergyConfigHandler.IC2_RATIO;
-	}
-
-	@Override
-	public double getTransferLimit(ItemStack itemStack) {
-		return this.transferMax * EnergyConfigHandler.TO_IC2_RATIO;
 	}
 
 	// Forge Energy Compact

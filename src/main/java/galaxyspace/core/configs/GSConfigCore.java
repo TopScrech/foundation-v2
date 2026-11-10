@@ -267,18 +267,8 @@ public class GSConfigCore
             prop.setLanguageKey("gc.configgui.enableDebug").setRequiresMcRestart(false);
             enableDebug = prop.getBoolean(false);
             propOrder.add(prop.getName());
-            
-            
-            prop = config.get(Constants.CONFIG_CATEGORY_GENERAL, "Radiation and Pressure Armor List", 
-            		new String[] 
-            		{        
-            			"ic2:quantum_helmet",
-            			"ic2:quantum_chestplate",
-            			"ic2:quantum_leggings",
-            			"ic2:quantum_boots"   				
-            		
-            		});
-            
+
+            prop = config.get(Constants.CONFIG_CATEGORY_GENERAL, "Radiation and Pressure Armor List", new String[0]);
             prop.setComment("List armor with protect radiation and pressure. Format: 'modid:item' ");
             prop.setLanguageKey("gc.configgui.armorIDs").setRequiresMcRestart(false);
             radiation_armor = prop.getStringList();

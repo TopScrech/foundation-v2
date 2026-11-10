@@ -3,9 +3,7 @@ package galaxyspace.systems.SolarSystem.planets.overworld.tile;
 import javax.annotation.Nullable;
 
 import cofh.redstoneflux.api.IEnergyContainerItem;
-import ic2.api.item.ElectricItem;
-import ic2.api.item.IElectricItem;
-import mekanism.api.energy.IEnergizedItem;
+
 import micdoodle8.mods.galacticraft.api.item.IItemElectricBase;
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType;
 import micdoodle8.mods.galacticraft.core.energy.EnergyConfigHandler;
@@ -132,24 +130,7 @@ public class TileEntityEnergyPad extends TileBaseElectricBlockWithInventory {
 				return true;
 			}
 		}
-		
-		if(EnergyConfigHandler.isIndustrialCraft2Loaded())			
-			if(stack.getItem() instanceof IElectricItem)	
-				if(ElectricItem.manager.getCharge(stack) < ElectricItem.manager.getMaxCharge(stack)) {
-					ElectricItem.manager.charge(stack, count, 4, false, false);		
-					return true;
-				}
-		
-		if(EnergyConfigHandler.isMekanismLoaded())
-			if(stack.getItem() instanceof IEnergizedItem)
-			{
-				IEnergizedItem item = (IEnergizedItem)stack.getItem();
-				if(item.getEnergy(stack) < item.getMaxEnergy(stack)) {
-					item.setEnergy(stack, item.getEnergy(stack) + count);
-					return true;
-				}
-			}
-		
+
 		if(EnergyConfigHandler.isRFAPILoaded())
 			if(stack.getItem() instanceof IEnergyContainerItem)
 			{

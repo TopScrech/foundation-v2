@@ -84,7 +84,6 @@ import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -456,23 +455,7 @@ public class GSEventHandler {
         ItemStack stack = event.getItemStack();
         EntityPlayer player = event.getEntityPlayer();
 
-
-        if (world.isRemote) {
-
-        }
-
         if (!world.isRemote && !block.hasTileEntity(state)) {
-
-
-            if (CompatibilityManager.isIc2Loaded()) {
-                //IC2 WIND TURBINE
-                if (world.provider instanceof IGalacticraftWorldProvider && ((IGalacticraftWorldProvider) world.provider).hasNoAtmosphere() && ((IGalacticraftWorldProvider) world.provider).getWindLevel() <= 0.0F) {
-                    if (stack.getItem() == Item.getByNameOrId("ic2:te") && (stack.getItemDamage() == 11 || stack.getItemDamage() == 21)) {
-                        player.sendMessage(new TextComponentString(EnumColor.DARK_RED + GCCoreUtil.translate("gui.status.nowind.name") + "! " + GCCoreUtil.translate("gui.message.cant_place")));
-                        event.setCanceled(true);
-                    }
-                }
-            }
 
             if (world.provider instanceof IGalacticraftWorldProvider) {
                 AxisAlignedBB bb = new AxisAlignedBB(event.getPos().up());
