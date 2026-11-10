@@ -566,8 +566,9 @@ public class ConfigManagerCore
             finishProp(prop);
 
             prop = getConfig(Constants.CONFIG_CATEGORY_COMPATIBILITY, "Rocket fuel factor", 1);
-            prop.setComment("The normal factor is 1.  Increase this to 2 - 5 if other mods with a lot of oil (e.g. BuildCraft) are installed to increase GC rocket fuel requirement.");
+
             prop.setLanguageKey("gc.configgui.rocket_fuel_factor");
+            prop.setComment("The normal factor is 1  Increase this to 2 - 5 to increase GC rocket fuel requirements");
             rocketFuelFactor = prop.getInt(1);
             finishProp(prop);
 

@@ -35,11 +35,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
-/**
- * Based heavily on Mekanism FluidNetwork
- *
- * @author aidancbrady
- */
 public class FluidNetwork implements IGridNetwork<FluidNetwork, IBufferTransmitter<FluidStack>, TileEntity>
 {
     public Map<BlockPos, IFluidHandler> acceptors = Maps.newHashMap();

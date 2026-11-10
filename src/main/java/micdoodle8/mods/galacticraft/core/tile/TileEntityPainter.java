@@ -10,7 +10,6 @@ import micdoodle8.mods.galacticraft.core.inventory.IInventoryDefaults;
 import micdoodle8.mods.galacticraft.core.network.IPacketReceiver;
 import micdoodle8.mods.galacticraft.core.network.PacketDynamic;
 import micdoodle8.mods.galacticraft.core.util.ColorUtil;
-import micdoodle8.mods.galacticraft.core.util.CompatibilityManager;
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil;
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil;
 import net.minecraft.block.Block;
@@ -31,12 +30,10 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
-import ic2.api.item.IC2Items;
+
 import io.netty.buffer.ByteBuf;
 
 import java.util.*;
-
-import biomesoplenty.api.item.BOPItems;
 
 //import net.minecraft.item.EnumDyeColor;
 
@@ -425,24 +422,6 @@ public class TileEntityPainter extends TileEntity implements IDisableableMachine
     private static int tryOtherModDyes(ItemStack itemStack)
     {
         Item item = itemStack.getItem();
-
-        if (CompatibilityManager.isIc2Loaded())
-        {
-            ItemStack ic2paintbrush = IC2Items.getItem("painter");
-            if (ic2paintbrush != null && item == ic2paintbrush.getItem())
-            {
-                return ItemDye.DYE_COLORS[itemStack.getItemDamage()];
-            }
-        }
-
-        if (CompatibilityManager.isBOPLoaded())
-        {
-            if (item == BOPItems.black_dye) return ItemDye.DYE_COLORS[EnumDyeColor.BLACK.getDyeDamage()];
-            if (item == BOPItems.blue_dye) return ItemDye.DYE_COLORS[EnumDyeColor.BLUE.getDyeDamage()];
-            if (item == BOPItems.brown_dye) return ItemDye.DYE_COLORS[EnumDyeColor.BROWN.getDyeDamage()];
-            if (item == BOPItems.green_dye) return ItemDye.DYE_COLORS[EnumDyeColor.GREEN.getDyeDamage()];
-            if (item == BOPItems.white_dye) return ItemDye.DYE_COLORS[EnumDyeColor.WHITE.getDyeDamage()];
-        }
 
         return -1;
     }

@@ -1,9 +1,7 @@
 package micdoodle8.mods.galacticraft.core.energy.grid;
 
-import buildcraft.api.mj.IMjReceiver;
 import cofh.redstoneflux.api.IEnergyReceiver;
-import ic2.api.energy.tile.IEnergySink;
-import mekanism.api.energy.IStrictEnergyAcceptor;
+
 import micdoodle8.mods.galacticraft.api.transmission.grid.IElectricityNetwork;
 import micdoodle8.mods.galacticraft.api.transmission.tile.IConductor;
 import micdoodle8.mods.galacticraft.api.transmission.tile.IElectrical;
@@ -11,7 +9,6 @@ import micdoodle8.mods.galacticraft.api.vector.BlockVec3;
 import micdoodle8.mods.galacticraft.core.energy.EnergyConfigHandler;
 import micdoodle8.mods.galacticraft.core.energy.EnergyUtil;
 import micdoodle8.mods.galacticraft.core.tick.TickHandlerServer;
-import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore;
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil;
 import micdoodle8.mods.galacticraft.core.util.GCLog;
 import net.minecraft.tileentity.TileEntity;
@@ -21,9 +18,6 @@ import net.minecraftforge.fml.common.FMLLog;
 
 import java.util.*;
 
-//import buildcraft.api.power.PowerHandler.Type;
-
-
 /**
  * A universal network that works with multiple energy systems.
  *
@@ -31,12 +25,11 @@ import java.util.*;
  */
 public class EnergyNetwork implements IElectricityNetwork
 {
-    private boolean isMekLoaded = EnergyConfigHandler.isMekanismLoaded() && !EnergyConfigHandler.disableMekanismOutput;
+
     private boolean isRF1Loaded = EnergyConfigHandler.isRFAPIv1Loaded() && !EnergyConfigHandler.disableRFOutput;
     private boolean isRF2Loaded = EnergyConfigHandler.isRFAPIv2Loaded() && !EnergyConfigHandler.disableRFOutput;
-    private boolean isIC2Loaded = EnergyConfigHandler.isIndustrialCraft2Loaded() && !EnergyConfigHandler.disableIC2Output;
+
     private boolean isFELoaded = !EnergyConfigHandler.disableFEOutput;
-    private boolean isBCLoaded = EnergyConfigHandler.isBuildcraftLoaded() && !EnergyConfigHandler.disableBuildCraftOutput;
 
     /* Re-written by radfast for better performance
      *
@@ -225,9 +218,9 @@ public class EnergyNetwork implements IElectricityNetwork
         this.totalSent = 0F;
         this.refreshAcceptors();
 
-        if (!EnergyUtil.initialisedIC2Methods)
+        if (!EnergyUtil.initialisedCompatibilityMethods)
         {
-            EnergyUtil.initialiseIC2Methods();
+            EnergyUtil.initialiseCompatibilityMethods();
         }
 
         if (this.conductors.size() == 0)
@@ -260,34 +253,6 @@ public class EnergyNetwork implements IElectricityNetwork
                     if (acceptor instanceof IElectrical)
                     {
                         e = ((IElectrical) acceptor).getRequest(sideFrom);
-                    }
-                    else if (isMekLoaded && acceptor instanceof IStrictEnergyAcceptor)
-                    {
-                        e = (float) (((IStrictEnergyAcceptor) acceptor).acceptEnergy(sideFrom, 1000000D, true) / EnergyConfigHandler.TO_MEKANISM_RATIO);
-                    }
-                    else if (isIC2Loaded && acceptor instanceof IEnergySink)
-                    {
-                        double result = 0;
-                        try
-                        {
-                            result = (Double) EnergyUtil.demandedEnergyIC2.invoke(acceptor);
-                        }
-                        catch (Exception ex)
-                        {
-                            if (ConfigManagerCore.enableDebug)
-                            {
-                                ex.printStackTrace();
-                            }
-                        }
-                        //Cap IC2 power transfer at 128EU/t for standard Alu wire, 256EU/t for heavy Alu wire
-                        result = Math.min(result, this.networkTierGC * 128D);
-                        e = (float) result / EnergyConfigHandler.TO_IC2_RATIO;
-                    }
-                    else if (isBCLoaded && acceptor instanceof IMjReceiver)
-                    {
-                        long bcDemand = ((IMjReceiver)acceptor).getPowerRequested();
-                        bcDemand = Math.min(bcDemand,  this.networkTierGC * this.networkTierGC * 16000000L);  //Capped at 16 MJ/tick for standard Alu wire, 64 for heavy. 
-                        e = (float) bcDemand / EnergyConfigHandler.TO_BC_RATIO;
                     }
                     else if (isRF2Loaded && acceptor instanceof IEnergyReceiver)
                     {
@@ -391,50 +356,6 @@ public class EnergyNetwork implements IElectricityNetwork
                     if (tileEntity instanceof IElectrical)
                     {
                         sentToAcceptor = ((IElectrical) tileEntity).receiveElectricity(sideFrom, currentSending, tierProduced, true);
-                    }
-                    else if (isMekLoaded && tileEntity instanceof IStrictEnergyAcceptor)
-                    {
-                        sentToAcceptor = (float) ((IStrictEnergyAcceptor) tileEntity).acceptEnergy(sideFrom, currentSending * EnergyConfigHandler.TO_MEKANISM_RATIO, false) / EnergyConfigHandler.TO_MEKANISM_RATIO;
-                    }
-                    else if (isIC2Loaded && tileEntity instanceof IEnergySink)
-                    {
-                        double energySendingIC2 = currentSending * EnergyConfigHandler.TO_IC2_RATIO;
-                        if (energySendingIC2 >= 1D)
-                        {
-                            double result = 0;
-                            try
-                            {
-                                if (EnergyUtil.voltageParameterIC2)
-                                {
-                                    result = (Double) EnergyUtil.injectEnergyIC2.invoke(tileEntity, sideFrom.getOpposite(), energySendingIC2, 120D);
-                                }
-                                else
-                                {
-                                    result = (Double) EnergyUtil.injectEnergyIC2.invoke(tileEntity, sideFrom.getOpposite(), energySendingIC2);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                if (ConfigManagerCore.enableDebug)
-                                {
-                                    ex.printStackTrace();
-                                }
-                            }
-                            sentToAcceptor = currentSending - (float) result / EnergyConfigHandler.TO_IC2_RATIO;
-                            if (sentToAcceptor < 0F)
-                            {
-                                sentToAcceptor = 0F;
-                            }
-                        }
-                        else
-                        {
-                            sentToAcceptor = 0F;
-                        }
-                    }
-                    else if (isBCLoaded && tileEntity instanceof IMjReceiver)
-                    {
-                        long toSendBC = (long) (currentSending * EnergyConfigHandler.TO_BC_RATIO);
-                        sentToAcceptor = (float) (toSendBC - ((IMjReceiver)tileEntity).receivePower(toSendBC, false)) / EnergyConfigHandler.TO_BC_RATIO;
                     }
                     else if (isRF2Loaded && tileEntity instanceof IEnergyReceiver)
                     {

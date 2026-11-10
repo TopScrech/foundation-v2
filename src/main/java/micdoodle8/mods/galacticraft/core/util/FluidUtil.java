@@ -165,13 +165,6 @@ public class FluidUtil
         return 0;
     }
 
-    /**
-     * This looks for any type of filled or partly filled container of "oil"
-     * or the alternative fluid "oilgc" which may be present if Buildcraft was installed on top of a GC world
-     *
-     * @param var4 The ItemStack being examined
-     * @return True if it's a container with "oil"
-     */
     public static boolean isOilContainerAny(ItemStack var4)
     {
         if (var4.getItem() instanceof ItemCanisterGeneric)
@@ -598,13 +591,6 @@ public class FluidUtil
         return handler != null && (containedFluid == null || containedFluid.amount == 0);
     }
 
-    /**
-     * Test for any empty specialist gas container
-     * For future use, e.g. for compatibility with Mekanism tank items
-     *
-     * @param var4 The ItemStack being tested
-     * @return True if the container is empty
-     */
     public static boolean isEmptyGasContainer(ItemStack var4)
     {
         return false;

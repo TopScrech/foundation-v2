@@ -1,28 +1,20 @@
 package micdoodle8.mods.galacticraft.core.energy.tile;
 
-import com.google.common.collect.Lists;
 
 import micdoodle8.mods.galacticraft.api.tile.IDisableableMachine;
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType;
 import micdoodle8.mods.galacticraft.api.transmission.tile.IConnector;
-import micdoodle8.mods.galacticraft.core.util.CompatibilityManager;
 import micdoodle8.mods.galacticraft.core.util.EnumColor;
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil;
 import micdoodle8.mods.galacticraft.core.util.RedstoneUtil;
 import micdoodle8.mods.miccore.Annotations.NetworkedField;
-import micdoodle8.mods.miccore.Annotations.RuntimeInterface;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.EnumSet;
-import java.util.List;
 
 public abstract class TileBaseElectricBlock extends TileBaseUniversalElectrical implements IDisableableMachine, IConnector
 {
@@ -181,32 +173,6 @@ public abstract class TileBaseElectricBlock extends TileBaseUniversalElectrical 
     public boolean getDisabled(int index)
     {
         return this.disabled;
-    }
-
-    @RuntimeInterface(clazz = "ic2.api.tile.IWrenchable", modID = CompatibilityManager.modidIC2)
-    public EnumFacing getFacing(World world, BlockPos pos)
-    {
-        return this.getFront();
-    }
-
-    @RuntimeInterface(clazz = "ic2.api.tile.IWrenchable", modID = CompatibilityManager.modidIC2)
-    public boolean setFacing(World world, BlockPos pos, EnumFacing newDirection, EntityPlayer player)
-    {
-        return false;
-    }
-
-    @RuntimeInterface(clazz = "ic2.api.tile.IWrenchable", modID = CompatibilityManager.modidIC2)
-    public boolean wrenchCanRemove(World world, BlockPos pos, EntityPlayer player)
-    {
-        return false;
-    }
-
-    @RuntimeInterface(clazz = "ic2.api.tile.IWrenchable", modID = CompatibilityManager.modidIC2)
-    public List<ItemStack> getWrenchDrops(World world, BlockPos pos, IBlockState state, TileEntity te, EntityPlayer player, int fortune)
-    {
-        List<ItemStack> drops = Lists.newArrayList();
-        drops.add(this.getBlockType().getPickBlock(this.world.getBlockState(this.getPos()), null, this.world, this.getPos(), player));
-        return drops;
     }
 
     @Override

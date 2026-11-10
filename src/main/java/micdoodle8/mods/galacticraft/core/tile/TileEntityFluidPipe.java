@@ -1,22 +1,16 @@
 package micdoodle8.mods.galacticraft.core.tile;
 
-import mekanism.api.gas.Gas;
-import mekanism.api.gas.GasStack;
 import micdoodle8.mods.galacticraft.api.tile.IColorable;
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType;
 import micdoodle8.mods.galacticraft.api.transmission.grid.IGridNetwork;
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3;
 import micdoodle8.mods.galacticraft.core.GCBlocks;
-import micdoodle8.mods.galacticraft.core.GCFluids;
 import micdoodle8.mods.galacticraft.core.GalacticraftCore;
 import micdoodle8.mods.galacticraft.core.blocks.BlockFluidPipe;
-import micdoodle8.mods.galacticraft.core.energy.EnergyUtil;
 import micdoodle8.mods.galacticraft.core.fluid.FluidNetwork;
 import micdoodle8.mods.galacticraft.core.network.PacketSimple;
-import micdoodle8.mods.galacticraft.core.util.CompatibilityManager;
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil;
 import micdoodle8.mods.galacticraft.core.wrappers.FluidHandlerWrapper;
-import micdoodle8.mods.miccore.Annotations;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.EnumDyeColor;
@@ -314,79 +308,9 @@ public class TileEntityFluidPipe extends TileEntityFluidTransmitter implements I
     }
 
     @Override
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public int receiveGas(EnumFacing side, GasStack stack, boolean doTransfer)
-    {
-        String mekGas = stack.getGas().getName(); 
-        if (mekGas == null)
-        {
-            return 0;
-        }
-        FluidStack mekEquivalent = null;
-        if (mekGas.equals("oxygen"))
-        {
-            mekEquivalent = new FluidStack(GCFluids.fluidOxygenGas, stack.amount);
-        }
-        else if (mekGas.equals("hydrogen"))
-        {
-            mekEquivalent = new FluidStack(GCFluids.fluidHydrogenGas, stack.amount);
-        }
-        else
-        {
-            return 0;
-        }
-        return this.fill(side, mekEquivalent, doTransfer);
-    }
-
-    @Override
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public int receiveGas(EnumFacing side, GasStack stack)
-    {
-        return this.receiveGas(side, stack, true);
-    }
-
-    @Override
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public GasStack drawGas(EnumFacing side, int amount, boolean doTransfer)
-    {
-        return null;
-    }
-
-    @Override
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public GasStack drawGas(EnumFacing side, int amount)
-    {
-        return null;
-    }
-
-    @Override
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public boolean canReceiveGas(EnumFacing side, Gas type)
-    {
-        return type.getName().equals("oxygen") || type.getName().equals("hydrogen");
-    }
-
-    @Override
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public boolean canDrawGas(EnumFacing side, Gas type)
-    {
-        return false;
-    }
-
-    @Override
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.ITubeConnection", modID = CompatibilityManager.modidMekanism)
-    public boolean canTubeConnect(EnumFacing side)
-    {
-        return false;
-    }
-
-    @Override
     public boolean hasCapability(Capability<?> capability, EnumFacing facing)
     {
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
-            return true;
-
-    	if (EnergyUtil.checkMekGasHandler(capability))
     		return true;
 
     	return super.hasCapability(capability, facing);  
@@ -400,10 +324,7 @@ public class TileEntityFluidPipe extends TileEntityFluidTransmitter implements I
     		return (T) new FluidHandlerWrapper(this, facing);
     	}
 
-    	if (EnergyUtil.checkMekGasHandler(capability))
-    	{
-    		return (T) this;
-    	}
+
 
     	return super.getCapability(capability, facing);
     }

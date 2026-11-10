@@ -2,7 +2,6 @@ package micdoodle8.mods.galacticraft.core.items;
 
 import micdoodle8.mods.galacticraft.core.GalacticraftCore;
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore;
-import micdoodle8.mods.galacticraft.core.util.CompatibilityManager;
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.EnumRarity;
@@ -21,7 +20,7 @@ public class ItemIC2Compat extends Item implements ISortableItem
     {
         super();
         this.setMaxDamage(0);
-        this.setHasSubtypes(CompatibilityManager.isIc2Loaded());
+        this.setHasSubtypes(false);
         this.setUnlocalizedName(assetName);
     }
 
@@ -42,7 +41,7 @@ public class ItemIC2Compat extends Item implements ISortableItem
     public String getUnlocalizedName(ItemStack itemStack)
     {
         int meta = itemStack.getItemDamage();
-        if (!CompatibilityManager.isIc2Loaded()) meta = 0;
+        meta = 0;
         return this.getUnlocalizedName() + "." + ItemIC2Compat.types[meta % 4] + "_" + ItemIC2Compat.names[meta / 4];
     }
 
@@ -52,12 +51,7 @@ public class ItemIC2Compat extends Item implements ISortableItem
         if (tab == GalacticraftCore.galacticraftItemsTab || tab == CreativeTabs.SEARCH)
         {
             par3List.add(new ItemStack(this, 1, 0));
-            if (CompatibilityManager.isIc2Loaded())
-            {
-                par3List.add(new ItemStack(this, 1, 1));
-                par3List.add(new ItemStack(this, 1, 2));
-                par3List.add(new ItemStack(this, 1, 7));
-            }
+
         }
     }
 

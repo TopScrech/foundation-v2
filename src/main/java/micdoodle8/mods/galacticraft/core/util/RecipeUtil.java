@@ -1,6 +1,5 @@
 package micdoodle8.mods.galacticraft.core.util;
 
-import ic2.api.item.IC2Items;
 import micdoodle8.mods.galacticraft.api.GalacticraftRegistry;
 import micdoodle8.mods.galacticraft.api.recipe.INasaWorkbenchRecipe;
 import micdoodle8.mods.galacticraft.core.inventory.InventoryBuggyBench;
@@ -83,11 +82,6 @@ public class RecipeUtil
         GalacticraftRegistry.addMoonBuggyRecipe(new NasaWorkbenchRecipe(result, input));
     }
 
-    public static ItemStack getIndustrialCraftItem(String indentifier, String variant)
-    {
-        return IC2Items.getItem(indentifier, variant);
-    }
-    
     /**
      * An extended version of areItemStackTagsEqual which ignores LevelUp's "NoPlacing" tag on mined blocks
      */

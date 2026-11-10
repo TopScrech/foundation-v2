@@ -27,7 +27,6 @@ import micdoodle8.mods.galacticraft.planets.venus.VenusItems;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.FurnaceRecipes;
@@ -57,15 +56,6 @@ public class RecipeManagerGC
 
     public static void loadCompatibilityRecipes()
     {
-        if (CompatibilityManager.isBCraftTransportLoaded())
-        {
-            RecipeManagerGC.addBuildCraftCraftingRecipes();
-        }
-
-        if (CompatibilityManager.isIc2Loaded())
-        {
-            CompatModuleIC2.addIndustrialCraft2Recipes();
-        }
 
         if (CompatibilityManager.isAppEngLoaded())
         {
@@ -479,42 +469,6 @@ public class RecipeManagerGC
         {
             CompressorRecipes.replaceRecipeIngredient(new ItemStack(MarsItems.marsItemBasic, 1, 2), OreDictionary.getOres("ingotDesh"));
             CompressorRecipes.replaceRecipeIngredient(new ItemStack(AsteroidsItems.basicItem, 1, 0), OreDictionary.getOres("ingotTitanium"));
-        }
-    }
-
-    private static void addBuildCraftCraftingRecipes()
-    {
-        boolean refineryDone = false;
-        try
-        {
-//            BuildcraftRecipeRegistry.refinery.addRecipe("buildcraft:fuel", new FluidStack(GCFluids.fluidOil, 1), new FluidStack(FluidRegistry.getFluid("fuel"), 1), 120, 1);
-//            refineryDone = true;
-        }
-        catch (Exception e)
-        {
-        }
-
-        if (refineryDone)
-        {
-            GCLog.info("Successfully added GC oil to Buildcraft Refinery recipes.");
-        }
-
-        try
-        {
-        	if (CompatibilityManager.classBCTransport != null)
-        	{
-        		//TODO: Add the two Power pipes once they are included in Buildcraft 8.0.x
-	            for (int i = BlockEnclosed.EnumEnclosedBlockType.BC_ITEM_STONEPIPE.getMeta(); i <= BlockEnclosed.EnumEnclosedBlockType.BC_FLUIDS_COBBLESTONEPIPE.getMeta(); i++)
-	            {
-	                String pipeName = EnumEnclosedBlockType.values()[i].getBCPipeType();
-	                Object pipeItemBC = (Item) CompatibilityManager.classBCTransport.getField(pipeName).get(null);
-	                RecipeUtil.addRecipe(new ItemStack(GCBlocks.sealableBlock, 1, i), new Object[] { "XYX", 'Y', pipeItemBC, 'X', new ItemStack(GCBlocks.basicBlock, 1, 4) });
-	            }
-        	}
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
         }
     }
 

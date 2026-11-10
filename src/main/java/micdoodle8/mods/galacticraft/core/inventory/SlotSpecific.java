@@ -44,19 +44,6 @@ public class SlotSpecific extends Slot
                     existing.add(cofh.redstoneflux.api.IEnergyContainerItem.class);
                     validClasses = existing.toArray(new Class[existing.size()]);
                 }
-                if (EnergyConfigHandler.isIndustrialCraft2Loaded())
-                {
-                    ArrayList<Class> existing = new ArrayList<>(Arrays.asList(validClasses));
-                    existing.add(ic2.api.item.IElectricItem.class);
-                    existing.add(ic2.api.item.ISpecialElectricItem.class);
-                    validClasses = existing.toArray(new Class[existing.size()]);
-                }
-                if (EnergyConfigHandler.isMekanismLoaded())
-                {
-                    ArrayList<Class> existing = new ArrayList<>(Arrays.asList(validClasses));
-                    existing.add(mekanism.api.energy.IEnergizedItem.class);
-                    validClasses = existing.toArray(new Class[existing.size()]);
-                }
             }
             catch (Exception e)
             {

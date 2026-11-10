@@ -18,7 +18,6 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
@@ -133,13 +132,6 @@ public class MapGen extends BiomeProvider implements Runnable
             {
                 this.settings = ChunkGeneratorSettings.Factory.jsonToFactory(options).build();
             }
-            if (CompatibilityManager.isBOPWorld(this.worldType))
-            {
-                Object settingsBOP = CompatibilityManager.classBOPws.getConstructor(String.class).newInstance(options);
-                Method bopSetup = CompatibilityManager.classBOPwcm.getMethod("setupBOPGenLayers", long.class, settingsBOP.getClass());
-                agenlayer = (GenLayer[]) bopSetup.invoke(null, seed, settingsBOP);
-            }
-            else
             {
                 agenlayer = GenLayer.initializeAllBiomeGenerators(seed, worldType, this.settings);
             }

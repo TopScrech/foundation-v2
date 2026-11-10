@@ -4,7 +4,6 @@ import micdoodle8.mods.galacticraft.api.GalacticraftRegistry;
 import micdoodle8.mods.galacticraft.api.recipe.CompressorRecipes;
 import micdoodle8.mods.galacticraft.core.GCItems;
 import micdoodle8.mods.galacticraft.core.recipe.NasaWorkbenchRecipe;
-import micdoodle8.mods.galacticraft.core.util.CompatibilityManager;
 import micdoodle8.mods.galacticraft.core.util.RecipeUtil;
 import micdoodle8.mods.galacticraft.planets.asteroids.blocks.AsteroidBlocks;
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems;
@@ -151,9 +150,6 @@ public class RecipeManagerAsteroids
     public static void loadCompatibilityRecipes()
     {
         ItemStack titaniumIngot = new ItemStack(AsteroidsItems.basicItem, 1, 0);
-        if (CompatibilityManager.isIc2Loaded())
-        {
-            CompatModuleIC2Asteroids.addIC2Recipes(titaniumIngot, new ItemStack(AsteroidsItems.basicItem, 1, 9));
+
         }
     }
-}

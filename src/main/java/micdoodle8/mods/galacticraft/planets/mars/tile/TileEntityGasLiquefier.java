@@ -1,7 +1,5 @@
 package micdoodle8.mods.galacticraft.planets.mars.tile;
 
-import mekanism.api.gas.Gas;
-import mekanism.api.gas.GasStack;
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.WorldProviderSpace;
 import micdoodle8.mods.galacticraft.api.tile.IDisableableMachine;
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType;
@@ -10,11 +8,9 @@ import micdoodle8.mods.galacticraft.api.world.EnumAtmosphericGas;
 import micdoodle8.mods.galacticraft.core.Constants;
 import micdoodle8.mods.galacticraft.core.GCBlocks;
 import micdoodle8.mods.galacticraft.core.GCItems;
-import micdoodle8.mods.galacticraft.core.energy.EnergyUtil;
 import micdoodle8.mods.galacticraft.core.energy.item.ItemElectricBase;
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseElectricBlockWithInventory;
 import micdoodle8.mods.galacticraft.core.items.ItemCanisterGeneric;
-import micdoodle8.mods.galacticraft.core.util.CompatibilityManager;
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore;
 import micdoodle8.mods.galacticraft.core.util.FluidUtil;
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil;
@@ -100,9 +96,8 @@ public class TileEntityGasLiquefier extends TileBaseElectricBlockWithInventory i
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
             return true;
 
-        if (EnergyUtil.checkMekGasHandler(capability))
-        	return true;
-       
+
+
         return super.hasCapability(capability, facing);  
     }
 
@@ -112,11 +107,6 @@ public class TileEntityGasLiquefier extends TileBaseElectricBlockWithInventory i
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
         {
             return (T) new FluidHandlerWrapper(this, facing);
-        }
-
-        if (EnergyUtil.checkMekGasHandler(capability))
-        {
-            return (T) this;
         }
 
         return super.getCapability(capability, facing);
@@ -880,54 +870,4 @@ public class TileEntityGasLiquefier extends TileBaseElectricBlockWithInventory i
         return this.getFront().rotateY();
     }
 
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public int receiveGas(EnumFacing side, GasStack stack, boolean doTransfer)
-    {
-        if (!stack.getGas().getName().equals("oxygen") || !this.shouldPullOxygen())
-        {
-            return 0;
         }
-        int used = 0;
-        if (this.gasTank.getFluidAmount() < this.gasTank.getCapacity())
-        {
-            used = this.gasTank.fill(FluidRegistry.getFluidStack("oxygen", stack.amount), doTransfer);
-        }
-        return used;
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public int receiveGas(EnumFacing side, GasStack stack)
-    {
-        return this.receiveGas(side, stack, true);
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public GasStack drawGas(EnumFacing side, int amount, boolean doTransfer)
-    {
-        return null;
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public GasStack drawGas(EnumFacing side, int amount)
-    {
-        return null;
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public boolean canReceiveGas(EnumFacing side, Gas type)
-    {
-        return this.shouldPullOxygen() && type.getName().equals("oxygen") && side.equals(this.getGasInputDirection());
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public boolean canDrawGas(EnumFacing side, Gas type)
-    {
-        return false;
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.ITubeConnection", modID = CompatibilityManager.modidMekanism)
-    public boolean canTubeConnect(EnumFacing side)
-    {
-        return side.equals(this.getGasInputDirection());
-    }
-}

@@ -1,7 +1,5 @@
 package micdoodle8.mods.galacticraft.core;
 
-import buildcraft.api.fuels.BuildcraftFuelRegistry;
-import buildcraft.api.mj.MjAPI;
 import micdoodle8.mods.galacticraft.core.blocks.MaterialOleaginous;
 import micdoodle8.mods.galacticraft.core.entities.EntityMeteorChunk;
 import micdoodle8.mods.galacticraft.core.event.EventHandlerGC;
@@ -153,11 +151,10 @@ public class GCFluids
 //        if (ConfigManagerCore.useOldOilFluidID && FluidRegistry.isFluidRegistered("oil"))
 //        {
 //            FluidContainerRegistry.registerFluidContainer(new FluidContainerRegistry.FluidContainerData(new FluidStack(FluidRegistry.getFluid("oil"), 1000), new ItemStack(GCItems.oilCanister, 1, 1), new ItemStack(GCItems.oilCanister, 1, ItemCanisterGeneric.EMPTY)));
-            //And allow Buildcraft oil buckets to be filled with oilgc
-//            if (CompatibilityManager.isBCraftEnergyLoaded())
+
 //            {
                 // TODO Fix BC Oil compat
-//        		FluidContainerRegistry.registerFluidContainer(new FluidContainerData(new FluidStack(GalacticraftCore.fluidOil, 1000), GameRegistry.findItemStack("buildcraftcore", "bucketOil", 1), new ItemStack(Items.bucket)));
+
 //            }
 //        }
 
@@ -329,8 +326,4 @@ public class GCFluids
         }
     }
 
-    public static void registerBCFuel()
-    {
-        BuildcraftFuelRegistry.fuel.addFuel(GCFluids.fluidFuel, 5 * MjAPI.MJ, 9000);
     }
-}

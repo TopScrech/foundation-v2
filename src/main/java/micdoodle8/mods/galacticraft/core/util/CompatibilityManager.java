@@ -1,16 +1,11 @@
 package micdoodle8.mods.galacticraft.core.util;
 
 import micdoodle8.mods.galacticraft.core.GCBlocks;
-import micdoodle8.mods.galacticraft.core.blocks.BlockEnclosed;
 import net.minecraft.block.Block;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.gen.ChunkProviderServer;
-import net.minecraft.world.WorldType;
 import net.minecraftforge.fml.common.Loader;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 
@@ -23,28 +18,20 @@ import net.minecraft.entity.player.EntityPlayer;
 
 public class CompatibilityManager
 {
-	public final static String modidIC2 = "ic2";
-	public final static String modidMekanism = "mekanism";
-	public final static String modidBuildcraft = "buildcraftcore";
-    public final static String modBCraftTransport = "buildcrafttransport";
-    public final static String modBCraftEnergy = "buildcraftenergy";
-    	
+
     public static boolean PlayerAPILoaded = Loader.isModLoaded("PlayerAPI");
     public static boolean RenderPlayerAPILoaded = Loader.isModLoaded("RenderPlayerAPI");
 
     public static boolean modJEILoaded = Loader.isModLoaded("jei");
-    private static boolean modIc2Loaded = Loader.isModLoaded(modidIC2);
-    public static boolean modBCraftLoaded = Loader.isModLoaded(modidBuildcraft);
-	private static boolean modBCraftEnergyLoaded = Loader.isModLoaded(modBCraftEnergy);
-    private static boolean modBCraftTransportLoaded;
+
     private static boolean modGTLoaded;
     private static boolean modTELoaded = Loader.isModLoaded("thermalexpansion");
-    private static boolean modMekLoaded = Loader.isModLoaded(modidMekanism);
+
     private static boolean modAetherIILoaded;
     private static boolean modBasicComponentsLoaded;
     private static boolean modAppEngLoaded;
     private static boolean modPneumaticCraftLoaded;
-    private static boolean modBOPLoaded = Loader.isModLoaded("biomesoplenty");
+
     private static boolean modEIOLoaded = Loader.isModLoaded("enderio");
     public static boolean modAALoaded = Loader.isModLoaded("actuallyadditions");
     private static boolean spongeLoaded;
@@ -59,19 +46,7 @@ public class CompatibilityManager
 
     public static Class<?> classGTOre = null;
     private static Method spongeOverride = null;
-    public static Class classBCTransport;
-    public static Class classBCTransportPipeTile;
-	public static Class classBOPWorldType = null;
-	public static Class classBOPws = null;
-    public static Class classBOPwcm = null;
-    public static Class classIC2wrench = null;
-    public static Class classIC2wrenchElectric = null;
-    public static Class classIC2tileEventLoad;
-    public static Class classIC2tileEventUnload;
-    public static Field fieldIC2tickhandler;
-    public static Field fieldIC2networkManager;
-    public static Class classIC2cableType = null;
-    public static Constructor constructorIC2cableTE = null;
+
     private static Method androidPlayerGet;
     private static Method androidPlayerIsAndroid;
 	
@@ -80,11 +55,6 @@ public class CompatibilityManager
         if (Loader.isModLoaded("gregtech") || Loader.isModLoaded("gregtech_addon"))
         {
             CompatibilityManager.modGTLoaded = true;
-        }
-
-        if (CompatibilityManager.modMekLoaded)
-        {
-            GCLog.info("Galacticraft: activating Mekanism compatibility.");
         }
 
         if (CompatibilityManager.isMFRLoaded)
@@ -100,96 +70,6 @@ public class CompatibilityManager
         if (CompatibilityManager.isTConstructLoaded)
         {
             GCLog.info("Galacticraft: activating Tinker's Construct compatibility features.");
-        }
-
-        if (CompatibilityManager.modIc2Loaded)
-        {
-            try
-            {
-                try {
-                    classIC2wrench = Class.forName("ic2.core.item.tool.ItemToolWrench");
-                } catch (ClassNotFoundException e) { }
-                
-                try {
-                    classIC2wrenchElectric = Class.forName("ic2.core.item.tool.ItemToolWrenchElectric");
-                } catch (ClassNotFoundException e) { }
-                
-                try {
-                    classIC2tileEventLoad = Class.forName("ic2.api.energy.event.EnergyTileLoadEvent");
-                    classIC2tileEventUnload = Class.forName("ic2.api.energy.event.EnergyTileUnloadEvent");
-                } catch (ClassNotFoundException e) { }
-                
-                try {
-                    Class clazzIC2 = Class.forName("ic2.core.IC2");
-                    fieldIC2tickhandler = clazzIC2.getDeclaredField("tickHandler");
-                    fieldIC2networkManager  = clazzIC2.getDeclaredField("network");
-                } catch (ClassNotFoundException e) { }
-                
-                Class classIC2cable = Class.forName("ic2.core.block.wiring.TileEntityCable");
-                classIC2cableType = Class.forName("ic2.core.block.wiring.CableType");
-                if (classIC2cable != null)
-                {
-                    try {
-                        BlockEnclosed.onBlockNeighbourChangeIC2a = classIC2cable.getMethod("onNeighborChange", Block.class);
-                    }
-                    catch (NoSuchMethodException e)
-                    {
-                        BlockEnclosed.onBlockNeighbourChangeIC2b = classIC2cable.getMethod("onNeighborChange", Block.class, BlockPos.class);
-                    }
-                    
-                    Constructor<?>[] constructors = classIC2cable.getDeclaredConstructors();
-                    for (Constructor<?> constructor2 : constructors)
-                    {
-                        if (constructor2.getGenericParameterTypes().length == 2)
-                        {
-                            constructorIC2cableTE = constructor2;
-                            break;
-                        }
-                    }
-                }
-                GCLog.info("Galacticraft: activating IndustrialCraft2 compatibility features.");
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-
-        }
-
-        if (Loader.isModLoaded(modBCraftTransport))
-        {
-            CompatibilityManager.modBCraftTransportLoaded = true;
-
-            try
-            {
-            	classBCTransport = Class.forName("buildcraft.transport.BCTransportItems");
-                classBCTransportPipeTile = Class.forName("buildcraft.transport.tile.TilePipeHolder");
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-
-            BlockEnclosed.initialiseBC();
-
-            if (CompatibilityManager.classBCTransportPipeTile == null)
-            {
-                CompatibilityManager.modBCraftTransportLoaded = false;
-            }
-            else
-            {
-                GCLog.info("Galacticraft: activating BuildCraft Transport (Pipes) compatibility features.");
-            }
-        }
-
-        if (CompatibilityManager.modBOPLoaded)
-        {
-            try {
-                classBOPWorldType = Class.forName("biomesoplenty.common.world.WorldTypeBOP");
-                classBOPws = Class.forName("biomesoplenty.common.world.BOPWorldSettings");
-                classBOPwcm = Class.forName("biomesoplenty.common.world.BiomeProviderBOP");
-                GCLog.info("Galacticraft: activating Biomes O'Plenty compatibility feature.");
-            } catch (Exception e) { e.printStackTrace(); }
         }
 
         if (Loader.isModLoaded("aetherii"))
@@ -261,29 +141,9 @@ public class CompatibilityManager
         }
     }
 
-    public static boolean isIc2Loaded()
-    {
-        return CompatibilityManager.modIc2Loaded;
-    }
-
-    public static boolean isBCraftTransportLoaded()
-    {
-        return CompatibilityManager.modBCraftTransportLoaded;
-    }
-
-    public static boolean isBCraftEnergyLoaded()
-    {
-        return CompatibilityManager.modBCraftEnergyLoaded;
-    }
-
     public static boolean isTELoaded()
     {
         return CompatibilityManager.modTELoaded;
-    }
-
-    public static boolean isMekanismLoaded()
-    {
-        return CompatibilityManager.modMekLoaded;
     }
 
     public static boolean isGTLoaded()
@@ -296,28 +156,9 @@ public class CompatibilityManager
         return CompatibilityManager.modAetherIILoaded;
     }
 
-    public static boolean isBCLoaded()
-    {
-        return CompatibilityManager.modBasicComponentsLoaded;
-    }
-
     public static boolean isAppEngLoaded()
     {
         return CompatibilityManager.modAppEngLoaded;
-    }
-
-    public static boolean isBOPLoaded()
-    {
-        return CompatibilityManager.modBOPLoaded;
-    }
-
-    public static boolean isBOPWorld(WorldType worldType)
-    {
-        if (modBOPLoaded && classBOPWorldType != null && classBOPws != null && classBOPwcm != null)
-        {
-            return classBOPWorldType.isInstance(worldType);
-        }
-        return false;
     }
 
     public static boolean isPneumaticCraftLoaded()
@@ -421,6 +262,6 @@ public class CompatibilityManager
     
     public static boolean useAluDust()
     {
-        return modIc2Loaded || modAppEngLoaded || modTELoaded || modEIOLoaded || modAALoaded;
+        return modAppEngLoaded || modTELoaded || modEIOLoaded || modAALoaded;
     }
 }

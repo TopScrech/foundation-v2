@@ -1,17 +1,13 @@
 package micdoodle8.mods.galacticraft.planets.mars.tile;
 
-import mekanism.api.gas.Gas;
-import mekanism.api.gas.GasStack;
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.WorldProviderSpace;
 import micdoodle8.mods.galacticraft.api.tile.IDisableableMachine;
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType;
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3;
 import micdoodle8.mods.galacticraft.api.world.EnumAtmosphericGas;
 import micdoodle8.mods.galacticraft.core.GCBlocks;
-import micdoodle8.mods.galacticraft.core.energy.EnergyUtil;
 import micdoodle8.mods.galacticraft.core.energy.item.ItemElectricBase;
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseElectricBlockWithInventory;
-import micdoodle8.mods.galacticraft.core.util.CompatibilityManager;
 import micdoodle8.mods.galacticraft.core.fluid.FluidNetwork;
 import micdoodle8.mods.galacticraft.core.fluid.NetworkHelper;
 import micdoodle8.mods.galacticraft.core.tile.TileEntityOxygenStorageModule;
@@ -76,9 +72,8 @@ public class TileEntityMethaneSynthesizer extends TileBaseElectricBlockWithInven
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
             return true;
 
-        if (EnergyUtil.checkMekGasHandler(capability))
-        	return true;
-       
+
+
         return super.hasCapability(capability, facing);  
     }
 
@@ -88,11 +83,6 @@ public class TileEntityMethaneSynthesizer extends TileBaseElectricBlockWithInven
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
         {
             return (T) new FluidHandlerWrapper(this, facing);
-        }
-
-        if (EnergyUtil.checkMekGasHandler(capability))
-        {
-            return (T) this;
         }
 
         return super.getCapability(capability, facing);
@@ -117,7 +107,7 @@ public class TileEntityMethaneSynthesizer extends TileBaseElectricBlockWithInven
             }
 
             //First, see if any gas needs to be put into the hydogen storage
-            //TODO - in 1.7.10 implement support for Mekanism internal hydrogen tanks
+
             //TODO add support for hydrogen atmospheres
 
             //Now check the CO2 storage
@@ -551,59 +541,6 @@ public class TileEntityMethaneSynthesizer extends TileBaseElectricBlockWithInven
     public int getBlockMetadata()
     {
         return this.getBlockType().getMetaFromState(this.world.getBlockState(getPos()));
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public int receiveGas(EnumFacing side, GasStack stack, boolean doTransfer)
-    {
-        if (!stack.getGas().getName().equals("hydrogen"))
-        {
-            return 0;
-        }
-        int used = 0;
-        //System.out.println("Giving gas amount "+stack.amount);
-        if (this.gasTank.getFluidAmount() < this.gasTank.getCapacity())
-        {
-            used = this.gasTank.fill(FluidRegistry.getFluidStack("hydrogen", stack.amount), doTransfer);
-        }
-        return used;
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public int receiveGas(EnumFacing side, GasStack stack)
-    {
-        return this.receiveGas(side, stack, true);
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public GasStack drawGas(EnumFacing side, int amount, boolean doTransfer)
-    {
-        return null;
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public GasStack drawGas(EnumFacing side, int amount)
-    {
-        return null;
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public boolean canReceiveGas(EnumFacing side, Gas type)
-    {
-        //System.out.println("Testing receipt of gas "+type.getName());
-        return type.getName().equals("hydrogen") && side.equals(this.getHydrogenInputDirection());
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public boolean canDrawGas(EnumFacing side, Gas type)
-    {
-        return false;
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.ITubeConnection", modID = CompatibilityManager.modidMekanism)
-    public boolean canTubeConnect(EnumFacing side)
-    {
-        return side.equals(this.getHydrogenInputDirection());
     }
 
     @Override

@@ -1,7 +1,5 @@
 package micdoodle8.mods.galacticraft.planets.mars.tile;
 
-import mekanism.api.gas.Gas;
-import mekanism.api.gas.GasStack;
 import micdoodle8.mods.galacticraft.api.tile.IDisableableMachine;
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType;
 import micdoodle8.mods.galacticraft.api.transmission.tile.IOxygenReceiver;
@@ -9,13 +7,11 @@ import micdoodle8.mods.galacticraft.api.transmission.tile.IOxygenStorage;
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3;
 import micdoodle8.mods.galacticraft.core.GCFluids;
 import micdoodle8.mods.galacticraft.core.energy.EnergyConfigHandler;
-import micdoodle8.mods.galacticraft.core.energy.EnergyUtil;
 import micdoodle8.mods.galacticraft.core.energy.item.ItemElectricBase;
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseElectricBlockWithInventory;
 import micdoodle8.mods.galacticraft.core.fluid.FluidNetwork;
 import micdoodle8.mods.galacticraft.core.fluid.NetworkHelper;
 import micdoodle8.mods.galacticraft.core.tile.TileEntityOxygenStorageModule;
-import micdoodle8.mods.galacticraft.core.util.CompatibilityManager;
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore;
 import micdoodle8.mods.galacticraft.core.util.FluidUtil;
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil;
@@ -68,9 +64,8 @@ public class TileEntityElectrolyzer extends TileBaseElectricBlockWithInventory i
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
             return true;
 
-        if (EnergyUtil.checkMekGasHandler(capability))
-        	return true;
-       
+
+
         return super.hasCapability(capability, facing);  
     }
 
@@ -80,11 +75,6 @@ public class TileEntityElectrolyzer extends TileBaseElectricBlockWithInventory i
         if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
         {
             return (T) new FluidHandlerWrapper(this, facing);
-        }
-
-        if (EnergyUtil.checkMekGasHandler(capability))
-        {
-            return (T) this;
         }
 
         return super.getCapability(capability, facing);
@@ -454,76 +444,6 @@ public class TileEntityElectrolyzer extends TileBaseElectricBlockWithInventory i
         return getBlockType().getMetaFromState(this.world.getBlockState(getPos()));
     }
 
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public int receiveGas(EnumFacing side, GasStack stack, boolean doTransfer)
-    {
-        return 0;
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public int receiveGas(EnumFacing side, GasStack stack)
-    {
-        return 0;
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public GasStack drawGas(EnumFacing from, int amount, boolean doTransfer)
-    {
-        if (from == this.getHydrogenOutputDirection() && this.liquidTank2.getFluid() != null)
-        {
-            int amountH = Math.min(8, this.liquidTank2.getFluidAmount());
-            amountH = this.liquidTank2.drain(amountH, doTransfer).amount;
-            return new GasStack((Gas) EnergyConfigHandler.gasHydrogen, amountH);
-        }
-        else if (from == this.getOxygenOutputDirection() && this.liquidTank.getFluid() != null)
-        {
-            int amountO = Math.min(8, this.liquidTank.getFluidAmount());
-            amountO = this.liquidTank.drain(amountO, doTransfer).amount;
-            return new GasStack((Gas) EnergyConfigHandler.gasOxygen, amountO);
-        }
-        return null;
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public GasStack drawGas(EnumFacing from, int amount)
-    {
-        return this.drawGas(from, amount, true);
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public boolean canReceiveGas(EnumFacing side, Gas type)
-    {
-        return false;
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.IGasHandler", modID = CompatibilityManager.modidMekanism)
-    public boolean canDrawGas(EnumFacing from, Gas type)
-    {
-        if (from == this.getHydrogenOutputDirection())
-        {
-            return type.getName().equals("hydrogen");
-        }
-        else if (from == this.getOxygenOutputDirection())
-        {
-            return type.getName().equals("oxygen");
-        }
-        return false;
-    }
-
-    @Annotations.RuntimeInterface(clazz = "mekanism.api.gas.ITubeConnection", modID = CompatibilityManager.modidMekanism)
-    public boolean canTubeConnect(EnumFacing from)
-    {
-        if (from == this.getHydrogenOutputDirection())
-        {
-            return true;
-        }
-        else if (from == this.getOxygenOutputDirection())
-        {
-            return true;
-        }
-        return false;
-    }
-
     @Override
     public void setOxygenStored(int amount)
     {
@@ -590,7 +510,7 @@ public class TileEntityElectrolyzer extends TileBaseElectricBlockWithInventory i
                     return true;
                 }
             }
-//            else if (EnergyConfigHandler.isMekanismLoaded())
+
 //            {
 //                //TODO Oxygen item handling - internal tank (IGasItem)
 //                //int acceptedOxygen = GasTransmission.addGas(itemStack, type, amount);
@@ -645,7 +565,7 @@ public class TileEntityElectrolyzer extends TileBaseElectricBlockWithInventory i
                     return true;
                 }
             }
-//            else if (EnergyConfigHandler.isMekanismLoaded())
+
 //            {
 //                //TODO Gas item handling - internal tank (IGasItem)
 //                //int acceptedHydrogen = GasTransmission.addGas(itemStack, type, amount);

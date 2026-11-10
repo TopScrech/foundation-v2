@@ -1,12 +1,10 @@
 package micdoodle8.mods.galacticraft.core.blocks;
 
 import micdoodle8.mods.galacticraft.core.GCItems;
-import micdoodle8.mods.galacticraft.core.util.CompatibilityManager;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -14,7 +12,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-import java.lang.reflect.Method;
 
 /**
  * An advanced block class that is to be extended for wrenching capabilities.
@@ -84,92 +81,17 @@ public abstract class BlockAdvanced extends Block
         return false;
     }
 
-    /**
-     * A function that denotes if an itemStack is a wrench that can be used.
-     * Override this for more wrench compatibility. Compatible with Buildcraft
-     * and IC2 wrench API via reflection.
-     *
-     * @return True if it is a wrench.
-     */
     public boolean isUsableWrench(EntityPlayer entityPlayer, ItemStack itemStack, BlockPos pos)
     {
-        if (entityPlayer != null && itemStack != null)
-        {
-            Item item = itemStack.getItem();
-            if (item == GCItems.wrench) return true;
-            
-            Class<? extends Item> wrenchClass = item.getClass();
-
-            /**
-             * Buildcraft
-             */
-            try
-            {
-                Method methodCanWrench = wrenchClass.getMethod("canWrench", EntityPlayer.class, BlockPos.class);
-                return (Boolean) methodCanWrench.invoke(item, entityPlayer, pos);
-            }
-            catch (NoClassDefFoundError e)
-            {
-            }
-            catch (Exception e)
-            {
-            }
-
-            if (CompatibilityManager.isIc2Loaded())
-            {
-            /**
-             * Industrialcraft
-             */
-                if (wrenchClass == CompatibilityManager.classIC2wrench || wrenchClass == CompatibilityManager.classIC2wrenchElectric )
-                {
-                    return itemStack.getItemDamage() < itemStack.getMaxDamage();
-                }
-            }
-        }
-
-        return false;
+        return entityPlayer != null && itemStack != null && itemStack.getItem() == GCItems.wrench;
     }
 
-    /**
-     * This function damages a wrench. Works with Buildcraft and Industrialcraft
-     * wrenches.
-     *
-     * @return True if damage was successfull.
-     */
     public boolean damageWrench(EntityPlayer entityPlayer, ItemStack itemStack, BlockPos pos)
     {
         if (this.isUsableWrench(entityPlayer, itemStack, pos))
         {
-            Class<? extends Item> wrenchClass = itemStack.getItem().getClass();
-
-            /**
-             * Buildcraft
-             */
-            try
-            {
-                Method methodWrenchUsed = wrenchClass.getMethod("wrenchUsed", EntityPlayer.class, BlockPos.class);
-                methodWrenchUsed.invoke(itemStack.getItem(), entityPlayer, pos);
-                return true;
-            }
-            catch (Exception e)
-            {
-            }
-
-            /**
-             * Industrialcraft
-             */
-            try
-            {
-                if (wrenchClass == CompatibilityManager.classIC2wrench || wrenchClass == CompatibilityManager.classIC2wrenchElectric )
-                {
-                    Method methodWrenchDamage = wrenchClass.getMethod("damage", ItemStack.class, Integer.TYPE, EntityPlayer.class);
-                    methodWrenchDamage.invoke(itemStack.getItem(), itemStack, 1, entityPlayer);
-                    return true;
-                }
-            }
-            catch (Exception e)
-            {
-            }
+            ((micdoodle8.mods.galacticraft.core.items.ItemUniversalWrench) GCItems.wrench).wrenchUsed(entityPlayer, pos);
+            return true;
         }
 
         return false;

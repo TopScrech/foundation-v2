@@ -21,7 +21,7 @@ import micdoodle8.mods.galacticraft.core.command.*;
 import micdoodle8.mods.galacticraft.core.dimension.*;
 import micdoodle8.mods.galacticraft.core.energy.EnergyConfigHandler;
 import micdoodle8.mods.galacticraft.core.energy.grid.ChunkPowerHandler;
-import micdoodle8.mods.galacticraft.core.energy.tile.TileCableIC2Sealed;
+
 import micdoodle8.mods.galacticraft.core.entities.*;
 import micdoodle8.mods.galacticraft.core.entities.player.GCCapabilities;
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerBaseMP;
@@ -240,7 +240,6 @@ public class GalacticraftCore
         SchematicRegistry.registerSchematicRecipe(new SchematicMoonBuggy());
         SchematicRegistry.registerSchematicRecipe(new SchematicAdd());
         ChunkPowerHandler.initiate();
-        EnergyConfigHandler.initGas();
         LootHandlerGC.registerAll();
 
         this.registerCreatures();
@@ -295,7 +294,6 @@ public class GalacticraftCore
 
         GCFluids.registerLegacyFluids();
         GCFluids.registerDispenserBehaviours();
-        if (CompatibilityManager.isBCraftEnergyLoaded()) GCFluids.registerBCFuel();
 
         GalacticraftRegistry.registerGear(Constants.GEAR_ID_OXYGEN_MASK, EnumExtendedInventorySlot.MASK, GCItems.oxMask);
         GalacticraftRegistry.registerGear(Constants.GEAR_ID_OXYGEN_GEAR, EnumExtendedInventorySlot.GEAR, GCItems.oxygenGear);
@@ -635,10 +633,7 @@ public class GalacticraftCore
         GameRegistry.registerTileEntity(TileEntityPlatform.class, "GC Platform");
         GameRegistry.registerTileEntity(TileEntityEmergencyBox.class, "GC Emergency Post");
         GameRegistry.registerTileEntity(TileEntityNull.class, "GC Null Tile");
-        if (CompatibilityManager.isIc2Loaded())
-        {
-            GameRegistry.registerTileEntity(TileCableIC2Sealed.class, "GC Sealed IC2 Cable");
-        }
+
     }
 
     private void registerCreatures()
