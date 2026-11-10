@@ -1,0 +1,8 @@
+[submodule "galacticraft"]
+	path = galacticraft
+	url = https://github.com/TopScrech/Galacticraft.git
+	branch = foundation-v2
+[submodule "galaxyspace"]
+	path = galaxyspace
+	url = https://github.com/TopScrech/GalaxySpace.git
+	branch = foundation-v2
