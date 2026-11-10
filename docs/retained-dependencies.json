@@ -1,0 +1,17 @@
+[
+  {
+    "file": "libs/appliedenergistics2-rv6-stable-6.jar",
+    "sha256": "48808b79fd66015d796784e70f357a4ad9c684d4b7882f8b1229e174083455e5",
+    "origin": "Dependency retained from the original Galacticraft Gradle build"
+  },
+  {
+    "file": "libs/ActuallyAdditions-1.12.2-r144.jar",
+    "sha256": "bb41ba617fbd40552949b1a85375888e0bdb8f9c0362d61a4c3911baeab93fb2",
+    "origin": "Dependency retained from the original Galacticraft Gradle build"
+  },
+  {
+    "file": "libs/PlayerAPI-1.12.1-1.0.jar",
+    "sha256": "d2c0d8edd78d2e1e0ae4174c3b8762313defa704e7773e629669d2d5b2082d29",
+    "origin": "Dependency retained from the original Galacticraft Gradle build"
+  }
+]

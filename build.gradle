@@ -1,0 +1,131 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url = 'https://plugins.gradle.org/m2' }
+        maven { url = 'https://maven.minecraftforge.net/' }
+        maven { url = 'https://repo.spongepowered.org/maven' }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:4.0.23'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-kapt'
+
+def foundationCacheRoot = System.getenv('FOUNDATION_CACHE_ROOT') ?: new File(System.getProperty('user.home'), '.cache/foundation-v2').absolutePath
+buildDir = new File(foundationCacheRoot, 'build')
+group = 'foundation'
+version = '2.0.0'
+archivesBaseName = 'Foundation'
+sourceCompatibility = targetCompatibility = 1.8
+compileKotlin.kotlinOptions.jvmTarget = '1.8'
+compileKotlin.kotlinOptions.freeCompilerArgs += ['-Xjvm-default=all-compatibility']
+compileTestKotlin.kotlinOptions.jvmTarget = '1.8'
+tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.spongepowered.org/maven' }
+    maven { url = 'https://maven.covers1624.net/' }
+    maven { url = 'https://minecraft.curseforge.com/api/maven/' }
+    flatDir { dirs 'libs' }
+}
+
+minecraft {
+    mappings channel: 'stable', version: '39-1.12'
+    accessTransformer = file('src/main/resources/META-INF/foundation_at.cfg')
+    runs {
+        client {
+            workingDirectory new File(buildDir, 'run/client')
+            property 'fml.coreMods.load', 'foundation.FoundationLoadingPlugin'
+        }
+        server {
+            workingDirectory new File(buildDir, 'run/server')
+            property 'fml.coreMods.load', 'foundation.FoundationLoadingPlugin'
+        }
+    }
+}
+
+configurations { embeddedRuntime }
+def micdoodleDependency = new File(buildDir, 'dependencies/MicdoodleCore-dev.jar')
+// The upstream archive is used only for the MicdoodleCore classes omitted from its source checkout
+tasks.register('prepareMicdoodleCore', Jar) {
+    archiveFileName = micdoodleDependency.name
+    destinationDirectory = micdoodleDependency.parentFile
+    from(zipTree(file('libs/Galacticraft-1.12.2-4.0.2.283.jar')).matching {
+        include 'micdoodle8/mods/miccore/**'
+    })
+}
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24'
+    embeddedRuntime 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24'
+    implementation 'org.spongepowered:mixin:0.8.5'
+    embeddedRuntime('org.spongepowered:mixin:0.8.5') { transitive = false }
+    kapt 'org.spongepowered:mixin:0.8.5:processor'
+    compileOnly files(micdoodleDependency)
+    compileOnly files('libs/CraftTweaker2-1.12-4.1.20.696.jar')
+    compileOnly files('libs/PlanetProgression-1.12.2-0.4.8-api.jar')
+    compileOnly files('libs/RedstoneFlux-1.12-2.1.0.6-universal.jar')
+    compileOnly files('libs/jei_1.12.2-4.13.1.220.jar')
+    compileOnly fg.deobf('libs:CodeChickenLib-1.12.2:3.2.3.358:universal')
+    compileOnly files('libs/appliedenergistics2-rv6-stable-6.jar')
+    compileOnly files('libs/ActuallyAdditions-1.12.2-r144.jar')
+    compileOnly files('libs/PlayerAPI-1.12.1-1.0.jar')
+}
+
+def mixinResources = new File(buildDir, 'generated/resources/mixin')
+kapt {
+    includeCompileClasspath = false
+    arguments {
+        arg 'mappingTypes', 'tsrg'
+        arg 'defaultObfuscationEnv', 'searge'
+        arg 'reobfTsrgFile', file('build/createMcpToSrg/output.tsrg').absolutePath
+        arg 'outRefMapFile', new File(mixinResources, 'mixins.galaxyspace.refmap.json').absolutePath
+        arg 'outTsrgFile', new File(buildDir, 'tmp/kapt3/mixin-mappings.tsrg').absolutePath
+    }
+}
+tasks.matching { it.name in ['kaptGenerateStubsKotlin', 'kaptKotlin', 'compileKotlin', 'compileJava'] }.all {
+    dependsOn 'prepareMicdoodleCore'
+}
+tasks.matching { it.name == 'kaptKotlin' }.all {
+    dependsOn 'createMcpToSrg'
+    doFirst { mixinResources.mkdirs() }
+}
+sourceSets.main.resources.srcDir mixinResources
+processResources.dependsOn 'kaptKotlin'
+tasks.matching { it.name == 'reobfJar' }.all {
+    dependsOn 'kaptKotlin'
+    extraMapping new File(buildDir, 'tmp/kapt3/mixin-mappings.tsrg')
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from 'LICENSE.txt'
+    from { configurations.embeddedRuntime.collect { zipTree(it) } }
+    from { zipTree(micdoodleDependency) }
+    exclude 'META-INF/*.SF', 'META-INF/*.RSA', 'META-INF/*.DSA', 'module-info.class', 'META-INF/versions/**'
+    // Mixin's ModLauncher 9 bindings target Java 16 and are not used by Minecraft 1.12 LaunchWrapper
+    exclude 'org/spongepowered/asm/launch/MixinLaunchPlugin.class',
+            'org/spongepowered/asm/launch/MixinTransformationService.class',
+            'org/spongepowered/asm/launch/platform/container/ContainerHandleModLauncherEx*.class',
+            'META-INF/services/cpw.mods.modlauncher.*'
+    manifest.attributes(
+        'Implementation-Title': 'Foundation v2',
+        'Implementation-Version': project.version,
+        'FMLCorePlugin': 'foundation.FoundationLoadingPlugin',
+        'FMLCorePluginContainsFMLMod': 'true',
+        'ForceLoadAsMod': 'true',
+        'MixinConfigs': 'mixins.asmodeuscore.json,mixins.galaxyspace.json',
+        'FMLAT': 'foundation_at.cfg'
+    )
+    finalizedBy 'reobfJar'
+}
+
+tasks.register('verifyRelease', Exec) {
+    dependsOn 'reobfJar'
+    commandLine 'python3', file('tools/verify_release.py').absolutePath, tasks.jar.archiveFile.get().asFile.absolutePath
+}
+build.dependsOn 'verifyRelease'

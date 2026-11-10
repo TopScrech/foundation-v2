@@ -1,0 +1,12 @@
+package micdoodle8.mods.galacticraft.core.items
+
+import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.item.ItemStack
+import net.minecraft.world.World
+
+interface IClickableItem {
+    /**
+     * Use to replicate ItemStack version of onItemRightClick as in MC1.10
+     */
+    fun onItemRightClick(itemStack: ItemStack?, worldIn: World?, player: EntityPlayer?): ItemStack?
+}

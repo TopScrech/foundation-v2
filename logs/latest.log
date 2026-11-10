@@ -1,0 +1,4 @@
+[12:22:13] [main/INFO] [mixin]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=file:/Users/topscrech/.cache/foundation-v2/build/libs/Foundation-2.0.0.jar Service=LaunchWrapper Env=UNKNOWN
+[12:22:13] [main/INFO] [mixin]: Compatibility level set to JAVA_8
+[12:22:13] [main/ERROR] [org.spongepowered.asm.service.mojang.MixinServiceLaunchWrapper]: MixinBootstrap.doInit() called during a tweak constructor!
+[12:22:13] [main/INFO] [mixin]: Initialised Mixin FML Remapper Adapter with net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper@20bd8be5

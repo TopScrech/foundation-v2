@@ -1,0 +1,58 @@
+[
+  {
+    "modid": "galaxyspace",
+    "name": "Foundation",
+    "description": "Unified Galacticraft, GalaxySpace, and Asmodeus Core for Minecraft 1.12.2",
+    "version": "2.0.0",
+    "mcversion": "1.12.2",
+    "authorList": [
+      "ViTold"
+    ],
+    "dependencies": [
+      "galacticraftcore",
+      "galacticraftplanets"
+    ]
+  },
+  {
+    "modid": "asmodeuscore",
+    "name": "AsmodeusCore",
+    "description": "Embedded compatibility runtime used by GalaxySpace",
+    "version": "1.0.4",
+    "mcversion": "1.12.2",
+    "url": "",
+    "updateUrl": "",
+    "authorList": [
+      "ViTold"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  },
+  {
+    "modid": "galacticraftcore",
+    "name": "Galacticraft Core",
+    "description": "Integrated into Foundation v2",
+    "version": "4.0.2.0",
+    "mcversion": "1.12.2",
+    "authorList": [
+      "TeamGalacticraft"
+    ],
+    "dependencies": [
+      "micdoodlecore"
+    ]
+  },
+  {
+    "modid": "galacticraftplanets",
+    "name": "Galacticraft Planets",
+    "description": "Integrated into Foundation v2",
+    "version": "4.0.2.0",
+    "mcversion": "1.12.2",
+    "authorList": [
+      "TeamGalacticraft"
+    ],
+    "dependencies": [
+      "galacticraftcore"
+    ]
+  }
+]
