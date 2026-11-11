@@ -8,8 +8,8 @@ import asmodeuscore.api.dimension.IAdvancedSpace.StarClass
 import asmodeuscore.api.dimension.IAdvancedSpace.TempBody
 import asmodeuscore.api.dimension.IAdvancedSpace
 import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.math.Vec3i
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.core.Vec3i
 
 
 interface IAdvancedSpace : IGalacticraftWorldProvider {

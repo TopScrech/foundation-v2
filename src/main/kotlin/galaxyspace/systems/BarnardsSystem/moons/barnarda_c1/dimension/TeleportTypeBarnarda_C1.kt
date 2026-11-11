@@ -6,10 +6,10 @@ import micdoodle8.mods.galacticraft.core.entities.EntityLander
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
 import micdoodle8.mods.galacticraft.core.util.CompatibilityManager
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.world.World
-import net.minecraft.world.WorldServer
+import net.minecraft.world.entity.Entity
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.Level as World
+import net.minecraft.server.level.ServerLevel as WorldServer
 import java.util.Random
 
 open class TeleportTypeBarnarda_C1 : ITeleportType {
@@ -46,7 +46,7 @@ open class TeleportTypeBarnarda_C1 : ITeleportType {
     }
 
     override fun getEntitySpawnLocation(world: WorldServer?, entity: Entity?): Vector3 {
-        return Vector3((entity)!!.posX, if (ConfigManagerCore.disableLander) 250.0 else 900.0, (entity)!!.posZ)
+        return Vector3((entity)!!.x, if (ConfigManagerCore.disableLander) 250.0 else 900.0, (entity)!!.z)
     }
 
     override fun getParaChestSpawnLocation(world: WorldServer?, player: EntityPlayerMP?, rand: Random?): Vector3? {
@@ -61,10 +61,10 @@ open class TeleportTypeBarnarda_C1 : ITeleportType {
 
             val lander: EntityLander = EntityLander(player)
 
-            if (!(newWorld)!!.isRemote) {
+            if (!(newWorld)!!.isClientSide) {
                 CompatibilityManager.forceLoadChunks(newWorld as WorldServer)
                 lander.forceSpawn = true
-                newWorld.spawnEntity(lander)
+                newWorld.addFreshEntity(lander)
                 CompatibilityManager.forceLoadChunksEnd(newWorld)
             }
 

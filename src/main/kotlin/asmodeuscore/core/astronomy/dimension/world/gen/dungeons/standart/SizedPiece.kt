@@ -1,7 +1,7 @@
 package asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart
 
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraft.world.gen.structure.template.TemplateManager
 
 abstract class SizedPiece : DirectionalPiece {
@@ -31,17 +31,17 @@ abstract class SizedPiece : DirectionalPiece {
     override fun writeStructureToNBT(tagCompound: NBTTagCompound) {
         super.writeStructureToNBT(tagCompound)
 
-        tagCompound.setInteger("sizeX", this.sizeX)
-        tagCompound.setInteger("sizeY", this.sizeY)
-        tagCompound.setInteger("sizeZ", this.sizeZ)
+        tagCompound.putInt("sizeX", this.sizeX)
+        tagCompound.putInt("sizeY", this.sizeY)
+        tagCompound.putInt("sizeZ", this.sizeZ)
     }
 
     override fun readStructureFromNBT(nbt: NBTTagCompound, manager: TemplateManager) {
         super.readStructureFromNBT(nbt, manager)
 
-        this.sizeX = nbt.getInteger("sizeX")
-        this.sizeY = nbt.getInteger("sizeY")
-        this.sizeZ = nbt.getInteger("sizeZ")
+        this.sizeX = nbt.getIntOr("sizeX", 0)
+        this.sizeY = nbt.getIntOr("sizeY", 0)
+        this.sizeZ = nbt.getIntOr("sizeZ", 0)
     }
 
     fun getSizeX(): Int {

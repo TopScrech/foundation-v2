@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.mercury.dimension
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import asmodeuscore.core.astronomy.dimension.world.gen.ChunkProviderSpaceLakes
 import galaxyspace.core.prefab.world.gen.MapGenCavesGS
@@ -9,11 +11,11 @@ import asmodeuscore.core.astronomy.dimension.world.gen.ChunkProviderSpaceLakes.G
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeAdaptive
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 
 
@@ -25,7 +27,7 @@ open class ChunkProviderMercury constructor(par1World: World?, seed: Long, mapFe
         GSBlocks.MERCURY_BLOCKS.getStateFromMeta(0),
         GSBlocks.MERCURY_BLOCKS.getStateFromMeta(1),
         GSBlocks.MERCURY_BLOCKS.getStateFromMeta(2),
-        Blocks.LAVA.getDefaultState(),
+        Blocks.LAVA.defaultBlockState(),
         20
     )
 

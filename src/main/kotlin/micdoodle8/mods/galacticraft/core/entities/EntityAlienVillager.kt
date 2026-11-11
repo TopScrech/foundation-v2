@@ -1,5 +1,16 @@
 package micdoodle8.mods.galacticraft.core.entities
 
+import net.minecraft.network.chat.Component
+
+import foundation.item.legacyItemValue
+
+import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
+
+import foundation.item.FoundationItemVariants
+
+import foundation.persistence.containsTag
+import foundation.persistence.listOfType
+
 import java.util.Random
 
 import micdoodle8.mods.galacticraft.api.entity.IEntityBreathable
@@ -19,30 +30,30 @@ import net.minecraft.entity.item.EntityXPOrb
 import net.minecraft.entity.monster.EntityWitch
 import net.minecraft.entity.monster.EntityZombie
 import net.minecraft.entity.monster.IMob
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.init.MobEffects
-import net.minecraft.init.SoundEvents
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.sounds.SoundEvents
 import net.minecraft.inventory.InventoryBasic
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
 import net.minecraft.pathfinding.PathNavigateGround
-import net.minecraft.potion.PotionEffect
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
 import net.minecraft.stats.StatList
 import net.minecraft.util.*
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
+import net.minecraft.core.BlockPos
+
 import net.minecraft.village.MerchantRecipe
 import net.minecraft.village.MerchantRecipeList
 import net.minecraft.village.Village
 import net.minecraft.world.DifficultyInstance
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.*
 
 open class EntityAlienVillager constructor(worldIn: World) : EntityAgeable(worldIn), IMerchant, INpc,
@@ -127,7 +138,7 @@ open class EntityAlienVillager constructor(worldIn: World) : EntityAgeable(world
                     }
                 }
 
-                this.addPotionEffect(PotionEffect(MobEffects.REGENERATION, 200, 0))
+                this.addEffect(PotionEffect(MobEffects.REGENERATION, 200, 0))
             }
         }
 
@@ -135,10 +146,10 @@ open class EntityAlienVillager constructor(worldIn: World) : EntityAgeable(world
     }
 
     override fun processInteract(player: EntityPlayer, hand: EnumHand): Boolean {
-        val itemstack: ItemStack = player.inventory.getCurrentItem()
+        val itemstack: ItemStack = player.inventory.getSelectedItem()
         val flag: Boolean = itemstack != null && itemstack.getItem() === Items.SPAWN_EGG
 
-        if (!flag && this.isEntityAlive() && !this.isTrading() && !this.isChild() && !player.isSneaking()) {
+        if (!flag && this.isEntityAlive() && !this.isTrading() && !this.isChild() && !player.isShiftKeyDown()) {
             val gearData: PlayerGearData? = (GalacticraftCore.proxy)!!.getGearData(player)
 
             if (!this.world.isRemote && (this.buyingList == null || this.buyingList!!.size > 0)) {
@@ -150,7 +161,7 @@ open class EntityAlienVillager constructor(worldIn: World) : EntityAgeable(world
                         val playerMP: EntityPlayerMP = player
                         val stats: GCPlayerStats = (GCPlayerStats.get(playerMP))!!
                         if (stats.getChatCooldown() == 0) {
-                            player.sendMessage(TextComponentString(GCCoreUtil.translate("gui.village.warning.no_freq_mod")))
+                            player.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.village.warning.no_freq_mod")))
                             stats.setChatCooldown(20)
                         }
                     }
@@ -166,10 +177,10 @@ open class EntityAlienVillager constructor(worldIn: World) : EntityAgeable(world
 
     override fun writeEntityToNBT(tagCompound: NBTTagCompound) {
         super.writeEntityToNBT(tagCompound)
-        tagCompound.setInteger("Riches", this.wealth)
+        tagCompound.putInt("Riches", this.wealth)
 
         if (this.buyingList != null) {
-            tagCompound.setTag("Offers", this.buyingList!!.getRecipiesAsTags())
+            tagCompound.put("Offers", this.buyingList!!.getRecipiesAsTags())
         }
 
         val nbttaglist: NBTTagList = NBTTagList()
@@ -178,26 +189,26 @@ open class EntityAlienVillager constructor(worldIn: World) : EntityAgeable(world
             val itemstack: ItemStack = this.villagerInventory.getStackInSlot(i)
 
             if (!itemstack.isEmpty()) {
-                nbttaglist.appendTag(itemstack.writeToNBT(NBTTagCompound()))
+                nbttaglist.add(itemstack.writeToNBT(NBTTagCompound()))
             }
         }
 
-        tagCompound.setTag("Inventory", nbttaglist)
+        tagCompound.put("Inventory", nbttaglist)
     }
 
     override fun readEntityFromNBT(tagCompund: NBTTagCompound) {
         super.readEntityFromNBT(tagCompund)
-        this.wealth = tagCompund.getInteger("Riches")
+        this.wealth = tagCompund.getIntOr("Riches", 0)
 
-        if (tagCompund.hasKey("Offers", 10)) {
-            val nbttagcompound: NBTTagCompound = tagCompund.getCompoundTag("Offers")
+        if (tagCompund.containsTag("Offers", 10)) {
+            val nbttagcompound: NBTTagCompound = tagCompund.getCompoundOrEmpty("Offers")
             this.buyingList = MerchantRecipeList(nbttagcompound)
         }
 
-        val nbttaglist: NBTTagList = tagCompund.getTagList("Inventory", 10)
+        val nbttaglist: NBTTagList = tagCompund.listOfType("Inventory", 10)
 
-        for (i: Int in 0..<nbttaglist.tagCount()) {
-            val itemstack: ItemStack = ItemStack(nbttaglist.getCompoundTagAt(i))
+        for (i: Int in 0..<nbttaglist.size) {
+            val itemstack: ItemStack = ItemStack(nbttaglist.getCompoundOrEmpty(i))
 
             if (!itemstack.isEmpty()) {
                 this.villagerInventory.addItem(itemstack)
@@ -357,7 +368,7 @@ open class EntityAlienVillager constructor(worldIn: World) : EntityAgeable(world
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setRecipes(recipeList: MerchantRecipeList?) {
     }
 
@@ -371,7 +382,7 @@ open class EntityAlienVillager constructor(worldIn: World) : EntityAgeable(world
         return f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun handleStatusUpdate(id: Byte) {
         if (id.toInt() == 12) {
             this.spawnParticles(EnumParticleTypes.HEART)
@@ -384,7 +395,7 @@ open class EntityAlienVillager constructor(worldIn: World) : EntityAgeable(world
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private fun spawnParticles(particleType: EnumParticleTypes) {
         for (i: Int in 0..4) {
             val d0: Double = this.rand.nextGaussian() * 0.02
@@ -534,7 +545,7 @@ open class EntityAlienVillager constructor(worldIn: World) : EntityAgeable(world
             val tradeStack: ItemStack = this.sellItem.copy()
             tradeStack.setCount(i)
 
-            recipeList!!.add(MerchantRecipe(tradeStack, ItemStack(GCItems.itemBasicMoon, 1, 2)))
+            recipeList!!.add(MerchantRecipe(tradeStack, FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 2)))
         }
     }
 
@@ -575,7 +586,7 @@ open class EntityAlienVillager constructor(worldIn: World) : EntityAgeable(world
             recipeList!!.add(
                 MerchantRecipe(
                     this.field_179411_a.copy(),
-                    ItemStack(GCItems.itemBasicMoon, i, 2),
+                    FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), i, 2),
                     this.field_179410_c.copy()
                 )
             )
@@ -597,11 +608,11 @@ open class EntityAlienVillager constructor(worldIn: World) : EntityAgeable(world
             val itemstack1: ItemStack
 
             if (i < 0) {
-                itemstack = ItemStack(GCItems.itemBasicMoon, 1, 2)
-                itemstack1 = ItemStack(this.itemToBuy.getItem(), -i, this.itemToBuy.getMetadata())
+                itemstack = FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 2)
+                itemstack1 = ItemStack(this.itemToBuy.getItem(), -i, this.itemToBuy.legacyItemValue)
             } else {
-                itemstack = ItemStack(GCItems.itemBasicMoon, i, 2)
-                itemstack1 = ItemStack(this.itemToBuy.getItem(), 1, this.itemToBuy.getMetadata())
+                itemstack = FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), i, 2)
+                itemstack1 = ItemStack(this.itemToBuy.getItem(), 1, this.itemToBuy.legacyItemValue)
             }
 
             recipeList!!.add(MerchantRecipe(itemstack, itemstack1))
@@ -620,36 +631,36 @@ open class EntityAlienVillager constructor(worldIn: World) : EntityAgeable(world
     companion object {
         private val DEFAULT_TRADE_LIST_MAP: Array<ITradeList?> = ((arrayOf<ITradeList>(
             ListItemForEmeralds(ItemStack(GCItems.oxMask, 1, 0), PriceInfo(1, 2)),
-            ListItemForEmeralds(ItemStack(GCItems.oxTankLight, 1, 235), PriceInfo(3, 4)),
+            ListItemForEmeralds(ItemOxygenTank.stack(requireNotNull(GCItems.oxTankLight), 1, 235), PriceInfo(3, 4)),
             ListItemForEmeralds(ItemStack(GCItems.oxygenGear, 1, 0), PriceInfo(3, 4)),
             ListItemForEmeralds(ItemStack(GCItems.fuelCanister, 1, 317), PriceInfo(3, 4)),
-            ListItemForEmeralds(ItemStack(GCItems.parachute, 1, 0), PriceInfo(1, 2)),
+            ListItemForEmeralds(FoundationItemVariants.stack(requireNotNull(GCItems.parachute), 1, 0), PriceInfo(1, 2)),
             ListItemForEmeralds(ItemStack(GCItems.battery, 1, 58), PriceInfo(2, 4)),
             ItemAndEmeraldToItem(
                 ItemStack(GCItems.oilCanister, 1, ItemCanisterGeneric.EMPTY),
                 PriceInfo(1, 1),
-                ItemStack(GCItems.foodItem, 1, 1)
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.foodItem), 1, 1)
             ),  //carrots = also yields a tin!
-            ListItemForEmeralds(ItemStack(GCItems.basicItem, 1, ItemBasic.WAFER_BASIC), PriceInfo(3, 4)),
+            ListItemForEmeralds(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, ItemBasic.WAFER_BASIC), PriceInfo(3, 4)),
             ItemAndEmeraldToItem(
-                ItemStack(GCItems.schematic, 1, 0),
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 0),
                 PriceInfo(3, 5),
-                ItemStack(GCItems.schematic, 1, 1)
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 1)
             ),  //Exchange buggy and rocket schematics
             ItemAndEmeraldToItem(
-                ItemStack(GCItems.schematic, 1, 1),
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 1),
                 PriceInfo(3, 5),
-                ItemStack(GCItems.schematic, 1, 0)
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 0)
             ),  //Exchange buggy and rocket schematics
             ItemAndEmeraldToItem(
-                ItemStack(GCItems.basicItem, 2, 3),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 2, 3),
                 PriceInfo(1, 1),
-                ItemStack(GCItems.basicItem, 1, 6)
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 6)
             ),  //Compressed Tin - needed to craft a Fuel Loader
             ItemAndEmeraldToItem(
-                ItemStack(GCItems.basicItem, 2, 4),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 2, 4),
                 PriceInfo(1, 1),
-                ItemStack(GCItems.basicItem, 1, 7)
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 7)
             ),  //Compressed Copper - needed to craft a Fuel Loader
             EmeraldForItems(
                 ItemStack(Blocks.SAPLING, 1, 3),

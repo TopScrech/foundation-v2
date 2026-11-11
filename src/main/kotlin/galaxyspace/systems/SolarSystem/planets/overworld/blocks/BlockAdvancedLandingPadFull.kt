@@ -1,34 +1,36 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import galaxyspace.core.GSBlocks
 import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityAdvLandingPad
 import galaxyspace.systems.SolarSystem.planets.overworld.blocks.BlockAdvancedLandingPadFull
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
 import micdoodle8.mods.galacticraft.core.blocks.BlockAdvancedTile
 import micdoodle8.mods.galacticraft.core.tile.IMultiBlock
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
-open class BlockAdvancedLandingPadFull constructor() : BlockAdvancedTile(Material.ROCK), IPartialSealableBlock {
+open class BlockAdvancedLandingPadFull constructor() : BlockAdvancedTile(Material.ROCK), IPartialSealableBlock, LegacyBlockMetadata {
     private val AABB = AxisAlignedBB(0.0, 0.0, 0.0, 1.0, 0.1875, 1.0)
 
     init {
@@ -47,7 +49,7 @@ open class BlockAdvancedLandingPadFull constructor() : BlockAdvancedTile(Materia
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val var9: TileEntity? = worldIn.getTileEntity(pos)
+        val var9: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (var9 is IMultiBlock) {
             (var9 as IMultiBlock).onDestroy(var9)
@@ -88,7 +90,7 @@ open class BlockAdvancedLandingPadFull constructor() : BlockAdvancedTile(Materia
     }
 
     override fun neighborChanged(state: IBlockState, worldIn: World, pos: BlockPos, blockIn: Block, fromPos: BlockPos) {
-        worldIn.notifyBlockUpdate(pos, state, state, 3)
+        worldIn.sendBlockUpdated(pos, state, state, 3)
     }
 
     override fun isOpaqueCube(state: IBlockState): Boolean {
@@ -108,7 +110,7 @@ open class BlockAdvancedLandingPadFull constructor() : BlockAdvancedTile(Materia
         return BlockFaceShape.UNDEFINED
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun shouldSideBeRendered(
         blockState: IBlockState,
         blockAccess: IBlockAccess,
@@ -134,7 +136,7 @@ open class BlockAdvancedLandingPadFull constructor() : BlockAdvancedTile(Materia
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(
+        return this.defaultBlockState().setValue(
             PAD_TYPE,
             (EnumLandingPadFullType.Companion.byMetadata(meta))!!
         )
@@ -156,7 +158,9 @@ open class BlockAdvancedLandingPadFull constructor() : BlockAdvancedTile(Materia
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 

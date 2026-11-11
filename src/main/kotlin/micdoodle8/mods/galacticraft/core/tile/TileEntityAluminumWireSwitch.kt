@@ -11,9 +11,9 @@ import micdoodle8.mods.galacticraft.core.energy.grid.EnergyNetwork
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseConductor
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseUniversalConductor
 import micdoodle8.mods.galacticraft.core.util.RedstoneUtil
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
 
 open class TileEntityAluminumWireSwitch @JvmOverloads constructor(@JvmField var tier: Int = 1) :
     TileBaseUniversalConductor() {
@@ -21,7 +21,7 @@ open class TileEntityAluminumWireSwitch @JvmOverloads constructor(@JvmField var 
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.tier = nbt.getInteger("tier")
+        this.tier = nbt.getIntOr("tier", 0)
         //For legacy worlds (e.g. converted from 1.6.4)
         if (this.tier == 0) {
             this.tier = 1
@@ -31,7 +31,7 @@ open class TileEntityAluminumWireSwitch @JvmOverloads constructor(@JvmField var 
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setInteger("tier", this.tier)
+        nbt.putInt("tier", this.tier)
         return nbt
     }
 
@@ -63,7 +63,7 @@ open class TileEntityAluminumWireSwitch @JvmOverloads constructor(@JvmField var 
                 this.getNetwork()!!.refresh()
 
                 val thisVec: BlockVec3 = BlockVec3(this)
-                for (side: EnumFacing in EnumFacing.VALUES) {
+                for (side: EnumFacing in EnumFacing.values()) {
                     if (this.canConnect(side, NetworkType.POWER)) {
                         val tileEntity: TileEntity? = thisVec.getTileEntityOnSide(this.world, side)
 
@@ -117,7 +117,7 @@ open class TileEntityAluminumWireSwitch @JvmOverloads constructor(@JvmField var 
             if (!this.disableConnections) {
                 val thisVec: BlockVec3 = BlockVec3(this)
                 for (i: Int in 0..5) {
-                    val side: EnumFacing = EnumFacing.byIndex(i)
+                    val side: EnumFacing = EnumFacing.from3DDataValue(i)
                     if (this.canConnect(side, NetworkType.POWER)) {
                         val tileEntity: TileEntity? = thisVec.getTileEntityOnSide(this.world, side)
 

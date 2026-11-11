@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -79,7 +79,7 @@ open class SkyProviderOverworld : SkyProviderBase() {
     }
 
     override fun sunImage(): ResourceLocation {
-        return ResourceLocation("textures/environment/sun.png")
+        return ResourceLocation.parse("textures/environment/sun.png")
     }
 
     override fun modeLight(): ModeLight {
@@ -104,6 +104,6 @@ open class SkyProviderOverworld : SkyProviderBase() {
     }
 
     companion object {
-        private val moonTexture = ResourceLocation("textures/environment/moon_phases.png")
+        private val moonTexture = ResourceLocation.parse("textures/environment/moon_phases.png")
     }
 }

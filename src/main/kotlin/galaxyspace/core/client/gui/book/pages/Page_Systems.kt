@@ -24,8 +24,8 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraft.world.WorldProvider
 import org.lwjgl.opengl.GL11
 import java.util.*
@@ -38,7 +38,7 @@ open class Page_Systems constructor(private val system: SolarSystem) : Page_With
     }
 
     private var current_mode = Mode.LIST
-    private val mc: Minecraft = Minecraft.getMinecraft()
+    private val mc: Minecraft = Minecraft.getInstance()
     private var maxX = 0
     private var selected_body: CelestialBody? = null
     private var selected_moon: Moon? = null
@@ -782,7 +782,7 @@ open class Page_Systems constructor(private val system: SolarSystem) : Page_With
     }
 
     companion object {
-        private val starTexture = ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/book/star_bg.png")
+        private val starTexture = ResourceLocation.fromNamespaceAndPath(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/book/star_bg.png")
 
         private val planets: MutableList<CelestialBody> = LinkedList<CelestialBody>()
     }

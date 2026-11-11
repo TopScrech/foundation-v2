@@ -1,5 +1,6 @@
 package micdoodle8.mods.galacticraft.core.util
 
+import foundation.inventory.offhandItems
 import micdoodle8.mods.galacticraft.core.network.PacketSimple.EnumSimplePacket
 
 import java.io.IOException
@@ -17,31 +18,31 @@ import micdoodle8.mods.galacticraft.core.entities.EntityLanderBase
 import micdoodle8.mods.galacticraft.core.inventory.ContainerBuggy
 import micdoodle8.mods.galacticraft.core.inventory.ContainerParaChest
 import micdoodle8.mods.galacticraft.core.network.PacketSimple
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.resources.Language
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityList
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.server.MinecraftServer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.text.translation.I18n
 import net.minecraft.util.text.translation.LanguageMap
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.WorldServer
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.registry.EntityRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import net.minecraftforge.registries.GameData
 import org.apache.commons.io.Charsets
 import org.apache.commons.io.IOUtils
@@ -89,7 +90,7 @@ object GCCoreUtil {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimple(
                 PacketSimple.EnumSimplePacket.C_OPEN_PARACHEST_GUI,
-                getDimensionID(player.world),
+                getDimensionID(player.level()),
                 arrayOf<Any>(id, 0, 0)
             ), player
         )
@@ -106,7 +107,7 @@ object GCCoreUtil {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimple(
                 PacketSimple.EnumSimplePacket.C_OPEN_PARACHEST_GUI,
-                getDimensionID(player.world),
+                getDimensionID(player.level()),
                 arrayOf<Any>(windowId, 1, landerInv.getEntityId())
             ), player
         )
@@ -126,7 +127,7 @@ object GCCoreUtil {
         registerGalacticraftNonMobEntity(clazz, name, 80, 3, true)
         val nextEggID: Int = getNextValidID()
         if (nextEggID < 65536) {
-            val resourcelocation: ResourceLocation = ResourceLocation(Constants.MOD_ID_CORE, name)
+            val resourcelocation: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, name)
             //            name = Constants.MOD_ID_CORE + "." + name;
             EntityList.ENTITY_EGGS.put(resourcelocation, EntityList.EntityEggInfo(resourcelocation, back, fore))
         }
@@ -153,7 +154,7 @@ object GCCoreUtil {
         updateFreq: Int,
         sendVel: Boolean
     ) {
-        val registryName: ResourceLocation = ResourceLocation(Constants.MOD_ID_CORE, var1)
+        val registryName: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, var1)
         EntityRegistry.registerModEntity(
             registryName,
             var0,
@@ -234,7 +235,7 @@ object GCCoreUtil {
 
     @JvmStatic
     fun lowerCaseNoun(string: String): String? {
-        val l: Language = Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage()
+        val l: Language = Minecraft.getInstance().getLanguageManager().getCurrentLanguage()
         if (l.getLanguageCode() == "de_DE") {
             return string
         }
@@ -313,7 +314,7 @@ object GCCoreUtil {
 
     @JvmStatic
     fun getDimensionID(tileEntity: TileEntity): Int {
-        return tileEntity.getWorld().provider.getDimension()
+        return tileEntity.getLevel().provider.getDimension()
     }
 
     @JvmStatic
@@ -347,11 +348,11 @@ object GCCoreUtil {
         val y: Double = pos.getY() + 0.5
         val z: Double = pos.getZ() + 0.5
         val r2: Double = radius * radius
-        for (playerMP: EntityPlayer in world.playerEntities) {
+        for (playerMP: EntityPlayer in world.players()) {
             if (playerMP.dimension == dimID) {
-                val dx: Double = x - playerMP.posX
-                val dy: Double = y - playerMP.posY
-                val dz: Double = z - playerMP.posZ
+                val dx: Double = x - playerMP.x
+                val dy: Double = y - playerMP.y
+                val dz: Double = z - playerMP.z
 
                 if (dx * dx + dy * dy + dz * dz < r2) {
                     (GalacticraftCore.packetPipeline)!!.sendTo(packet, playerMP as EntityPlayerMP)
@@ -406,11 +407,11 @@ object GCCoreUtil {
 
     @JvmStatic
     fun getMatchingItemEitherHand(player: EntityPlayer, item: Item?): ItemStack? {
-        var stack: ItemStack = player.inventory.getStackInSlot(player.inventory.currentItem)
+        var stack: ItemStack = player.inventory.getItem(player.inventory.selectedSlot)
         if (stack != null && stack.getItem() === item) {
             return stack
         }
-        stack = player.inventory.offHandInventory.get(0)
+        stack = player.inventory.offhandItems.get(0)
         if (stack != null && stack.getItem() === item) {
             return stack
         }
@@ -479,20 +480,20 @@ object GCCoreUtil {
     fun spawnItem(world: World, pos: BlockPos, stack: ItemStack) {
         val `var`: Float = 0.7f
         while (!stack.isEmpty()) {
-            val dx: Double = world.rand.nextFloat() * `var` + (1.0f - `var`) * 0.5
-            val dy: Double = world.rand.nextFloat() * `var` + (1.0f - `var`) * 0.5
-            val dz: Double = world.rand.nextFloat() * `var` + (1.0f - `var`) * 0.5
+            val dx: Double = world.random.nextFloat() * `var` + (1.0f - `var`) * 0.5
+            val dy: Double = world.random.nextFloat() * `var` + (1.0f - `var`) * 0.5
+            val dz: Double = world.random.nextFloat() * `var` + (1.0f - `var`) * 0.5
             val entityitem: EntityItem = EntityItem(
                 world,
                 pos.getX() + dx,
                 pos.getY() + dy,
                 pos.getZ() + dz,
-                stack.splitStack(world.rand.nextInt(21) + 10)
+                stack.splitStack(world.random.nextInt(21) + 10)
             )
 
             entityitem.setPickupDelay(10)
 
-            world.spawnEntity(entityitem)
+            world.addFreshEntity(entityitem)
         }
     }
 

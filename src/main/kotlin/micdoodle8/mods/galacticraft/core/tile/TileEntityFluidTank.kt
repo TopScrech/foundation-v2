@@ -1,4 +1,8 @@
 package micdoodle8.mods.galacticraft.core.tile
+
+import foundation.block.getStateFromMeta
+
+import foundation.persistence.containsTag
 import net.minecraftforge.fml.client.FMLClientHandler
 
 
@@ -13,15 +17,15 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.wrappers.FluidHandlerWrapper
 import micdoodle8.mods.galacticraft.core.wrappers.IFluidHandlerWrapper
 import micdoodle8.mods.galacticraft.core.wrappers.ScheduledBlockChange
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockAir
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.NetworkManager
 import net.minecraft.network.play.server.SPacketUpdateTileEntity
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidEvent
@@ -32,8 +36,9 @@ import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
 import net.minecraftforge.fml.common.network.ByteBufUtils
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.RuntimeException
 
 open class TileEntityFluidTank : TileEntityAdvanced(), IFluidHandlerWrapper {
@@ -198,7 +203,7 @@ open class TileEntityFluidTank : TileEntityAdvanced(), IFluidHandlerWrapper {
     }
 
     open fun getNextTank(current: BlockPos): TileEntityFluidTank? {
-        val above: TileEntity? = this.world.getTileEntity(current.up())
+        val above: TileEntity? = this.world.getBlockEntity(current.above())
         if (above is TileEntityFluidTank) {
             return above
         }
@@ -206,7 +211,7 @@ open class TileEntityFluidTank : TileEntityAdvanced(), IFluidHandlerWrapper {
     }
 
     open fun getPreviousTank(current: BlockPos): TileEntityFluidTank? {
-        val below: TileEntity? = this.world.getTileEntity(current.down())
+        val below: TileEntity? = this.world.getBlockEntity(current.below())
         if (below is TileEntityFluidTank) {
             return below
         }
@@ -216,8 +221,8 @@ open class TileEntityFluidTank : TileEntityAdvanced(), IFluidHandlerWrapper {
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
 
-        if (nbt.hasKey("fuelTank")) {
-            this.fluidTank!!.readFromNBT(nbt.getCompoundTag("fuelTank"))
+        if (nbt.containsTag("fuelTank")) {
+            this.fluidTank!!.readFromNBT(nbt.getCompoundOrEmpty("fuelTank"))
         }
 
         this.updateClient = GCCoreUtil.getEffectiveSide() == Side.SERVER
@@ -227,7 +232,7 @@ open class TileEntityFluidTank : TileEntityAdvanced(), IFluidHandlerWrapper {
         super.writeToNBT(nbt)
 
         if (this.fluidTank!!.getFluid() != null) {
-            nbt.setTag("fuelTank", this.fluidTank!!.writeToNBT(NBTTagCompound()))
+            nbt.put("fuelTank", this.fluidTank!!.writeToNBT(NBTTagCompound()))
         }
         return nbt
     }
@@ -238,18 +243,18 @@ open class TileEntityFluidTank : TileEntityAdvanced(), IFluidHandlerWrapper {
 
     override fun getUpdatePacket(): SPacketUpdateTileEntity? {
         val nbt: NBTTagCompound = NBTTagCompound()
-        nbt.setString("net-type", "desc-packet")
+        nbt.putString("net-type", "desc-packet")
         val packet: PacketDynamic = PacketDynamic(this)
         val buf: ByteBuf = Unpooled.buffer()
         packet.encodeInto(buf)
         val bytes: ByteArray = ByteArray(buf.readableBytes())
         buf.readBytes(bytes)
-        nbt.setByteArray("net-data", bytes)
+        nbt.putByteArray("net-data", bytes)
         val tileUpdate: SPacketUpdateTileEntity = SPacketUpdateTileEntity(getPos(), 0, nbt)
         return tileUpdate
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun onDataPacket(networkManager: NetworkManager, pkt: SPacketUpdateTileEntity) {
         if (!this.world.isRemote) {
             return
@@ -259,7 +264,7 @@ open class TileEntityFluidTank : TileEntityAdvanced(), IFluidHandlerWrapper {
         }
         val nbt: NBTTagCompound = pkt.getNbtCompound()
         try {
-            if ("desc-packet" == nbt.getString("net-type")) {
+            if ("desc-packet" == nbt.getStringOr("net-type", "")) {
                 val bytes: ByteArray = nbt.getByteArray("net-data")
                 val data: ByteBuf? = Unpooled.wrappedBuffer(bytes)
                 val packet: PacketDynamic = PacketDynamic()
@@ -333,7 +338,7 @@ open class TileEntityFluidTank : TileEntityAdvanced(), IFluidHandlerWrapper {
         return super.getCapability<T?>(capability, facing)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         if (this.renderAABB == null) {
             this.renderAABB = AxisAlignedBB(pos, pos.add(1, 1, 1))
@@ -341,7 +346,7 @@ open class TileEntityFluidTank : TileEntityAdvanced(), IFluidHandlerWrapper {
         return this.renderAABB!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return Constants.RENDERDISTANCE_MEDIUM
     }

@@ -19,9 +19,9 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.client.model.IModel
 import net.minecraftforge.client.model.ModelLoaderRegistry
 import net.minecraftforge.fluids.Fluid
@@ -34,7 +34,7 @@ open class TileEntityFluidPipeRenderer : TileEntitySpecialRenderer<TileEntityFlu
     private fun updateModels() {
         if (pullConnectorModel[0] == null) {
             try {
-                for (facing: EnumFacing in EnumFacing.VALUES) {
+                for (facing: EnumFacing in EnumFacing.values()) {
                     // Get the first character of the direction name (n/e/s/w/u/d)
                     val c: Char = facing.getName().get(0).lowercaseChar()
                     val model: IModel = ModelLoaderRegistry.getModel(
@@ -45,10 +45,10 @@ open class TileEntityFluidPipeRenderer : TileEntitySpecialRenderer<TileEntityFlu
                     )
                     val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> =
                         Function { location: ResourceLocation? ->
-                            Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+                            Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
                         }
                     pullConnectorModel[facing.ordinal] =
-                        model.bake(model.getDefaultState(), DefaultVertexFormats.ITEM, spriteFunction)
+                        model.bake(model.defaultBlockState(), DefaultVertexFormats.ITEM, spriteFunction)
                 }
             } catch (e: Exception) {
                 throw RuntimeException(e)
@@ -84,7 +84,7 @@ open class TileEntityFluidPipeRenderer : TileEntitySpecialRenderer<TileEntityFlu
 
             val adj: Array<TileEntity?> = OxygenUtil.getAdjacentFluidConnections(pipe)
 
-            for (facing: EnumFacing in EnumFacing.VALUES) {
+            for (facing: EnumFacing in EnumFacing.values()) {
                 val sideTile: TileEntity? = adj[facing.ordinal]
 
                 if (sideTile != null && sideTile !is IBufferTransmitter<*>) {
@@ -152,7 +152,7 @@ else -> {}
 
             val connections: Array<TileEntity?> = OxygenUtil.getAdjacentFluidConnections(pipe)
 
-            for (side: EnumFacing in EnumFacing.VALUES) {
+            for (side: EnumFacing in EnumFacing.values()) {
                 val sideTile: TileEntity? = connections[side.ordinal]
                 if (sideTile != null) {
                     val displayLists: Array<Int>? = getListAndRender(side, fluid)
@@ -195,7 +195,7 @@ else -> {}
         }
 
         val sprite: TextureAtlasSprite =
-            Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(fluid.getStill().toString())
+            Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(fluid.getStill().toString())
         val sideIndex: Int = if (side == null) 6 else side.ordinal
 
         if (cache.containsKey(sideIndex) && cache.get(sideIndex)!!.containsKey(fluid)) {

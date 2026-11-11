@@ -1,34 +1,38 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockBreakable
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class BlockAirLockWall constructor(assetName: String?) : BlockBreakable(Material.IRON, false),
-    IPartialSealableBlock, ISortableBlock {
+    IPartialSealableBlock, ISortableBlock, LegacyBlockMetadata {
     enum class EnumAirLockSealConnection(private val serializedName: String) : IStringSerializable {
         X("x"),
         Z("z"),
         FLAT("flat");
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
     }
@@ -97,7 +101,7 @@ open class BlockAirLockWall constructor(assetName: String?) : BlockBreakable(Mat
         return BlockFaceShape.UNDEFINED
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun shouldSideBeRendered(
         blockState: IBlockState,
         blockAccess: IBlockAccess,
@@ -129,7 +133,7 @@ open class BlockAirLockWall constructor(assetName: String?) : BlockBreakable(Mat
     }
 
     override fun getActualState(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState {
-        return state.withProperty(
+        return state.setValue(
             CONNECTION_TYPE,
             getConnection(worldIn, pos)
         )
@@ -172,7 +176,7 @@ open class BlockAirLockWall constructor(assetName: String?) : BlockBreakable(Mat
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
+        return this.defaultBlockState()
     }
 
     companion object {

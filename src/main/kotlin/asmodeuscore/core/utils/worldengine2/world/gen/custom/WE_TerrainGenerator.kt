@@ -29,8 +29,8 @@ import asmodeuscore.core.utils.worldengine2.world.biome.WE_BiomeProvider
 import asmodeuscore.core.utils.worldengine2.world.gen.custom.abstracts.WE_CreateChunkGen_InXZ
 import asmodeuscore.core.utils.worldengine2.world.gen.custom.abstracts.WE_GenData
 import asmodeuscore.core.utils.worldengine2.world.gen.noise.WE_PerlinNoise
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
 import kotlin.math.min
 
 /**
@@ -40,10 +40,10 @@ import kotlin.math.min
  */
 open class WE_TerrainGenerator : WE_CreateChunkGen_InXZ() {
     @JvmField
-    var worldStoneBlock: IBlockState = Blocks.STONE.getDefaultState()
+    var worldStoneBlock: IBlockState = Blocks.STONE.defaultBlockState()
 
     @JvmField
-    var worldSeaGenBlock: IBlockState = Blocks.WATER.getDefaultState()
+    var worldSeaGenBlock: IBlockState = Blocks.WATER.defaultBlockState()
 
     @JvmField
     var worldSeaGen: Boolean = true
@@ -74,8 +74,8 @@ open class WE_TerrainGenerator : WE_CreateChunkGen_InXZ() {
                 val h: Int = min(noise.genNoise2D((x + (d)!!.bx).toDouble(), (z + (d)!!.bz).toDouble()), 255.0).toInt()
 
                 for (y: Int in 0..254) {
-                    if ((y == 0) || (y <= 5 && (((d)!!.provider)!!.getWorld())!!.rand.nextInt(y) == 0)) {
-                        setBlockPrimer((d)!!, Blocks.BEDROCK.getDefaultState(), y)
+                    if ((y == 0) || (y <= 5 && (((d)!!.provider)!!.getWorld())!!.random.nextInt(y) == 0)) {
+                        setBlockPrimer((d)!!, Blocks.BEDROCK.defaultBlockState(), y)
                         continue
                     }
                     if (y <= h) setBlockPrimer((d)!!, worldStoneBlock, y)

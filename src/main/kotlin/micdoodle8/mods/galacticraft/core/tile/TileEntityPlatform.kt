@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.core.blocks.BlockPlatform.EnumCorner
 
 import micdoodle8.mods.galacticraft.api.world.IZeroGDimension
@@ -8,19 +10,19 @@ import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.blocks.BlockPlatform
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStatsClient
 import net.minecraft.block.BlockAir
-import net.minecraft.block.state.IBlockState
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.ITickable
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.LinkedList
 
@@ -46,7 +48,7 @@ open class TileEntityPlatform : TileEntity, ITickable {
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.corner = nbt.getInteger("co")
+        this.corner = nbt.getIntOr("co", 0)
         if (this.corner != 0) {
             this.firstTickCheck = true
         }
@@ -54,7 +56,7 @@ open class TileEntityPlatform : TileEntity, ITickable {
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setInteger("co", this.corner)
+        nbt.putInt("co", this.corner)
         return nbt
     }
 
@@ -73,11 +75,11 @@ open class TileEntityPlatform : TileEntity, ITickable {
                 for (z: Int in -1..0) {
                     val pos: BlockPos = BlockPos(x + thisX, thisY, z + thisZ)
                     val tile: TileEntity? =
-                        if (this.world.isBlockLoaded(pos, false)) this.world.getTileEntity(pos) else null
+                        if (this.world.isBlockLoaded(pos, false)) this.world.getBlockEntity(pos) else null
 
                     if (tile is TileEntityPlatform && !tile.isInvalid() && tile.corner == 0) {
-                        val tileUp: TileEntity? = this.world.getTileEntity(pos.up())
-                        val tileDown: TileEntity? = this.world.getTileEntity(pos.down())
+                        val tileUp: TileEntity? = this.world.getBlockEntity(pos.above())
+                        val tileDown: TileEntity? = this.world.getBlockEntity(pos.below())
                         if (tileUp !is TileEntityPlatform && tileDown !is TileEntityPlatform) {
                             adjacentPlatforms.add(tile)
                         }
@@ -96,7 +98,7 @@ open class TileEntityPlatform : TileEntity, ITickable {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private fun updateClient() {
         this.lightOn = false
         if (this.colorTicks > 0) {
@@ -128,14 +130,14 @@ open class TileEntityPlatform : TileEntity, ITickable {
                 // If this player is within the box
                 val p: EntityPlayerSP = FMLClientHandler.instance().getClientPlayerEntity()
                 val stats: GCPlayerStatsClient = (GCPlayerStatsClient.get(p))!!
-                if (list.contains(p) && !stats.getPlatformControlled() && p.getRidingEntity() == null) {
+                if (list.contains(p) && !stats.getPlatformControlled() && p.getVehicle() == null) {
                     if (p.movementInput.sneak) {
                         val canDescend: Int = this.checkNextPlatform(-1)
                         if (canDescend == -1) {
                             this.colorState = 1
                             this.colorTicks = 16
                         } else if (canDescend > 0) {
-                            val te: TileEntity? = this.world.getTileEntity(this.pos.down(canDescend))
+                            val te: TileEntity? = this.world.getBlockEntity(this.pos.down(canDescend))
                             if (te is TileEntityPlatform) {
                                 val tep: TileEntityPlatform = te
                                 stats.startPlatformAscent(
@@ -153,7 +155,7 @@ open class TileEntityPlatform : TileEntity, ITickable {
                             this.colorState = 1
                             this.colorTicks = 16
                         } else if (canAscend > 0) {
-                            val te: TileEntity? = this.world.getTileEntity(this.pos.up(canAscend))
+                            val te: TileEntity? = this.world.getBlockEntity(this.pos.up(canAscend))
                             if (te is TileEntityPlatform) {
                                 p.motionY = 0.0
                                 val tep: TileEntityPlatform = te
@@ -172,7 +174,7 @@ open class TileEntityPlatform : TileEntity, ITickable {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private fun startMove(te: TileEntityPlatform) {
         this.moving = true
         this.lightA = this.getBlendedLight()
@@ -224,8 +226,8 @@ open class TileEntityPlatform : TileEntity, ITickable {
             return 0
         }
         if (b.getBlock() === GCBlocks.platform && b.getValue(BlockPlatform.CORNER) == corner) {
-            return if (this.world.getBlockState(blockPos.up(1))
-                    .causesSuffocation() || this.world.getBlockState(blockPos.up(2)).causesSuffocation()
+            return if (this.world.getBlockState(blockPos.above(1))
+                    .causesSuffocation() || this.world.getBlockState(blockPos.above(2)).causesSuffocation()
             ) 2 else 1
         }
         if (b.causesSuffocation() || b.getBlock().isFullBlock(b)) {
@@ -236,7 +238,7 @@ open class TileEntityPlatform : TileEntity, ITickable {
 
     private fun setWhole(index: Int) {
         this.corner = index
-        this.world.setBlockState(this.getPos(), (GCBlocks.platform)!!.getStateFromMeta(index))
+        this.world.setBlockAndUpdate(this.getPos(), (GCBlocks.platform)!!.getStateFromMeta(index))
     }
 
     open fun onDestroy(callingBlock: TileEntity?) {
@@ -254,7 +256,7 @@ open class TileEntityPlatform : TileEntity, ITickable {
             if (this.world.isBlockLoaded(pos, false) && this.world.getBlockState(pos)
                     .getBlock() === GCBlocks.platform
             ) {
-                val tile: TileEntity? = this.world.getTileEntity(pos)
+                val tile: TileEntity? = this.world.getBlockEntity(pos)
                 if (tile is TileEntityPlatform) {
                     tile.setWhole(0)
                 }
@@ -344,7 +346,7 @@ open class TileEntityPlatform : TileEntity, ITickable {
 
         val bs: IBlockState = this.world.getBlockState(blockPos)
         if (bs.getBlock() === GCBlocks.platform && (bs.getValue(BlockPlatform.CORNER) as BlockPlatform.EnumCorner).getMeta() == meta) {
-            val tile: TileEntity? = this.world.getTileEntity(blockPos)
+            val tile: TileEntity? = this.world.getBlockEntity(blockPos)
             if (tile is TileEntityPlatform) {
                 tile.corner = meta
                 tile.firstTickCheck = false
@@ -369,19 +371,19 @@ open class TileEntityPlatform : TileEntity, ITickable {
         val x: Int = this.getPos().getX()
         val z: Int = this.getPos().getZ()
         y += this.getPos().getY()
-        te = this.world.getTileEntity(BlockPos(x, y, z))
+        te = this.world.getBlockEntity(BlockPos(x, y, z))
         if (te is TileEntityPlatform) {
             te.noCollide = b
         }
-        te = this.world.getTileEntity(BlockPos(x + 1, y, z))
+        te = this.world.getBlockEntity(BlockPos(x + 1, y, z))
         if (te is TileEntityPlatform) {
             te.noCollide = b
         }
-        te = this.world.getTileEntity(BlockPos(x, y, z + 1))
+        te = this.world.getBlockEntity(BlockPos(x, y, z + 1))
         if (te is TileEntityPlatform) {
             te.noCollide = b
         }
-        te = this.world.getTileEntity(BlockPos(x + 1, y, z + 1))
+        te = this.world.getBlockEntity(BlockPos(x + 1, y, z + 1))
         if (te is TileEntityPlatform) {
             te.noCollide = b
         }
@@ -403,16 +405,16 @@ open class TileEntityPlatform : TileEntity, ITickable {
         this.moving = false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun getYOffset(partialTicks: Float): Float {
         if (this.moving) {
             val p: EntityPlayerSP = FMLClientHandler.instance().getClientPlayerEntity()
-            val playerY: Float = (p.lastTickPosY + (p.posY - p.lastTickPosY) * partialTicks.toDouble()).toFloat()
+            val playerY: Float = (p.lastTickPosY + (p.y - p.lastTickPosY) * partialTicks.toDouble()).toFloat()
             return (playerY - this.pos.getY() - BlockPlatform.HEIGHT)
         } else return 0.0f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         if (this.renderAABB == null) {
             this.renderAABB = AxisAlignedBB(this.pos.add(-1, -18, -1), this.pos.add(1, 18, 1))
@@ -420,7 +422,7 @@ open class TileEntityPlatform : TileEntity, ITickable {
         return this.renderAABB!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun getBlendedLight(): Int {
         var j: Int = 0
         var k: Int = 0
@@ -439,7 +441,7 @@ open class TileEntityPlatform : TileEntity, ITickable {
         return j / 4 + k * 16384
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun getMeanLightX(yOffset: Float): Float {
         val a: Float = (this.lightA % 65536).toFloat()
         val b: Float = (this.lightB % 65536).toFloat()
@@ -447,7 +449,7 @@ open class TileEntityPlatform : TileEntity, ITickable {
         return (1 - f) * a + f * b
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun getMeanLightZ(yOffset: Float): Float {
         val a: Float = (this.lightA / 65536).toFloat()
         val b: Float = (this.lightB / 65536).toFloat()
@@ -455,7 +457,7 @@ open class TileEntityPlatform : TileEntity, ITickable {
         return (1 - f) * a + f * b
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun motionObstructed(y: Double, velocityY: Double): Boolean {
         val p: EntityPlayerSP = FMLClientHandler.instance().getClientPlayerEntity()
         val x: Int = this.pos.getX() + 1
@@ -470,7 +472,7 @@ open class TileEntityPlatform : TileEntity, ITickable {
         return obstructed
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return Constants.RENDERDISTANCE_MEDIUM
     }

@@ -9,11 +9,11 @@ import net.minecraft.client.model.ModelGhast
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderBossGhast constructor(renderManagerIn: RenderManager) :
     RenderLiving<EntityBossGhast>(renderManagerIn, ModelGhast(), 3.0f) {
     private val field_77068_a = 0
@@ -35,6 +35,6 @@ open class RenderBossGhast constructor(renderManagerIn: RenderManager) :
 
     companion object {
         private val evolvedBossTextures =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX + ":" + "textures/model/boss_ghast.png")
+            ResourceLocation.parse(GalaxySpace.ASSET_PREFIX + ":" + "textures/model/boss_ghast.png")
     }
 }

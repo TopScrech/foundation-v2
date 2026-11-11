@@ -3,7 +3,7 @@ package galaxyspace.core.client.gui.book.pages.bodies
 import galaxyspace.core.client.gui.book.pages.Page_Systems
 import galaxyspace.systems.ACentauriSystem.ACentauriSystemBodies
 import galaxyspace.systems.ACentauriSystem.core.ACBlocks
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 open class Page_ProximaSystem constructor() : Page_Systems((ACentauriSystemBodies.ProximaSystem)!!) {
     init {

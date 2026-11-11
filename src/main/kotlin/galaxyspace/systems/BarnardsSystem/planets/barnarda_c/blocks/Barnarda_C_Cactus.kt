@@ -6,17 +6,17 @@ import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_F
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Cactus
 import galaxyspace.core.util.GSCreativeTabs
 import net.minecraft.block.BlockCactus
-import net.minecraft.block.SoundType
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
 import net.minecraftforge.common.IPlantable
 
 open class Barnarda_C_Cactus constructor() : BlockCactus() {
     init {
         setTranslationKey("barnarda_c_cactus")
-        setDefaultState(blockState.getBaseState().withProperty(AGE, 0))
+        setDefaultState(blockState.getBaseState().setValue(AGE, 0))
         setTickRandomly(true)
         setCreativeTab(GSCreativeTabs.GSBlocksTab)
         setHardness(0.4f)
@@ -32,8 +32,8 @@ open class Barnarda_C_Cactus constructor() : BlockCactus() {
     ): Boolean {
         val plant: IBlockState = plantable.getPlant(world, pos.offset(direction))
 
-        val sandBlockState: IBlockState = BRBlocks.BARNARDA_C_FALLING_BLOCKS.getDefaultState()
-            .withProperty(
+        val sandBlockState: IBlockState = BRBlocks.BARNARDA_C_FALLING_BLOCKS.defaultBlockState()
+            .setValue(
                 Barnarda_C_Falling_Blocks.Companion.BASIC_TYPE,
                 EnumFallingBlockBarnardaC.SAND
             )

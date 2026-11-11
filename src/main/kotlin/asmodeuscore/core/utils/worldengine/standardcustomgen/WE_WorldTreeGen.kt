@@ -5,9 +5,9 @@ import java.util.Random
 
 import asmodeuscore.core.utils.worldengine.standardcustomgen.help.WE_BigTreeGen
 import asmodeuscore.core.utils.worldengine.standardcustomgen.help.WE_TreeGen
-import net.minecraft.block.Block
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.IChunkProvider
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.fml.common.IWorldGenerator

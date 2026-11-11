@@ -1,26 +1,29 @@
 package micdoodle8.mods.galacticraft.planets.venus.tile
 
+import net.minecraft.world.ContainerHelper
+import foundation.persistence.containsTag
+
 import java.util.Random
 
 import micdoodle8.mods.galacticraft.core.inventory.IInventoryDefaults
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.NonNullList
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.WorldServer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.NonNullList
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraft.world.storage.loot.LootContext
 import net.minecraft.world.storage.loot.LootTable
 import java.util.*
 
 open class TileEntityCrashedProbe : TileEntity(), IInventoryDefaults {
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent? = super<TileEntity>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = getName()
 
     private var stacks: NonNullList<ItemStack> = NonNullList.withSize<ItemStack>(6, ItemStack.EMPTY)
     private var hasCoreToDrop = false
@@ -55,21 +58,21 @@ open class TileEntityCrashedProbe : TileEntity(), IInventoryDefaults {
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        if (nbt.hasKey("ctd")) {
-            this.hasCoreToDrop = nbt.getBoolean("ctd")
+        if (nbt.containsTag("ctd")) {
+            this.hasCoreToDrop = nbt.getBooleanOr("ctd", false)
         } else {
             this.hasCoreToDrop = true //Legacy compatibility with worlds generated before this key used
         }
 
         if (!this.checkLootAndRead(nbt)) {
-            this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+            this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
             ItemStackHelper.loadAllItems(nbt, this.stacks)
         }
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setBoolean("ctd", this.hasCoreToDrop)
+        nbt.putBoolean("ctd", this.hasCoreToDrop)
 
         if (!this.checkLootAndWrite(nbt)) {
             ItemStackHelper.saveAllItems(nbt, this.stacks)
@@ -81,47 +84,47 @@ open class TileEntityCrashedProbe : TileEntity(), IInventoryDefaults {
         return true
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.crashed_probe.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.crashed_probe.name")
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.stacks.size
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack {
+    override fun getItem(var1: Int): ItemStack {
         this.fillWithLoot(null)
         return this.stacks.get(var1)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
+    override fun removeItem(index: Int, count: Int): ItemStack {
         this.fillWithLoot(null)
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
+    override fun removeItemNoUpdate(index: Int): ItemStack {
         this.fillWithLoot(null)
-        val oldstack: ItemStack = ItemStackHelper.getAndRemove(this.stacks, index)
+        val oldstack: ItemStack = ContainerHelper.takeItem(this.stacks, index)
         if (!oldstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
         return oldstack
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.stacks.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
     override fun isEmpty(): Boolean {
@@ -135,23 +138,25 @@ open class TileEntityCrashedProbe : TileEntity(), IInventoryDefaults {
         return true
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun clear() {
-        this.fillWithLoot(null)
+    override fun clearContent() {
+        fillWithLoot(null)
+        stacks.clear()
+        setChanged()
     }
 
-    override fun isUsableByPlayer(player: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && player.getDistanceSq(
+    override fun stillValid(player: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && player.getDistanceSq(
             this.getPos().getX() + 0.5,
             this.getPos().getY() + 0.5,
             this.getPos().getZ() + 0.5
         ) <= 64.0
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         return true
     }
 
@@ -168,9 +173,9 @@ open class TileEntityCrashedProbe : TileEntity(), IInventoryDefaults {
     }
 
     protected open fun checkLootAndRead(compound: NBTTagCompound): Boolean {
-        if (compound.hasKey("LootTable", 8)) {
-            this.lootTable = ResourceLocation(compound.getString("LootTable"))
-            this.lootTableSeed = compound.getLong("LootTableSeed")
+        if (compound.containsTag("LootTable", 8)) {
+            this.lootTable = ResourceLocation(compound.getStringOr("LootTable", ""))
+            this.lootTableSeed = compound.getLongOr("LootTableSeed", 0L)
             return true
         } else {
             return false
@@ -179,10 +184,10 @@ open class TileEntityCrashedProbe : TileEntity(), IInventoryDefaults {
 
     protected open fun checkLootAndWrite(compound: NBTTagCompound): Boolean {
         if (this.lootTable != null) {
-            compound.setString("LootTable", this.lootTable.toString())
+            compound.putString("LootTable", this.lootTable.toString())
 
             if (this.lootTableSeed != 0L) {
-                compound.setLong("LootTableSeed", this.lootTableSeed)
+                compound.putLong("LootTableSeed", this.lootTableSeed)
             }
 
             return true

@@ -28,9 +28,9 @@ import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.items.ItemBlocksBarn
 import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.items.ItemBlocksBarnarda_C1_Decorations
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Reeds
 import micdoodle8.mods.galacticraft.core.GCBlocks
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.item.ItemBlock
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.oredict.OreDictionary
 
 object BRBlocks {

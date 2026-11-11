@@ -9,15 +9,16 @@ import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.planets.asteroids.entities.EntityGrapple
 import micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityShortRangeTelepad
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.io.IOException
 import java.util.Arrays
 
@@ -86,7 +87,7 @@ open class PacketSimpleAsteroids : PacketBase {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun handleClientSide(player: EntityPlayer?) {
         var playerBaseClient: EntityPlayerSP? = null
 
@@ -98,7 +99,7 @@ open class PacketSimpleAsteroids : PacketBase {
         var entity: Entity? = null
 when (this.type) {
             EnumSimplePacketAsteroids.C_TELEPAD_SEND -> {
-                entity = playerBaseClient!!.world.getEntityByID((this.data!!.get(1) as kotlin.Int?)!!)
+                entity = playerBaseClient!!.level().getEntityByID((this.data!!.get(1) as kotlin.Int?)!!)
 
                 if (entity != null && entity is EntityLivingBase) {
                     val pos: BlockVec3 = this.data!!.get(0) as BlockVec3
@@ -107,7 +108,7 @@ when (this.type) {
             }
 
             EnumSimplePacketAsteroids.C_UPDATE_GRAPPLE_POS -> {
-                entity = playerBaseClient!!.world.getEntityByID((this.data!!.get(0) as kotlin.Int?)!!)
+                entity = playerBaseClient!!.level().getEntityByID((this.data!!.get(0) as kotlin.Int?)!!)
                 if (entity != null && entity is EntityGrapple) {
                     val vec: Vector3 = this.data!!.get(1) as Vector3
                     entity.setPosition(vec.x, vec.y, vec.z)
@@ -123,7 +124,7 @@ when (this.type) {
 
         when (this.type) {
             EnumSimplePacketAsteroids.S_UPDATE_ADVANCED_GUI -> {
-                val tile: TileEntity? = player!!.world.getTileEntity(this.data!!.get(1) as BlockPos?)
+                val tile: TileEntity? = player!!.level().getBlockEntity(this.data!!.get(1) as BlockPos?)
 
                 when (this.data!!.get(0) as Int?) {
                     0 -> if (tile is TileEntityShortRangeTelepad) {

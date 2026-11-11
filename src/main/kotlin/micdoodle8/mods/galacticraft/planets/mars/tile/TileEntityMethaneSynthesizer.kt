@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.planets.mars.tile
 
+import foundation.block.getMetaFromState
+
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.WorldProviderSpace
@@ -25,15 +29,15 @@ import micdoodle8.mods.galacticraft.planets.asteroids.items.ItemAtmosphericValve
 import micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMarsT2
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.WorldlyContainer as ISidedInventory
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
 import net.minecraft.world.WorldProvider
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.Fluid
@@ -42,7 +46,7 @@ import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.ArrayList
 import kotlin.math.max
 import kotlin.math.min
@@ -241,7 +245,7 @@ open class TileEntityMethaneSynthesizer constructor() : TileBaseElectricBlockWit
             }
         } else {
             if (this.coalPartial == 0) {
-                this.decrStackSize(3, 1)
+                this.removeItem(3, 1)
             }
             this.coalPartial++
             if (this.coalPartial == 40) {
@@ -269,37 +273,37 @@ open class TileEntityMethaneSynthesizer constructor() : TileBaseElectricBlockWit
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.processTicks = nbt.getInteger("smeltingTicks")
+        this.processTicks = nbt.getIntOr("smeltingTicks", 0)
         this.stacks = this.readStandardItemsFromNBT(nbt)
 
-        if (nbt.hasKey("gasTank")) {
-            this.gasTank.readFromNBT(nbt.getCompoundTag("gasTank"))
+        if (nbt.containsTag("gasTank")) {
+            this.gasTank.readFromNBT(nbt.getCompoundOrEmpty("gasTank"))
         }
 
-        if (nbt.hasKey("gasTank2")) {
-            this.gasTank2.readFromNBT(nbt.getCompoundTag("gasTank2"))
+        if (nbt.containsTag("gasTank2")) {
+            this.gasTank2.readFromNBT(nbt.getCompoundOrEmpty("gasTank2"))
         }
 
-        if (nbt.hasKey("liquidTank")) {
-            this.liquidTank.readFromNBT(nbt.getCompoundTag("liquidTank"))
+        if (nbt.containsTag("liquidTank")) {
+            this.liquidTank.readFromNBT(nbt.getCompoundOrEmpty("liquidTank"))
         }
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setInteger("smeltingTicks", this.processTicks)
+        nbt.putInt("smeltingTicks", this.processTicks)
         this.writeStandardItemsToNBT(nbt, this.stacks)
 
         if (this.gasTank.getFluid() != null) {
-            nbt.setTag("gasTank", this.gasTank.writeToNBT(NBTTagCompound()))
+            nbt.put("gasTank", this.gasTank.writeToNBT(NBTTagCompound()))
         }
 
         if (this.gasTank2.getFluid() != null) {
-            nbt.setTag("gasTank2", this.gasTank2.writeToNBT(NBTTagCompound()))
+            nbt.put("gasTank2", this.gasTank2.writeToNBT(NBTTagCompound()))
         }
 
         if (this.liquidTank.getFluid() != null) {
-            nbt.setTag("liquidTank", this.liquidTank.writeToNBT(NBTTagCompound()))
+            nbt.put("liquidTank", this.liquidTank.writeToNBT(NBTTagCompound()))
         }
 
         return nbt
@@ -313,8 +317,8 @@ open class TileEntityMethaneSynthesizer constructor() : TileBaseElectricBlockWit
         return true
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("tile.mars_machine.5.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("tile.mars_machine.5.name")
     }
 
     // ISidedInventory Implementation:
@@ -322,8 +326,8 @@ open class TileEntityMethaneSynthesizer constructor() : TileBaseElectricBlockWit
         return intArrayOf(0, 1, 2, 3, 4)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
-        if (this.isItemValidForSlot(slotID, itemstack)) {
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        if (this.canPlaceItem(slotID, itemstack)) {
             when (slotID) {
                 0 -> return ItemElectricBase.isElectricItemCharged(itemstack)
                 3 -> return itemstack.getItem() === MarsItems.carbonFragments
@@ -334,8 +338,8 @@ open class TileEntityMethaneSynthesizer constructor() : TileBaseElectricBlockWit
         return false
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
-        if (this.isItemValidForSlot(slotID, itemstack)) {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
+        if (this.canPlaceItem(slotID, itemstack)) {
             when (slotID) {
                 0 -> return ItemElectricBase.isElectricItemEmpty(itemstack) || !this.shouldPullEnergy()
                 4 -> return FluidUtil.isFullContainer(itemstack)
@@ -345,7 +349,7 @@ open class TileEntityMethaneSynthesizer constructor() : TileBaseElectricBlockWit
         return false
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         when (slotID) {
             0 -> return ItemElectricBase.isElectricItem(itemstack.getItem())
             1 -> return false

@@ -1,21 +1,23 @@
 package micdoodle8.mods.galacticraft.planets.venus.entities
 
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.galacticraft.core.Constants
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.IProjectile
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.MobEffects
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.potion.PotionEffect
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class EntityWebShot : Entity, IProjectile {
     @JvmField
@@ -50,10 +52,10 @@ open class EntityWebShot : Entity, IProjectile {
             this.canBePickedUp = 1
         }
 
-        this.posY = shooter.posY + shooter.getEyeHeight().toDouble() - 0.10000000149011612
-        val d0: Double = target.posX - shooter.posX
-        val d1: Double = target.getEntityBoundingBox().minY + (target.height / 3.0f).toDouble() - this.posY
-        val d2: Double = target.posZ - shooter.posZ
+        this.posY = shooter.y + shooter.getEyeHeight().toDouble() - 0.10000000149011612
+        val d0: Double = target.x - shooter.x
+        val d1: Double = target.getBoundingBox().minY + (target.height / 3.0f).toDouble() - this.posY
+        val d2: Double = target.z - shooter.z
         val d3: Double = MathHelper.sqrt(d0 * d0 + d2 * d2).toDouble()
 
         if (d3 >= 1.0E-7) {
@@ -61,7 +63,7 @@ open class EntityWebShot : Entity, IProjectile {
             val f1: Float = MathHelper.atan2(d1, d3).toFloat() * -Constants.RADIANS_TO_DEGREES
             val d4: Double = d0 / d3
             val d5: Double = d2 / d3
-            this.setLocationAndAngles(shooter.posX + d4, this.posY, shooter.posZ + d5, f, f1)
+            this.setLocationAndAngles(shooter.x + d4, this.posY, shooter.z + d5, f, f1)
             val f2: Float = (d3 * 0.20000000298023224).toFloat()
             this.shoot(d0, d1 + f2.toDouble(), d2, p_i1755_4_, p_i1755_5_)
         }
@@ -76,11 +78,11 @@ open class EntityWebShot : Entity, IProjectile {
 
         this.setSize(0.5f, 0.5f)
         this.setLocationAndAngles(
-            shooter.posX,
-            shooter.posY + shooter.getEyeHeight().toDouble(),
-            shooter.posZ,
-            shooter.rotationYaw,
-            shooter.rotationPitch
+            shooter.x,
+            shooter.y + shooter.getEyeHeight().toDouble(),
+            shooter.z,
+            shooter.yRot,
+            shooter.xRot
         )
         this.posX -= (MathHelper.cos(this.rotationYaw / Constants.RADIANS_TO_DEGREES) * 0.16f).toDouble()
         this.posY -= 0.10000000149011612
@@ -135,7 +137,7 @@ open class EntityWebShot : Entity, IProjectile {
         this.prevRotationPitch = this.rotationPitch
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setPositionAndRotationDirect(
         x: kotlin.Double,
         y: kotlin.Double,
@@ -149,7 +151,7 @@ open class EntityWebShot : Entity, IProjectile {
         this.setRotation(yaw, pitch)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setVelocity(x: kotlin.Double, y: kotlin.Double, z: kotlin.Double) {
         this.motionX = x
         this.motionY = y
@@ -209,7 +211,7 @@ open class EntityWebShot : Entity, IProjectile {
             val entity1: Entity = list.get(i) as Entity
 
             if (entity1.canBeCollidedWith() && (entity1 !== this.shootingEntity || this.ticksInAir >= 5)) {
-                val axisalignedbb1: AxisAlignedBB = entity1.getEntityBoundingBox().grow(border, border, border)
+                val axisalignedbb1: AxisAlignedBB = entity1.getBoundingBox().grow(border, border, border)
                 val movingobjectposition1: RayTraceResult? = axisalignedbb1.calculateIntercept(vec31, vec3)
 
                 if (movingobjectposition1 != null) {
@@ -242,7 +244,7 @@ open class EntityWebShot : Entity, IProjectile {
             if (movingobjectposition.entityHit != null) {
                 if (movingobjectposition.entityHit !== this.shootingEntity && !this.world.isRemote) {
                     if (movingobjectposition.entityHit is EntityLivingBase) {
-                        (movingobjectposition.entityHit as EntityLivingBase).addPotionEffect(
+                        (movingobjectposition.entityHit as EntityLivingBase).addEffect(
                             PotionEffect(
                                 MobEffects.SLOWNESS,
                                 180,
@@ -325,15 +327,15 @@ open class EntityWebShot : Entity, IProjectile {
     }
 
     public override fun writeEntityToNBT(tagCompound: NBTTagCompound) {
-        tagCompound.setByte("shake", this.arrowShake.toByte())
-        tagCompound.setByte("pickup", this.canBePickedUp.toByte())
+        tagCompound.putByte("shake", this.arrowShake.toByte())
+        tagCompound.putByte("pickup", this.canBePickedUp.toByte())
     }
 
     public override fun readEntityFromNBT(tagCompund: NBTTagCompound) {
-        this.arrowShake = tagCompund.getByte("shake").toInt() and 255
+        this.arrowShake = tagCompund.getByteOr("shake", 0).toInt() and 255
 
-        if (tagCompund.hasKey("pickup", 99)) {
-            this.canBePickedUp = tagCompund.getByte("pickup").toInt()
+        if (tagCompund.containsTag("pickup", 99)) {
+            this.canBePickedUp = tagCompund.getByteOr("pickup", 0).toInt()
         }
     }
 

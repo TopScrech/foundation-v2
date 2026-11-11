@@ -24,12 +24,11 @@ import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
 import net.minecraftforge.client.model.IModel
 import net.minecraftforge.client.model.obj.OBJModel
-import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 import java.util.*
 
@@ -62,7 +61,7 @@ open class RenderAstroMiner constructor(renderManager: RenderManager) : Render<E
                 )
                 val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> =
                     Function { location: ResourceLocation? ->
-                        Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+                        Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
                     }
                 this.mainModel = model.bake(
                     OBJModel.OBJState(ImmutableList.of<String?>("Hull", "Lasers"), false),
@@ -231,7 +230,7 @@ open class RenderAstroMiner constructor(renderManager: RenderManager) : Render<E
 
             if (ais < EntityAstroMiner.Companion.AISTATE_DOCKING) {
                 //This is the scanning lasers:
-                FMLClientHandler.instance().getClient().renderEngine.bindTexture(scanTexture)
+                Minecraft.getInstance().renderEngine.bindTexture(scanTexture)
                 val tess: Tessellator = Tessellator.getInstance()
                 GlStateManager.color(0f, 0.6f, 1.0f, 0.2f)
                 val worldRenderer: BufferBuilder = tess.getBuffer()
@@ -597,7 +596,7 @@ open class RenderAstroMiner constructor(renderManager: RenderManager) : Render<E
         var scanTexture: ResourceLocation
 
         init {
-            scanTexture = ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/misc/gradient.png")
+            scanTexture = ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/misc/gradient.png")
         }
     }
 }

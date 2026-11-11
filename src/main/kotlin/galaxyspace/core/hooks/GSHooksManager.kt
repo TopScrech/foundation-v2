@@ -1,5 +1,10 @@
 package galaxyspace.core.hooks
 
+import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
+
+import foundation.item.FoundationItemVariants
+import foundation.block.getMetaFromState
+
 import java.lang.reflect.Method
 import java.util.HashSet
 import java.util.Iterator
@@ -42,8 +47,8 @@ import micdoodle8.mods.galacticraft.core.util.MapUtil
 import micdoodle8.mods.galacticraft.core.wrappers.BlockMetaList
 import micdoodle8.mods.galacticraft.core.wrappers.Footprint
 import net.minecraft.block.material.Material
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.world.WorldProviderSurface
 import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent
@@ -83,17 +88,17 @@ import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
 import micdoodle8.mods.galacticraft.planets.venus.VenusModule
 import micdoodle8.mods.galacticraft.planets.venus.dimension.WorldProviderVenus
 import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntityGeothermalGenerator
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
-import net.minecraft.init.MobEffects
-import net.minecraft.item.ItemStack
-import net.minecraft.potion.PotionEffect
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.village.MerchantRecipeList
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.relauncher.ReflectionHelper
@@ -187,7 +192,7 @@ object GSHooksManager {
 
     @JvmStatic
     fun checkThermalStatus(handler: GCPlayerHandler, player: EntityPlayerMP, playerStats: GCPlayerStats) {
-        if (player.world.provider is IGalacticraftWorldProvider && !player.capabilities.isCreativeMode && !CompatibilityManager.isAndroid(
+        if (player.level().provider is IGalacticraftWorldProvider && !player.capabilities.isCreativeMode && !CompatibilityManager.isAndroid(
                 player
             )
         ) {
@@ -217,11 +222,11 @@ object GSHooksManager {
                 lowestThermalStrength = abs(lowestThermalStrength) //It shouldn't be negative, but just in case!
             }
 
-            var provider: IGalacticraftWorldProvider = player.world.provider as IGalacticraftWorldProvider
+            var provider: IGalacticraftWorldProvider = player.level().provider as IGalacticraftWorldProvider
             var thermalLevelMod: Float = provider.getThermalLevelModifier()
 
-            if (player.world.provider is IAdvancedSpace) {
-                provider = player.world.provider as IAdvancedSpace
+            if (player.level().provider is IAdvancedSpace) {
+                provider = player.level().provider as IAdvancedSpace
                 thermalLevelMod = provider.getThermalLevelModifier(player)
             }
 
@@ -246,7 +251,7 @@ object GSHooksManager {
                         normaliseCooldown = 1 //Prevent divide by zero errors
                     }
                     // Player is wearing all required thermal padding items
-                    if ((player.ticksExisted - 1) % normaliseCooldown == 0) {
+                    if ((player.tickCount - 1) % normaliseCooldown == 0) {
                         handler.normaliseThermalLevel(player, playerStats, 1)
                     }
                     thermalLevelMod /= max(1.0f, lowestThermalStrength / 2.0f)
@@ -282,7 +287,7 @@ object GSHooksManager {
                     thermalLevelTickCooldownSingle = 1 //Prevent divide by zero errors
                 }
 
-                if ((player.ticksExisted - 1) % thermalLevelTickCooldownSingle == 0) {
+                if ((player.tickCount - 1) % thermalLevelTickCooldownSingle == 0) {
                     val last: Int = playerStats.getThermalLevel()
                     playerStats.setThermalLevel(min(max(last + (if (thermalLevelMod < 0) -1 else 1), -22), 22))
 
@@ -291,7 +296,7 @@ object GSHooksManager {
                         (GalacticraftCore.packetPipeline)!!.sendTo(
                             PacketSimple(
                                 PacketSimple.EnumSimplePacket.C_UPDATE_THERMAL_LEVEL,
-                                GCCoreUtil.getDimensionID(player.world),
+                                GCCoreUtil.getDimensionID(player.level()),
                                 arrayOf<Any>(playerStats.getThermalLevel(), playerStats.isThermalLevelNormalising())
                             ), player
                         )
@@ -302,18 +307,18 @@ object GSHooksManager {
                 playerStats.setThermalLevelNormalising(thermalLevelTickCooldownSingle > normaliseCooldown && !thermalPaddingHelm.isEmpty() && !thermalPaddingChestplate.isEmpty() && !thermalPaddingLeggings.isEmpty() && !thermalPaddingBoots.isEmpty())
 
                 if (!playerStats.isThermalLevelNormalising()) {
-                    if ((player.ticksExisted - 1) % thermalLevelTickCooldown == 0) {
+                    if ((player.tickCount - 1) % thermalLevelTickCooldown == 0) {
                         if (abs(playerStats.getThermalLevel()) >= 22) {
-                            player.attackEntityFrom(DamageSourceGC.thermal, 1.5f)
+                            foundation.damage.FoundationDamageTypes.hurt(player, DamageSourceGC.thermal, 1.5f)
                         }
                     }
 
                     if (playerStats.getThermalLevel() < -15) {
-                        player.addPotionEffect(PotionEffect(MobEffects.SLOWNESS, 5, 2, true, true))
+                        player.addEffect(PotionEffect(MobEffects.SLOWNESS, 5, 2, true, true))
                     }
 
                     if (playerStats.getThermalLevel() > 15) {
-                        player.addPotionEffect(PotionEffect(MobEffects.NAUSEA, 5, 2, true, true))
+                        player.addEffect(PotionEffect(MobEffects.NAUSEA, 5, 2, true, true))
                     }
                 }
             } else  //Normalise thermal level if on Space Station or non-modifier planet
@@ -363,7 +368,7 @@ object GSHooksManager {
                 "validSpout"
             )
             if (stateBelow.getBlock() is IEnergyGeyser) {
-                var pos1: BlockPos = below.down()
+                var pos1: BlockPos = below.below()
                 while (te.getPos().getY() - pos1.getY() < 20) {
                     val state: IBlockState = te.getWorld().getBlockState(pos1)
                     val geyser: IEnergyGeyser = stateBelow.getBlock() as IEnergyGeyser
@@ -383,10 +388,10 @@ object GSHooksManager {
                         break
                     }
 
-                    pos1 = pos1.down()
+                    pos1 = pos1.below()
                 }
             } else if (stateBelow.getBlock() === VenusBlocks.spout) {
-                var pos1: BlockPos = below.down()
+                var pos1: BlockPos = below.below()
                 while (te.getPos().getY() - pos1.getY() < 20) {
                     val state: IBlockState = te.getWorld().getBlockState(pos1)
                     if (state.getBlock() === (VenusModule.sulphuricAcid)!!.getBlock()) {
@@ -402,7 +407,7 @@ object GSHooksManager {
                         // Not valid
                         break
                     }
-                    pos1 = pos1.down()
+                    pos1 = pos1.below()
                 }
             }
 
@@ -414,7 +419,7 @@ object GSHooksManager {
         }
 
         if (!te.getWorld().isRemote) {
-            te.recharge(te.getStackInSlot(0))
+            te.recharge(te.getItem(0))
 
             if (te.disableCooldown > 0) {
                 te.disableCooldown--
@@ -588,9 +593,9 @@ object GSHooksManager {
             }
    
             NBTTagCompound nbt = chunkLoadTicket.getModData();
-            nbt.setInteger("ChunkLoaderTileX", te.getPos().getX());
-            nbt.setInteger("ChunkLoaderTileY", te.getPos().getY());
-            nbt.setInteger("ChunkLoaderTileZ", te.getPos().getZ());
+            nbt.putInt("ChunkLoaderTileX", te.getPos().getX());
+            nbt.putInt("ChunkLoaderTileY", te.getPos().getY());
+            nbt.putInt("ChunkLoaderTileZ", te.getPos().getZ());
 
             //List<BlockPos> connectedPads = ReflectionHelper.getPrivateValue(TileEntityLaunchController.class, te, "connectedPads");
             
@@ -630,7 +635,7 @@ object GSHooksManager {
 	@Hook(returnCondition = ReturnCondition.ALWAYS)
     public static boolean canAttachToLandingPad(TileEntityLaunchController te, IBlockAccess world, BlockPos pos)
     {
-        TileEntity tile = world.getTileEntity(pos);
+        TileEntity tile = world.getBlockEntity(pos);
         //GalaxySpace.instance.debug(tile);
         return tile instanceof IFuelDock;
     }
@@ -674,7 +679,7 @@ object GSHooksManager {
                     if (!controllerClass.isInstance(tile))
                         continue;
 
-                    tile = world.getTileEntity(tile.getPos());
+                    tile = world.getBlockEntity(tile.getPos());
                     if (!controllerClass.isInstance(tile))
                 			continue;
 
@@ -691,7 +696,7 @@ object GSHooksManager {
                 					{
                                         BlockPos pos = new BlockPos(tile.getPos().add(x, 0, z));
                 						Block block = world.getBlockState(pos).getBlock();
-                						TileEntity tileen = world.getTileEntity(pos);
+                						TileEntity tileen = world.getBlockEntity(pos);
                 	                        
                 						//if (block instanceof BlockLandingPadFull)
                 						if (tileen instanceof IFuelDock)
@@ -783,7 +788,7 @@ object GSHooksManager {
     private val DEFAULT_TRADE_LIST_MAP: Array<EntityAlienVillager.ITradeList?> =
         ((arrayOf<EntityAlienVillager.ITradeList>(
             EntityAlienVillager.ItemAndEmeraldToItem(
-                ItemStack(GCItems.schematic, 1, 1),
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 1),
                 EntityAlienVillager.PriceInfo(40, 55),
                 BasicItems.SCHEMATIC_BOX.getItemStack()
             ),
@@ -794,7 +799,7 @@ object GSHooksManager {
                 EntityAlienVillager.PriceInfo(1, 2)
             ),
             EntityAlienVillager.ListItemForEmeralds(
-                ItemStack(GCItems.oxTankLight, 1, 235),
+                ItemOxygenTank.stack(requireNotNull(GCItems.oxTankLight), 1, 235),
                 EntityAlienVillager.PriceInfo(3, 4)
             ),
             EntityAlienVillager.ListItemForEmeralds(
@@ -806,7 +811,7 @@ object GSHooksManager {
                 EntityAlienVillager.PriceInfo(3, 4)
             ),
             EntityAlienVillager.ListItemForEmeralds(
-                ItemStack(GCItems.parachute, 1, 0),
+                FoundationItemVariants.stack(requireNotNull(GCItems.parachute), 1, 0),
                 EntityAlienVillager.PriceInfo(1, 2)
             ),
             EntityAlienVillager.ListItemForEmeralds(
@@ -816,31 +821,31 @@ object GSHooksManager {
             EntityAlienVillager.ItemAndEmeraldToItem(
                 ItemStack(GCItems.oilCanister, 1, ItemCanisterGeneric.EMPTY),
                 EntityAlienVillager.PriceInfo(1, 1),
-                ItemStack(GCItems.foodItem, 1, 1)
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.foodItem), 1, 1)
             ),  //carrots = also yields a tin!
             EntityAlienVillager.ListItemForEmeralds(
-                ItemStack(GCItems.basicItem, 1, ItemBasic.WAFER_BASIC),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, ItemBasic.WAFER_BASIC),
                 EntityAlienVillager.PriceInfo(3, 4)
             ),
             EntityAlienVillager.ItemAndEmeraldToItem(
-                ItemStack(GCItems.schematic, 1, 0),
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 0),
                 EntityAlienVillager.PriceInfo(3, 5),
-                ItemStack(GCItems.schematic, 1, 1)
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 1)
             ),  //Exchange buggy and rocket schematics
             EntityAlienVillager.ItemAndEmeraldToItem(
-                ItemStack(GCItems.schematic, 1, 1),
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 1),
                 EntityAlienVillager.PriceInfo(3, 5),
-                ItemStack(GCItems.schematic, 1, 0)
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 0)
             ),  //Exchange buggy and rocket schematics
             EntityAlienVillager.ItemAndEmeraldToItem(
-                ItemStack(GCItems.basicItem, 2, 3),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 2, 3),
                 EntityAlienVillager.PriceInfo(1, 1),
-                ItemStack(GCItems.basicItem, 1, 6)
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 6)
             ),  //Compressed Tin - needed to craft a Fuel Loader
             EntityAlienVillager.ItemAndEmeraldToItem(
-                ItemStack(GCItems.basicItem, 2, 4),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 2, 4),
                 EntityAlienVillager.PriceInfo(1, 1),
-                ItemStack(GCItems.basicItem, 1, 7)
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 7)
             ),  //Compressed Copper - needed to craft a Fuel Loader
             EntityAlienVillager.EmeraldForItems(
                 ItemStack(Blocks.SAPLING, 1, 3),
@@ -1261,7 +1266,7 @@ object GSHooksManager {
     //                            ISound noise = vehicle.setSoundUpdater(FMLClientHandler.instance().getClient().player);
     //                            if (noise != null)
     //                            {
-    //                                FMLClientHandler.instance().getClient().getSoundHandler().playSound(noise);
+    //                                FMLClientHandler.instance().getClient().getSoundManager().play(noise);
     //                            }
     //                        }
     //                    }

@@ -10,15 +10,15 @@ import micdoodle8.mods.galacticraft.api.tile.IFuelDock
 import micdoodle8.mods.galacticraft.api.tile.ILandingPadAttachable
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.blocks.BlockMulti
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fml.client.FMLClientHandler
 import java.util.ArrayList
@@ -162,7 +162,7 @@ open class TileEntityBuggyFueler constructor() : TileEntityMulti(null), IMultiBl
             for (z: Int in -2..2) {
                 if (x == -2 || x == 2 || z == -2 || z == 2) {
                     if (abs(x) != abs(z)) {
-                        val tile: TileEntity? = this.world.getTileEntity(
+                        val tile: TileEntity? = this.world.getBlockEntity(
                             BlockPos(
                                 this.getPos().getX() + x,
                                 this.getPos().getY(),

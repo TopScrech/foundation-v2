@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.moons.enceladus.world.gen.we
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import galaxyspace.systems.SolarSystem.moons.enceladus.blocks.EnceladusBlocks.EnumEnceladusBlocks
 import galaxyspace.systems.SolarSystem.moons.enceladus.blocks.EnceladusCrystal
@@ -10,10 +12,10 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedEnderman
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSkeleton
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSpider
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedZombie
-import net.minecraft.init.Blocks
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class Enceladus_Ravine constructor() :
@@ -41,7 +43,7 @@ open class Enceladus_Ravine constructor() :
 
         val standardBiomeLayers: WE_BiomeLayer = WE_BiomeLayer()
         standardBiomeLayers.add(
-            Blocks.PACKED_ICE.getDefaultState(),
+            Blocks.PACKED_ICE.defaultBlockState(),
             GSBlocks.ENCELADUS_BLOCKS.getStateFromMeta(1),
             -256,
             0,
@@ -51,7 +53,7 @@ open class Enceladus_Ravine constructor() :
         )
         standardBiomeLayers.add(
             GSBlocks.ENCELADUS_BLOCKS.getStateFromMeta(0),
-            Blocks.PACKED_ICE.getDefaultState(),
+            Blocks.PACKED_ICE.defaultBlockState(),
             -256,
             0,
             -2,
@@ -59,7 +61,7 @@ open class Enceladus_Ravine constructor() :
             true
         )
         //standardBiomeLayers.add(GSBlocks.ENCELADUS_BLOCKS, (byte)1, GSBlocks.ENCELADUS_BLOCKS, (byte)2, -256, 0, -256,  0, false);
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         createChunkGen_InXZ_List.add(standardBiomeLayers)
     }
 
@@ -74,26 +76,26 @@ open class Enceladus_Ravine constructor() :
             randPosZ = z + (rand)!!.nextInt(16) + 8
 
             val pos: BlockPos = BlockPos(randPosX, randPosY, randPosZ)
-            if ((world)!!.getBlockState(pos.down()) === GSBlocks.ENCELADUS_BLOCKS.getStateFromMeta(EnumEnceladusBlocks.ENCELADUS_GRUNT.getMeta()) && (world)!!.isAirBlock(
+            if ((world)!!.getBlockState(pos.below()) === GSBlocks.ENCELADUS_BLOCKS.getStateFromMeta(EnumEnceladusBlocks.ENCELADUS_GRUNT.getMeta()) && (world)!!.isEmptyBlock(
                     pos
                 )
             ) {
-                (world)!!.setBlockState(
+                (world)!!.setBlockAndUpdate(
                     pos,
-                    GSBlocks.ENCELADUS_CRYSTAL.getDefaultState().withProperty(
+                    GSBlocks.ENCELADUS_CRYSTAL.defaultBlockState().setValue(
                         EnceladusCrystal.FACING,
                         EnumFacing.HORIZONTALS[(rand)!!.nextInt(4)]
                     )
                 )
             }
 
-            if ((world)!!.getBlockState(pos.up()) === GSBlocks.ENCELADUS_BLOCKS.getStateFromMeta(EnumEnceladusBlocks.ENCELADUS_GRUNT.getMeta()) && (world)!!.isAirBlock(
+            if ((world)!!.getBlockState(pos.above()) === GSBlocks.ENCELADUS_BLOCKS.getStateFromMeta(EnumEnceladusBlocks.ENCELADUS_GRUNT.getMeta()) && (world)!!.isEmptyBlock(
                     pos
                 )
             ) {
-                (world)!!.setBlockState(
+                (world)!!.setBlockAndUpdate(
                     pos,
-                    GSBlocks.ENCELADUS_CRYSTAL.getDefaultState().withProperty(
+                    GSBlocks.ENCELADUS_CRYSTAL.defaultBlockState().setValue(
                         EnceladusCrystal.FACING,
                         EnumFacing.HORIZONTALS[(rand)!!.nextInt(4)]
                     )

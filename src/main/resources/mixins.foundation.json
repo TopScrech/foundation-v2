@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "minVersion": "0.8.7",
+  "compatibilityLevel": "JAVA_21",
+  "package": "foundation.mixin",
+  "mixins": ["MilkEffectCuresMixin", "PlanetClockLayersMixin"],
+  "client": [],
+  "server": [],
+  "injectors": { "defaultRequire": 1 }
+}

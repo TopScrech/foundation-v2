@@ -1,5 +1,7 @@
 package galaxyspace.core.handler
 
+import net.minecraft.network.chat.Component
+
 import galaxyspace.core.configs.GSConfigCore
 import galaxyspace.core.prefab.inventory.ContainerAstroWolf
 import galaxyspace.core.prefab.entities.EntityAstroWolf
@@ -65,24 +67,25 @@ import galaxyspace.systems.SolarSystem.planets.overworld.inventory.ContainerOxyg
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.inventory.ContainerPlayer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.common.network.IGuiHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class GSGuiHandler : IGuiHandler {
     override fun getServerGuiElement(ID: Int, player: EntityPlayer?, world: World, x: Int, y: Int, z: Int): Any? {
         val playerBase: EntityPlayerMP? = PlayerUtil.getPlayerBaseServerFromPlayer(player, false)
 
         if (playerBase == null) {
-            player!!.sendMessage(TextComponentString("Galaxy Space player instance null server-side. This is a bug."))
+            player!!.sendSystemMessage(Component.literal("Galaxy Space player instance null server-side. This is a bug."))
             return null
         }
 
@@ -90,13 +93,13 @@ open class GSGuiHandler : IGuiHandler {
 
 
         val pos: BlockPos = BlockPos(x, y, z)
-        val tile: TileEntity? = world.getTileEntity(pos)
+        val tile: TileEntity? = world.getBlockEntity(pos)
 
         if (ID == GSConfigCore.guiIDGuideBook) return ContainerPlayer(player!!.inventory, false, player)
 
         if (ID == 1005) return ContainerAstroWolf(
             player!!.inventory,
-            (world.getEntityByID(x) as EntityAstroWolf?)!!,
+            (world.getEntity(x) as EntityAstroWolf?)!!,
             player
         )
 
@@ -140,7 +143,7 @@ open class GSGuiHandler : IGuiHandler {
 
     override fun getClientGuiElement(ID: Int, player: EntityPlayer, world: World, x: Int, y: Int, z: Int): Any? {
         if (GCCoreUtil.getEffectiveSide() == Side.CLIENT) {
-            if (ID == 1005) return GuiAstroWolfInventory(player, (world.getEntityByID(x) as EntityAstroWolf?)!!)
+            if (ID == 1005) return GuiAstroWolfInventory(player, (world.getEntity(x) as EntityAstroWolf?)!!)
 
             return this.getClientGuiElement(ID, player, world, BlockPos(x, y, z))
         }
@@ -148,10 +151,10 @@ open class GSGuiHandler : IGuiHandler {
         return null
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private fun getClientGuiElement(ID: Int, player: EntityPlayer, world: World, position: BlockPos): Any? {
         val playerClient: EntityPlayerSP? = PlayerUtil.getPlayerBaseClientFromPlayer(player, false)
-        val tile: TileEntity? = world.getTileEntity(position)
+        val tile: TileEntity? = world.getBlockEntity(position)
 
         if (ID == GSConfigCore.guiIDGuideBook) return ACGuiGuideBook()
 

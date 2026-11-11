@@ -3,7 +3,7 @@ package galaxyspace.systems.SolarSystem.moons.io.world.gen.layers
 import galaxyspace.systems.SolarSystem.SolarSystemBodies
 import galaxyspace.systems.SolarSystem.moons.io.world.gen.layers.GenLayerIoBiomes
 import micdoodle8.mods.miccore.IntCache
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.gen.layer.GenLayer
 
 open class GenLayerIoBiomes : GenLayer {

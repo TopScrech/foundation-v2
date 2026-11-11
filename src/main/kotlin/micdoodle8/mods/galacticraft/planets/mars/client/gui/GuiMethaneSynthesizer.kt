@@ -15,17 +15,17 @@ import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.mars.inventory.ContainerMethaneSynthesizer
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityMethaneSynthesizer
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fluids.FluidRegistry
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import kotlin.math.min
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiMethaneSynthesizer constructor(
     par1InventoryPlayer: InventoryPlayer?,
     private val tileEntity: TileEntityMethaneSynthesizer
@@ -395,9 +395,9 @@ open class GuiMethaneSynthesizer constructor(
 
     companion object {
         private val refineryTexture =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/methane_synthesizer.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/methane_synthesizer.png")
 
         private val gasTextures =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/gases_methane_oxygen_nitrogen.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/gases_methane_oxygen_nitrogen.png")
     }
 }

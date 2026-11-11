@@ -18,7 +18,7 @@ object Constants {
 
     const val COMBINEDVERSION: String = "$LOCALMAJVERSION.$LOCALMINVERSION.$LOCALPATCHVERSION.$LOCALBUILDVERSION"
 
-    const val MCVERSION: String = "[1.12.2]"
+    const val MCVERSION: String = "[26.3]"
 
     const val DEPENDENCIES_FORGE: String = "required-after:forge@[14.23.1.2555,); " //Keep the space at the end!
 

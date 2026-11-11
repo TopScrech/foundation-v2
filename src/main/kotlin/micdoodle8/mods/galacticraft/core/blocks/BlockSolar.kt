@@ -1,5 +1,11 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.item.legacyItemValue
+
+import foundation.block.LegacyBlockMetadata
+
+import foundation.level.offset
+
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseUniversalElectrical
@@ -7,31 +13,33 @@ import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.tile.TileEntitySolar
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyDirection
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.floor
 
 open class BlockSolar constructor(assetName: String?) : BlockTileGC(Material.IRON), IShiftDescription,
-    IPartialSealableBlock, ISortableBlock {
+    IPartialSealableBlock, ISortableBlock, LegacyBlockMetadata {
     enum class EnumSolarType(private val meta: Int, private val serializedName: String) : IStringSerializable {
         BASIC_SOLAR(0, "basic_solar"),
         ADVANCED_SOLAR(1, "advanced_solar"); // 3 for backwards compatibility
@@ -40,7 +48,9 @@ open class BlockSolar constructor(assetName: String?) : BlockTileGC(Material.IRO
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -60,7 +70,7 @@ open class BlockSolar constructor(assetName: String?) : BlockTileGC(Material.IRO
         this.setTranslationKey(assetName)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         list.add(ItemStack(this, 1, BASIC_METADATA))
         list.add(ItemStack(this, 1, ADVANCED_METADATA))
@@ -74,7 +84,7 @@ open class BlockSolar constructor(assetName: String?) : BlockTileGC(Material.IRO
         for (y: Int in 1..2) {
             for (x: Int in -1..1) {
                 for (z: Int in -1..1) {
-                    val posAt: BlockPos = pos.add(if (y == 2) x else 0, y, if (y == 2) z else 0)
+                    val posAt: BlockPos = pos.offset(if (y == 2) x else 0, y, if (y == 2) z else 0)
                     val bs: IBlockState = worldIn.getBlockState(posAt)
 
                     if (bs.getMaterial() !== Material.AIR && !bs.getBlock().isReplaceable(worldIn, posAt)) {
@@ -86,7 +96,7 @@ open class BlockSolar constructor(assetName: String?) : BlockTileGC(Material.IRO
 
         for (x: Int in -2..2) {
             for (z: Int in -2..2) {
-                val posAt: BlockPos = pos.add(x, 0, z)
+                val posAt: BlockPos = pos.offset(x, 0, z)
                 val block: Block = worldIn.getBlockState(posAt).getBlock()
 
                 if (block === this) {
@@ -106,22 +116,22 @@ open class BlockSolar constructor(assetName: String?) : BlockTileGC(Material.IRO
         placer: EntityLivingBase,
         stack: ItemStack
     ) {
-        val angle: Int = MathHelper.floor(placer.rotationYaw * 4.0f / 360.0f + 0.5) and 3
+        val angle: Int = MathHelper.floor(placer.yRot * 4.0f / 360.0f + 0.5) and 3
         var change: Int = EnumFacing.byHorizontalIndex(angle).getOpposite().getHorizontalIndex()
 
-        if (stack.getItemDamage() >= ADVANCED_METADATA) {
+        if (stack.legacyItemValue >= ADVANCED_METADATA) {
             change += ADVANCED_METADATA
-        } else if (stack.getItemDamage() >= BASIC_METADATA) {
+        } else if (stack.legacyItemValue >= BASIC_METADATA) {
             change += BASIC_METADATA
         }
 
-        worldIn.setBlockState(pos, getStateFromMeta(change), 3)
+        worldIn.setBlock(pos, getStateFromMeta(change), 3)
 
         BlockMulti.Companion.onPlacement(worldIn, pos, placer, this)
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val var9: TileEntity? = worldIn.getTileEntity(pos)
+        val var9: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (var9 is TileEntitySolar) {
             var9.onDestroy(var9)
@@ -205,8 +215,8 @@ open class BlockSolar constructor(assetName: String?) : BlockTileGC(Material.IRO
     override fun getStateFromMeta(meta: Int): IBlockState {
         val enumfacing: EnumFacing = EnumFacing.byHorizontalIndex(meta % 4)
         val type: EnumSolarType = EnumSolarType.Companion.byMetadata(floor(meta / 4.0).toInt())
-        return this.getDefaultState().withProperty(FACING, enumfacing)
-            .withProperty(TYPE, type)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
+            .setValue(TYPE, type)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -229,7 +239,7 @@ open class BlockSolar constructor(assetName: String?) : BlockTileGC(Material.IRO
         const val ADVANCED_METADATA: Int = 4
 
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL)
+        val FACING: EnumProperty<Direction> = BlockStateProperties.HORIZONTAL_FACING
 
         @JvmField
         val TYPE: PropertyEnum<EnumSolarType> = PropertyEnum.create<EnumSolarType>("type", EnumSolarType::class.java)

@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.core.client.gui.container
 
-import net.minecraft.inventory.Container
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.core.BlockPos
 
 abstract class GuiPositionedContainer(container: Container?, pos: BlockPos) : GuiContainerGC((container)!!) {
     private val x: Int

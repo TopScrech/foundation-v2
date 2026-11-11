@@ -1,5 +1,9 @@
 package galaxyspace.core.util
 
+import foundation.block.getMetaFromState
+
+import foundation.level.offset
+
 import galaxyspace.GalaxySpace
 import galaxyspace.core.GSFluids
 import galaxyspace.core.util.GSUtils
@@ -20,7 +24,7 @@ import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.FluidUtil
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockCommandBlock
 import net.minecraft.block.BlockEnchantmentTable
 import net.minecraft.block.BlockFarmland
@@ -34,7 +38,7 @@ import net.minecraft.block.BlockSponge
 import net.minecraft.block.BlockStainedGlass
 import net.minecraft.block.BlockStructure
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.gui.inventory.GuiContainer
@@ -47,24 +51,24 @@ import net.minecraft.client.renderer.block.model.ItemCameraTransforms
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Items
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.Item
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.Items
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemBucket
-import net.minecraft.item.ItemStack
-import net.minecraft.network.Packet
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.item.ItemStack
+import net.minecraft.network.protocol.Packet
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.client.ForgeHooksClient
 import net.minecraftforge.common.ForgeModContainer
 import net.minecraftforge.common.MinecraftForge
@@ -73,8 +77,8 @@ import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.io.File
 import java.io.InputStreamReader
 import java.lang.Exception
@@ -177,7 +181,7 @@ object GSUtils {
                 scale = 0
             }
 
-            Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
+            Minecraft.getInstance().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
             drawTexturedModalRect(
                 guiWidth + xPos,
                 guiHeight + yPos + 58 - renderRemaining - start,
@@ -447,9 +451,9 @@ object GSUtils {
 
         // Testing a non-air, permeable block (for example a torch or a ladder)
         if (limitCount < 5) {
-            for (side: EnumFacing in EnumFacing.VALUES) {
+            for (side: EnumFacing in EnumFacing.values()) {
                 if (permeableFlag || canBlockPassAirOnSide(world, block, pos, side)) {
-                    val sidevec: BlockPos = pos.add(side.getXOffset(), side.getYOffset(), side.getZOffset())
+                    val sidevec: BlockPos = pos.offset(side.getStepX(), side.getStepY(), side.getStepZ())
                     if (!checked!!.contains(sidevec)) {
                         val newblock: Block = world.getBlockState(sidevec).getBlock()
                         val adjResult: Int = testContactWithBreathableAir(
@@ -495,12 +499,12 @@ object GSUtils {
             return false
         }
 
-        return !block.isSideSolid(world.getBlockState(vec), world, vec, EnumFacing.byIndex(side.getIndex() xor 1))
+        return !block.isSideSolid(world.getBlockState(vec), world, vec, EnumFacing.from3DDataValue(side.getIndex() xor 1))
     }
 
     @JvmStatic
     fun start() {
-        val mc: Minecraft = Minecraft.getMinecraft()
+        val mc: Minecraft = Minecraft.getInstance()
 
         val scaledresolution: ScaledResolution = ClientUtil.getScaledRes(mc, mc.displayWidth, mc.displayHeight)
 
@@ -911,7 +915,7 @@ object GSUtils {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun renderItemIntoSlot(re: RenderItem, stack: ItemStack, x: Int, y: Int, color: Vec3d) {
         GlStateManager.pushMatrix()
         renderItemModelIntoGUI(
@@ -937,8 +941,8 @@ object GSUtils {
     ) {
         var bakedmodel: IBakedModel = bakedmodel
         GlStateManager.pushMatrix()
-        Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
-        Minecraft.getMinecraft().getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
+        Minecraft.getInstance().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
+        Minecraft.getInstance().getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
             .setBlurMipmap(false, false)
         GlStateManager.enableRescaleNormal()
         GlStateManager.enableAlpha()
@@ -953,8 +957,8 @@ object GSUtils {
         GlStateManager.disableRescaleNormal()
         GlStateManager.disableLighting()
         GlStateManager.popMatrix()
-        Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
-        Minecraft.getMinecraft().getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
+        Minecraft.getInstance().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
+        Minecraft.getInstance().getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
             .restoreLastBlurMipmap()
     }
 
@@ -996,12 +1000,12 @@ object GSUtils {
 
     @JvmStatic
     private fun renderEffect(re: RenderItem, model: IBakedModel) {
-        val RES_ITEM_GLINT: ResourceLocation = ResourceLocation("textures/misc/enchanted_item_glint.png")
+        val RES_ITEM_GLINT: ResourceLocation = ResourceLocation.parse("textures/misc/enchanted_item_glint.png")
         GlStateManager.depthMask(false)
         GlStateManager.depthFunc(514)
         GlStateManager.disableLighting()
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_COLOR, GlStateManager.DestFactor.ONE)
-        Minecraft.getMinecraft().getTextureManager().bindTexture(RES_ITEM_GLINT)
+        Minecraft.getInstance().getTextureManager().bindTexture(RES_ITEM_GLINT)
         GlStateManager.matrixMode(5890)
         GlStateManager.pushMatrix()
         GlStateManager.scale(8.0f, 8.0f, 8.0f)
@@ -1022,7 +1026,7 @@ object GSUtils {
         GlStateManager.enableLighting()
         GlStateManager.depthFunc(515)
         GlStateManager.depthMask(true)
-        Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
+        Minecraft.getInstance().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
     }
 
     @JvmStatic
@@ -1112,9 +1116,9 @@ object GSUtils {
         val player: EntityPlayer? = entityLiving as EntityPlayer?
         var facing: EnumFacing = entityLiving.getHorizontalFacing()
 
-        if (entityLiving.rotationPitch < -45.0f) {
+        if (entityLiving.xRot < -45.0f) {
             facing = EnumFacing.UP
-        } else if (entityLiving.rotationPitch > 45.0f) {
+        } else if (entityLiving.xRot > 45.0f) {
             facing = EnumFacing.DOWN
         }
 
@@ -1131,11 +1135,11 @@ object GSUtils {
 
                 val pos1: BlockPos
                 if (yAxis) {
-                    pos1 = pos.add(i, 0, j)
+                    pos1 = pos.offset(i, 0, j)
                 } else if (xAxis) {
-                    pos1 = pos.add(0, i, j)
+                    pos1 = pos.offset(0, i, j)
                 } else {
-                    pos1 = pos.add(i, j, 0)
+                    pos1 = pos.offset(i, j, 0)
                 }
 
                 //:Replicate logic of PlayerInteractionManager.tryHarvestBlock(pos1)
@@ -1147,16 +1151,16 @@ object GSUtils {
                     if (!event.isCanceled()) {
                         val block: Block = state1.getBlock()
                         if ((block is BlockCommandBlock || block is BlockStructure) && !player!!.canUseCommandBlock()) {
-                            worldIn.notifyBlockUpdate(pos1, state1, state1, 3)
+                            worldIn.sendBlockUpdated(pos1, state1, state1, 3)
                             ++j
                             continue
                         }
-                        if (worldIn.isAirBlock(pos1)) {
+                        if (worldIn.isEmptyBlock(pos1)) {
                             ++j
                             continue
                         }
 
-                        val tileentity: TileEntity? = worldIn.getTileEntity(pos1)
+                        val tileentity: TileEntity? = worldIn.getBlockEntity(pos1)
                         if (tileentity != null) {
                             val pkt: Packet<*>? = tileentity.getUpdatePacket()
                             if (pkt != null) {
@@ -1182,11 +1186,11 @@ object GSUtils {
 
     @JvmStatic
     fun getRay(world: World, player: EntityPlayer, useLiquids: Boolean): RayTraceResult? {
-        val f: Float = player.rotationPitch
-        val f1: Float = player.rotationYaw
-        val d0: Double = player.posX
-        val d1: Double = player.posY + player.getEyeHeight().toDouble()
-        val d2: Double = player.posZ
+        val f: Float = player.xRot
+        val f1: Float = player.yRot
+        val d0: Double = player.x
+        val d1: Double = player.y + player.getEyeHeight().toDouble()
+        val d2: Double = player.z
         val vec3d: Vec3d = Vec3d(d0, d1, d2)
         val f2: Float = MathHelper.cos(-f1 * 0.017453292f - Math.PI.toFloat())
         val f3: Float = MathHelper.sin(-f1 * 0.017453292f - Math.PI.toFloat())

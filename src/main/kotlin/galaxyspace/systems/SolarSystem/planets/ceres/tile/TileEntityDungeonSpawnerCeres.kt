@@ -7,9 +7,9 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSkeleton
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSpider
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedZombie
 import micdoodle8.mods.galacticraft.core.tile.TileEntityDungeonSpawner
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityLiving
-import net.minecraft.util.SoundCategory
+import net.minecraft.sounds.SoundSource as SoundCategory
 import java.util.ArrayList
 
 open class TileEntityDungeonSpawnerCeres constructor() :
@@ -25,9 +25,9 @@ open class TileEntityDungeonSpawnerCeres constructor() :
     override fun playSpawnSound(entity: Entity?) {
         this.world.playSound(
             null,
-            (entity)!!.posX,
-            (entity)!!.posY,
-            (entity)!!.posZ,
+            (entity)!!.x,
+            (entity)!!.y,
+            (entity)!!.z,
             GCSounds.scaryScape,
             SoundCategory.AMBIENT,
             9.0f,

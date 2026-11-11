@@ -1,5 +1,9 @@
 package galaxyspace.systems.ACentauriSystem.planets.proxima_b.dimension
 
+import foundation.block.getStateFromMeta
+
+import foundation.level.offset
+
 import galaxyspace.systems.ACentauriSystem.planets.proxima_b.world.gen.we.Proxima_B_Forest
 import galaxyspace.systems.ACentauriSystem.planets.proxima_b.world.gen.we.Proxima_B_Plains
 
@@ -36,22 +40,22 @@ import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody
 import micdoodle8.mods.galacticraft.api.galaxies.IChildBody
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.block.Block
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
-import net.minecraft.world.World
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.client.IRenderHandler
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 import kotlin.math.max
 
@@ -85,7 +89,7 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
         return WE_ChunkProviderSpace::class.java
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun calcSunriseSunsetColors(celestialAngle: Float, partialTicks: Float): FloatArray? {
         val f: Float = 0.4f
         val f1: Float = MathHelper.cos(celestialAngle * (Math.PI.toFloat() * 2f)) - 0.0f
@@ -105,14 +109,14 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getFogColor(): Vector3 {
         var f: Float = 0.7f - this.getStarBrightness(1.0f)
         f = max(f, 0.0f)
         return Vector3((226 / 255.0f * f).toDouble(), (145 / 255.0f * f).toDouble(), (90 / 255.0f * f).toDouble())
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyColor(): Vector3 {
         var f: Float = 0.5f - this.getStarBrightness(1.0f)
         f = max(f, 0.0f)
@@ -131,7 +135,7 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
         return !ConfigManagerCore.forceOverworldRespawn
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val var2: Float = this.world.getCelestialAngle(par1)
         var var3: Float = 1.0f - (MathHelper.cos(var2 * Math.PI.toFloat() * 2.0f) * 2.0f + 0.25f)
@@ -147,7 +151,7 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
         return var3 * var3 * 0.1f + 0.1f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSunBrightness(par1: Float): Float {
         val f1: Float = this.world.getCelestialAngle(1.0f)
         var f2: Float = 1.0f - (MathHelper.cos(f1 * 3.1415927f * 2.0f) * 2.0f + 0.2f)
@@ -161,12 +165,12 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
         return super.getCloudRenderer()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCloudHeight(): Float {
         return 180.0f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyRenderer(): IRenderHandler? {
         if (super.getSkyRenderer() == null) {
             this.setSkyRenderer(SkyProviderProxima_B())
@@ -203,7 +207,7 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
         val terrainGenerator: WE_TerrainGenerator = WE_TerrainGenerator()
         terrainGenerator.worldStoneBlock = ACBlocks.PROXIMA_B_BLOCKS.getStateFromMeta(2)
         terrainGenerator.worldSeaGen = true
-        terrainGenerator.worldSeaGenBlock = Blocks.WATER.getDefaultState()
+        terrainGenerator.worldSeaGenBlock = Blocks.WATER.defaultBlockState()
         terrainGenerator.worldSeaGenMaxY = 70
         (cp)!!.createChunkGen_List.add(terrainGenerator)
 
@@ -219,7 +223,7 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
         val rg: WE_RavineGen = WE_RavineGen()
         rg.replaceBlocksList.clear()
         rg.addReplacingBlock(terrainGenerator.worldStoneBlock)
-        rg.lavaBlock = Blocks.LAVA.getDefaultState()
+        rg.lavaBlock = Blocks.LAVA.defaultBlockState()
         (cp)!!.createChunkGen_List.add(rg)
 
         (cp as WE_ChunkProviderSpace).worldGenerators.clear()
@@ -298,7 +302,7 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
             -1,
             true
         )
-        layer.add(Blocks.BEDROCK.getDefaultState(), 0, 0, 1, 2, true)
+        layer.add(Blocks.BEDROCK.defaultBlockState(), 0, 0, 1, 2, true)
 
         WE_Biome.addBiomeToGeneration(cp, object : WE_BaseBiome(-0.4, 0.0, 1.4, 4, 78, 10, layer) {
             override fun decorateBiome(world: World?, rand: Random?, x: Int, z: Int) {
@@ -311,24 +315,24 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
                     randPosZ = z + (rand)!!.nextInt(16) + 8
                     pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-                    if ((world)!!.getBlockState(pos.down()) === ACBlocks.PROXIMA_B_BLOCKS.getDefaultState()
-                            .withProperty(
+                    if ((world)!!.getBlockState(pos.below()) === ACBlocks.PROXIMA_B_BLOCKS.defaultBlockState()
+                            .setValue(
                                 Proxima_B_Blocks.Companion.BASIC_TYPE,
                                 EnumBlockProximaB.ROCKY_SURFACE
                             )
                     ) {
-                        (world)!!.setBlockState(
-                            pos.down(),
-                            ACBlocks.PROXIMA_B_BLOCKS.getDefaultState()
-                                .withProperty(
+                        (world)!!.setBlockAndUpdate(
+                            pos.below(),
+                            ACBlocks.PROXIMA_B_BLOCKS.defaultBlockState()
+                                .setValue(
                                     Proxima_B_Blocks.Companion.BASIC_TYPE,
                                     EnumBlockProximaB.SURFACE
                                 )
                         )
-                        (world)!!.setBlockState(
+                        (world)!!.setBlockAndUpdate(
                             pos,
-                            ACBlocks.PROXIMA_B_DANDELIONS.getDefaultState()
-                                .withProperty(
+                            ACBlocks.PROXIMA_B_DANDELIONS.defaultBlockState()
+                                .setValue(
                                     Proxima_B_Dandelions.Companion.BASIC_TYPE,
                                     Proxima_B_Dandelions.EnumBlockDandelions.GRASS
                                 )
@@ -341,8 +345,8 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
                     randPosZ = z + (rand)!!.nextInt(16) + 8
                     pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-                    if ((world)!!.getBlockState(pos.down()) === ACBlocks.PROXIMA_B_BLOCKS.getDefaultState()
-                            .withProperty(
+                    if ((world)!!.getBlockState(pos.below()) === ACBlocks.PROXIMA_B_BLOCKS.defaultBlockState()
+                            .setValue(
                                 Proxima_B_Blocks.Companion.BASIC_TYPE,
                                 EnumBlockProximaB.ROCKY_SURFACE
                             )
@@ -366,7 +370,7 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
             true
         )
         layer.add(
-            ACBlocks.PROXIMA_B_GRASS.getDefaultState(),
+            ACBlocks.PROXIMA_B_GRASS.defaultBlockState(),
             ACBlocks.PROXIMA_B_BLOCKS.getStateFromMeta(14),
             -256,
             0,
@@ -374,7 +378,7 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
             0,
             false
         )
-        layer.add(Blocks.BEDROCK.getDefaultState(), 0, 0, 1, 2, true)
+        layer.add(Blocks.BEDROCK.defaultBlockState(), 0, 0, 1, 2, true)
 
         WE_Biome.addBiomeToGeneration(
             cp, object : WE_BaseBiome(0.0, 0.8, 1.5, 4, 72, 15, layer) {
@@ -386,17 +390,17 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
                     var cangen: Boolean = true
 
                     for (pos1: BlockPos in BlockPos.getAllInBox(
-                        pos.add(-3, -1, -3),
-                        pos.add(3, -1, 3)
-                    )) if ((world)!!.isAirBlock(pos1)) cangen = false
+                        pos.offset(-3, -1, -3),
+                        pos.offset(3, -1, 3)
+                    )) if ((world)!!.isEmptyBlock(pos1)) cangen = false
 
                     if (!(world)!!.isAreaLoaded(
                             pos,
                             13,
                             false
                         )
-                    ) if (cangen && (world)!!.getBlockState(pos.down()) === ACBlocks.PROXIMA_B_GRASS.getDefaultState()
-                            .withProperty(
+                    ) if (cangen && (world)!!.getBlockState(pos.below()) === ACBlocks.PROXIMA_B_GRASS.defaultBlockState()
+                            .setValue(
                                 Proxima_B_Grass.Companion.BASIC_TYPE,
                                 Proxima_B_Grass.EnumBlockGrass.GRASS
                             )
@@ -404,13 +408,13 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
                         when ((rand)!!.nextInt(2)) {
                             0 -> WorldGenTree_BigJungle(
                                 ACBlocks.PROXIMA_B_LOG_1.getStateFromMeta(0),
-                                Blocks.AIR.getDefaultState(),
+                                Blocks.AIR.defaultBlockState(),
                                 (rand)!!.nextInt(3)
                             ).generate((world)!!, (rand)!!, pos)
 
                             1 -> WorldGenTree_BigJungle2(
                                 ACBlocks.PROXIMA_B_LOG_1.getStateFromMeta(0),
-                                Blocks.AIR.getDefaultState(),
+                                Blocks.AIR.defaultBlockState(),
                                 (rand)!!.nextInt(3)
                             ).generate((world)!!, (rand)!!, pos)
                         }
@@ -421,16 +425,16 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
                         randPosZ = z + (rand)!!.nextInt(16) + 8
                         pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-                        if ((world)!!.getBlockState(pos.down()) === ACBlocks.PROXIMA_B_GRASS.getDefaultState()
-                                .withProperty(
+                        if ((world)!!.getBlockState(pos.below()) === ACBlocks.PROXIMA_B_GRASS.defaultBlockState()
+                                .setValue(
                                     Proxima_B_Grass.Companion.BASIC_TYPE,
                                     Proxima_B_Grass.EnumBlockGrass.GRASS
                                 )
                         ) {
-                            (world)!!.setBlockState(
+                            (world)!!.setBlockAndUpdate(
                                 pos,
-                                ACBlocks.PROXIMA_B_DANDELIONS.getDefaultState()
-                                    .withProperty(
+                                ACBlocks.PROXIMA_B_DANDELIONS.defaultBlockState()
+                                    .setValue(
                                         Proxima_B_Dandelions.Companion.BASIC_TYPE,
                                         Proxima_B_Dandelions.EnumBlockDandelions.GRASS_2
                                     )
@@ -443,8 +447,8 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
                         randPosZ = z + (rand)!!.nextInt(16) + 8
                         pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-                        if ((world)!!.getBlockState(pos.down()) === ACBlocks.PROXIMA_B_GRASS.getDefaultState()
-                                .withProperty(
+                        if ((world)!!.getBlockState(pos.below()) === ACBlocks.PROXIMA_B_GRASS.defaultBlockState()
+                                .setValue(
                                     Proxima_B_Grass.Companion.BASIC_TYPE,
                                     Proxima_B_Grass.EnumBlockGrass.GRASS
                                 )
@@ -454,7 +458,7 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
                                 if (rand_pos > 20) pos = pos.east(1)
                                 if (rand_pos > 50) pos = pos.east(-1).west(1)
 
-                                (world)!!.setBlockState(pos.up(y), ACBlocks.PROXIMA_B_LOG_1.getStateFromMeta(0))
+                                (world)!!.setBlockAndUpdate(pos.above(y), ACBlocks.PROXIMA_B_LOG_1.getStateFromMeta(0))
                             }
                         }
                     }
@@ -464,8 +468,8 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
                         randPosZ = z + (rand)!!.nextInt(16) + 8
                         pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-                        if ((world)!!.getBlockState(pos.down()) === ACBlocks.PROXIMA_B_GRASS.getDefaultState()
-                                .withProperty(
+                        if ((world)!!.getBlockState(pos.below()) === ACBlocks.PROXIMA_B_GRASS.defaultBlockState()
+                                .setValue(
                                     Proxima_B_Grass.Companion.BASIC_TYPE,
                                     Proxima_B_Grass.EnumBlockGrass.GRASS
                                 )
@@ -473,7 +477,7 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
                             for (y: Int in 0..<6 + (rand)!!.nextInt(5)) {
                                 if (y % 3 == 0) pos = pos.offset(EnumFacing.byHorizontalIndex((rand)!!.nextInt(4)))
 
-                                (world)!!.setBlockState(pos.up(y), ACBlocks.PROXIMA_B_LOG_1.getStateFromMeta(0))
+                                (world)!!.setBlockAndUpdate(pos.above(y), ACBlocks.PROXIMA_B_LOG_1.getStateFromMeta(0))
                             }
                         }
                     }
@@ -502,7 +506,7 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
         return (worldTime / this.getDayLength() % 8L + 8L).toInt() % 8
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getLightmapColors(
         partialTicks: Float,
         sunBrightness: Float,
@@ -534,7 +538,7 @@ open class WorldProviderProxima_B_WE : WE_WorldProviderSpace(), IProviderFog {
         return GSUtils.getColor(66, 70, 80, 10)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getFogDensity(arg0: Int, arg1: Int, arg2: Int): Float {
         when (this.getMoonPhase(this.getWorldTime())) {
             0 -> return 0.8f

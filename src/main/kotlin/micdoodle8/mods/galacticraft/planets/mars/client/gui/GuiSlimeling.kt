@@ -8,16 +8,16 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.mars.entities.EntitySlimeling
 import micdoodle8.mods.galacticraft.planets.mars.network.PacketSimpleMars
-import net.minecraft.client.audio.PositionedSoundRecord
+import net.minecraft.client.resources.sounds.SimpleSoundInstance as PositionedSoundRecord
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 import net.minecraft.client.gui.GuiTextField
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.RenderHelper
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.input.Keyboard
 import java.io.IOException
@@ -117,8 +117,7 @@ open class GuiSlimeling constructor(private val slimeling: EntitySlimeling) : Gu
             this.nameField!!.mouseClicked(mouseX, mouseY, mouseButton)
         }
         if (mouseX >= this.invX && mouseX < this.invX + this.invWidth && mouseY >= this.invY && mouseY < this.invY + this.invHeight) {
-            this.mc.getSoundHandler()
-                .playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+            this.mc.getSoundManager().play(PositionedSoundRecord.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f))
             (GalacticraftCore.packetPipeline)!!.sendToServer(
                 PacketSimpleMars(
                     PacketSimpleMars.EnumSimplePacketMars.S_UPDATE_SLIMELING_DATA,
@@ -253,7 +252,7 @@ open class GuiSlimeling constructor(private val slimeling: EntitySlimeling) : Gu
 
     companion object {
         private val slimelingPanelGui =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/slimeling_panel0.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/slimeling_panel0.png")
 
         @JvmField
         var renderingOnGui: Boolean = false

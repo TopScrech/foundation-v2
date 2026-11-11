@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.client.config.GuiUtils
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.GL11
@@ -167,8 +166,8 @@ open class GuiElementSlider @JvmOverloads constructor(
 
     open fun drawHoveringText() {
         if (this.hovered) {
-            val font: FontRenderer? = FMLClientHandler.instance().getClient().fontRenderer
-            val mc: Minecraft = FMLClientHandler.instance().getClient()
+            val font: FontRenderer? = Minecraft.getInstance().fontRenderer
+            val mc: Minecraft = Minecraft.getInstance()
             val scaledresolution: ScaledResolution = ClientUtil.getScaledRes(mc, mc.displayWidth, mc.displayHeight)
             val width: Int = scaledresolution.getScaledWidth()
             val height: Int = scaledresolution.getScaledHeight()

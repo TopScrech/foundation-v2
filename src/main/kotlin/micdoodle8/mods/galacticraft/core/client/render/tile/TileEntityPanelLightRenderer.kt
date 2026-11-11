@@ -7,12 +7,12 @@ import micdoodle8.mods.galacticraft.core.util.ColorUtil
 import net.minecraft.client.renderer.*
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class TileEntityPanelLightRenderer : TileEntitySpecialRenderer<TileEntityPanelLight>() {
     override fun render(
         tileEntity: TileEntityPanelLight,
@@ -179,6 +179,6 @@ open class TileEntityPanelLightRenderer : TileEntitySpecialRenderer<TileEntityPa
 
     companion object {
         @JvmField
-        val lightTexture: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "textures/misc/light.png")
+        val lightTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/misc/light.png")
     }
 }

@@ -5,7 +5,7 @@ import micdoodle8.mods.galacticraft.core.client.model.block.ModelSolarPanel
 import micdoodle8.mods.galacticraft.core.dimension.WorldProviderSpaceStation
 import micdoodle8.mods.galacticraft.core.tile.TileEntitySolar
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL12
 
@@ -65,8 +65,8 @@ open class TileEntitySolarPanelRenderer : TileEntitySpecialRenderer<TileEntitySo
     }
 
     companion object {
-        private val solarPanelTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/solar_panel_basic.png")
+        private val solarPanelTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/solar_panel_basic.png")
         private val solarPanelAdvTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/model/solar_panel_advanced.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/solar_panel_advanced.png")
     }
 }

@@ -32,26 +32,26 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
-import net.minecraft.block.Block
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.WorldServer
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.lang.Exception
 import java.lang.reflect.Field
 import java.util.ArrayList
@@ -77,7 +77,7 @@ open class EntityTier6Rocket : EntityTieredRocket, ICustomEngine {
         rocketType: IRocketType.EnumRocketType?
     ) : super(par1World, par2, par4, par6) {
         this.rocketType = rocketType
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
     }
 
     constructor(
@@ -89,7 +89,7 @@ open class EntityTier6Rocket : EntityTieredRocket, ICustomEngine {
         engine: Engine_Type
     ) : super(par1World, par2, par4, par6) {
         this.rocketType = rocketType
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         this.engine_type = engine
     }
 
@@ -167,8 +167,8 @@ open class EntityTier6Rocket : EntityTieredRocket, ICustomEngine {
                         (stats)!!.setLaunchpadStack(null)
 
                         if (this.world.provider !is IOrbitDimension) {
-                            (stats)!!.setCoordsTeleportedFromX(player.posX)
-                            (stats)!!.setCoordsTeleportedFromZ(player.posZ)
+                            (stats)!!.setCoordsTeleportedFromX(player.x)
+                            (stats)!!.setCoordsTeleportedFromZ(player.z)
                         }
                     }
                 }
@@ -191,7 +191,7 @@ open class EntityTier6Rocket : EntityTieredRocket, ICustomEngine {
                                 MinecraftForge.EVENT_BUS.post(event)
 
                                 if (event.allow) {
-                                    this.world.setBlockToAir(pos)
+                                    this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                                     amountRemoved = 25
                                 }
                                 break@PADSEARCH
@@ -240,12 +240,12 @@ open class EntityTier6Rocket : EntityTieredRocket, ICustomEngine {
                     this.motionY = this.motionZ
                     this.motionX = this.motionY
                     passenger.motionZ = 0.0
-                    passenger.motionY = passenger.motionZ
-                    passenger.motionX = passenger.motionY
+                    passenger.motionY = passenger.deltaMovement.z
+                    passenger.motionX = passenger.deltaMovement.y
                     if (passenger2 != null) {
                         passenger2.motionZ = 0.0
-                        passenger2.motionY = passenger2.motionZ
-                        passenger2.motionX = passenger2.motionY
+                        passenger2.motionY = passenger2.deltaMovement.z
+                        passenger2.motionX = passenger2.deltaMovement.y
                     }
                 }
             } else {
@@ -387,8 +387,8 @@ open class EntityTier6Rocket : EntityTieredRocket, ICustomEngine {
             if (engine_type == Engine_Type.SUBLIGHT_ENGINE) {
                 val withengine: ItemStack = ItemStack(GSItems.ROCKET_TIER_6, 1, (this.rocketType)!!.getIndex())
                 if (!withengine.hasTagCompound()) withengine.setTagCompound(NBTTagCompound())
-                withengine.getTagCompound()!!.setBoolean(Engine_Type.SUBLIGHT_ENGINE.getName(), true)
-                withengine.getTagCompound()!!.setInteger(ItemSpaceSuit.mod_count, 0)
+                withengine.getTagCompound()!!.putBoolean(Engine_Type.SUBLIGHT_ENGINE.getName(), true)
+                withengine.getTagCompound()!!.putInt(ItemSpaceSuit.mod_count, 0)
 
                 for (i: Int in (stats.getRocketStacks())!!.indices) {
                     //ItemStack stack = stats.getRocketStacks().get(i);
@@ -844,7 +844,7 @@ open class EntityTier6Rocket : EntityTieredRocket, ICustomEngine {
         }
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
         return !this.isDead && par1EntityPlayer.getDistanceSq(this) <= 64.0
     }
 
@@ -858,14 +858,14 @@ open class EntityTier6Rocket : EntityTieredRocket, ICustomEngine {
 
     override fun writeEntityToNBT(nbt: NBTTagCompound) {
         super.writeEntityToNBT(nbt)
-        nbt.setInteger("engine_type", engine_type.getID())
-        nbt.setBoolean("WaitingForMultiPlayer", this.getWaitForMultiPlayer())
+        nbt.putInt("engine_type", engine_type.getID())
+        nbt.putBoolean("WaitingForMultiPlayer", this.getWaitForMultiPlayer())
     }
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
         super.readEntityFromNBT(nbt)
-        this.engine_type = (Engine_Type.byID(nbt.getInteger("engine_type")))!!
-        this.setWaitForPlayer(nbt.getBoolean("WaitingForMultiPlayer"))
+        this.engine_type = (Engine_Type.byID(nbt.getIntOr("engine_type", 0)))!!
+        this.setWaitForPlayer(nbt.getBooleanOr("WaitingForMultiPlayer", false))
     }
 
     override fun getRocketTier(): Int {
@@ -892,9 +892,9 @@ open class EntityTier6Rocket : EntityTieredRocket, ICustomEngine {
         super.getItemsDropped(droppedItems)
         val rocket: ItemStack = ItemStack(GSItems.ROCKET_TIER_6, 1, (this.rocketType)!!.getIndex())
         rocket.setTagCompound(NBTTagCompound())
-        rocket.getTagCompound()!!.setInteger("RocketFuel", this.fuelTank.getFluidAmount())
-        rocket.getTagCompound()!!.setBoolean(engine_type.getName(), true)
-        rocket.getTagCompound()!!.setInteger(ItemSpaceSuit.mod_count, 0)
+        rocket.getTagCompound()!!.putInt("RocketFuel", this.fuelTank.getFluidAmount())
+        rocket.getTagCompound()!!.putBoolean(engine_type.getName(), true)
+        rocket.getTagCompound()!!.putInt(ItemSpaceSuit.mod_count, 0)
         (droppedItems)!!.add(rocket)
         return ((droppedItems as MutableList<ItemStack>?))!!
     }

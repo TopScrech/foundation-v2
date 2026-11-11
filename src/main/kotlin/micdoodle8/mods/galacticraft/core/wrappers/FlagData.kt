@@ -1,9 +1,11 @@
 package micdoodle8.mods.galacticraft.core.wrappers
 
+import foundation.persistence.containsTag
+
 import java.awt.image.BufferedImage
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.util.ColorUtil
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 
 open class FlagData
 constructor(private var width: Int, private var height: Int) {
@@ -73,8 +75,8 @@ constructor(private var width: Int, private var height: Int) {
     }
 
     open fun saveFlagData(nbt: NBTTagCompound) {
-        nbt.setInteger("FWidth", this.width)
-        nbt.setInteger("FHeight", this.height)
+        nbt.putInt("FWidth", this.width)
+        nbt.putInt("FHeight", this.height)
 
         for (i: Int in 0..<this.height) {
             val colorRow: IntArray = IntArray(this.width)
@@ -82,7 +84,7 @@ constructor(private var width: Int, private var height: Int) {
                 val arrayColor: ByteArray = this.color[j]!![i]
                 colorRow[j] = ColorUtil.to32BitColorB(arrayColor[0], arrayColor[1], arrayColor[2])
             }
-            nbt.setIntArray("FRow" + i, colorRow)
+            nbt.putIntArray("FRow" + i, colorRow)
         }
     }
 
@@ -123,10 +125,10 @@ constructor(private var width: Int, private var height: Int) {
 
         @JvmStatic
         fun readFlagData(nbt: NBTTagCompound): FlagData {
-            if (nbt.hasKey("FlagWidth")) {
+            if (nbt.containsTag("FlagWidth")) {
                 //Legacy saves
-                val width: Int = nbt.getInteger("FlagWidth")
-                val height: Int = nbt.getInteger("FlagHeight")
+                val width: Int = nbt.getIntOr("FlagWidth", 0)
+                val height: Int = nbt.getIntOr("FlagHeight", 0)
 
                 val flagData: FlagData = FlagData(width, height)
 
@@ -142,8 +144,8 @@ constructor(private var width: Int, private var height: Int) {
             }
 
             //New more compact flag save style
-            val width: Int = nbt.getInteger("FWidth")
-            val height: Int = nbt.getInteger("FHeight")
+            val width: Int = nbt.getIntOr("FWidth", 0)
+            val height: Int = nbt.getIntOr("FHeight", 0)
 
             val flagData: FlagData = FlagData(width, height)
             for (i: Int in 0..<height) {

@@ -1,38 +1,40 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.tile.TileEntityFluidTank
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.FluidUtil
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyBool
+import net.minecraft.world.level.block.state.properties.BooleanProperty as PropertyBool
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidActionResult
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
 import net.minecraftforge.fluids.capability.IFluidHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class BlockFluidTank constructor(assetName: String?) : Block(Material.GLASS), IShiftDescription,
-    ISortableBlock, ITileEntityProvider {
+    ISortableBlock, ITileEntityProvider, LegacyBlockMetadata {
     init {
         this.setHardness(3.0f)
         this.setResistance(8.0f)
@@ -45,7 +47,7 @@ open class BlockFluidTank constructor(assetName: String?) : Block(Material.GLASS
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val tile: TileEntity? = worldIn.getTileEntity(pos)
+        val tile: TileEntity? = worldIn.getBlockEntity(pos)
         if (tile is TileEntityFluidTank) {
             val tank: TileEntityFluidTank = tile
             tank.onBreak()
@@ -57,7 +59,7 @@ open class BlockFluidTank constructor(assetName: String?) : Block(Material.GLASS
         return GalacticraftCore.Companion.galacticraftBlocksTab
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT
     }
@@ -96,14 +98,14 @@ open class BlockFluidTank constructor(assetName: String?) : Block(Material.GLASS
     }
 
     override fun getActualState(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState {
-        val stateAbove: IBlockState = worldIn.getBlockState(pos.up())
-        val stateBelow: IBlockState = worldIn.getBlockState(pos.down())
-        return state.withProperty(UP, stateAbove.getBlock() === this)
-            .withProperty(DOWN, stateBelow.getBlock() === this)
+        val stateAbove: IBlockState = worldIn.getBlockState(pos.above())
+        val stateBelow: IBlockState = worldIn.getBlockState(pos.below())
+        return state.setValue(UP, stateAbove.getBlock() === this)
+            .setValue(DOWN, stateBelow.getBlock() === this)
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
+        return this.defaultBlockState()
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -159,11 +161,11 @@ open class BlockFluidTank constructor(assetName: String?) : Block(Material.GLASS
             return false
         }
 
-        val current: ItemStack = playerIn.inventory.getCurrentItem()
-        val slot: Int = playerIn.inventory.currentItem
+        val current: ItemStack = playerIn.inventory.getSelectedItem()
+        val slot: Int = playerIn.inventory.selectedSlot
 
         if (!current.isEmpty()) {
-            val tile: TileEntity? = worldIn.getTileEntity(pos)
+            val tile: TileEntity? = worldIn.getBlockEntity(pos)
 
             if (tile is TileEntityFluidTank) {
                 val tank: TileEntityFluidTank = tile
@@ -174,7 +176,7 @@ open class BlockFluidTank constructor(assetName: String?) : Block(Material.GLASS
                     playerIn
                 )
                 if (forgeResult.isSuccess()) {
-                    playerIn.inventory.setInventorySlotContents(slot, forgeResult.result)
+                    playerIn.inventory.setItem(slot, forgeResult.result)
                     if (playerIn.inventoryContainer != null) {
                         playerIn.inventoryContainer.detectAndSendChanges()
                     }
@@ -189,7 +191,7 @@ open class BlockFluidTank constructor(assetName: String?) : Block(Material.GLASS
     }
 
     override fun getLightValue(state: IBlockState, world: IBlockAccess, pos: BlockPos): Int {
-        val tile: TileEntity? = world.getTileEntity(pos)
+        val tile: TileEntity? = world.getBlockEntity(pos)
 
         if (tile is TileEntityFluidTank) {
             val tank: TileEntityFluidTank = tile

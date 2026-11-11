@@ -2,8 +2,8 @@ package micdoodle8.mods.galacticraft.core.energy
 
 import java.util.ArrayList
 
-import micdoodle8.mods.galacticraft.core.util.GCLog
-import net.minecraftforge.common.config.Configuration
+import foundation.logging.FoundationLog as GCLog
+import foundation.config.FoundationConfiguration as Configuration
 import java.io.File
 
 /**

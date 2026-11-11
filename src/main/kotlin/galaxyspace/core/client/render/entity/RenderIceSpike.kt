@@ -9,8 +9,8 @@ import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
 
 open class RenderIceSpike constructor(renderManager: RenderManager) : Render<EntityIceSpike>(renderManager) {
     override fun getEntityTexture(entity: EntityIceSpike): ResourceLocation? {
@@ -114,6 +114,6 @@ open class RenderIceSpike constructor(renderManager: RenderManager) : Render<Ent
 
     companion object {
         private val ballTextures =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX + ":" + "textures/model/particles/ice_spike.png")
+            ResourceLocation.parse(GalaxySpace.ASSET_PREFIX + ":" + "textures/model/particles/ice_spike.png")
     }
 }

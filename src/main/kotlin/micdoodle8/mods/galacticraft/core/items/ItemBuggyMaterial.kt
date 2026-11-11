@@ -1,15 +1,17 @@
 package micdoodle8.mods.galacticraft.core.items
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.NonNullList
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.NonNullList
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemBuggyMaterial constructor(assetName: String?) : Item(), ISortableItem {
     //    protected IIcon[] icons = new IIcon[256];
@@ -25,13 +27,13 @@ open class ItemBuggyMaterial constructor(assetName: String?) : Item(), ISortable
         return GalacticraftCore.galacticraftItemsTab
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
 
     /*@Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void registerIcons(IIconRegister iconRegister)
     {
         int i = 0;
@@ -42,7 +44,7 @@ open class ItemBuggyMaterial constructor(assetName: String?) : Item(), ISortable
         }
     }*/
     public override fun getTranslationKey(itemStack: ItemStack): String {
-        return this.getTranslationKey() + "." + names[itemStack.getItemDamage()]
+        return this.getTranslationKey() + "." + names[itemStack.legacyItemValue]
     }
 
     /*@Override

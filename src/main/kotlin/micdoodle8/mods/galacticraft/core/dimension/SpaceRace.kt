@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.dimension
 
+import foundation.persistence.listOfType
+
 import java.util.ArrayList
 import java.util.HashMap
 
@@ -14,10 +16,10 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.core.wrappers.FlagData
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
 
 open class SpaceRace {
     private var spaceRaceID = 0
@@ -44,41 +46,41 @@ open class SpaceRace {
     }
 
     open fun loadFromNBT(nbt: NBTTagCompound) {
-        this.teamName = nbt.getString("TeamName")
+        this.teamName = nbt.getStringOr("TeamName", "")
         if (ConfigManagerCore.enableDebug) {
             GCLog.info("Loading spacerace data for team " + this.teamName)
         }
-        this.spaceRaceID = nbt.getInteger("SpaceRaceID")
-        this.ticksSpent = nbt.getLong("TicksSpent").toInt() //Deal with legacy error
+        this.spaceRaceID = nbt.getIntOr("SpaceRaceID", 0)
+        this.ticksSpent = nbt.getLongOr("TicksSpent", 0L).toInt() //Deal with legacy error
         this.flagData = FlagData.readFlagData(nbt)
-        this.teamColor = Vector3(nbt.getDouble("teamColorR"), nbt.getDouble("teamColorG"), nbt.getDouble("teamColorB"))
+        this.teamColor = Vector3(nbt.getDoubleOr("teamColorR", 0.0), nbt.getDoubleOr("teamColorG", 0.0), nbt.getDoubleOr("teamColorB", 0.0))
 
-        var tagList: NBTTagList = nbt.getTagList("PlayerList", 10)
-        for (i: Int in 0..<tagList.tagCount()) {
-            val tagAt: NBTTagCompound = tagList.getCompoundTagAt(i)
-            this.playerNames.add(tagAt.getString("PlayerName"))
+        var tagList: NBTTagList = nbt.listOfType("PlayerList", 10)
+        for (i: Int in 0..<tagList.size) {
+            val tagAt: NBTTagCompound = tagList.getCompoundOrEmpty(i)
+            this.playerNames.add(tagAt.getStringOr("PlayerName", ""))
         }
 
-        tagList = nbt.getTagList("CelestialBodyList", 10)
-        for (i: Int in 0..<tagList.tagCount()) {
-            val tagAt: NBTTagCompound = tagList.getCompoundTagAt(i)
+        tagList = nbt.listOfType("CelestialBodyList", 10)
+        for (i: Int in 0..<tagList.size) {
+            val tagAt: NBTTagCompound = tagList.getCompoundOrEmpty(i)
 
             val body: CelestialBody? =
-                GalaxyRegistry.getCelestialBodyFromUnlocalizedName(tagAt.getString("CelestialBodyName"))
+                GalaxyRegistry.getCelestialBodyFromUnlocalizedName(tagAt.getStringOr("CelestialBodyName", ""))
 
             if (body != null) {
-                this.celestialBodyStatusList.put(body, tagAt.getInteger("TimeTaken"))
+                this.celestialBodyStatusList.put(body, tagAt.getIntOr("TimeTaken", 0))
             }
         }
 
-        tagList = nbt.getTagList("SchList", 10)
-        for (i: Int in 0..<tagList.tagCount()) {
-            val tagAt: NBTTagCompound = tagList.getCompoundTagAt(i)
-            val name: String = tagAt.getString("Mem")
+        tagList = nbt.listOfType("SchList", 10)
+        for (i: Int in 0..<tagList.size) {
+            val tagAt: NBTTagCompound = tagList.getCompoundOrEmpty(i)
+            val name: String = tagAt.getStringOr("Mem", "")
             if (name != null && this.playerNames.contains(name)) {
-                val itemList: NBTTagList = tagAt.getTagList("Sch", 10)
-                for (j: Int in 0..<itemList.tagCount()) {
-                    addNewSchematic(name, ItemStack(itemList.getCompoundTagAt(j)))
+                val itemList: NBTTagList = tagAt.listOfType("Sch", 10)
+                for (j: Int in 0..<itemList.size) {
+                    addNewSchematic(name, ItemStack(itemList.getCompoundOrEmpty(j)))
                 }
             }
         }
@@ -92,48 +94,48 @@ open class SpaceRace {
         if (ConfigManagerCore.enableDebug) {
             GCLog.info("Saving spacerace data for team " + this.teamName)
         }
-        nbt.setString("TeamName", this.teamName)
-        nbt.setInteger("SpaceRaceID", this.spaceRaceID)
-        nbt.setLong("TicksSpent", this.ticksSpent.toLong())
+        nbt.putString("TeamName", this.teamName)
+        nbt.putInt("SpaceRaceID", this.spaceRaceID)
+        nbt.putLong("TicksSpent", this.ticksSpent.toLong())
         this.flagData!!.saveFlagData(nbt)
-        nbt.setDouble("teamColorR", this.teamColor!!.x)
-        nbt.setDouble("teamColorG", this.teamColor!!.y)
-        nbt.setDouble("teamColorB", this.teamColor!!.z)
+        nbt.putDouble("teamColorR", this.teamColor!!.x)
+        nbt.putDouble("teamColorG", this.teamColor!!.y)
+        nbt.putDouble("teamColorB", this.teamColor!!.z)
 
         var tagList: NBTTagList = NBTTagList()
         for (player in this.playerNames) {
             val tagComp: NBTTagCompound = NBTTagCompound()
-            tagComp.setString("PlayerName", player)
-            tagList.appendTag(tagComp)
+            tagComp.putString("PlayerName", player)
+            tagList.add(tagComp)
         }
 
-        nbt.setTag("PlayerList", tagList)
+        nbt.put("PlayerList", tagList)
 
         tagList = NBTTagList()
         for (celestialBody: MutableMap.MutableEntry<CelestialBody?,Int> in this.celestialBodyStatusList.entries) {
             val tagComp: NBTTagCompound = NBTTagCompound()
-            tagComp.setString("CelestialBodyName", celestialBody.key!!.getTranslationKey())
-            tagComp.setInteger("TimeTaken", celestialBody.value!!)
-            tagList.appendTag(tagComp)
+            tagComp.putString("CelestialBodyName", celestialBody.key!!.getTranslationKey())
+            tagComp.putInt("TimeTaken", celestialBody.value!!)
+            tagList.add(tagComp)
         }
-        nbt.setTag("CelestialBodyList", tagList)
+        nbt.put("CelestialBodyList", tagList)
 
         tagList = NBTTagList()
         for (schematic in this.schematicsToUnlock.entries) {
             if (this.playerNames.contains(schematic.key)) {
                 val tagComp: NBTTagCompound = NBTTagCompound()
-                tagComp.setString("Mem", schematic.key)
+                tagComp.putString("Mem", schematic.key)
                 val itemList: NBTTagList = NBTTagList()
                 for (stack in schematic.value!!) {
                     val itemTag: NBTTagCompound = NBTTagCompound()
                     (stack)!!.writeToNBT(itemTag)
-                    itemList.appendTag(itemTag)
+                    itemList.add(itemTag)
                 }
-                tagComp.setTag("Sch", itemList)
-                tagList.appendTag(tagComp)
+                tagComp.put("Sch", itemList)
+                tagList.add(tagComp)
             }
         }
-        nbt.setTag("SchList", tagList)
+        nbt.put("SchList", tagList)
 
         if (ConfigManagerCore.enableDebug) {
             GCLog.info("Saved spacerace team data OK.")

@@ -1,10 +1,10 @@
 package micdoodle8.mods.galacticraft.core.util
 
 import micdoodle8.mods.galacticraft.core.GCBlocks
-import net.minecraft.block.Block
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.world.WorldServer
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraft.world.gen.ChunkProviderServer
 import net.minecraftforge.fml.common.Loader
 import java.lang.Exception

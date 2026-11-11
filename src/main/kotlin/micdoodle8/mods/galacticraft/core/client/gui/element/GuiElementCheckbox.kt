@@ -6,8 +6,8 @@ import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 
 open class GuiElementCheckbox constructor(
@@ -122,6 +122,6 @@ open class GuiElementCheckbox constructor(
 
     companion object {
         @JvmField
-        protected val texture: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/gui.png")
+        protected val texture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/gui.png")
     }
 }

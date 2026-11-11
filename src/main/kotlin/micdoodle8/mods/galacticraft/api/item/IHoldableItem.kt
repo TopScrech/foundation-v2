@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.api.item
 
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 
 /**
  * Implement into an item class to allow player to hold it above their head

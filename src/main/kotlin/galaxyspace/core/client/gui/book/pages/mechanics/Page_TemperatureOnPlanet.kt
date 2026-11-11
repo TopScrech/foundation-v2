@@ -8,11 +8,11 @@ import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 @IPage
 open class Page_TemperatureOnPlanet : Page_WithScroll() {
-    private val mc: Minecraft = Minecraft.getMinecraft()
+    private val mc: Minecraft = Minecraft.getInstance()
 
     override fun titlePage(): String {
         return "temp_on_planet"

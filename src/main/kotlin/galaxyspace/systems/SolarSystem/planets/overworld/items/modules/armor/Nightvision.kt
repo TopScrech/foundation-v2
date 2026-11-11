@@ -2,15 +2,15 @@ package galaxyspace.systems.SolarSystem.planets.overworld.items.modules.armor
 
 import galaxyspace.core.prefab.items.modules.ItemModule
 import galaxyspace.core.util.GSUtils.Module_Type
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.init.MobEffects
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.ItemStack
-import net.minecraft.potion.PotionEffect
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
 import net.minecraft.potion.PotionType
 import net.minecraft.potion.PotionUtils
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 
 open class Nightvision : ItemModule() {
     override fun getName(): String {
@@ -51,9 +51,9 @@ open class Nightvision : ItemModule() {
     }
 
     override fun onUpdate(world: World?, player: EntityPlayer?, itemStack: ItemStack?, enable: Boolean) {
-        if (enable) (player)!!.addPotionEffect(PotionEffect(MobEffects.NIGHT_VISION, 20 * 15, 0, true, false))
+        if (enable) (player)!!.addEffect(PotionEffect(MobEffects.NIGHT_VISION, 20 * 15, 0, true, false))
         else {
-            if ((player)!!.isPotionActive(MobEffects.NIGHT_VISION)) (player)!!.removeActivePotionEffect(MobEffects.NIGHT_VISION)
+            if ((player)!!.hasEffect(MobEffects.NIGHT_VISION)) (player)!!.removeEffect(MobEffects.NIGHT_VISION)
         }
     }
 }

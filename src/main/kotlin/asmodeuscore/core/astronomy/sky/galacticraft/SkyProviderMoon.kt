@@ -14,8 +14,8 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraftforge.fml.client.FMLClientHandler
 
 open class SkyProviderMoon : SkyProviderBase() {
@@ -37,7 +37,7 @@ open class SkyProviderMoon : SkyProviderBase() {
 
         // HOME:
         f10 = 14.0f
-        val earthRotation: Float = (this.mc.world.getSpawnPoint().getZ() - mc.player.posZ - 20000).toFloat() * 0.01f
+        val earthRotation: Float = (this.mc.world.getSpawnPoint().getZ() - mc.player.z - 20000).toFloat() * 0.01f
         GL11.glScalef(0.6f, 0.6f, 0.6f)
         GL11.glRotatef(earthRotation, 1.0f, 0.0f, 0.0f)
         //GL11.glRotatef(220F, 0.0F, 1.0F, 0.0F);
@@ -85,7 +85,7 @@ open class SkyProviderMoon : SkyProviderBase() {
     }
 
     override fun sunImage(): ResourceLocation {
-        return ResourceLocation(AsmodeusCore.ASSET_PREFIX, "textures/gui/celestialbodies/white.png")
+        return ResourceLocation.fromNamespaceAndPath(AsmodeusCore.ASSET_PREFIX, "textures/gui/celestialbodies/white.png")
     }
 
     override fun enableStar(): Boolean {
@@ -106,6 +106,6 @@ open class SkyProviderMoon : SkyProviderBase() {
 
     companion object {
         private val overworldTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png")
     }
 }

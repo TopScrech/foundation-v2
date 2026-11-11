@@ -1,36 +1,41 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
+import foundation.level.offset
+
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Blocks.EnumBlockBarnardaC
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Grass
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Blocks
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Dandelions
 import galaxyspace.core.util.GSCreativeTabs
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.IGrowable
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.IPlantable
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
-open class Barnarda_C_Grass constructor() : Block(Material.GRASS), IGrowable {
+open class Barnarda_C_Grass constructor() : Block(Material.GRASS), IGrowable, LegacyBlockMetadata {
     init {
         this.setTranslationKey("barnarda_c_grasses")
         this.setHardness(0.8f)
@@ -53,7 +58,7 @@ open class Barnarda_C_Grass constructor() : Block(Material.GRASS), IGrowable {
         return ItemStack(Item.getItemFromBlock(this), 1, this.getMetaFromState(state))
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (blockBasic: EnumBlockGrass in EnumBlockGrass.entries) {
             list.add(ItemStack(this, 1, blockBasic.getMeta()))
@@ -62,42 +67,42 @@ open class Barnarda_C_Grass constructor() : Block(Material.GRASS), IGrowable {
 
     override fun getActualState(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState {
         //Block block = worldIn.getBlockState(pos.up()).getBlock();
-        return state //state.withProperty(SNOWY, Boolean.valueOf(block == Blocks.SNOW || block == Blocks.SNOW_LAYER));
+        return state //state.setValue(SNOWY, Boolean.valueOf(block == Blocks.SNOW || block == Blocks.SNOW_LAYER));
     }
 
     override fun updateTick(worldIn: World, pos: BlockPos, state: IBlockState, rand: Random) {
-        if (!worldIn.isRemote) {
+        if (!worldIn.isClientSide) {
             if (!worldIn.isAreaLoaded(
                     pos,
                     3
                 )
             ) return  // Forge: prevent loading unloaded chunks when checking neighbor's light and spreading
 
-            if (worldIn.getLightFromNeighbors(pos.up()) < 4 && worldIn.getBlockState(pos.up())
-                    .getLightOpacity(worldIn, pos.up()) > 2
+            if (worldIn.getLightFromNeighbors(pos.above()) < 4 && worldIn.getBlockState(pos.above())
+                    .getLightOpacity(worldIn, pos.above()) > 2
             ) {
-                worldIn.setBlockState(
+                worldIn.setBlockAndUpdate(
                     pos,
-                    BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+                    BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                         Barnarda_C_Blocks.Companion.BASIC_TYPE,
                         EnumBlockBarnardaC.DIRT
                     )
                 )
             } else {
-                if (worldIn.getLightFromNeighbors(pos.up()) >= 9) {
+                if (worldIn.getLightFromNeighbors(pos.above()) >= 9) {
                     for (i: Int in 0..3) {
-                        val blockpos: BlockPos = pos.add(rand.nextInt(3) - 1, rand.nextInt(5) - 3, rand.nextInt(3) - 1)
+                        val blockpos: BlockPos = pos.offset(rand.nextInt(3) - 1, rand.nextInt(5) - 3, rand.nextInt(3) - 1)
 
                         if (blockpos.getY() >= 0 && blockpos.getY() < 256 && !worldIn.isBlockLoaded(blockpos)) {
                             return
                         }
 
-                        val iblockstate: IBlockState = worldIn.getBlockState(blockpos.up())
+                        val iblockstate: IBlockState = worldIn.getBlockState(blockpos.above())
                         val iblockstate1: IBlockState = worldIn.getBlockState(blockpos)
                         /*
                         if (iblockstate1.getBlock() ==  BRBlocks.BARNARDA_C_GRASS && iblockstate1.getValue(Barnarda_C_Blocks.BASIC_TYPE) == Barnarda_C_Blocks.EnumBlockBarnardaC.DIRT && worldIn.getLightFromNeighbors(blockpos.up()) >= 4 && iblockstate.getLightOpacity(worldIn, pos.up()) <= 2)
                         {
-                            worldIn.setBlockState(blockpos, BRBlocks.BARNARDA_C_GRASS.getDefaultState());
+                            worldIn.setBlockAndUpdate(blockpos, BRBlocks.BARNARDA_C_GRASS.defaultBlockState());
                         }*/
                     }
                 }
@@ -107,14 +112,14 @@ open class Barnarda_C_Grass constructor() : Block(Material.GRASS), IGrowable {
 
     override fun getItemDropped(state: IBlockState, rand: Random, fortune: Int): Item {
         return BRBlocks.BARNARDA_C_BLOCKS.getItemDropped(
-            BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+            BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                 Barnarda_C_Blocks.Companion.BASIC_TYPE,
                 EnumBlockBarnardaC.DIRT
             ), rand, fortune
         )
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT_MIPPED
     }
@@ -138,7 +143,7 @@ open class Barnarda_C_Grass constructor() : Block(Material.GRASS), IGrowable {
     }
 
     override fun grow(worldIn: World, rand: Random, pos: BlockPos, state: IBlockState) {
-        val blockpos: BlockPos = pos.up()
+        val blockpos: BlockPos = pos.above()
 
         for (i: Int in 0..127) {
             var blockpos1: BlockPos = blockpos
@@ -146,15 +151,15 @@ open class Barnarda_C_Grass constructor() : Block(Material.GRASS), IGrowable {
 
             while (true) {
                 if (j >= i / 16) {
-                    if (worldIn.isAirBlock(blockpos1)) {
+                    if (worldIn.isEmptyBlock(blockpos1)) {
                         /*if (rand.nextInt(8) == 0)
                         {
                             worldIn.getBiome(blockpos1).plantFlower(worldIn, rand, blockpos1);
                         }
                         else*/
                         run {
-                            val iblockstate1: IBlockState = BRBlocks.BARNARDA_C_DANDELIONS.getDefaultState()
-                                .withProperty(
+                            val iblockstate1: IBlockState = BRBlocks.BARNARDA_C_DANDELIONS.defaultBlockState()
+                                .setValue(
                                     Barnarda_C_Dandelions.Companion.BASIC_TYPE,
                                     Barnarda_C_Dandelions.EnumBlockDandelions.GRASS
                                 )
@@ -163,7 +168,7 @@ open class Barnarda_C_Grass constructor() : Block(Material.GRASS), IGrowable {
                                     blockpos1
                                 )
                             ) {
-                                worldIn.setBlockState(blockpos1, iblockstate1, 3)
+                                worldIn.setBlock(blockpos1, iblockstate1, 3)
                             }
                         }
                     }
@@ -172,9 +177,9 @@ open class Barnarda_C_Grass constructor() : Block(Material.GRASS), IGrowable {
                 }
 
                 blockpos1 =
-                    blockpos1.add(rand.nextInt(3) - 1, (rand.nextInt(3) - 1) * rand.nextInt(3) / 2, rand.nextInt(3) - 1)
+                    blockpos1.offset(rand.nextInt(3) - 1, (rand.nextInt(3) - 1) * rand.nextInt(3) / 2, rand.nextInt(3) - 1)
 
-                if (worldIn.getBlockState(blockpos1.down())
+                if (worldIn.getBlockState(blockpos1.below())
                         .getBlock() !== BRBlocks.BARNARDA_C_GRASS || worldIn.getBlockState(blockpos1).isNormalCube()
                 ) {
                     break
@@ -194,7 +199,9 @@ open class Barnarda_C_Grass constructor() : Block(Material.GRASS), IGrowable {
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -207,8 +214,8 @@ open class Barnarda_C_Grass constructor() : Block(Material.GRASS), IGrowable {
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(BASIC_TYPE, (EnumBlockGrass.Companion.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(BASIC_TYPE, (EnumBlockGrass.Companion.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {

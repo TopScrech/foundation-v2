@@ -1,17 +1,17 @@
 package galaxyspace.core.prefab.blocks
 
 import net.minecraft.block.BlockDoor
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class BlockDoorGS constructor(name: String) : BlockDoor(Material.WOOD) {
@@ -22,11 +22,11 @@ open class BlockDoorGS constructor(name: String) : BlockDoor(Material.WOOD) {
         this.setSoundType(SoundType.WOOD)
         this.setTranslationKey(name)
         this.setDefaultState(
-            this.getDefaultState().withProperty(FACING, EnumFacing.NORTH)
-                .withProperty(OPEN, false)
-                .withProperty(HINGE, EnumHingePosition.LEFT)
-                .withProperty(POWERED, false)
-                .withProperty(HALF, EnumDoorHalf.LOWER)
+            this.defaultBlockState().setValue(FACING, EnumFacing.NORTH)
+                .setValue(OPEN, false)
+                .setValue(HINGE, EnumHingePosition.LEFT)
+                .setValue(POWERED, false)
+                .setValue(HALF, EnumDoorHalf.LOWER)
         )
     }
 

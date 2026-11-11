@@ -4,13 +4,13 @@ import kotlin.math.pow
 import net.minecraft.client.particle.Particle
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.entity.Entity
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.max
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class ParticleAcidVapor constructor(
     worldIn: World,
     xCoordIn: Double,

@@ -14,26 +14,26 @@ import micdoodle8.mods.galacticraft.api.galaxies.Planet
 import micdoodle8.mods.galacticraft.api.galaxies.Star
 import micdoodle8.mods.galacticraft.core.Constants
 import net.minecraft.client.Minecraft
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.util.vector.Vector3f
 import java.util.Random
 import kotlin.math.cos
 import kotlin.math.sin
 
 open class GalaxyMapHandler {
-    //private static final ResourceLocation acrdisk = new ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/acrdisk.png");
+    //private static final ResourceLocation acrdisk = new ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/acrdisk.png");
     @JvmField
-    val minecraft: Minecraft? = FMLClientHandler.instance().getClient()
+    val minecraft: Minecraft? = Minecraft.getInstance()
 
     @JvmField
     var rand: Random? = null
 
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onRingRender(renderEvent: CelestialBodyRenderEvent.CelestialRingRenderEvent.Pre) {
         if ((renderEvent.celestialBody)!!.getRingColorR() == 1.1f && (renderEvent.celestialBody)!!.getRingColorG() == 0.0f && (renderEvent.celestialBody)!!.getRingColorB() == 0.0f) {
@@ -232,8 +232,8 @@ open class GalaxyMapHandler {
 
     companion object {
         private val saturnRingTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/saturn_rings.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/saturn_rings.png")
         private val uranusRingTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/uranus_rings.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/uranus_rings.png")
     }
 }

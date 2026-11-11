@@ -18,15 +18,15 @@ import micdoodle8.mods.galacticraft.core.client.gui.element.GuiElementInfoRegion
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
-import net.minecraft.util.text.TextFormatting
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.ChatFormatting as TextFormatting
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiLiquidSeparator constructor(
     par1InventoryPlayer: InventoryPlayer?,
     private val tileEntity: TileEntityLiquidSeparator

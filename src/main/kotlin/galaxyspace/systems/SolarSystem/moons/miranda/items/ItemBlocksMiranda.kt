@@ -1,11 +1,13 @@
 package galaxyspace.systems.SolarSystem.moons.miranda.items
 
+import foundation.item.legacyItemValue
+
 import galaxyspace.systems.SolarSystem.moons.miranda.blocks.MirandaBlocks
 
 import galaxyspace.core.prefab.items.GSItemBlockDesc
 import galaxyspace.systems.SolarSystem.moons.miranda.blocks.MirandaBlocks.EnumMirandaBlocks
-import net.minecraft.block.Block
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.ItemStack
 
 open class ItemBlocksMiranda constructor(block: Block?) : GSItemBlockDesc((block)!!) {
     init {
@@ -18,7 +20,7 @@ open class ItemBlocksMiranda constructor(block: Block?) : GSItemBlockDesc((block
     }
 
     override fun getTranslationKey(`is`: ItemStack): String {
-        val metadata: Int = `is`.getItemDamage()
+        val metadata: Int = `is`.legacyItemValue
 
         if (metadata == 9 || metadata == 10) return "tile.miranda_grunt"
         if (metadata == 11 || metadata == 12) return "tile.miranda_subgrunt"

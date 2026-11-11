@@ -1,5 +1,10 @@
 package galaxyspace.core.prefab.entities
 
+import net.minecraft.network.chat.Component
+
+import net.minecraft.world.ContainerHelper
+import foundation.persistence.containsTag
+
 import galaxyspace.core.GSItems
 import galaxyspace.core.GSFluids
 import io.netty.buffer.ByteBuf
@@ -16,21 +21,20 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
+
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.WorldServer
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
 import java.util.ArrayList
@@ -65,7 +69,7 @@ open class EntityCustomCargoRocket : EntityAutoRocket, IRocketType, IWorldTransf
         rocketType: IRocketType.EnumRocketType?
     ) : super(par1World, par2, par4, par6) {
         this.rocketType = rocketType
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         this.setSize(0.98f, 2f)
     }
 
@@ -82,7 +86,7 @@ open class EntityCustomCargoRocket : EntityAutoRocket, IRocketType, IWorldTransf
         return true
     }
 
-    override fun getStackInSlot(index: Int): ItemStack {
+    override fun getItem(index: Int): ItemStack {
         if (this.stacks == null) {
             return ItemStack.EMPTY
         }
@@ -90,65 +94,54 @@ open class EntityCustomCargoRocket : EntityAutoRocket, IRocketType, IWorldTransf
         return (this.stacks)!!.get(index)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        return ItemStackHelper.getAndRemove(this.stacks, index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        return ContainerHelper.takeItem(this.stacks, index)
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         (this.stacks)!!.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
 
-    override fun markDirty() {
+    override fun setChanged() {
     }
 
-    override fun isUsableByPlayer(entityplayer: EntityPlayer): Boolean {
+    override fun stillValid(entityplayer: EntityPlayer): Boolean {
         return !this.isDead && entityplayer.getDistanceSq(this) <= 64.0
     }
 
 
-    override fun openInventory(entityPlayer: EntityPlayer) {
-    }
 
-    override fun closeInventory(entityPlayer: EntityPlayer) {
-    }
 
-    override fun isItemValidForSlot(i: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(i: Int, itemstack: ItemStack): Boolean {
         return false
     }
 
-    override fun getField(i: Int): Int {
-        return 0
-    }
 
-    override fun setField(i: Int, i1: Int) {
-    }
 
-    override fun getFieldCount(): Int {
-        return 0
-    }
 
-    override fun clear() {
+    override fun clearContent() {
+        for (slot in 0 until containerSize) setItem(slot, ItemStack.EMPTY)
     }
 
     override fun getFuelTankCapacity(): Int {
@@ -432,8 +425,8 @@ open class EntityCustomCargoRocket : EntityAutoRocket, IRocketType, IWorldTransf
 
     override fun processInitialInteract(player: EntityPlayer, hand: EnumHand): Boolean {
         if (!this.world.isRemote && player is EntityPlayerMP) {
-            player.sendMessage(
-                TextComponentString(
+            player.sendSystemMessage(
+                Component.literal(
                     this.fluidTank.getFluid()!!.getLocalizedName() + ": " + this.fluidTank.getFluidAmount()
                 )
             )
@@ -445,18 +438,18 @@ open class EntityCustomCargoRocket : EntityAutoRocket, IRocketType, IWorldTransf
 
     override fun writeEntityToNBT(nbt: NBTTagCompound) {
         if (world.isRemote) return
-        nbt.setInteger("Type", this.rocketType!!.getIndex())
+        nbt.putInt("Type", this.rocketType!!.getIndex())
 
         if (this.fluidTank.getFluid() != null) {
-            nbt.setTag("fluidTank", this.fluidTank.writeToNBT(NBTTagCompound()))
+            nbt.put("fluidTank", this.fluidTank.writeToNBT(NBTTagCompound()))
         }
     }
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
-        this.rocketType = IRocketType.EnumRocketType.entries[nbt.getInteger("Type")]
+        this.rocketType = IRocketType.EnumRocketType.entries[nbt.getIntOr("Type", 0)]
 
-        if (nbt.hasKey("fluidTank")) {
-            this.fluidTank.readFromNBT(nbt.getCompoundTag("fluidTank"))
+        if (nbt.containsTag("fluidTank")) {
+            this.fluidTank.readFromNBT(nbt.getCompoundOrEmpty("fluidTank"))
         }
     }
 
@@ -464,7 +457,7 @@ open class EntityCustomCargoRocket : EntityAutoRocket, IRocketType, IWorldTransf
         return this.rocketType
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         if (this.rocketType == null) {
             return 0
         }
@@ -496,7 +489,7 @@ open class EntityCustomCargoRocket : EntityAutoRocket, IRocketType, IWorldTransf
         super.getItemsDropped(droppedItemList)
         val rocket: ItemStack = ItemStack(MarsItems.rocketMars, 1, this.rocketType!!.getIndex())
         rocket.setTagCompound(NBTTagCompound())
-        rocket.getTagCompound()!!.setInteger("RocketFuel", this.fuelTank.getFluidAmount())
+        rocket.getTagCompound()!!.putInt("RocketFuel", this.fuelTank.getFluidAmount())
         (droppedItemList)!!.add(rocket)
         return ((droppedItemList as MutableList<ItemStack>?))!!
     }

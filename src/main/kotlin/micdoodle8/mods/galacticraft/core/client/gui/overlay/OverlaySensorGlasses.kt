@@ -1,5 +1,6 @@
 package micdoodle8.mods.galacticraft.core.client.gui.overlay
 
+import foundation.inventory.getArmorItem
 import micdoodle8.mods.galacticraft.api.item.ISensorGlassesArmor
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
 import micdoodle8.mods.galacticraft.core.Constants
@@ -9,34 +10,33 @@ import micdoodle8.mods.galacticraft.core.util.ClientUtil
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import kotlin.math.atan2
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 object OverlaySensorGlasses : Overlay() {
-    private val hudTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/hud.png")
-    private val indicatorTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/indicator.png")
+    private val hudTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/hud.png")
+    private val indicatorTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/indicator.png")
 
     @JvmField
-    val altTexture: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "textures/blocks/sensor_mobs.png")
+    val altTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/blocks/sensor_mobs.png")
 
-    private val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+    private val minecraft: Minecraft = Minecraft.getInstance()
 
     private var zoom = 0
 
@@ -65,7 +65,7 @@ object OverlaySensorGlasses : Overlay() {
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
         GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
         GL11.glDisable(GL11.GL_ALPHA_TEST)
-        FMLClientHandler.instance().getClient().renderEngine.bindTexture(hudTexture)
+        Minecraft.getInstance().renderEngine.bindTexture(hudTexture)
         val tessellator: Tessellator = Tessellator.getInstance()
         val worldRenderer: BufferBuilder = tessellator.getBuffer()
         worldRenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX)
@@ -131,7 +131,7 @@ object OverlaySensorGlasses : Overlay() {
 
                 if (var20 < 4.0) {
                     GL11.glColor4f(0.0f, 255f / 255f, 198f / 255f, min(1.0, max(0.2, (var20 - 1.0) * 0.1)).toFloat())
-                    FMLClientHandler.instance().getClient().renderEngine.bindTexture(indicatorTexture)
+                    Minecraft.getInstance().renderEngine.bindTexture(indicatorTexture)
                     GL11.glRotatef(-var60 - ClientProxyCore.playerRotationYaw + 180.0f, 0.0f, 0.0f, 1.0f)
                     GL11.glTranslated(0.0, if (var2) -var20 * 16 else -var21 * 16, 0.0)
                     GL11.glRotatef(-(-var60 - ClientProxyCore.playerRotationYaw + 180.0f), 0.0f, 0.0f, 1.0f)
@@ -168,8 +168,8 @@ object OverlaySensorGlasses : Overlay() {
 
     @JvmStatic
     fun overrideMobTexture(): Boolean {
-        val player: EntityPlayer? = Minecraft.getMinecraft().player
-        return (player != null && player.inventory.armorItemInSlot(3) != null && player.inventory.armorItemInSlot(3)
+        val player: EntityPlayer? = Minecraft.getInstance().player
+        return (player != null && player.inventory.getArmorItem(3) != null && player.inventory.getArmorItem(3)
             .getItem() is ISensorGlassesArmor)
     }
 }

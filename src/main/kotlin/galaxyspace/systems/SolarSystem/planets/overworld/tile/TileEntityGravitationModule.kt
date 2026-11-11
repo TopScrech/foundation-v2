@@ -1,5 +1,8 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
+import foundation.inventory.getArmorItem
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import galaxyspace.core.GSItems
@@ -13,20 +16,20 @@ import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import galaxyspace.core.prefab.tile.TileEntityElectricInventory
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.NetworkManager
 import net.minecraft.network.play.server.SPacketUpdateTileEntity
-import net.minecraft.util.EnumFacing
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.HashSet
 
 open class TileEntityGravitationModule constructor() :
@@ -182,9 +185,9 @@ open class TileEntityGravitationModule constructor() :
                             val p: EntityPlayer = living as EntityPlayer
                             if (p.capabilities.isFlying) continue
 
-                            if (!p.inventory.armorItemInSlot(0).isEmpty() && p.inventory.armorItemInSlot(0)
+                            if (!p.inventory.getArmorItem(0).isEmpty() && p.inventory.getArmorItem(0)
                                     .getItem() is IArmorGravity
-                                && (p.inventory.armorItemInSlot(0).getItem() as IArmorGravity)
+                                && (p.inventory.getArmorItem(0).getItem() as IArmorGravity)
                                     .gravityOverrideIfLow(p) > 0
                             ) continue
                         }
@@ -255,18 +258,18 @@ open class TileEntityGravitationModule constructor() :
         if (this.storage.getEnergyStoredGC() > STANDARD_CAPACITY) {
             this.initialised = true
         } else this.initialised = false
-        processTicks = par1NBTTagCompound.getInteger("smeltingTicks")
+        processTicks = par1NBTTagCompound.getIntOr("smeltingTicks", 0)
 
         ItemStackHelper.loadAllItems(par1NBTTagCompound, this.getInventory())
 
 
-        if (par1NBTTagCompound.hasKey("gravityradius")) {
-            val grav: Int = par1NBTTagCompound.getInteger("gravityradius")
+        if (par1NBTTagCompound.containsTag("gravityradius")) {
+            val grav: Int = par1NBTTagCompound.getIntOr("gravityradius", 0)
             this.setGravityRadius(if (grav == 0) 1 else grav)
         }
 
-        if (par1NBTTagCompound.hasKey("gravitystrength")) {
-            val strength: Float = par1NBTTagCompound.getFloat("gravitystrength")
+        if (par1NBTTagCompound.containsTag("gravitystrength")) {
+            val strength: Float = par1NBTTagCompound.getFloatOr("gravitystrength", 0f)
             this.setGravityStrength(strength)
         }
     }
@@ -276,9 +279,9 @@ open class TileEntityGravitationModule constructor() :
             STANDARD_CAPACITY
         )
         super.writeToNBT(par1NBTTagCompound)
-        par1NBTTagCompound.setInteger("smeltingTicks", processTicks)
-        par1NBTTagCompound.setInteger("gravityradius", if (radius > 16) 16 else radius)
-        par1NBTTagCompound.setFloat("gravitystrength", this.strength)
+        par1NBTTagCompound.putInt("smeltingTicks", processTicks)
+        par1NBTTagCompound.putInt("gravityradius", if (radius > 16) 16 else radius)
+        par1NBTTagCompound.putFloat("gravitystrength", this.strength)
 
         ItemStackHelper.saveAllItems(par1NBTTagCompound, this.getInventory())
 
@@ -286,7 +289,7 @@ open class TileEntityGravitationModule constructor() :
         return par1NBTTagCompound
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemStack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemStack: ItemStack): Boolean {
         return true
     }
 
@@ -337,12 +340,12 @@ open class TileEntityGravitationModule constructor() :
     }
 
     open fun inGravityZone(world: World?, player: EntityLivingBase): Boolean {
-        if (player.posX > this.pos.getX() - getGravityRadius() && player.posY > this.pos.getY() - 4 && player.posZ > this.pos.getZ() - getGravityRadius() && player.posX < this.pos.getX() + getGravityRadius() && player.posY < this.pos.getY() + 16 && player.posZ < this.pos.getZ() + getGravityRadius()) return true
+        if (player.x > this.pos.getX() - getGravityRadius() && player.y > this.pos.getY() - 4 && player.z > this.pos.getZ() - getGravityRadius() && player.x < this.pos.getX() + getGravityRadius() && player.y < this.pos.getY() + 16 && player.z < this.pos.getZ() + getGravityRadius()) return true
 
         return false
     }
 
-    public override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    public override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf(0)
     }
 

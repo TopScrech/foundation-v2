@@ -1,8 +1,8 @@
 package micdoodle8.mods.galacticraft.core
 
+import foundation.item.FoundationItemVariants
+import micdoodle8.mods.galacticraft.core.fluid.OxygenPressureProtocol
 import net.minecraft.world.biome.Biome.SpawnListEntry
-import net.minecraftforge.fml.common.Mod.EventHandler
-import net.minecraftforge.fml.common.Mod.Instance
 
 import api.player.server.ServerPlayerAPI
 import javax.imageio.ImageIO
@@ -62,7 +62,6 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSpider
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedWitch
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedZombie
 import micdoodle8.mods.galacticraft.core.entities.EntityFlag
-import micdoodle8.mods.galacticraft.core.entities.EntityHangingSchematic
 import micdoodle8.mods.galacticraft.core.entities.EntityLander
 import micdoodle8.mods.galacticraft.core.entities.EntityMeteor
 import micdoodle8.mods.galacticraft.core.entities.EntityMeteorChunk
@@ -149,17 +148,17 @@ import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.asteroids.recipe.RecipeManagerAsteroids
 import micdoodle8.mods.galacticraft.planets.mars.recipe.RecipeManagerMars
 import micdoodle8.mods.galacticraft.planets.venus.recipe.RecipeManagerVenus
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.SoundEvent
-import net.minecraft.world.DimensionType
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.WorldProvider
 import net.minecraft.world.WorldProviderSurface
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 import net.minecraftforge.client.event.ModelRegistryEvent
 import net.minecraftforge.common.DimensionManager
 import net.minecraftforge.common.ForgeChunkManager
@@ -169,22 +168,19 @@ import net.minecraftforge.fluids.FluidRegistry
 import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.ModMetadata
-import net.minecraftforge.fml.common.SidedProxy
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
 import net.minecraftforge.fml.common.event.FMLInterModComms
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent
-import net.minecraftforge.fml.common.event.FMLServerStartedEvent
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent
-import net.minecraftforge.fml.common.event.FMLServerStoppedEvent
-import net.minecraftforge.fml.common.event.FMLServerStoppingEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
+import net.minecraftforge.event.server.ServerAboutToStartEvent as FMLServerAboutToStartEvent
+import net.minecraftforge.event.server.ServerStartedEvent as FMLServerStartedEvent
+import net.minecraftforge.event.server.ServerStartingEvent as FMLServerStartingEvent
+import net.minecraftforge.event.server.ServerStoppedEvent as FMLServerStoppedEvent
+import net.minecraftforge.event.server.ServerStoppingEvent as FMLServerStoppingEvent
 import net.minecraftforge.fml.common.eventhandler.EventPriority
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.network.NetworkRegistry
 import net.minecraftforge.fml.common.registry.GameRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import net.minecraftforge.registries.GameData
 import net.minecraftforge.registries.IForgeRegistry
 import net.minecraftforge.registries.RegistryManager
@@ -196,24 +192,15 @@ import java.util.ArrayList
 import java.util.Arrays
 import java.util.LinkedList
 
-@Mod(
-    modid = Constants.MOD_ID_CORE,
-    name = GalacticraftCore.Companion.NAME,
-    version = Constants.COMBINEDVERSION,
-    useMetadata = true,
-    acceptedMinecraftVersions = Constants.MCVERSION,
-    dependencies = Constants.DEPENDENCIES_FORGE + Constants.DEPENDENCIES_MICCORE + Constants.DEPENDENCIES_MODS,
-    guiFactory = "micdoodle8.mods.galacticraft.core.client.gui.screen.ConfigGuiFactoryCore"
-)
-open class GalacticraftCore {
+@Mod(Constants.MOD_ID_CORE)
+open class GalacticraftCore(context: net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext) {
+
     private var GCCoreSource: File? = null
 
-    @Mod.EventHandler
-    open fun preInit(event: FMLPreInitializationEvent) {
-        GCCoreSource = event.getSourceFile()
+    open fun preInit() {
+        GCCoreSource = foundation.bootstrap.FoundationBootstrap.sourceFile(javaClass)
         GCCapabilities.register()
 
-        this.initModInfo(event.getModMetadata())
         isPlanetsLoaded = Loader.isModLoaded(Constants.MOD_ID_PLANETS)
         GCCoreUtil.nextID = 0
 
@@ -235,14 +222,14 @@ open class GalacticraftCore {
         MinecraftForge.EVENT_BUS.register(EventHandlerGC())
         handler = GCPlayerHandler()
         MinecraftForge.EVENT_BUS.register(handler)
-        proxy!!.preInit(event)
+        proxy!!.preInit()
 
         ConnectionPacket.bus = NetworkRegistry.INSTANCE.newEventDrivenChannel(ConnectionPacket.CHANNEL)
         ((ConnectionPacket.bus)!!.register(ConnectionPacket()))!!
 
-        ConfigManagerCore.initialize(File(event.getModConfigurationDirectory(), Constants.CONFIG_FILE))
-        EnergyConfigHandler.setDefaultValues(File(event.getModConfigurationDirectory(), Constants.POWER_CONFIG_FILE))
-        ChunkLoadingCallback.loadConfig(File(event.getModConfigurationDirectory(), Constants.CHUNKLOADER_CONFIG_FILE))
+        ConfigManagerCore.initialize(File(foundation.bootstrap.FoundationBootstrap.configDirectory, Constants.CONFIG_FILE))
+        EnergyConfigHandler.setDefaultValues(File(foundation.bootstrap.FoundationBootstrap.configDirectory, Constants.POWER_CONFIG_FILE))
+        ChunkLoadingCallback.loadConfig(File(foundation.bootstrap.FoundationBootstrap.configDirectory, Constants.CHUNKLOADER_CONFIG_FILE))
 
         galacticraftBlocksTab = CreativeTabGC(CreativeTabs.getNextID(), "galacticraft_blocks", null, null)
         galacticraftItemsTab = CreativeTabGC(CreativeTabs.getNextID(), "galacticraft_items", null, null)
@@ -253,6 +240,9 @@ open class GalacticraftCore {
             ServerPlayerAPI.register(Constants.MOD_ID_CORE, GCPlayerBaseMP::class.java)
         }
 
+        micdoodle8.mods.galacticraft.api.event.oxygen.OxygenEdgeUpdateEvent.BUS.addListener { event ->
+            OxygenPressureProtocol.onEdgeBlockUpdated(event.level, event.pos)
+        }
         GCBlocks.initBlocks()
         GCItems.initItems()
 
@@ -263,7 +253,6 @@ open class GalacticraftCore {
         moonMoon!!.setBiomeInfo(BiomeMoon.moonFlat)
     }
 
-    @Mod.EventHandler
     open fun init(event: FMLInitializationEvent?) {
         galacticraftBlocksTab!!.setItemForTab(ItemStack(Item.getItemFromBlock(GCBlocks.machineBase2)))
         galacticraftItemsTab!!.setItemForTab(ItemStack(GCItems.rocketTier1))
@@ -278,7 +267,7 @@ open class GalacticraftCore {
         packetPipeline = GalacticraftChannelHandler.init()
 
         val starSol: Star = Star("sol").setParentSolarSystem(solarSystemSol).setTierRequired(-1) as Star
-        starSol.setBodyIcon(ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/sun.png"))
+        starSol.setBodyIcon(ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/sun.png"))
         solarSystemSol!!.setMainStar(starSol)
 
         planetOverworld!!.setBodyIcon(
@@ -295,7 +284,7 @@ open class GalacticraftCore {
         planetOverworld!!.addChecklistKeys("equip_parachute")
 
         moonMoon!!.setDimensionInfo(ConfigManagerCore.idDimensionMoon, WorldProviderMoon::class.java).setTierRequired(1)
-        moonMoon!!.setBodyIcon(ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/moon.png"))
+        moonMoon!!.setBodyIcon(ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/moon.png"))
         moonMoon!!.setAtmosphere(AtmosphereInfo(false, false, false, 0.0f, 0.0f, 0.0f))
         moonMoon!!.addMobInfo(Biome.SpawnListEntry(EntityEvolvedZombie::class.java, 8, 2, 3))
         moonMoon!!.addMobInfo(Biome.SpawnListEntry(EntityEvolvedSpider::class.java, 8, 2, 3))
@@ -361,18 +350,18 @@ open class GalacticraftCore {
         GalacticraftRegistry.registerTeleportType(WorldProviderMoon::class.java, TeleportTypeMoon())
         GalacticraftRegistry.registerRocketGui(
             WorldProviderOverworldOrbit::class.java,
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/overworld_rocket_gui.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/overworld_rocket_gui.png")
         )
         GalacticraftRegistry.registerRocketGui(
             WorldProviderSurface::class.java,
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/overworld_rocket_gui.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/overworld_rocket_gui.png")
         )
         GalacticraftRegistry.registerRocketGui(
             WorldProviderMoon::class.java,
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/moon_rocket_gui.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/moon_rocket_gui.png")
         )
-        GalacticraftRegistry.addDungeonLoot(1, ItemStack(GCItems.schematic, 1, 0))
-        GalacticraftRegistry.addDungeonLoot(1, ItemStack(GCItems.schematic, 1, 1))
+        GalacticraftRegistry.addDungeonLoot(1, foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 0))
+        GalacticraftRegistry.addDungeonLoot(1, foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 1))
 
         if (ConfigManagerCore.enableCopperOreGen) {
             GameRegistry.registerWorldGenerator(OverworldGenerator((GCBlocks.basicBlock)!!, 5, 24, 0, 75, 7), 4)
@@ -450,16 +439,16 @@ open class GalacticraftCore {
         GalacticraftRegistry.registerGear(
             Constants.GEAR_ID_FREQUENCY_MODULE,
             EnumExtendedInventorySlot.FREQUENCY_MODULE,
-            ItemStack(GCItems.basicItem, 1, 19)
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 19)
         )
 
         proxy!!.registerFluidTexture(
             GCFluids.fluidOil,
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/misc/underoil.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/misc/underoil.png")
         )
         proxy!!.registerFluidTexture(
             GCFluids.fluidFuel,
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/misc/underfuel.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/misc/underfuel.png")
         )
 
         PermissionAPI.registerNode(
@@ -494,7 +483,6 @@ open class GalacticraftCore {
 //        }
     }
 
-    @Mod.EventHandler
     open fun postInit(event: FMLPostInitializationEvent) {
         planetMercury = makeDummyPlanet("mercury", solarSystemSol)
         if (planetMercury != null) {
@@ -596,7 +584,7 @@ open class GalacticraftCore {
             e.printStackTrace()
         }
 
-        if (event.getSide() == Side.SERVER) {
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.DEDICATED_SERVER) {
             this.loadLanguageCore("en_US")
         }
     }
@@ -605,22 +593,18 @@ open class GalacticraftCore {
         GCCoreUtil.loadLanguage((lang)!!, Constants.ASSET_PREFIX, (this.GCCoreSource)!!)
     }
 
-    @Mod.EventHandler
     open fun serverAboutToStart(event: FMLServerAboutToStartEvent?) {
         TickHandlerServer.restart()
     }
 
-    @Mod.EventHandler
     open fun serverInit(event: FMLServerStartedEvent?) {
         if (ThreadRequirementMissing.INSTANCE == null) {
             ThreadRequirementMissing.beginCheck(GCCoreUtil.getEffectiveSide())
         }
 
         ThreadVersionCheck.startCheck()
-        BlockVec3.chunkCacheDim = Int.MAX_VALUE
     }
 
-    @Mod.EventHandler
     open fun onServerStarting(event: FMLServerStartingEvent) {
         GCCoreUtil.notifyStarted(event.getServer())
         val worldFolder: File? = DimensionManager.getCurrentSaveRootDirectory()
@@ -631,9 +615,6 @@ open class GalacticraftCore {
         event.registerServerCommand(CommandSpaceStationRemoveOwner())
         event.registerServerCommand(CommandPlanetTeleport())
         event.registerServerCommand(CommandKeepDim())
-        event.registerServerCommand(CommandGCInv())
-        event.registerServerCommand(CommandGCHelp())
-        event.registerServerCommand(CommandGCKit())
         event.registerServerCommand(CommandGCHouston())
         event.registerServerCommand(CommandGCEnergyUnits())
         event.registerServerCommand(CommandJoinSpaceRace())
@@ -690,12 +671,10 @@ open class GalacticraftCore {
         }
     }
 
-    @Mod.EventHandler
     open fun onServerStopping(var1: FMLServerStoppingEvent?) {
         MapUtil.saveMapProgress()
     }
 
-    @Mod.EventHandler
     open fun onServerStop(var1: FMLServerStoppedEvent?) {
         // Unregister dimensions
         WorldUtil.unregisterPlanets()
@@ -789,13 +768,6 @@ open class GalacticraftCore {
         GCCoreUtil.registerGalacticraftNonMobEntity(EntityLander::class.java, "lander", 150, 5, false)
         GCCoreUtil.registerGalacticraftNonMobEntity(EntityMeteorChunk::class.java, "meteor_chunk", 150, 5, true)
         GCCoreUtil.registerGalacticraftNonMobEntity(EntityCelestialFake::class.java, "celestial_screen", 150, 5, false)
-        GCCoreUtil.registerGalacticraftNonMobEntity(
-            EntityHangingSchematic::class.java,
-            "hanging_schematic",
-            150,
-            5,
-            false
-        )
     }
 
     private fun makeDummyPlanet(name: String, system: SolarSystem?): Planet? {
@@ -809,22 +781,11 @@ open class GalacticraftCore {
         }
 
         val planet: Planet = Planet(name).setParentSolarSystem(system)
-        planet.setBodyIcon(ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/" + name + ".png"))
+        planet.setBodyIcon(ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/" + name + ".png"))
         GalaxyRegistry.registerPlanet(planet)
         return planet
     }
 
-    private fun initModInfo(info: ModMetadata) {
-        info.autogenerated = false
-        info.modId = Constants.MOD_ID_CORE
-        info.name = NAME
-        info.version = Constants.COMBINEDVERSION
-        info.description = "An advanced space travel mod for Minecraft!"
-        info.url = "https://micdoodle8.com/"
-        info.authorList =
-            mutableListOf<String?>("micdoodle8", "radfast", "EzerArch", "fishtaco", "SpaceViking", "SteveKunG")
-        info.logoFile = "assets/galacticraftcore/galacticraft_logo.png"
-    }
 
     @Mod.EventBusSubscriber(modid = Constants.MOD_ID_CORE)
     object RegistrationHandler {
@@ -895,27 +856,40 @@ open class GalacticraftCore {
             }
         }
 
-        @JvmStatic
-        @SubscribeEvent
-        fun registerSounds(event: RegistryEvent.Register<SoundEvent?>) {
-            if (GCCoreUtil.getEffectiveSide() == Side.CLIENT) {
-                GCSounds.registerSounds(event.getRegistry())
-            }
-        }
+
     }
+
+    init {
+        foundation.level.FoundationLevels.install()
+        foundation.item.FoundationItemComponents.install(context)
+        micdoodle8.mods.galacticraft.core.energy.item.ItemElectricBase.install()
+        foundation.recipe.FoundationIngredients.install(context)
+        foundation.schematic.FoundationSchematicEntities.install(context)
+        GCSounds.install(context)
+        net.minecraftforge.event.RegisterCommandsEvent.BUS.addListener { event ->
+            CommandGCInv.register(event.getDispatcher())
+            CommandGCHelp.register(event.getDispatcher())
+            CommandGCKit.register(event.getDispatcher()) { requireNotNull(GCItems.emergencyKit) }
+        }
+        instance = this
+        proxy = foundation.bootstrap.FoundationBootstrap.createProxy(CommonProxyCore::class.java, "micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore")
+        preInit()
+        foundation.bootstrap.FoundationBootstrap.attach(context, { init(it) }, { postInit(it) })
+        net.minecraftforge.event.server.ServerAboutToStartEvent.BUS.addListener { event -> serverAboutToStart(event) }
+        net.minecraftforge.event.server.ServerStartedEvent.BUS.addListener { event -> serverInit(event) }
+        net.minecraftforge.event.server.ServerStartingEvent.BUS.addListener { event -> onServerStarting(event) }
+        net.minecraftforge.event.server.ServerStoppingEvent.BUS.addListener { event -> onServerStopping(event) }
+        net.minecraftforge.event.server.ServerStoppedEvent.BUS.addListener { event -> onServerStop(event) }
+    }
+
 
     companion object {
         const val NAME: String = "Galacticraft Core"
 
         @JvmField
-        @SidedProxy(
-            clientSide = "micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore",
-            serverSide = "micdoodle8.mods.galacticraft.core.proxy.CommonProxyCore"
-        )
         var proxy: CommonProxyCore? = null
 
         @JvmField
-        @Mod.Instance(Constants.MOD_ID_CORE)
         var instance: GalacticraftCore? = null
 
         @JvmField

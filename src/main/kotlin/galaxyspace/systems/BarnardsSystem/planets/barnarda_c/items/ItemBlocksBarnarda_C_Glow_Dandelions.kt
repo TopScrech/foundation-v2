@@ -4,8 +4,8 @@ import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_G
 
 import galaxyspace.core.prefab.items.GSItemBlockDesc
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
-import net.minecraft.block.Block
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.ItemStack
 
 open class ItemBlocksBarnarda_C_Glow_Dandelions constructor(block: Block?) : GSItemBlockDesc((block)!!) {
     init {

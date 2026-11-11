@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.core.entities
 
 import net.minecraft.entity.ai.EntityAIWatchClosest
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 
 open class EntityAILookAtTradePlayerGC constructor(private val theMerchant: EntityAlienVillager) :
     EntityAIWatchClosest(theMerchant, EntityPlayer::class.java, 8.0f) {

@@ -1,20 +1,22 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedCreeper
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSkeleton
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSpider
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedZombie
 import micdoodle8.mods.galacticraft.core.entities.IBoss
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityLiving
 import net.minecraft.entity.monster.EntityMob
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.lang.Exception
 import java.lang.reflect.Constructor
 import java.util.ArrayList
@@ -169,12 +171,12 @@ open class TileEntityDungeonSpawner<E : Entity> : TileEntityAdvanced {
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
 
-        this.lastPlayerInRange = nbt.getBoolean("playerInRange")
+        this.lastPlayerInRange = nbt.getBooleanOr("playerInRange", false)
         this.playerInRange = this.lastPlayerInRange
-        this.isBossDefeated = nbt.getBoolean("defeated")
+        this.isBossDefeated = nbt.getBooleanOr("defeated", false)
 
         try {
-            this.bossClass = Class.forName(nbt.getString("bossClass")) as Class<E>
+            this.bossClass = Class.forName(nbt.getStringOr("bossClass", "")) as Class<E>
         } catch (e: Exception) {
             // This exception will be thrown when read is called from TileEntity.handleUpdateTag
             // but we only care if an exception is thrown on server side read
@@ -184,53 +186,53 @@ open class TileEntityDungeonSpawner<E : Entity> : TileEntityAdvanced {
         }
 
         this.roomCoords = Vector3()
-        this.roomCoords!!.x = nbt.getDouble("roomCoordsX")
-        this.roomCoords!!.y = nbt.getDouble("roomCoordsY")
-        this.roomCoords!!.z = nbt.getDouble("roomCoordsZ")
+        this.roomCoords!!.x = nbt.getDoubleOr("roomCoordsX", 0.0)
+        this.roomCoords!!.y = nbt.getDoubleOr("roomCoordsY", 0.0)
+        this.roomCoords!!.z = nbt.getDoubleOr("roomCoordsZ", 0.0)
         this.roomSize = Vector3()
-        this.roomSize!!.x = nbt.getDouble("roomSizeX")
-        this.roomSize!!.y = nbt.getDouble("roomSizeY")
-        this.roomSize!!.z = nbt.getDouble("roomSizeZ")
+        this.roomSize!!.x = nbt.getDoubleOr("roomSizeX", 0.0)
+        this.roomSize!!.y = nbt.getDoubleOr("roomSizeY", 0.0)
+        this.roomSize!!.z = nbt.getDoubleOr("roomSizeZ", 0.0)
 
-        if (nbt.hasKey("lastKillTime")) {
-            this.lastKillTime = nbt.getLong("lastKillTime")
-        } else if (nbt.hasKey("lastKillTimeNew")) {
-            val savedTime: Long = nbt.getLong("lastKillTimeNew")
+        if (nbt.containsTag("lastKillTime")) {
+            this.lastKillTime = nbt.getLongOr("lastKillTime", 0L)
+        } else if (nbt.containsTag("lastKillTimeNew")) {
+            val savedTime: Long = nbt.getLongOr("lastKillTimeNew", 0L)
             this.lastKillTime = if (savedTime == 0L) 0 else savedTime + MinecraftServer.getCurrentTimeMillis()
         }
 
 
-        if (nbt.hasKey("chestPosNull") && !nbt.getBoolean("chestPosNull")) {
-            this.chestPos = BlockPos(nbt.getInteger("chestX"), nbt.getInteger("chestY"), nbt.getInteger("chestZ"))
+        if (nbt.containsTag("chestPosNull") && !nbt.getBooleanOr("chestPosNull", false)) {
+            this.chestPos = BlockPos(nbt.getIntOr("chestX", 0), nbt.getIntOr("chestY", 0), nbt.getIntOr("chestZ", 0))
         }
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
 
-        nbt.setBoolean("playerInRange", this.playerInRange)
-        nbt.setBoolean("defeated", this.isBossDefeated)
-        nbt.setString("bossClass", this.bossClass!!.getCanonicalName())
+        nbt.putBoolean("playerInRange", this.playerInRange)
+        nbt.putBoolean("defeated", this.isBossDefeated)
+        nbt.putString("bossClass", this.bossClass!!.getCanonicalName())
 
         if (this.roomCoords != null) {
-            nbt.setDouble("roomCoordsX", this.roomCoords!!.x)
-            nbt.setDouble("roomCoordsY", this.roomCoords!!.y)
-            nbt.setDouble("roomCoordsZ", this.roomCoords!!.z)
-            nbt.setDouble("roomSizeX", this.roomSize!!.x)
-            nbt.setDouble("roomSizeY", this.roomSize!!.y)
-            nbt.setDouble("roomSizeZ", this.roomSize!!.z)
+            nbt.putDouble("roomCoordsX", this.roomCoords!!.x)
+            nbt.putDouble("roomCoordsY", this.roomCoords!!.y)
+            nbt.putDouble("roomCoordsZ", this.roomCoords!!.z)
+            nbt.putDouble("roomSizeX", this.roomSize!!.x)
+            nbt.putDouble("roomSizeY", this.roomSize!!.y)
+            nbt.putDouble("roomSizeZ", this.roomSize!!.z)
         }
 
-        nbt.setLong(
+        nbt.putLong(
             "lastKillTimeNew",
             if (this.lastKillTime == 0L) 0 else this.lastKillTime - MinecraftServer.getCurrentTimeMillis()
         )
 
-        nbt.setBoolean("chestPosNull", this.chestPos == null)
+        nbt.putBoolean("chestPosNull", this.chestPos == null)
         if (this.chestPos != null) {
-            nbt.setInteger("chestX", this.chestPos!!.getX())
-            nbt.setInteger("chestY", this.chestPos!!.getY())
-            nbt.setInteger("chestZ", this.chestPos!!.getZ())
+            nbt.putInt("chestX", this.chestPos!!.getX())
+            nbt.putInt("chestY", this.chestPos!!.getY())
+            nbt.putInt("chestZ", this.chestPos!!.getZ())
         }
         return nbt
     }

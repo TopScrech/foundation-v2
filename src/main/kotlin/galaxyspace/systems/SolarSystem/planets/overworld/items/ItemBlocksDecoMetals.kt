@@ -1,9 +1,11 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items
 
+import foundation.item.legacyItemValue
+
 import galaxyspace.core.prefab.items.GSItemBlockDesc
 import galaxyspace.systems.SolarSystem.planets.overworld.blocks.BlockDecoMetals
-import net.minecraft.block.Block
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.ItemStack
 
 open class ItemBlocksDecoMetals constructor(block: Block?) : GSItemBlockDesc((block)!!) {
     init {
@@ -16,7 +18,7 @@ open class ItemBlocksDecoMetals constructor(block: Block?) : GSItemBlockDesc((bl
     }
 
     override fun getTranslationKey(`is`: ItemStack): String {
-        val metadata: Int = `is`.getItemDamage()
+        val metadata: Int = `is`.legacyItemValue
         return "tile." + (BlockDecoMetals.EnumBlockDecoMetals.byMetadata(metadata))!!.getName().replace("_1", "")
             .replace("_2", "")
     }

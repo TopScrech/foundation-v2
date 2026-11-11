@@ -5,13 +5,13 @@ import micdoodle8.mods.galacticraft.core.energy.EnergyDisplayHelper
 import micdoodle8.mods.galacticraft.core.inventory.ContainerCoalGenerator
 import micdoodle8.mods.galacticraft.core.tile.TileEntityCoalGenerator
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiCoalGenerator constructor(
     playerInventory: InventoryPlayer?,
     private val tileEntity: TileEntityCoalGenerator
@@ -48,6 +48,6 @@ open class GuiCoalGenerator constructor(
     }
 
     companion object {
-        private val coalGeneratorTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/coal_generator.png")
+        private val coalGeneratorTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/coal_generator.png")
     }
 }

@@ -5,8 +5,8 @@ import java.util.UUID
 import micdoodle8.mods.galacticraft.api.vector.Vector2
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
 
 open class PacketEntityUpdate : PacketBase {
     private var entityID = 0
@@ -35,12 +35,12 @@ open class PacketEntityUpdate : PacketBase {
     }
 
     constructor(entity: Entity) : this(
-        entity.getEntityId(),
-        Vector3(entity.posX, entity.posY, entity.posZ),
-        Vector2(entity.rotationYaw.toDouble(), entity.rotationPitch.toDouble()),
-        Vector3(entity.motionX, entity.motionY, entity.motionZ),
+        entity.getId(),
+        Vector3(entity.x, entity.y, entity.z),
+        Vector2(entity.yRot.toDouble(), entity.xRot.toDouble()),
+        Vector3(entity.deltaMovement.x, entity.deltaMovement.y, entity.deltaMovement.z),
         entity.onGround,
-        GCCoreUtil.getDimensionID(entity.world)
+        GCCoreUtil.getDimensionID(entity.level())
     )
 
     override fun encodeInto(buffer: ByteBuf?) {
@@ -76,10 +76,10 @@ open class PacketEntityUpdate : PacketBase {
     }
 
     private fun setEntityData(player: EntityPlayer) {
-        val entity: Entity? = player.world.getEntityByID(this.entityID)
+        val entity: Entity? = player.level().getEntityByID(this.entityID)
 
         if (entity is IEntityFullSync) {
-            if (player.world.isRemote || player.getUniqueID() == (entity as IEntityFullSync).getOwnerUUID() || (entity as IEntityFullSync).getOwnerUUID() == null) {
+            if (player.level().isRemote || player.getUUID() == (entity as IEntityFullSync).getOwnerUUID() || (entity as IEntityFullSync).getOwnerUUID() == null) {
                 val controllable: IEntityFullSync = entity as IEntityFullSync
                 controllable.setPositionRotationAndMotion(
                     this.position!!.x,

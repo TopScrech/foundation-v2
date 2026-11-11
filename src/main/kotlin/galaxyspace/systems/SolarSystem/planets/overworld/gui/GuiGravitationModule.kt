@@ -21,18 +21,18 @@ import micdoodle8.mods.galacticraft.core.util.ColorUtil
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
-import net.minecraft.util.text.TextFormatting
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.ChatFormatting as TextFormatting
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.input.Keyboard
 import org.lwjgl.opengl.GL11
 import java.io.IOException
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiGravitationModule constructor(
     par1InventoryPlayer: InventoryPlayer?,
     private val tileEntity: TileEntityGravitationModule
@@ -143,7 +143,7 @@ open class GuiGravitationModule constructor(
             4210752
         )
 
-        for (i: Int in 0..3) if (this.tileEntity.getStackInSlot(i + 1).isItemEqual(ItemStack(GSItems.UPGRADES, 1, 1))) {
+        for (i: Int in 0..3) if (this.tileEntity.getItem(i + 1).isItemEqual(ItemStack(GSItems.UPGRADES, 1, 1))) {
             this.fontRenderer.drawSplitString(
                 EnumColor.BRIGHT_GREEN.toString() + GCCoreUtil.translate("gui.message.active_pressure_shield.name"),
                 10,

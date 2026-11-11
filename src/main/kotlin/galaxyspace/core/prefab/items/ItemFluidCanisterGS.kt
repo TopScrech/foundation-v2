@@ -1,5 +1,7 @@
 package galaxyspace.core.prefab.items
 
+import foundation.item.legacyItemValue
+
 import galaxyspace.core.util.GSCreativeTabs
 import galaxyspace.core.handler.GSItemCanisterGenericHandler
 import micdoodle8.mods.galacticraft.core.GCItems
@@ -11,18 +13,18 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.JavaUtil
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.NonNullList
-import net.minecraft.world.World
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.NonNullList
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -43,27 +45,27 @@ open class ItemFluidCanisterGS @JvmOverloads constructor(
         return GSCreativeTabs.GSItemsTab
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return EnumRarity.COMMON
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubItems(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         if (tab === GSCreativeTabs.GSItemsTab || tab === CreativeTabs.SEARCH) {
             list.add(ItemStack(this, 1, 1))
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(
         par1ItemStack: ItemStack,
         worldIn: World?,
         tooltip: MutableList<String?>,
         flagIn: ITooltipFlag
     ) {
-        if (par1ItemStack.getMaxDamage() - par1ItemStack.getItemDamage() > 0) {
-            tooltip.add(GCCoreUtil.translate(this.fluid.getUnlocalizedName()) + ": " + (par1ItemStack.getMaxDamage() - par1ItemStack.getItemDamage()))
+        if (par1ItemStack.getMaxDamage() - par1ItemStack.legacyItemValue > 0) {
+            tooltip.add(GCCoreUtil.translate(this.fluid.getUnlocalizedName()) + ": " + (par1ItemStack.getMaxDamage() - par1ItemStack.legacyItemValue))
         }
     }
 
@@ -87,23 +89,23 @@ open class ItemFluidCanisterGS @JvmOverloads constructor(
     }
 
     override fun onUpdate(par1ItemStack: ItemStack, par2World: World, par3Entity: Entity, par4: Int, par5: Boolean) {
-        if (this.amount == par1ItemStack.getItemDamage()) {
+        if (this.amount == par1ItemStack.legacyItemValue) {
             if (par1ItemStack.getItem() !== GCItems.oilCanister) {
                 this.replaceEmptyCanisterItem(par1ItemStack, GCItems.oilCanister)
             }
             par1ItemStack.setTagCompound(null)
-        } else if (par1ItemStack.getItemDamage() <= 0) {
+        } else if (par1ItemStack.legacyItemValue <= 0) {
             par1ItemStack.setItemDamage(1)
         }
     }
 
     override fun fill(container: ItemStack?, resource: FluidStack?, doFill: Boolean): Int {
-        if (resource == null || resource.getFluid() == null || resource.amount <= 0 || container == null || container.getItemDamage() <= 1 || (container.getItem() !is ItemCanisterGeneric)) {
+        if (resource == null || resource.getFluid() == null || resource.amount <= 0 || container == null || container.legacyItemValue <= 1 || (container.getItem() !is ItemCanisterGeneric)) {
             return 0
         }
         val fluidName: String = resource.getFluid().getName()
 
-        var capacityPlusOne: Int = container.getItemDamage()
+        var capacityPlusOne: Int = container.legacyItemValue
         if (capacityPlusOne <= 1) {
             if (capacityPlusOne < 1) {
                 //It shouldn't be possible, but just in case, set this to a proper filled item
@@ -133,7 +135,7 @@ open class ItemFluidCanisterGS @JvmOverloads constructor(
         if (fluidName.equals((container.getItem() as ItemCanisterGeneric).getAllowedFluid(), ignoreCase = true)) {
             val added: Int = min(resource.amount, capacityPlusOne - 1)
             if (doFill && added > 0) {
-                container.setItemDamage(max(1, container.getItemDamage() - added))
+                container.setItemDamage(max(1, container.legacyItemValue - added))
             }
             return added
         }
@@ -142,14 +144,14 @@ open class ItemFluidCanisterGS @JvmOverloads constructor(
     }
 
     override fun drain(container: ItemStack, maxDrain: Int, doDrain: Boolean): FluidStack? {
-        if (this.getAllowedFluid() == null || container.getItemDamage() >= this.amount) {
+        if (this.getAllowedFluid() == null || container.legacyItemValue >= this.amount) {
             return null
         }
 
         val used: FluidStack? = this.getFluid(container)
         if (used != null && used.amount > maxDrain) used.amount = maxDrain
         if (doDrain && used != null && used.amount > 0) {
-            this.setNewDamage(container, container.getItemDamage() + used.amount)
+            this.setNewDamage(container, container.legacyItemValue + used.amount)
         }
         return used
     }

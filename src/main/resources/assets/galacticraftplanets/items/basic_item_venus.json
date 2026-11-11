@@ -1,0 +1,62 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:component",
+    "component": "foundation:legacy_metadata",
+    "cases": [
+      {
+        "when": 0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/shield_controller"
+        }
+      },
+      {
+        "when": 1,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/ingot_lead"
+        }
+      },
+      {
+        "when": 2,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/radioisotope_core"
+        }
+      },
+      {
+        "when": 3,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/thermal_fabric"
+        }
+      },
+      {
+        "when": 4,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/solar_dust"
+        }
+      },
+      {
+        "when": 5,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/solar_module_2"
+        }
+      },
+      {
+        "when": 6,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/thin_solar_wafer"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "galacticraftplanets:item/shield_controller"
+    }
+  }
+}

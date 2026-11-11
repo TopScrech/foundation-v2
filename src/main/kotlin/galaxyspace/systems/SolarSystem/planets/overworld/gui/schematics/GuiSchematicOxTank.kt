@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.gui.schematics
 
+import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
+
 import galaxyspace.GalaxySpace
 import galaxyspace.core.GSItems
 import galaxyspace.systems.SolarSystem.planets.overworld.inventory.schematics.ContainerSchematicOxTank
@@ -9,10 +11,10 @@ import micdoodle8.mods.galacticraft.core.client.gui.container.GuiContainerGC
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
 import org.lwjgl.opengl.GL11
 
 open class GuiSchematicOxTank constructor(par1InventoryPlayer: InventoryPlayer, pos: BlockPos?) :
@@ -61,7 +63,7 @@ open class GuiSchematicOxTank constructor(par1InventoryPlayer: InventoryPlayer, 
     override fun drawGuiContainerForegroundLayer(par1: Int, par2: Int) {
         this.fontRenderer.drawString(
             EnumColor.WHITE.toString() + GSItems.OXYGENTANK_TIER_EPP.getItemStackDisplayName(
-                ItemStack(GSItems.OXYGENTANK_TIER_EPP, 1, 0)
+                ItemOxygenTank.stack(requireNotNull(GSItems.OXYGENTANK_TIER_EPP), 1, 0)
             ), 7, -20 + 27, 4210752
         )
         this.fontRenderer.drawString(
@@ -98,8 +100,8 @@ open class GuiSchematicOxTank constructor(par1InventoryPlayer: InventoryPlayer, 
 
     companion object {
         private val SchematicTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/schematics/schematic_clear.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/schematics/schematic_clear.png")
         private val TankTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/schematics/schematic_parts.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/schematics/schematic_parts.png")
     }
 }

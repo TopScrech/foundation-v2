@@ -1,5 +1,9 @@
 package asmodeuscore.core.handler
 
+import foundation.item.legacyItemValue
+
+import foundation.block.getStateFromMeta
+
 import asmodeuscore.core.utils.worldengine.WE_WorldProvider
 import asmodeuscore.core.handler.ColorBlockHandler
 import asmodeuscore.api.blocks.ICustomLeaves
@@ -7,30 +11,30 @@ import asmodeuscore.core.utils.worldengine.WE_Biome
 import asmodeuscore.core.utils.worldengine.WE_ChunkProvider
 import net.minecraft.block.BlockOldLeaf
 import net.minecraft.block.BlockPlanks
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.renderer.color.BlockColors
 import net.minecraft.client.renderer.color.IBlockColor
 import net.minecraft.client.renderer.color.IItemColor
 import net.minecraft.client.renderer.color.ItemColors
-import net.minecraft.init.Blocks
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.item.ItemBlock
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
 import net.minecraft.world.ColorizerFoliage
 import net.minecraft.world.ColorizerGrass
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.biome.BiomeColorHelper
 import net.minecraftforge.client.event.ColorHandlerEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.HashMap
 
 open class ColorBlockHandler {
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun registerBlockColourHandlers(event: ColorHandlerEvent.Block) {
         val blockColors: BlockColors = event.getBlockColors()
 
@@ -123,7 +127,7 @@ open class ColorBlockHandler {
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun registerItemColourHandlers(event: ColorHandlerEvent.Item) {
         val blockColors: BlockColors = event.getBlockColors()
         val itemColors: ItemColors? = event.getItemColors()
@@ -134,7 +138,7 @@ open class ColorBlockHandler {
                 if (stack != null || stack != ItemStack.EMPTY) {
                     if (stack!!.getItem() is ItemBlock) {
                         val state: IBlockState =
-                            (stack.getItem() as ItemBlock).getBlock().getStateFromMeta(stack.getMetadata())
+                            (stack.getItem() as ItemBlock).getBlock().getStateFromMeta(stack.legacyItemValue)
                         return@IItemColor blockColors.colorMultiplier(state, null, null, tintIndex)
                     }
                     return@IItemColor itemColors.colorMultiplier(stack, tintIndex)

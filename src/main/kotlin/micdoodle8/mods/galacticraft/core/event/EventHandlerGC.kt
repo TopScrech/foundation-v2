@@ -1,13 +1,17 @@
 package micdoodle8.mods.galacticraft.core.event
 
+import net.minecraft.network.chat.Component
+
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.api.recipe.SchematicEvent.FlipPage
 import micdoodle8.mods.galacticraft.api.recipe.SchematicEvent.Unlock
 import micdoodle8.mods.galacticraft.core.network.PacketSimple.EnumSimplePacket
-import net.minecraft.item.Item
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemBucket
 import net.minecraft.item.ItemFireball
 import net.minecraft.item.ItemFlintAndSteel
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.event.world.ChunkEvent.Load
 import net.minecraftforge.event.world.WorldEvent.Save
 import net.minecraftforge.fml.common.eventhandler.Event.Result
@@ -44,41 +48,37 @@ import micdoodle8.mods.galacticraft.core.world.ChunkLoadingCallback
 import micdoodle8.mods.galacticraft.core.wrappers.PlayerGearData
 import micdoodle8.mods.galacticraft.planets.asteroids.AsteroidsModule
 import micdoodle8.mods.galacticraft.planets.mars.network.PacketSimpleMars
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockGravel
 import net.minecraft.block.BlockLiquid
 import net.minecraft.block.BlockSand
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
-import net.minecraft.client.audio.ISound
-import net.minecraft.client.audio.PositionedSound
-import net.minecraft.client.audio.PositionedSoundRecord
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.client.multiplayer.WorldClient
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Biomes
-import net.minecraft.init.Blocks
-import net.minecraft.init.MobEffects
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.client.gui.screens.Screen as GuiScreen
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.biome.Biomes
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.effect.MobEffects
 import net.minecraft.item.*
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.DamageSource
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.SoundEvent
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.math.Vec3d
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
-import net.minecraft.world.WorldServer
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.phys.Vec3 as Vec3d
+
+import net.minecraft.world.level.Level as World
+import net.minecraft.server.level.ServerLevel as WorldServer
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.biome.BiomeDesert
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraftforge.client.event.EntityViewRenderEvent
 import net.minecraftforge.client.event.sound.PlaySoundEvent
 import net.minecraftforge.common.MinecraftForge
@@ -97,13 +97,11 @@ import net.minecraftforge.event.terraingen.TerrainGen
 import net.minecraftforge.event.world.ChunkDataEvent
 import net.minecraftforge.event.world.ChunkEvent
 import net.minecraftforge.event.world.WorldEvent
-import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.client.event.ConfigChangedEvent
 import net.minecraftforge.fml.common.eventhandler.Event
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
-import java.lang.reflect.Field
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -185,7 +183,7 @@ open class EventHandlerGC {
     open fun onEntityFall(event: LivingFallEvent) {
         if (event.getEntityLiving() is EntityPlayer) {
             val player: EntityPlayer = event.getEntityLiving() as EntityPlayer
-            if (player.getRidingEntity() is EntityAutoRocket || player.getRidingEntity() is EntityLanderBase) {
+            if (player.getVehicle() is EntityAutoRocket || player.getVehicle() is EntityLanderBase) {
                 event.setDistance(0.0f)
                 event.setCanceled(true)
                 return
@@ -200,7 +198,7 @@ open class EventHandlerGC {
     @SubscribeEvent
     open fun blockBreakSpeed(event: PlayerEvent.BreakSpeed) {
         val p: EntityPlayer = event.getEntityPlayer()
-        if (!p.onGround && p.world.provider is IZeroGDimension && !ConfigManagerCore.hardMode && event.getOriginalSpeed() < 5.0f) {
+        if (!p.onGround && p.level().provider is IZeroGDimension && !ConfigManagerCore.hardMode && event.getOriginalSpeed() < 5.0f) {
             event.setNewSpeed(event.getOriginalSpeed() * 5.0f)
         }
     }
@@ -220,7 +218,7 @@ open class EventHandlerGC {
         }
 
         val heldStack: ItemStack = event.getEntityPlayer().inventory.getCurrentItem()
-        val tileClicked: TileEntity? = worldObj.getTileEntity(event.getPos())
+        val tileClicked: TileEntity? = worldObj.getBlockEntity(event.getPos())
 
         if (!heldStack.isEmpty()) {
             if (tileClicked != null && tileClicked is IKeyable) {
@@ -247,12 +245,12 @@ open class EventHandlerGC {
 
         val idClicked: Block = worldObj.getBlockState(event.getPos()).getBlock()
 
-        if (idClicked === Blocks.BED && worldObj.provider is IGalacticraftWorldProvider && !worldObj.isRemote && !(worldObj.provider as IGalacticraftWorldProvider).hasBreathableAtmosphere()) {
+        if (idClicked === Blocks.BED && worldObj.provider is IGalacticraftWorldProvider && !worldObj.isClientSide && !(worldObj.provider as IGalacticraftWorldProvider).hasBreathableAtmosphere()) {
             if (GalacticraftCore.isPlanetsLoaded) {
                 val stats: GCPlayerStats = (GCPlayerStats.get(event.getEntityPlayer()))!!
                 if (!stats.hasReceivedBedWarning()) {
                     event.getEntityPlayer()
-                        .sendMessage(TextComponentString(GCCoreUtil.translate("gui.bed_fail.message")))
+                        .sendMessage(Component.literal(GCCoreUtil.translate("gui.bed_fail.message")))
                     stats.setReceivedBedWarning(true)
                 }
             }
@@ -278,7 +276,7 @@ open class EventHandlerGC {
         }
 
         val heldStack: ItemStack = event.getEntityPlayer().inventory.getCurrentItem()
-        val tileClicked: TileEntity? = worldObj.getTileEntity(event.getPos())
+        val tileClicked: TileEntity? = worldObj.getBlockEntity(event.getPos())
 
         if (!heldStack.isEmpty()) {
             if (tileClicked != null && tileClicked is IKeyable) {
@@ -313,7 +311,7 @@ open class EventHandlerGC {
             }
 
             if (heldStack.getItem() is ItemFlintAndSteel || heldStack.getItem() is ItemFireball) {
-                if (!worldObj.isRemote) {
+                if (!worldObj.isClientSide) {
                     if (idClicked !== Blocks.TNT && OxygenUtil.noAtmosphericCombustion(event.getEntityPlayer().world.provider) && !OxygenUtil.isAABBInBreathableAirBlock(
                             event.getEntityLiving().world,
                             AxisAlignedBB(
@@ -346,9 +344,9 @@ open class EventHandlerGC {
             return
         }
 
-        if (entityLiving.ticksExisted % ConfigManagerCore.suffocationCooldown == 0) {
-            if (entityLiving.world.provider is IGalacticraftWorldProvider) {
-                if ((entityLiving !is EntityPlayer) && (entityLiving !is IEntityBreathable || !(entityLiving as IEntityBreathable).canBreath()) && !(entityLiving.world.provider as IGalacticraftWorldProvider).hasBreathableAtmosphere()) {
+        if (entityLiving.tickCount % ConfigManagerCore.suffocationCooldown == 0) {
+            if (entityLiving.level().provider is IGalacticraftWorldProvider) {
+                if ((entityLiving !is EntityPlayer) && (entityLiving !is IEntityBreathable || !(entityLiving as IEntityBreathable).canBreath()) && !(entityLiving.level().provider as IGalacticraftWorldProvider).hasBreathableAtmosphere()) {
                     if (!OxygenUtil.isAABBInBreathableAirBlock(entityLiving)) {
                         val suffocationEvent: GCCoreOxygenSuffocationEvent =
                             GCCoreOxygenSuffocationEvent.Pre(entityLiving)
@@ -358,7 +356,7 @@ open class EventHandlerGC {
                             return
                         }
 
-                        entityLiving.attackEntityFrom(
+                        foundation.damage.FoundationDamageTypes.hurt(entityLiving,
                             DamageSourceGC.oxygenSuffocation,
                             max(ConfigManagerCore.suffocationDamage / 2, 1).toFloat()
                         )
@@ -394,7 +392,7 @@ open class EventHandlerGC {
         val bucket: Item? = bucketList.get(block)
 
         if (bucket != null && block.getMetaFromState(state) == 0) {
-            world.setBlockToAir(position.getBlockPos())
+            world.setBlockAndUpdate(position.getBlockPos(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
             return ItemStack(bucket)
         }
 
@@ -466,7 +464,7 @@ open class EventHandlerGC {
                 (GalacticraftCore.packetPipeline)!!.sendTo(
                     PacketSimple(
                         PacketSimple.EnumSimplePacket.C_UPDATE_SCHEMATIC_LIST,
-                        GCCoreUtil.getDimensionID(((event.player)!!.world)!!),
+                        GCCoreUtil.getDimensionID(((event.player)!!.level())!!),
                         objList
                     ), event.player
                 )
@@ -474,7 +472,7 @@ open class EventHandlerGC {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun schematicFlipEvent(event: SchematicEvent.FlipPage) {
         var page: ISchematicPage? = null
@@ -486,9 +484,9 @@ open class EventHandlerGC {
 
         if (page != null) {
             val cs: GuiScreen? = event.currentGui
-            var benchX: Int = FMLClientHandler.instance().getClient().player.posX.toInt()
-            var benchY: Int = FMLClientHandler.instance().getClient().player.posY.toInt()
-            var benchZ: Int = FMLClientHandler.instance().getClient().player.posZ.toInt()
+            var benchX: Int = Minecraft.getInstance().player.x.toInt()
+            var benchY: Int = Minecraft.getInstance().player.y.toInt()
+            var benchZ: Int = Minecraft.getInstance().player.z.toInt()
             if (cs is GuiPositionedContainer) {
                 benchX = cs.getX()
                 benchY = cs.getY()
@@ -497,14 +495,14 @@ open class EventHandlerGC {
             (GalacticraftCore.packetPipeline)!!.sendToServer(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.S_OPEN_SCHEMATIC_PAGE,
-                    GCCoreUtil.getDimensionID(FMLClientHandler.instance().getClient().world),
+                    GCCoreUtil.getDimensionID(Minecraft.getInstance().level),
                     arrayOf<Any>(page.getPageID(), benchX, benchY, benchZ)
                 )
             )
-            FMLClientHandler.instance().getClient().player.openGui(
+            Minecraft.getInstance().player.openGui(
                 GalacticraftCore.instance,
                 page.getGuiID(),
-                FMLClientHandler.instance().getClient().player.world,
+                Minecraft.getInstance().player.level(),
                 benchX,
                 benchY,
                 benchZ
@@ -531,13 +529,13 @@ open class EventHandlerGC {
         }
     }
 
-    // @SideOnly(Side.CLIENT)
+    // @OnlyIn(Dist.CLIENT)
     // @SubscribeEvent
     // public void onMinecraftLoaded(MinecraftLoadedEvent event)
     // {
     // ;
     // }
-    //	@SideOnly(Side.CLIENT)
+    //	@OnlyIn(Dist.CLIENT)
     //	@SubscribeEvent
     //	public void onSoundLoad(SoundLoadEvent event)
     //	{
@@ -566,7 +564,7 @@ open class EventHandlerGC {
     //		event.manager.addSound(Constants.TEXTURE_PREFIX + "shuttle/shuttle.ogg");
     //	}
     //
-    //	@SideOnly(Side.CLIENT)
+    //	@OnlyIn(Dist.CLIENT)
     //	private SoundPoolEntry func_110654_c(SoundPool pool, String par1Str)
     //	{
     //		try
@@ -583,10 +581,10 @@ open class EventHandlerGC {
     //
     //		return null;
     //	} TODO Fix sounds
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onLeaveBedButtonClicked(event: SleepCancelledEvent?) {
-        val player: EntityPlayer = FMLClientHandler.instance().getClient().player
+        val player: EntityPlayer = Minecraft.getInstance().player
 
         val c: BlockPos? = player.bedLocation
 
@@ -595,11 +593,11 @@ open class EventHandlerGC {
             MinecraftForge.EVENT_BUS.post(event0)
             player.wakeUpPlayer(true, true, false)
 
-            if (player.world.isRemote && GalacticraftCore.isPlanetsLoaded) {
+            if (player.level().isRemote && GalacticraftCore.isPlanetsLoaded) {
                 (GalacticraftCore.packetPipeline)!!.sendToServer(
                     PacketSimpleMars(
                         PacketSimpleMars.EnumSimplePacketMars.S_WAKE_PLAYER,
-                        GCCoreUtil.getDimensionID(player.world),
+                        GCCoreUtil.getDimensionID(player.level()),
                         arrayOf<Any?>()
                     )
                 )
@@ -612,7 +610,7 @@ open class EventHandlerGC {
         if (event.getEntity() is EntityEvolvedZombie) {
             event.setCustomSummonedAid(EntityEvolvedZombie(event.getWorld()))
 
-            if ((event.getEntity() as EntityLivingBase).getRNG()
+            if ((event.getEntity() as EntityLivingBase).getRandom()
                     .nextFloat() < (event.getEntity() as EntityEvolvedZombie).getEntityAttribute((event.getEntity() as EntityEvolvedZombie).getReinforcementsAttribute())
                     .getAttributeValue()
             ) {
@@ -623,12 +621,12 @@ open class EventHandlerGC {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun overrideSkyColor(event: EntityViewRenderEvent.FogColors) {
         //Disable any night vision effects on the sky, if the planet has no atmosphere
-        if (event.getEntity() is EntityLivingBase && (event.getEntity() as EntityLivingBase).isPotionActive(MobEffects.NIGHT_VISION)) {
-            val worldclient: WorldClient = Minecraft.getMinecraft().world
+        if (event.getEntity() is EntityLivingBase && (event.getEntity() as EntityLivingBase).hasEffect(MobEffects.NIGHT_VISION)) {
+            val worldclient: WorldClient = Minecraft.getInstance().level
 
             if (worldclient.provider is IGalacticraftWorldProvider && (worldclient.provider as IGalacticraftWorldProvider).hasNoAtmosphere() && event.getState()
                     .getMaterial() === Material.AIR && !(worldclient.provider as IGalacticraftWorldProvider).hasBreathableAtmosphere()
@@ -650,105 +648,22 @@ open class EventHandlerGC {
         }
     }
 
-    private val soundPlayList: MutableList<SoundPlayEntry> = ArrayList<SoundPlayEntry>()
-
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onSoundPlayed(event: PlaySoundEvent) {
-        //The event.result starts off equal to event.sound, but could have been altered or set to null by another mod
-        if (event.getResultSound() == null) {
-            return
-        }
-
-        val player: EntityPlayerSP? = FMLClientHandler.instance().getClient().player
-
-        if (player != null && player.world != null && player.world.provider is IGalacticraftWorldProvider) {
-            //Only modify standard game sounds, not music
-            if (event.getResultSound().getAttenuationType() != ISound.AttenuationType.NONE) {
-                val gearData: PlayerGearData? = ClientProxyCore.playerItemData.get(PlayerUtil.getName(player))
-
-                val x: Float = event.getResultSound().getXPosF()
-                val y: Float = event.getResultSound().getYPosF()
-                val z: Float = event.getResultSound().getZPosF()
-
-                if (gearData == null || gearData.getFrequencyModule() == -1) {
-                    // If the player doesn't have a frequency module, and the player isn't in an oxygenated environment
-                    // Note: this is a very simplistic approach, and nowhere near realistic, but required for performance reasons
-                    val bb: AxisAlignedBB =
-                        AxisAlignedBB(x - 0.0015, y - 0.0015, z - 0.0015, x + 0.0015, y + 0.0015, z + 0.0015)
-                    val playerInAtmosphere: Boolean = OxygenUtil.isAABBInBreathableAirBlock(player)
-                    val soundInAtmosphere: Boolean = OxygenUtil.isAABBInBreathableAirBlock(player.world, bb)
-                    if ((!playerInAtmosphere || !soundInAtmosphere)) {
-                        var volume: Float = 1.0f
-                        var pitch: Float = 1.0f
-
-                        if (volumeField == null) {
-                            try {
-                                volumeField =
-                                    PositionedSound::class.java.getDeclaredField(if (GCCoreUtil.isDeobfuscated()) "volume" else "field_147662_b") // TODO Obfuscated environment support
-                                volumeField!!.setAccessible(true)
-                                pitchField =
-                                    PositionedSound::class.java.getDeclaredField(if (GCCoreUtil.isDeobfuscated()) "pitch" else "field_147663_c") // TODO Obfuscated environment support
-                                pitchField!!.setAccessible(true)
-                            } catch (e: Exception) {
-                                e.printStackTrace()
-                            }
-                        }
-
-                        if (volumeField != null && pitchField != null) {
-                            try {
-                                volume =
-                                    if (event.getSound() is PositionedSound) volumeField!!.get(event.getSound()) as Float else 1.0f
-                                pitch =
-                                    if (event.getSound() is PositionedSound) pitchField!!.get(event.getSound()) as Float else 1.0f
-                            } catch (e: IllegalAccessException) {
-                                e.printStackTrace()
-                            }
-                        }
-
-                        //First check for duplicate firing of PlaySoundEvent17 on this handler's own playing of a reduced volume sound (see below)
-                        for (i: Int in this.soundPlayList.indices) {
-                            val entry: SoundPlayEntry = this.soundPlayList.get(i)
-
-                            if (entry.name == event.getName() && entry.x == x && entry.y == y && entry.z == z && entry.volume == volume) {
-                                this.soundPlayList.removeAt(i)
-                                return
-                            }
-                        }
-
-                        //If it's not a duplicate: play the same sound but at reduced volume
-                        val newVolume: Float = volume / max(
-                            0.01f,
-                            (player.world.provider as IGalacticraftWorldProvider).getSoundVolReductionAmount()
-                        )
-
-                        this.soundPlayList.add(SoundPlayEntry(event.getName(), x, y, z, newVolume))
-                        val soundEvent: SoundEvent? =
-                            SoundEvent.REGISTRY.getObject(event.getResultSound().getSoundLocation())
-                        if (soundEvent != null) {
-                            val newSound: ISound =
-                                PositionedSoundRecord(soundEvent, SoundCategory.NEUTRAL, newVolume, pitch, x, y, z)
-                            event.getManager().playSound(newSound)
-                            event.setResultSound(null)
-                        } else {
-                            GCLog.severe(
-                                "Sound event null! " + event.getName() + " " + event.getResultSound().getSoundLocation()
-                            )
-                        }
-                    }
-                }
-            }
+        val sound = event.sound ?: return
+        if (sound.attenuation == net.minecraft.client.resources.sounds.SoundInstance.Attenuation.NONE) return
+        val player = Minecraft.getInstance().player ?: return
+        val environment = foundation.level.FoundationSpaceEnvironment.get(player.level())
+        if (environment.body.isEmpty) return
+        val gear = ClientProxyCore.playerItemData[PlayerUtil.getName(player)]
+        if (gear != null && gear.getFrequencyModule() != -1) return
+        val bounds = AxisAlignedBB(sound.x - 0.0015, sound.y - 0.0015, sound.z - 0.0015,
+            sound.x + 0.0015, sound.y + 0.0015, sound.z + 0.0015)
+        if (!OxygenUtil.isAABBInBreathableAirBlock(player) || !OxygenUtil.isAABBInBreathableAirBlock(player.level(), bounds)) {
+            event.sound = foundation.client.FoundationSoundAttenuation.reduce(sound, environment.atmosphere.soundReduction())
         }
     }
-
-    private open class SoundPlayEntry
-        (
-        @field:kotlin.jvm.JvmField  val name: String,
-        @field:kotlin.jvm.JvmField  val x: Float,
-        @field:kotlin.jvm.JvmField  val y: Float,
-        @field:kotlin.jvm.JvmField  val z: Float,
-        @field:kotlin.jvm.JvmField  val volume: Float
-    )
 
     open class SleepCancelledEvent : Event()
 
@@ -838,7 +753,7 @@ open class EventHandlerGC {
 
                 val r2: Int = r * r
 
-                val crudeOil: IBlockState = (GCBlocks.crudeOil)!!.getDefaultState()
+                val crudeOil: IBlockState = (GCBlocks.crudeOil)!!.defaultBlockState()
                 for (bx: Int in -r..r) {
                     for (by: Int in -r + 2..r - 2) {
                         val xySquared: Int = bx * bx + by * by * 3
@@ -863,7 +778,7 @@ open class EventHandlerGC {
                                     continue
                                 }
 
-                                world.setBlockState(BlockPos(bx + x, by + cy, bz + z), crudeOil, 2)
+                                world.setBlock(BlockPos(bx + x, by + cy, bz + z), crudeOil, 2)
                             }
                         }
                     }
@@ -943,10 +858,10 @@ open class EventHandlerGC {
         }
 
         @JvmStatic
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         private fun getNextSchematic(currentIndex: Int): ISchematicPage? {
             val player: EntityPlayerSP =
-                (PlayerUtil.getPlayerBaseClientFromPlayer(FMLClientHandler.instance().getClient().player, false))!!
+                (PlayerUtil.getPlayerBaseClientFromPlayer(Minecraft.getInstance().player, false))!!
             val stats: GCPlayerStatsClient = (GCPlayerStatsClient.get(player))!!
 
             val size: Int = (stats.getUnlockedSchematics())!!.size
@@ -975,10 +890,10 @@ open class EventHandlerGC {
         }
 
         @JvmStatic
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         private fun getLastSchematic(currentIndex: Int): ISchematicPage? {
             val player: EntityPlayerSP =
-                (PlayerUtil.getPlayerBaseClientFromPlayer(FMLClientHandler.instance().getClient().player, false))!!
+                (PlayerUtil.getPlayerBaseClientFromPlayer(Minecraft.getInstance().player, false))!!
             val stats: GCPlayerStatsClient = (GCPlayerStatsClient.get(player))!!
 
             val size: Int = (stats.getUnlockedSchematics())!!.size
@@ -1006,7 +921,5 @@ open class EventHandlerGC {
             return null
         }
 
-        private var volumeField: Field? = null
-        private var pitchField: Field? = null
     }
 }

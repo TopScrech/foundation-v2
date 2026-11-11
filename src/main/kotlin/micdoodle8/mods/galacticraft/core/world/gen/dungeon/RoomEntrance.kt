@@ -1,11 +1,13 @@
 package micdoodle8.mods.galacticraft.core.world.gen.dungeon
 
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import foundation.level.horizontalStructureBounds
+
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import java.util.Random
 import kotlin.math.abs
 import kotlin.math.max
@@ -30,7 +32,7 @@ open class RoomEntrance : SizedPiece {
     ) {
         this.setCoordBaseMode(EnumFacing.SOUTH)
 
-        this.boundingBox = StructureBoundingBox(
+        this.boundingBox = BoundingBox(
             blockPosX - range,
             configuration.getYPosition(),
             blockPosZ - range,
@@ -43,7 +45,7 @@ open class RoomEntrance : SizedPiece {
     override fun addComponentParts(
         worldIn: World,
         randomIn: Random,
-        structureBoundingBoxIn: StructureBoundingBox
+        structureBoundingBoxIn: BoundingBox
     ): Boolean {
         var block1: IBlockState
 
@@ -51,7 +53,7 @@ open class RoomEntrance : SizedPiece {
 
         for (i: Int in -range..range) {
             for (k: Int in -range..range) {
-                var j: Int = this.boundingBox.getYSize()
+                var j: Int = this.boundingBox.getYSpan()
 
                 while (j >= 0) {
                     j--
@@ -78,7 +80,7 @@ open class RoomEntrance : SizedPiece {
                     if (i == startX || i == endX || j == 0 || j == this.sizeY || k == startZ || k == endZ) {
                         this.setBlockState(worldIn, (this.configuration)!!.getBrickBlock(), i, j, k, boundingBox)
                     } else {
-                        this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i, j, k, boundingBox)
+                        this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i, j, k, boundingBox)
                     }
                 }
             }
@@ -95,7 +97,7 @@ open class RoomEntrance : SizedPiece {
                 while (j > 1 && helper <= depth) {
                     block1 = this.getBlockStateFromPos(worldIn, i + range, j, k + range, boundingBox)
                     if (block1 === (this.configuration)!!.getBrickBlock() || j != this.sizeY) {
-                        this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i + range, j, k + range, boundingBox)
+                        this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i + range, j, k + range, boundingBox)
                         helper++
                     }
                     j--
@@ -114,15 +116,15 @@ open class RoomEntrance : SizedPiece {
         return null
     }
 
-    override fun getExtension(direction: EnumFacing, length: Int, width: Int): StructureBoundingBox {
+    override fun getExtension(direction: EnumFacing, length: Int, width: Int): BoundingBox {
         val blockX: Int
         val blockZ: Int
         val sizeX: Int
         val sizeZ: Int
-        val startX: Int = this.boundingBox.minX + range - this.sizeX / 2
-        val startZ: Int = this.boundingBox.minZ + range - this.sizeZ / 2
-        val endX: Int = this.boundingBox.minX + range + this.sizeX / 2
-        val endZ: Int = this.boundingBox.minZ + range + this.sizeZ / 2
+        val startX: Int = this.boundingBox.minX() + range - this.sizeX / 2
+        val startZ: Int = this.boundingBox.minZ() + range - this.sizeZ / 2
+        val endX: Int = this.boundingBox.minX() + range + this.sizeX / 2
+        val endZ: Int = this.boundingBox.minZ() + range + this.sizeZ / 2
         when (direction) {
             EnumFacing.NORTH -> {
                 sizeX = width
@@ -159,6 +161,6 @@ open class RoomEntrance : SizedPiece {
                 blockZ = startZ + (endZ - startZ) / 2 - sizeZ / 2
             }
         }
-        return StructureBoundingBox(blockX, blockZ, blockX + sizeX, blockZ + sizeZ)
+        return horizontalStructureBounds(blockX, blockZ, blockX + sizeX, blockZ + sizeZ)
     }
 }

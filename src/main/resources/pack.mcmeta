@@ -1,0 +1,13 @@
+{
+  "pack": {
+    "description": "Foundation v2 resources and data",
+    "min_format": [
+      97,
+      1
+    ],
+    "max_format": [
+      121,
+      0
+    ]
+  }
+}

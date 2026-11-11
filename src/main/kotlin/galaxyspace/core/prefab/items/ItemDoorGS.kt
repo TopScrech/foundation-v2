@@ -3,20 +3,20 @@ package galaxyspace.core.prefab.items
 import galaxyspace.core.util.GSCreativeTabs
 import micdoodle8.mods.galacticraft.core.items.ISortableItem
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemDoor
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 
 open class ItemDoorGS constructor(name: String, door: Block) : Item(), ISortableItem {
     private val door: Block
@@ -41,7 +41,7 @@ open class ItemDoorGS constructor(name: String, door: Block) : Item(), ISortable
         hitZ: Float
     ): EnumActionResult {
         var pos: BlockPos = pos
-        val itemStack: ItemStack = player.getHeldItem(hand)
+        val itemStack: ItemStack = player.getItemInHand(hand)
 
         if (facing != EnumFacing.UP) {
             return EnumActionResult.FAIL
@@ -53,9 +53,9 @@ open class ItemDoorGS constructor(name: String, door: Block) : Item(), ISortable
                 pos = pos.offset(facing)
             }
             if (player.canPlayerEdit(pos, facing, itemStack) && this.door.canPlaceBlockAt(world, pos)) {
-                val enumfacing: EnumFacing = EnumFacing.fromAngle(player.rotationYaw.toDouble())
-                val i: Int = enumfacing.getXOffset()
-                val j: Int = enumfacing.getZOffset()
+                val enumfacing: EnumFacing = EnumFacing.fromAngle(player.yRot.toDouble())
+                val i: Int = enumfacing.getStepX()
+                val j: Int = enumfacing.getStepZ()
                 val flag: Boolean =
                     i < 0 && hitZ < 0.5f || i > 0 && hitZ > 0.5f || j < 0 && hitX > 0.5f || j > 0 && hitX < 0.5f
                 ItemDoor.placeDoor(world, pos, enumfacing, this.door, flag)

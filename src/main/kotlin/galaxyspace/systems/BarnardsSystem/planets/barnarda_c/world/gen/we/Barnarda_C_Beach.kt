@@ -1,12 +1,14 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.world.gen.we
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.world.gen.we.Barnarda_C_Beach
 import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_BiomeLayer
 import galaxyspace.systems.BarnardsSystem.core.configs.BRConfigCore
 import asmodeuscore.core.utils.worldengine.WE_Biome
-import net.minecraft.init.Blocks
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class Barnarda_C_Beach constructor(min: Double, max: Double, tier: Int) :
@@ -28,7 +30,7 @@ open class Barnarda_C_Beach constructor(min: Double, max: Double, tier: Int) :
 
         val standardBiomeLayers: WE_BiomeLayer = WE_BiomeLayer()
         standardBiomeLayers.add(
-            Blocks.SANDSTONE.getDefaultState(),
+            Blocks.SANDSTONE.defaultBlockState(),
             BRBlocks.BARNARDA_C_BLOCKS.getStateFromMeta(1),
             -256,
             0,
@@ -38,14 +40,14 @@ open class Barnarda_C_Beach constructor(min: Double, max: Double, tier: Int) :
         )
         standardBiomeLayers.add(
             BRBlocks.BARNARDA_C_FALLING_BLOCKS.getStateFromMeta(0),
-            Blocks.SANDSTONE.getDefaultState(),
+            Blocks.SANDSTONE.defaultBlockState(),
             -256,
             0,
             -256,
             0,
             true
         )
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         createChunkGen_InXZ_List.add(standardBiomeLayers)
     }
 

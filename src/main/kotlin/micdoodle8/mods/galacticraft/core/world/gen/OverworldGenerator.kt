@@ -1,13 +1,15 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.block.state.pattern.BlockMatcher
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.IChunkProvider
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.fml.common.IWorldGenerator
@@ -80,7 +82,7 @@ open class OverworldGenerator constructor(
                                 if (var39 * var39 + var42 * var42 + var45 * var45 < 1.0 && state.getBlock()
                                         .isReplaceableOreGen(state, par1World, pos, BlockMatcher.forBlock(Blocks.STONE))
                                 ) {
-                                    par1World.setBlockState(
+                                    par1World.setBlock(
                                         BlockPos(var38, var41, var44),
                                         this.oreBlock.getStateFromMeta(this.metadata),
                                         2

@@ -6,10 +6,10 @@ import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemOrionDrive constructor(assetName: String?) : Item(), ISortableItem {
     //    public IIcon[] icons;
@@ -23,7 +23,7 @@ open class ItemOrionDrive constructor(assetName: String?) : Item(), ISortableIte
         return GalacticraftCore.galacticraftItemsTab
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }

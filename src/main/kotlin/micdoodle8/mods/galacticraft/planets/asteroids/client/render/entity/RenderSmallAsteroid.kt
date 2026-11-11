@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.BlockRendererDispatcher
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.renderer.texture.TextureMap
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL12
 
@@ -21,7 +21,7 @@ open class RenderSmallAsteroid constructor(manager: RenderManager) : Render<Enti
         f: Float,
         partialTickTime: Float
     ) {
-        val dispatcher: BlockRendererDispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher()
+        val dispatcher: BlockRendererDispatcher = Minecraft.getInstance().getBlockRendererDispatcher()
         GL11.glDisable(GL12.GL_RESCALE_NORMAL)
 
         GL11.glPushMatrix()
@@ -31,8 +31,8 @@ open class RenderSmallAsteroid constructor(manager: RenderManager) : Render<Enti
 
         this.bindEntityTexture(asteroid)
         dispatcher.renderBlockBrightness(
-            (AsteroidBlocks.blockBasic)!!.getDefaultState()
-                .withProperty(
+            (AsteroidBlocks.blockBasic)!!.defaultBlockState()
+                .setValue(
                     BlockBasicAsteroids.BASIC_TYPE,
                     BlockBasicAsteroids.EnumBlockBasic.ASTEROID_0
                 ), 1.0f

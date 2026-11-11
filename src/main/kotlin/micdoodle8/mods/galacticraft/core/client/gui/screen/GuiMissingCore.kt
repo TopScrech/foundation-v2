@@ -3,14 +3,14 @@ package micdoodle8.mods.galacticraft.core.client.gui.screen
 import micdoodle8.mods.galacticraft.core.util.ColorUtil
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.util.text.TextFormatting
+import net.minecraft.client.gui.screens.Screen as GuiScreen
+import net.minecraft.ChatFormatting as TextFormatting
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.net.URI
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiMissingCore : GuiScreen() {
     private var urlX = 0
     private var urlY = 0

@@ -15,15 +15,15 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.client.model.obj.OBJModel
 import net.minecraftforge.common.model.TRSRTransformation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class TileEntityMinerBaseRenderer : TileEntitySpecialRenderer<TileEntityMinerBase>() {
     open fun getBakedModel(): IBakedModel {
         if (minerBaseModelBaked == null) {
@@ -42,7 +42,7 @@ open class TileEntityMinerBaseRenderer : TileEntitySpecialRenderer<TileEntityMin
             }
             val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> =
                 Function { location: ResourceLocation? ->
-                    Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+                    Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
                 }
             minerBaseModelBaked = minerBaseModel.bake(
                 TRSRTransformation.identity(),
@@ -119,7 +119,7 @@ else -> {}
             -tile.getPos().getY().toFloat(),
             -tile.getPos().getZ().toFloat()
         )
-        Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelRenderer().renderModel(
+        Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelRenderer().renderModel(
             tile.getWorld(),
             getBakedModel(),
             tile.getWorld().getBlockState(tile.getPos()),

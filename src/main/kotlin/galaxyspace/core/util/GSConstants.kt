@@ -1,7 +1,6 @@
 package galaxyspace.core.util
 
-import galaxyspace.GalaxySpace
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 object GSConstants {
     const val GEAR_ID_OXYGEN_TANK_4: Int = 40
@@ -38,8 +37,8 @@ object GSConstants {
 
     @JvmField
     val GUI_MACHINE_CLASSIC: ResourceLocation =
-        ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/classic_gui.png")
+        ResourceLocation.fromNamespaceAndPath("galaxyspace", "textures/gui/classic_gui.png")
 
     @JvmField
-    val GUI_MACHINE_MODERN: ResourceLocation = ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/modern_gui.png")
+    val GUI_MACHINE_MODERN: ResourceLocation = ResourceLocation.fromNamespaceAndPath("galaxyspace", "textures/gui/modern_gui.png")
 }

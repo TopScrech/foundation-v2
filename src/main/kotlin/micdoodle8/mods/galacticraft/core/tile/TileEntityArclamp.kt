@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import foundation.persistence.listOfType
+
 import io.netty.buffer.ByteBuf
 import java.util.concurrent.atomic.AtomicBoolean
 import micdoodle8.mods.galacticraft.api.tile.ITileClientUpdates
@@ -11,28 +13,29 @@ import micdoodle8.mods.galacticraft.core.network.IPacketReceiver
 import micdoodle8.mods.galacticraft.core.network.PacketDynamic
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.RedstoneUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockAir
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityCreature
 import net.minecraft.entity.ai.RandomPositionGenerator
 import net.minecraft.entity.monster.IMob
-import net.minecraft.init.Blocks
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
 import net.minecraft.pathfinding.PathNavigate
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.ITickable
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraft.world.EnumSkyBlock
-import net.minecraft.world.World
-import net.minecraft.world.chunk.Chunk
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.HashSet
 import java.util.LinkedList
@@ -237,8 +240,8 @@ open class TileEntityArclamp : TileEntity(), ITickable, ITileClientUpdates, IPac
         var index: Int = 0
         val air: Block? = Blocks.AIR
         val breatheableAirID: Block? = GCBlocks.breatheableAir
-        val brightAir: IBlockState = (GCBlocks.brightAir)!!.getDefaultState()
-        val brightBreatheableAir: IBlockState = (GCBlocks.brightBreatheableAir)!!.getDefaultState()
+        val brightAir: IBlockState = (GCBlocks.brightAir)!!.defaultBlockState()
+        val brightBreatheableAir: IBlockState = (GCBlocks.brightBreatheableAir)!!.defaultBlockState()
         var dirty: Boolean = false
         checkedClear()
         val airToRevert: HashSet<BlockVec3?> = HashSet<BlockVec3?>()
@@ -402,13 +405,13 @@ open class TileEntityArclamp : TileEntity(), ITickable, ITileClientUpdates, IPac
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
 
-        this.facing = nbt.getInteger("Facing")
+        this.facing = nbt.getIntOr("Facing", 0)
         if (GCCoreUtil.getEffectiveSide() == Side.SERVER) {
             this.airToRestore.clear()
-            val airBlocks: NBTTagList = nbt.getTagList("AirBlocks", 10)
-            if (airBlocks.tagCount() > 0) {
-                for (j: Int in airBlocks.tagCount() - 1 downTo 0) {
-                    val tag1: NBTTagCompound = airBlocks.getCompoundTagAt(j)
+            val airBlocks: NBTTagList = nbt.listOfType("AirBlocks", 10)
+            if (airBlocks.size > 0) {
+                for (j: Int in airBlocks.size - 1 downTo 0) {
+                    val tag1: NBTTagCompound = airBlocks.getCompoundOrEmpty(j)
                     if (tag1 != null) {
                         this.airToRestore.add(BlockVec3.readFromNBT(tag1))
                     }
@@ -420,16 +423,16 @@ open class TileEntityArclamp : TileEntity(), ITickable, ITileClientUpdates, IPac
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
 
-        nbt.setInteger("Facing", this.facing)
+        nbt.putInt("Facing", this.facing)
 
         val airBlocks: NBTTagList = NBTTagList()
 
         for (vec: BlockVec3 in this.airToRestore) {
             val tag: NBTTagCompound = NBTTagCompound()
             vec.writeToNBT(tag)
-            airBlocks.appendTag(tag)
+            airBlocks.add(tag)
         }
-        nbt.setTag("AirBlocks", airBlocks)
+        nbt.put("AirBlocks", airBlocks)
         return nbt
     }
 
@@ -467,15 +470,15 @@ open class TileEntityArclamp : TileEntity(), ITickable, ITileClientUpdates, IPac
         val b: Block = this.world.getBlockState(blockpos).getBlock()
         val newState: IBlockState
         if (b === GCBlocks.brightAir) {
-            newState = Blocks.AIR.getDefaultState()
+            newState = Blocks.AIR.defaultBlockState()
         } else if (b === GCBlocks.brightBreatheableAir) {
-            newState = (GCBlocks.breatheableAir)!!.getDefaultState()
+            newState = (GCBlocks.breatheableAir)!!.defaultBlockState()
         } else {
             return
         }
 
 
-//      Roughly similar to:  this.worldObj.setBlockState(pos, newState, (this.worldObj.isRemote) ? 2 : 0);
+//      Roughly similar to:  this.worldObj.setBlock(pos, newState, (this.worldObj.isRemote) ? 2 : 0);
         val chunk: Chunk = this.world.getChunk(blockpos)
         val oldState: IBlockState? = chunk.setBlockState(blockpos, newState)
         if (this.world.isRemote && oldState != null) this.world.markAndNotifyBlock(
@@ -597,7 +600,7 @@ open class TileEntityArclamp : TileEntity(), ITickable, ITileClientUpdates, IPac
 
             if (rawLight != savedLight) {
                 this.setLightFor_preChecked(lightType, blockpos, rawLight) //<-------the light setting
-                if (world.isRemote) world.notifyLightSet(blockpos)
+                if (world.isClientSide) world.notifyLightSet(blockpos)
 
                 if (rawLight > savedLight) {
                     range = MathHelper.abs(xx - testx) + MathHelper.abs(yy - testy) + MathHelper.abs(zz - testz)
@@ -617,7 +620,7 @@ open class TileEntityArclamp : TileEntity(), ITickable, ITileClientUpdates, IPac
                         }
                     }
                 }
-            } else if (world.isRemote && savedLight != ((value shr 21) and 15)) {
+            } else if (world.isClientSide && savedLight != ((value shr 21) and 15)) {
                 world.notifyLightSet(blockpos)
             }
         }
@@ -723,7 +726,7 @@ open class TileEntityArclamp : TileEntity(), ITickable, ITileClientUpdates, IPac
 
             if (rawLight != savedLight) {
                 this.setLightFor_preChecked(lightType, blockpos, rawLight) //<-------the light setting
-                if (world.isRemote) world.notifyLightSet(blockpos)
+                if (world.isClientSide) world.notifyLightSet(blockpos)
 
                 if (rawLight > savedLight) {
                     range = MathHelper.abs(xx - testx) + MathHelper.abs(yy - testy) + MathHelper.abs(zz - testz)
@@ -743,7 +746,7 @@ open class TileEntityArclamp : TileEntity(), ITickable, ITileClientUpdates, IPac
                         }
                     }
                 }
-            } else if (world.isRemote && savedLight != ((value shr 21) and 15)) {
+            } else if (world.isClientSide && savedLight != ((value shr 21) and 15)) {
                 world.notifyLightSet(blockpos)
             }
         }
@@ -904,7 +907,7 @@ open class TileEntityArclamp : TileEntity(), ITickable, ITileClientUpdates, IPac
         this.ticks = 86
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         if (this.renderAABB == null) {
             this.renderAABB = AxisAlignedBB(pos, pos.add(1, 1, 1))
@@ -912,7 +915,7 @@ open class TileEntityArclamp : TileEntity(), ITickable, ITileClientUpdates, IPac
         return this.renderAABB!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return Constants.RENDERDISTANCE_LONG
     }

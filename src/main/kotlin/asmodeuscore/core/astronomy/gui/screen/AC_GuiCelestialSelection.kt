@@ -26,9 +26,9 @@ import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.client.gui.screen.GuiCelestialSelection
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.common.MinecraftForge
 import org.lwjgl.opengl.Display
 import org.lwjgl.util.vector.Vector3f
@@ -274,7 +274,7 @@ open class AC_GuiCelestialSelection constructor(
             1024.0f
         )
         val guiImg_2: ResourceLocation =
-            ResourceLocation("asmodeuscore", "textures/gui/galaxymap_nebula_" + this.nebula_img + ".png")
+            ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/galaxymap_nebula_" + this.nebula_img + ".png")
         this.mc.renderEngine.bindTexture(guiImg_2)
         GL11.glTranslated(this.xImgOffset * 1.5, this.yImgOffset * 1.5, 0.0)
         GL11.glColor4f(0.5f, 0.4f, this.nebula_color.floatZ(), 0.5f)
@@ -352,7 +352,7 @@ open class AC_GuiCelestialSelection constructor(
     }
 
     private fun refreshBodies() {
-        val player: EntityPlayerSP? = Minecraft.getMinecraft().player
+        val player: EntityPlayerSP? = Minecraft.getInstance().player
         this.bodiesToRender.clear()
         this.galaxylist.clear()
         this.starlist.clear()
@@ -515,7 +515,7 @@ open class AC_GuiCelestialSelection constructor(
     }
 
     companion object {
-        private val guiMain2 = ResourceLocation("asmodeuscore", "textures/gui/celestialselection2.png")
-        private val guiImg = ResourceLocation("asmodeuscore", "textures/gui/galaxymap_1.png")
+        private val guiMain2 = ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/celestialselection2.png")
+        private val guiImg = ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/galaxymap_1.png")
     }
 }

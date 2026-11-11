@@ -1,5 +1,9 @@
 package galaxyspace.systems.SolarSystem.moons.io.world.gen.dungeon
 
+import foundation.level.horizontalStructureBounds
+
+import foundation.persistence.containsTag
+
 import galaxyspace.core.GSBlocks
 import galaxyspace.GalaxySpace
 import galaxyspace.systems.SolarSystem.moons.io.world.gen.dungeon.DungeonStartIo
@@ -10,13 +14,13 @@ import galaxyspace.core.prefab.blocks.DungeonBlocks.EnumDungeonBlocks
 import galaxyspace.core.prefab.blocks.DungeonBlocks
 import galaxyspace.systems.SolarSystem.moons.io.world.gen.dungeon.DirectionalPieceIo
 import asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart.DungeonConfiguration
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.template.TemplateManager
 import java.util.Random
 import kotlin.math.abs
@@ -36,7 +40,7 @@ open class RoomEntranceIo : SizedPieceIo {
     ) : super(configuration, range, rand.nextInt(2) + 15, range, EnumFacing.Plane.HORIZONTAL.random(rand)) {
         this.setCoordBaseMode(EnumFacing.SOUTH)
 
-        this.boundingBox = StructureBoundingBox(
+        this.boundingBox = BoundingBox(
             blockPosX - range,
             configuration.getYPosition() - 5,
             blockPosZ - range,
@@ -50,7 +54,7 @@ open class RoomEntranceIo : SizedPieceIo {
     override fun addComponentParts(
         worldIn: World,
         randomIn: Random,
-        structureBoundingBoxIn: StructureBoundingBox
+        structureBoundingBoxIn: BoundingBox
     ): Boolean {
         var block1: IBlockState
 
@@ -58,7 +62,7 @@ open class RoomEntranceIo : SizedPieceIo {
 
         for (i: Int in -range..range) {
             for (k: Int in -range..range) {
-                var j: Int = this.boundingBox.getYSize()
+                var j: Int = this.boundingBox.getYSpan()
 
                 while (j >= 0) {
                     j--
@@ -84,7 +88,7 @@ open class RoomEntranceIo : SizedPieceIo {
                 for (k: Int in startZ..endZ) {
                     if (j == this.sizeY && (i == startX + 3 || i == endX - 3) && (k == startZ + 3 || k == endZ - 3)) this.setBlockState(
                         worldIn,
-                        Blocks.FLOWING_LAVA.getDefaultState(),
+                        Blocks.FLOWING_LAVA.defaultBlockState(),
                         i,
                         j,
                         k,
@@ -102,7 +106,7 @@ open class RoomEntranceIo : SizedPieceIo {
                             )
                         } else if (j == 0) this.setBlockState(
                             worldIn,
-                            Blocks.LAVA.getDefaultState(),
+                            Blocks.LAVA.defaultBlockState(),
                             i,
                             j,
                             k,
@@ -122,7 +126,7 @@ open class RoomEntranceIo : SizedPieceIo {
                                     )
                                 } else if (i != startX && i != endX && k != startZ && k != endZ) this.setBlockState(
                                     worldIn,
-                                    Blocks.AIR.getDefaultState(),
+                                    Blocks.AIR.defaultBlockState(),
                                     i,
                                     j,
                                     k,
@@ -183,19 +187,19 @@ open class RoomEntranceIo : SizedPieceIo {
 
                                 when (exitDirection) {
                                     EnumFacing.EAST -> if (k > startZ + l && k < endZ - l && i < endX - l) {
-                                        this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i, j, k, boundingBox)
+                                        this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i, j, k, boundingBox)
                                     }
 
                                     EnumFacing.NORTH -> if (i > startX + l && i < endX - l && k > endZ - l) {
-                                        this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i, j, k, boundingBox)
+                                        this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i, j, k, boundingBox)
                                     }
 
                                     EnumFacing.SOUTH -> if (i > startX + l && i < endX - l && k < endZ - l) {
-                                        this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i, j, k, boundingBox)
+                                        this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i, j, k, boundingBox)
                                     }
 
                                     EnumFacing.WEST -> if (k > startZ + l && k < endZ - l && i > endX - l) {
-                                        this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i, j, k, boundingBox)
+                                        this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i, j, k, boundingBox)
                                     }
 
                                     else -> {}
@@ -204,8 +208,8 @@ open class RoomEntranceIo : SizedPieceIo {
                         } else if (j == 1) {
                             this.setBlockState(
                                 worldIn,
-                                GSBlocks.DUNGEON_BLOCKS.getDefaultState()
-                                    .withProperty(
+                                GSBlocks.DUNGEON_BLOCKS.defaultBlockState()
+                                    .setValue(
                                         DungeonBlocks.BASIC_TYPE,
                                         EnumDungeonBlocks.IO_BRICKS
                                     ),
@@ -214,11 +218,11 @@ open class RoomEntranceIo : SizedPieceIo {
                                 k,
                                 boundingBox
                             )
-                        } else if (j >= 2 && j <= 4 && worldIn.rand.nextInt(10) > 4) {
+                        } else if (j >= 2 && j <= 4 && worldIn.random.nextInt(10) > 4) {
                             this.setBlockState(
                                 worldIn,
-                                GSBlocks.DUNGEON_BLOCKS.getDefaultState()
-                                    .withProperty(
+                                GSBlocks.DUNGEON_BLOCKS.defaultBlockState()
+                                    .setValue(
                                         DungeonBlocks.BASIC_TYPE,
                                         EnumDungeonBlocks.IO_BRICKS
                                     ),
@@ -229,7 +233,7 @@ open class RoomEntranceIo : SizedPieceIo {
                             )
                         } else this.setBlockState(worldIn, (this.configuration)!!.getBrickBlock(), i, j, k, boundingBox)
                     } else {
-                        this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i, j, k, boundingBox)
+                        this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i, j, k, boundingBox)
                     }
                 }
             }
@@ -249,7 +253,7 @@ open class RoomEntranceIo : SizedPieceIo {
                             false
                         )) || j != this.sizeY || j != 5
                     ) {
-                        this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i + range, j, k + range, boundingBox)
+                        this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i + range, j, k + range, boundingBox)
                         helper++
                     }
                     j--
@@ -264,15 +268,15 @@ open class RoomEntranceIo : SizedPieceIo {
         super.writeStructureToNBT(tagCompound)
 
         if (this.exitDirection != null) {
-            tagCompound.setInteger("direction_exit", this.exitDirection!!.ordinal)
+            tagCompound.putInt("direction_exit", this.exitDirection!!.ordinal)
         }
     }
 
     override fun readStructureFromNBT(tagCompound: NBTTagCompound, manager: TemplateManager) {
         super.readStructureFromNBT(tagCompound, manager)
 
-        if (tagCompound.hasKey("direction_exit")) {
-            this.exitDirection = EnumFacing.byIndex(tagCompound.getInteger("direction_exit"))
+        if (tagCompound.containsTag("direction_exit")) {
+            this.exitDirection = EnumFacing.from3DDataValue(tagCompound.getIntOr("direction_exit", 0))
         } else {
             this.exitDirection = null
         }
@@ -288,15 +292,15 @@ open class RoomEntranceIo : SizedPieceIo {
         return null
     }
 
-    override fun getExtension(direction: EnumFacing, length: Int, width: Int): StructureBoundingBox {
+    override fun getExtension(direction: EnumFacing, length: Int, width: Int): BoundingBox {
         val blockX: Int
         val blockZ: Int
         val sizeX: Int
         val sizeZ: Int
-        val startX: Int = this.boundingBox.minX + range - this.sizeX / 2
-        val startZ: Int = this.boundingBox.minZ + range - this.sizeZ / 2
-        val endX: Int = this.boundingBox.minX + range + this.sizeX / 2
-        val endZ: Int = this.boundingBox.minZ + range + this.sizeZ / 2
+        val startX: Int = this.boundingBox.minX() + range - this.sizeX / 2
+        val startZ: Int = this.boundingBox.minZ() + range - this.sizeZ / 2
+        val endX: Int = this.boundingBox.minX() + range + this.sizeX / 2
+        val endZ: Int = this.boundingBox.minZ() + range + this.sizeZ / 2
         when (direction) {
             EnumFacing.NORTH -> {
                 sizeX = width
@@ -333,7 +337,7 @@ open class RoomEntranceIo : SizedPieceIo {
                 blockZ = startZ + (endZ - startZ) / 2 - sizeZ / 2
             }
         }
-        return StructureBoundingBox(blockX, blockZ, blockX + sizeX, blockZ + sizeZ)
+        return horizontalStructureBounds(blockX, blockZ, blockX + sizeX, blockZ + sizeZ)
     }
 
     companion object {

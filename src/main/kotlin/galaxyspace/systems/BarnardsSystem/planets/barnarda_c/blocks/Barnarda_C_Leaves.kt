@@ -1,5 +1,7 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import net.minecraft.block.BlockPlanks.EnumType
 
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
@@ -7,33 +9,33 @@ import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_L
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Leaves
 import galaxyspace.core.util.GSCreativeTabs
 import asmodeuscore.api.blocks.ICustomLeaves
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockLeaves
 import net.minecraft.block.BlockPlanks
-import net.minecraft.block.SoundType
-import net.minecraft.block.properties.IProperty
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.properties.Property as IProperty
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
-open class Barnarda_C_Leaves constructor() : BlockLeaves(), ICustomLeaves {
+open class Barnarda_C_Leaves constructor() : BlockLeaves(), ICustomLeaves, LegacyBlockMetadata {
     @JvmField
     var leafSurroundings: IntArray? = null
 
@@ -67,7 +69,7 @@ open class Barnarda_C_Leaves constructor() : BlockLeaves(), ICustomLeaves {
     }
 
     override fun updateTick(worldIn: World, pos: BlockPos, state: IBlockState, rand: Random) {
-        if (!worldIn.isRemote) {
+        if (!worldIn.isClientSide) {
             if ((state.getValue(CHECK_DECAY) as Boolean) && (state.getValue(DECAYABLE) as Boolean)) {
                 val i: Int = 4
                 val j: Int = 5
@@ -166,7 +168,7 @@ open class Barnarda_C_Leaves constructor() : BlockLeaves(), ICustomLeaves {
                 val l2: Int = this.leafSurroundings!![16912]
 
                 if (l2 >= 0) {
-                    worldIn.setBlockState(pos, state.withProperty(CHECK_DECAY, false), 4)
+                    worldIn.setBlock(pos, state.setValue(CHECK_DECAY, false), 4)
                 } else {
                     this.destroy(worldIn, pos)
                 }
@@ -176,10 +178,10 @@ open class Barnarda_C_Leaves constructor() : BlockLeaves(), ICustomLeaves {
 
     private fun destroy(worldIn: World, pos: BlockPos) {
         this.dropBlockAsItem(worldIn, pos, worldIn.getBlockState(pos), 0)
-        worldIn.setBlockToAir(pos)
+        worldIn.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (blockBasic: EnumBlockLeaves in EnumBlockLeaves.entries) {
             list.add(ItemStack(this, 1, blockBasic.getMeta()))
@@ -190,13 +192,13 @@ open class Barnarda_C_Leaves constructor() : BlockLeaves(), ICustomLeaves {
         return Blocks.LEAVES.isOpaqueCube(state)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderLayer(): BlockRenderLayer {
-        return if (Minecraft.getMinecraft().gameSettings.fancyGraphics) BlockRenderLayer.CUTOUT_MIPPED else BlockRenderLayer.SOLID
+        return if (Minecraft.getInstance().gameSettings.fancyGraphics) BlockRenderLayer.CUTOUT_MIPPED else BlockRenderLayer.SOLID
     }
 
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun shouldSideBeRendered(
         state: IBlockState,
         blockAccess: IBlockAccess,
@@ -243,7 +245,9 @@ open class Barnarda_C_Leaves constructor() : BlockLeaves(), ICustomLeaves {
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -258,7 +262,7 @@ open class Barnarda_C_Leaves constructor() : BlockLeaves(), ICustomLeaves {
     /*
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		return this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockLeaves.byMetadata(meta));
+		return this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockLeaves.byMetadata(meta));
 	}
 
 	@Override
@@ -267,11 +271,11 @@ open class Barnarda_C_Leaves constructor() : BlockLeaves(), ICustomLeaves {
 	}
 */
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(BASIC_TYPE, (EnumBlockLeaves.byMetadata((meta and 3) % 4))!!)
-            .withProperty(DECAYABLE, (meta and 4) == 0)
-            .withProperty(CHECK_DECAY, (meta and 8) > 0)
-        //return this.getDefaultState().withProperty(BASIC_TYPE,  EnumBlockLeaves.byMetadata(meta)).withProperty(DECAYABLE, (meta & 4) == 0).withProperty(CHECK_DECAY, (meta & 8) > 0);
+        return this.defaultBlockState()
+            .setValue(BASIC_TYPE, (EnumBlockLeaves.byMetadata((meta and 3) % 4))!!)
+            .setValue(DECAYABLE, (meta and 4) == 0)
+            .setValue(CHECK_DECAY, (meta and 8) > 0)
+        //return this.defaultBlockState().setValue(BASIC_TYPE,  EnumBlockLeaves.byMetadata(meta)).setValue(DECAYABLE, (meta & 4) == 0).setValue(CHECK_DECAY, (meta & 8) > 0);
     }
 
     override fun getMetaFromState(state: IBlockState): Int {

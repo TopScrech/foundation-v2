@@ -1,14 +1,16 @@
 package micdoodle8.mods.galacticraft.planets.venus.world.gen
 
+import foundation.level.offset
+
 import java.util.Random
 
 import micdoodle8.mods.galacticraft.core.event.LootHandlerGC
 import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
 import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntityCrashedProbe
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 import java.util.*
 import kotlin.math.min
@@ -16,9 +18,9 @@ import kotlin.math.min
 open class WorldGenCrashedProbe constructor() : WorldGenerator() {
     override fun generate(worldIn: World, rand: Random, position: BlockPos): Boolean {
         var position: BlockPos = position
-        position = position.add(-8, 0, -8)
-        while (position.getY() > 5 && worldIn.isAirBlock(position)) {
-            position = position.down()
+        position = position.offset(-8, 0, -8)
+        while (position.getY() > 5 && worldIn.isEmptyBlock(position)) {
+            position = position.below()
         }
 
         if (position.getY() <= 4) {
@@ -51,24 +53,24 @@ open class WorldGenCrashedProbe constructor() : WorldGenerator() {
                     val pos: BlockPos =
                         BlockPos(poolX + position.getX(), poolY + position.getY(), poolZ + position.getZ())
                     if (distance <= radiusSq) {
-                        worldIn.setBlockState(pos, Blocks.AIR.getDefaultState(), 2)
+                        worldIn.setBlock(pos, Blocks.AIR.defaultBlockState(), 2)
                     } else if (worldIn.getBlockState(pos)
                             .getBlock() === VenusBlocks.venusBlock && poolY < 0 && rand.nextInt(5) == 0
                     ) {
-                        worldIn.setBlockState(pos, (VenusBlocks.scorchedRock)!!.getDefaultState(), 2)
+                        worldIn.setBlock(pos, (VenusBlocks.scorchedRock)!!.defaultBlockState(), 2)
                     }
                 }
             }
         }
 
-        val blockpos: BlockPos = position.add(0, -radius + 1, 0)
-        worldIn.setBlockState(blockpos, (VenusBlocks.crashedProbe)!!.getDefaultState(), 3)
-        val probe: TileEntityCrashedProbe? = worldIn.getTileEntity(blockpos) as TileEntityCrashedProbe?
+        val blockpos: BlockPos = position.offset(0, -radius + 1, 0)
+        worldIn.setBlock(blockpos, (VenusBlocks.crashedProbe)!!.defaultBlockState(), 3)
+        val probe: TileEntityCrashedProbe? = worldIn.getBlockEntity(blockpos) as TileEntityCrashedProbe?
 
         if (probe != null) {
-            for (i: Int in 0..<probe.getSizeInventory()) {
+            for (i: Int in 0..<probe.getContainerSize()) {
                 // Clear contents
-                probe.setInventorySlotContents(i, ItemStack.EMPTY)
+                probe.setItem(i, ItemStack.EMPTY)
             }
 
             probe.setLootTable(LootHandlerGC.TABLE_CRASHED_PROBE, rand.nextLong())

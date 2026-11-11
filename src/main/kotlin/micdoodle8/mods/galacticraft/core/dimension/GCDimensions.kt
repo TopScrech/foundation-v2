@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.core.dimension
 
-import net.minecraft.world.DimensionType
+import net.minecraft.world.level.dimension.DimensionType
 
 object GCDimensions {
     @JvmField

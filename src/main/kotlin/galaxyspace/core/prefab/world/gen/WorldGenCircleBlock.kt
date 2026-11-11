@@ -1,8 +1,8 @@
 package galaxyspace.core.prefab.world.gen
 
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 import java.util.Random
 
@@ -33,7 +33,7 @@ open class WorldGenCircleBlock constructor(gen_block: IBlockState, radius: Int, 
                             val block: IBlockState = worldIn.getBlockState(blockpos)
 
                             if (block === this.replace) {
-                                worldIn.setBlockState(blockpos, this.block, 2)
+                                worldIn.setBlock(blockpos, this.block, 2)
                             }
                         }
                     }

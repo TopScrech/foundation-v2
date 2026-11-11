@@ -1,16 +1,18 @@
 package asmodeuscore.core.utils.worldengine.standardcustomgen.help
 
+import foundation.block.getStateFromMeta
+
 import java.util.ArrayList
 import java.util.Random
 
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockSapling
 import net.minecraft.block.material.Material
-import net.minecraft.init.Blocks
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 import java.util.*
 import kotlin.math.*
@@ -69,7 +71,7 @@ open class WE_BigTreeGen constructor(doBlockNotify: Boolean) : WorldGenerator(do
         }
 
         for (ix: Int in this.am.indices) {
-            if (b.getMaterial(b.getDefaultState()) === this.am.get(ix)) {
+            if (b.getMaterial(b.defaultBlockState()) === this.am.get(ix)) {
                 return true
             }
         }
@@ -79,8 +81,8 @@ open class WE_BigTreeGen constructor(doBlockNotify: Boolean) : WorldGenerator(do
 
     open fun isReplaceable(world: World, x: Int, y: Int, z: Int): Boolean {
         val b: Block = world.getBlockState(BlockPos(x, y, z)).getBlock()
-        return b.isAir(b.getDefaultState(), world, BlockPos(x, y, z))
-                || b.isLeaves(b.getDefaultState(), world, BlockPos(x, y, z))
+        return b.isAir(b.defaultBlockState(), world, BlockPos(x, y, z))
+                || b.isLeaves(b.defaultBlockState(), world, BlockPos(x, y, z))
                 || b.isWood(world, BlockPos(x, y, z))
                 || this.cb(b)
     }
@@ -104,9 +106,9 @@ open class WE_BigTreeGen constructor(doBlockNotify: Boolean) : WorldGenerator(do
         val block: Block = world.getBlockState(BlockPos(basePos[0], basePos[1] - 1, basePos[2])).getBlock()
         val br: Boolean
         if (!block.canSustainPlant(
-                block.getDefaultState(),
+                block.defaultBlockState(),
                 world,
-                BlockPos(basePos[0], basePos[1], basePos[2]).down(),
+                BlockPos(basePos[0], basePos[1], basePos[2]).below(),
                 EnumFacing.UP,
                 this.bSapling as BlockSapling?
             )
@@ -246,12 +248,12 @@ open class WE_BigTreeGen constructor(doBlockNotify: Boolean) : WorldGenerator(do
                                 val block1: Block =
                                     world.getBlockState(BlockPos(aint1_3[0], aint1_3[1], aint1_3[2])).getBlock()
                                 if (!block1.isAir(
-                                        block1.getDefaultState(),
+                                        block1.defaultBlockState(),
                                         world,
                                         BlockPos(aint1_3[0], aint1_3[1], aint1_3[2])
                                     )
                                     && !block1.isLeaves(
-                                        block1.getDefaultState(),
+                                        block1.defaultBlockState(),
                                         world,
                                         BlockPos(aint1_3[0], aint1_3[1], aint1_3[2])
                                     )

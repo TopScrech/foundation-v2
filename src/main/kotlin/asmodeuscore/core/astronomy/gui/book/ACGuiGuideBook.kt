@@ -8,15 +8,15 @@ import java.io.IOException
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.client.audio.PositionedSoundRecord
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.resources.sounds.SimpleSoundInstance as PositionedSoundRecord
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.input.Mouse
 
 open class ACGuiGuideBook : GuiScreen {
@@ -420,8 +420,7 @@ open class ACGuiGuideBook : GuiScreen {
                 if (mouseX >= offsetFromScreenLeft + 30 + offsetX && mouseX <= offsetFromScreenLeft + 70 + offsetX + 10 && mouseY >= offsetFromScreenTop + 50 + offsetY && mouseY <= offsetFromScreenTop + 100 + offsetY) {
                     this.category = entry.key
                     this.mode = Mode.PAGES
-                    Minecraft.getMinecraft().getSoundHandler()
-                        .playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+                    Minecraft.getInstance().getSoundManager().play(PositionedSoundRecord.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f))
                 }
 
                 i++
@@ -443,8 +442,7 @@ open class ACGuiGuideBook : GuiScreen {
                             }
 
                             this.mode = Mode.TEXT
-                            Minecraft.getMinecraft().getSoundHandler()
-                                .playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+                            Minecraft.getInstance().getSoundManager().play(PositionedSoundRecord.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f))
                         }
 
                         i++
@@ -457,8 +455,7 @@ open class ACGuiGuideBook : GuiScreen {
             if (mouseX >= offsetFromScreenLeft + 25 && mouseX < offsetFromScreenLeft + 58 && mouseY >= offsetFromScreenTop + 18 && mouseY <= offsetFromScreenTop + 32) {
                 this.mode = Mode.CATEGORIES
                 this.scroll = 0
-                Minecraft.getMinecraft().getSoundHandler()
-                    .playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+                Minecraft.getInstance().getSoundManager().play(PositionedSoundRecord.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f))
             }
         } else if (this.mode == Mode.TEXT) {
             page!!.mouseClick(mouseX, mouseY, mouseButton, offsetFromScreenLeft, offsetFromScreenTop)
@@ -467,8 +464,7 @@ open class ACGuiGuideBook : GuiScreen {
                     this.mode = Mode.PAGES
                 }
 
-                Minecraft.getMinecraft().getSoundHandler()
-                    .playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+                Minecraft.getInstance().getSoundManager().play(PositionedSoundRecord.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f))
             }
         }
     }
@@ -549,7 +545,7 @@ open class ACGuiGuideBook : GuiScreen {
     }
 
     companion object {
-        private val bookPageTexture = ResourceLocation("asmodeuscore", "textures/gui/tablet.png")
+        private val bookPageTexture = ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/tablet.png")
         private var page: IBookPage? = null
     }
 }

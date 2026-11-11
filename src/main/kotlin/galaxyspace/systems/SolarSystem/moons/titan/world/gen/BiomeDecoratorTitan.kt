@@ -5,8 +5,8 @@ import galaxyspace.core.configs.GSConfigWorld
 import galaxyspace.systems.SolarSystem.moons.titan.world.gen.BiomeDecoratorTitan
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
 import micdoodle8.mods.galacticraft.core.world.gen.WorldGenMinableMeta
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 
 open class BiomeDecoratorTitan constructor() : BiomeDecoratorSpace() {

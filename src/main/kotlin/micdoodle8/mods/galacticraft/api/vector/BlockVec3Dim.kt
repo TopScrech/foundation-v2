@@ -1,354 +1,86 @@
 package micdoodle8.mods.galacticraft.api.vector
 
-import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import micdoodle8.mods.galacticraft.core.util.WorldUtil
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.crash.CrashReport
-import net.minecraft.crash.CrashReportCategory
-import net.minecraft.entity.Entity
-import net.minecraft.init.Blocks
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ReportedException
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.chunk.Chunk
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import foundation.level.FoundationDimensionKeys
+import foundation.level.FoundationLevels
+import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.resources.ResourceKey
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.entity.BlockEntity
+import net.minecraft.world.level.block.state.BlockState
 import kotlin.math.floor
 import kotlin.math.sqrt
 
-/* BlockVec3 is similar to galacticraft.api.vector.Vector3?
- * 
- * But for speed it uses integer arithmetic not doubles, for block coordinates
- * This reduces unnecessary type conversion between integers and doubles and back again.
- * (Minecraft block coordinates are always integers, only entity coordinates are doubles.)
- * 
- */
-open class BlockVec3Dim : Cloneable {
-    @JvmField
-    var x: Int
+/** A block position in a named dimension, independent of client/server numeric IDs */
+open class BlockVec3Dim @JvmOverloads constructor(
+    @JvmField var x: Int = 0,
+    @JvmField var y: Int = 0,
+    @JvmField var z: Int = 0,
+    @JvmField var dim: ResourceKey<Level> = FoundationDimensionKeys.OVERWORLD
+) : Cloneable {
+    constructor(x: Int, y: Int, z: Int, legacyDimensionId: Int) :
+        this(x, y, z, FoundationDimensionKeys.fromLegacyId(legacyDimensionId))
+    constructor(entity: Entity) :
+        this(floor(entity.x).toInt(), floor(entity.y).toInt(), floor(entity.z).toInt(), entity.level().dimension())
+    constructor(blockEntity: BlockEntity) :
+        this(blockEntity.blockPos, requireNotNull(blockEntity.level) { "Block entity is not attached to a level" }.dimension())
+    constructor(pos: BlockPos, dimension: ResourceKey<Level>) : this(pos.x, pos.y, pos.z, dimension)
+    constructor(pos: BlockPos, legacyDimensionId: Int) :
+        this(pos, FoundationDimensionKeys.fromLegacyId(legacyDimensionId))
+    constructor(tag: CompoundTag) :
+        this(tag.getIntOr("x", 0), tag.getIntOr("y", 0), tag.getIntOr("z", 0), FoundationDimensionKeys.read(tag))
 
-    @JvmField
-    var y: Int
+    public override fun clone(): BlockVec3Dim = BlockVec3Dim(x, y, z, dim)
+    private fun coordinates(): BlockVec3 = BlockVec3(x, y, z)
 
-    @JvmField
-    var z: Int
-
-    @JvmField
-    var dim: Int
-
-    @JvmOverloads
-    constructor(x: Int = 0, y: Int = 0, z: Int = 0, d: Int = 0) {
-        this.x = x
-        this.y = y
-        this.z = z
-        this.dim = d
-    }
-
-    constructor(par1: Entity) {
-        this.x = floor(par1.posX).toInt()
-        this.y = floor(par1.posY).toInt()
-        this.z = floor(par1.posZ).toInt()
-        this.dim = par1.dimension
-    }
-
-    constructor(par1: TileEntity) {
-        this.x = par1.getPos().getX()
-        this.y = par1.getPos().getY()
-        this.z = par1.getPos().getZ()
-        this.dim = par1.getWorld().provider.getDimension()
-    }
-
-    constructor(pos: BlockPos, dimensionId: Int) : this(pos.getX(), pos.getY(), pos.getZ(), dimensionId)
-
-    /**
-     * Makes a new copy of this Vector. Prevents variable referencing problems.
-     */
-    public override fun clone(): BlockVec3Dim {
-        return BlockVec3Dim(this.x, this.y, this.z, this.dim)
-    }
-
-    /**
-     * Get block ID at the BlockVec3Dim coordinates, with a forced chunk load if
-     * the coordinates are unloaded.  Only works server-side.
-     *
-     * @return the block ID, or null if the y-coordinate is less than 0 or
-     * greater than 256 or the x or z is outside the Minecraft worldmap.
-     */
-    open fun getBlockState(): IBlockState? {
-        if (this.y < 0 || this.y >= 256 || this.x < -30000000 || this.z < -30000000 || this.x >= 30000000 || this.z >= 30000000) {
-            return null
-        }
-
-        val world: World? = getWorldForId(this.dim)
-        if (world == null) return null
-
-        val chunkx: Int = this.x shr 4
-        val chunkz: Int = this.z shr 4
-        try {
-            // In a typical inner loop, 80% of the time consecutive calls to
-            // this will be within the same chunk
-            if (chunkCacheX == chunkx && chunkCacheZ == chunkz && chunkCacheDim == world.provider.getDimension() && chunkCached!!.isLoaded()) {
-                return chunkCached!!.getBlockState(this.x and 15, this.y, this.z and 15)
-            } else {
-                var chunk: Chunk? = null
-                chunk = world.getChunk(chunkx, chunkz)
-                chunkCached = chunk
-                chunkCacheDim = world.provider.getDimension()
-                chunkCacheX = chunkx
-                chunkCacheZ = chunkz
-                return chunk!!.getBlockState(this.x and 15, this.y, this.z and 15)
-            }
-        } catch (throwable: Throwable) {
-            val crashreport: CrashReport =
-                CrashReport.makeCrashReport(throwable, "Oxygen Sealer thread: Exception getting block type in world")
-            val crashreportcategory: CrashReportCategory = crashreport.makeCategory("Requested block coordinates")
-            crashreportcategory.addCrashSection(
-                "Location",
-                CrashReportCategory.getCoordinateInfo(BlockPos(this.x, this.y, this.z))
-            )
-            throw ReportedException(crashreport)
-        }
-    }
-
-    /**
-     * Get block ID at the BlockVec3 coordinates without forcing a chunk load.
-     *
-     * @return the block ID, or null if the y-coordinate is less than 0 or
-     * greater than 256 or the x or z is outside the Minecraft worldmap.
-     * Returns Blocks.BEDROCK if the coordinates being checked are in an
-     * unloaded chunk
-     */
-    open fun getBlockState_noChunkLoad(): IBlockState? {
-        if (this.y < 0 || this.y >= 256 || this.x < -30000000 || this.z < -30000000 || this.x >= 30000000 || this.z >= 30000000) {
-            return null
-        }
-
-        val world: World? = getWorldForId(this.dim)
-        if (world == null) return null
-
-        val chunkx: Int = this.x shr 4
-        val chunkz: Int = this.z shr 4
-        try {
-            if (world.getChunkProvider().getLoadedChunk(chunkx, chunkz) != null) {
-                // In a typical inner loop, 80% of the time consecutive calls to
-                // this will be within the same chunk
-                if (chunkCacheX == chunkx && chunkCacheZ == chunkz && chunkCacheDim == world.provider.getDimension() && chunkCached!!.isLoaded()) {
-                    return chunkCached!!.getBlockState(this.x and 15, this.y, this.z and 15)
-                } else {
-                    var chunk: Chunk? = null
-                    chunk = world.getChunk(chunkx, chunkz)
-                    chunkCached = chunk
-                    chunkCacheDim = world.provider.getDimension()
-                    chunkCacheX = chunkx
-                    chunkCacheZ = chunkz
-                    return chunk!!.getBlockState(this.x and 15, this.y, this.z and 15)
-                }
-            }
-            //Chunk doesn't exist - meaning, it is not loaded
-            return Blocks.BEDROCK.getDefaultState()
-        } catch (throwable: Throwable) {
-            val crashreport: CrashReport =
-                CrashReport.makeCrashReport(throwable, "Oxygen Sealer thread: Exception getting block type in world")
-            val crashreportcategory: CrashReportCategory = crashreport.makeCategory("Requested block coordinates")
-            crashreportcategory.addCrashSection(
-                "Location",
-                CrashReportCategory.getCoordinateInfo(BlockPos(this.x, this.y, this.z))
-            )
-            throw ReportedException(crashreport)
-        }
-    }
-
-    open fun getBlock(): Block? {
-        val world: World? = this.getWorldForId(this.dim)
-        if (world == null) return null
-        return world.getBlockState(BlockPos(this.x, this.y, this.z)).getBlock()
-    }
+    open fun getBlockState(): BlockState? = FoundationLevels.get(dim)?.let { coordinates().getBlockState(it) }
+    open fun getBlockState_noChunkLoad(): BlockState? =
+        FoundationLevels.get(dim)?.let { coordinates().getBlockState_noChunkLoad(it) }
+    open fun getBlock(): Block? = getBlockState()?.block
 
     @JvmOverloads
-    open fun modifyPositionFromSide(side: EnumFacing, amount: Int = 1): BlockVec3Dim {
-        when (side.ordinal) {
-            0 -> this.y -= amount
-            1 -> this.y += amount
-            2 -> this.z -= amount
-            3 -> this.z += amount
-            4 -> this.x -= amount
-            5 -> this.x += amount
-        }
+    open fun modifyPositionFromSide(side: Direction, amount: Int = 1): BlockVec3Dim {
+        x += side.stepX * amount
+        y += side.stepY * amount
+        z += side.stepZ * amount
         return this
     }
 
-    open fun newVecSide(side: Int): BlockVec3Dim {
-        val vec: BlockVec3Dim = BlockVec3Dim(this.x, this.y, this.z, this.dim)
-        when (side) {
-            0 -> {
-                vec.y--
-                return vec
-            }
-
-            1 -> {
-                vec.y++
-                return vec
-            }
-
-            2 -> {
-                vec.z--
-                return vec
-            }
-
-            3 -> {
-                vec.z++
-                return vec
-            }
-
-            4 -> {
-                vec.x--
-                return vec
-            }
-
-            5 -> {
-                vec.x++
-                return vec
-            }
-        }
-        return vec
+    open fun newVecSide(side: Int): BlockVec3Dim = clone().also {
+        if (side in 0..5) it.modifyPositionFromSide(Direction.from3DDataValue(side))
     }
 
-    override fun hashCode(): Int {
-        return (((this.z * 431 + this.x) * 379 + this.y) * 373 + this.dim) * 7
+    override fun hashCode(): Int = (((z * 431 + x) * 379 + y) * 373 + dim.hashCode()) * 7
+    override fun equals(other: Any?): Boolean =
+        other is BlockVec3Dim && x == other.x && y == other.y && z == other.z && dim == other.dim
+    override fun toString(): String = "BlockVec3 ${dim.identifier()}:[$x,$y,$z]"
+
+    open fun getTileEntity(): BlockEntity? = FoundationLevels.get(dim)?.getBlockEntity(toBlockPos())
+    open fun getTileEntityNoLoad(): BlockEntity? =
+        FoundationLevels.get(dim)?.chunkSource?.getChunkNow(x shr 4, z shr 4)?.getBlockEntity(toBlockPos())
+    open fun getBlockMetadata(): BlockState? = getBlockState()
+    open fun writeToNBT(tag: CompoundTag): CompoundTag {
+        coordinates().writeToNBT(tag)
+        FoundationDimensionKeys.write(tag, dim)
+        return tag
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (o is BlockVec3Dim) {
-            val vector: BlockVec3Dim = o
-            return this.x == vector.x && this.y == vector.y && this.z == vector.z && this.dim == vector.dim
-        }
-
-        return false
+    open fun getMagnitude(): Double = sqrt(getMagnitudeSquared().toDouble())
+    open fun getMagnitudeSquared(): Int = x * x + y * y + z * z
+    open fun setBlock(state: BlockState) {
+        FoundationLevels.get(dim)?.setBlock(toBlockPos(), state, Block.UPDATE_ALL)
     }
 
-    override fun toString(): String {
-        return "BlockVec3 " + this.dim + ":[" + this.x + "," + this.y + "," + this.z + "]"
-    }
-
-    /**
-     * This will load the chunk - use getTileEntityNoLoad() if just updating things if present.
-     */
-    open fun getTileEntity(): TileEntity? {
-        val world: World? = this.getWorldForId(this.dim)
-        if (world == null) return null
-        return world.getTileEntity(BlockPos(this.x, this.y, this.z))
-    }
-
-    open fun getTileEntityNoLoad(): TileEntity? {
-        val world: World? = getWorldForId(this.dim)
-        if (world == null) return null
-        val pos: BlockPos = BlockPos(this.x, this.y, this.z)
-        if (world.isBlockLoaded(pos, false)) return world.getTileEntity(pos)
-        return null
-    }
-
-    open fun getBlockMetadata(): IBlockState? {
-        val world: World? = this.getWorldForId(this.dim)
-        if (world == null) return null
-        return world.getBlockState(BlockPos(this.x, this.y, this.z))
-    }
-
-    open fun writeToNBT(par1NBTTagCompound: NBTTagCompound): NBTTagCompound {
-        par1NBTTagCompound.setInteger("x", this.x)
-        par1NBTTagCompound.setInteger("y", this.y)
-        par1NBTTagCompound.setInteger("z", this.z)
-        par1NBTTagCompound.setInteger("dim", this.dim)
-        return par1NBTTagCompound
-    }
-
-    constructor(par1NBTTagCompound: NBTTagCompound) {
-        this.x = par1NBTTagCompound.getInteger("x")
-        this.y = par1NBTTagCompound.getInteger("y")
-        this.z = par1NBTTagCompound.getInteger("z")
-        this.dim = par1NBTTagCompound.getInteger("dim")
-    }
-
-    open fun getMagnitude(): Double {
-        return sqrt(this.getMagnitudeSquared().toDouble())
-    }
-
-    open fun getMagnitudeSquared(): Int {
-        return this.x * this.x + this.y * this.y + this.z * this.z
-    }
-
-    open fun setBlock(block: IBlockState) {
-        val world: World? = this.getWorldForId(this.dim)
-        if (world == null) return
-        world.setBlockState(BlockPos(this.x, this.y, this.z), block, 3)
-    }
-
-    open fun blockExists(): Boolean {
-        val world: World? = this.getWorldForId(this.dim)
-        if (world == null) return false
-        return world.isBlockLoaded(BlockPos(this.x, this.y, this.z))
-    }
-
-    /**
-     * It is up to the calling method to check that the dimension matches
-     *
-     * @param vector
-     * @return
-     */
-    open fun distanceSquared(vector: BlockVec3): Int {
-        val var2: Int = vector.x - this.x
-        val var4: Int = vector.y - this.y
-        val var6: Int = vector.z - this.z
-        return var2 * var2 + var4 * var4 + var6 * var6
-    }
-
-    open fun toBlockPos(): BlockPos {
-        return BlockPos(x, y, z)
-    }
-
-    private fun getWorldForId(dimensionID: Int): World? {
-        if (GCCoreUtil.getEffectiveSide() == Side.SERVER) {
-            return WorldUtil.getWorldForDimensionServer(dimensionID)
-        } else {
-            return getWorldForIdClient(dimensionID)
-        }
-    }
-
-    @SideOnly(Side.CLIENT)
-    private fun getWorldForIdClient(dimensionID: Int): World? {
-        val world: World? = FMLClientHandler.instance().getClient().world
-
-        if (world != null && world.provider.getDimension() == dimensionID) {
-            return world
-        }
-
-        return null
-    }
+    open fun blockExists(): Boolean = FoundationLevels.get(dim)?.chunkSource?.hasChunk(x shr 4, z shr 4) == true
+    open fun distanceSquared(vector: BlockVec3): Int = coordinates().distanceSquared(vector)
+    open fun toBlockPos(): BlockPos = BlockPos(x, y, z)
 
     companion object {
-        private var chunkCached: Chunk? = null
-
-        @JvmField
-        var chunkCacheDim: Int = Int.MAX_VALUE
-        private var chunkCacheX = 1876000 // outside the world edge
-        private var chunkCacheZ = 1876000 // outside the world edge
-
-        // INVALID_VECTOR is used in cases where a null vector cannot be used
-        @JvmField
-        val INVALID_VECTOR: BlockVec3Dim = BlockVec3Dim(-1, -1, -1, -2)
-
-        @JvmStatic
-        fun readFromNBT(nbtCompound: NBTTagCompound): BlockVec3Dim {
-            val tempVector: BlockVec3Dim = BlockVec3Dim()
-            tempVector.x = nbtCompound.getInteger("x")
-            tempVector.y = nbtCompound.getInteger("y")
-            tempVector.z = nbtCompound.getInteger("z")
-            tempVector.dim = nbtCompound.getInteger("dim")
-            return tempVector
-        }
+        @JvmField val INVALID_VECTOR: BlockVec3Dim =
+            BlockVec3Dim(-1, -1, -1, FoundationDimensionKeys.parse("foundation:invalid"))
+        @JvmStatic fun readFromNBT(tag: CompoundTag): BlockVec3Dim = BlockVec3Dim(tag)
     }
 }

@@ -22,20 +22,20 @@ import micdoodle8.mods.galacticraft.planets.mars.ConfigManagerMars
 import micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMars
 import micdoodle8.mods.galacticraft.planets.mars.network.PacketSimpleMars
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.WorldServer
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.WorldlyContainer as ISidedInventory
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraftforge.common.ForgeChunkManager
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.ArrayList
 
 // import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore;
@@ -179,9 +179,9 @@ open class TileEntityLaunchController constructor() : TileBaseElectricBlockWithI
             }
 
             val nbt: NBTTagCompound = this.chunkLoadTicket!!.getModData()
-            nbt.setInteger("ChunkLoaderTileX", this.getPos().getX())
-            nbt.setInteger("ChunkLoaderTileY", this.getPos().getY())
-            nbt.setInteger("ChunkLoaderTileZ", this.getPos().getZ())
+            nbt.putInt("ChunkLoaderTileX", this.getPos().getX())
+            nbt.putInt("ChunkLoaderTileY", this.getPos().getY())
+            nbt.putInt("ChunkLoaderTileZ", this.getPos().getZ())
 
             for (x: Int in -2..2) {
                 for (z: Int in -2..2) {
@@ -245,27 +245,27 @@ open class TileEntityLaunchController constructor() : TileBaseElectricBlockWithI
         super.readFromNBT(nbt)
         this.stacks = this.readStandardItemsFromNBT(nbt)
 
-        this.ownerName = nbt.getString("OwnerName")
-        this.launchDropdownSelection = nbt.getInteger("LaunchSelection")
-        this.frequency = nbt.getInteger("ControllerFrequency")
-        this.destFrequency = nbt.getInteger("TargetFrequency")
+        this.ownerName = nbt.getStringOr("OwnerName", "")
+        this.launchDropdownSelection = nbt.getIntOr("LaunchSelection", 0)
+        this.frequency = nbt.getIntOr("ControllerFrequency", 0)
+        this.destFrequency = nbt.getIntOr("TargetFrequency", 0)
         this.frequencyCheckNeeded = true
-        this.launchPadRemovalDisabled = nbt.getBoolean("LaunchPadRemovalDisabled")
-        this.launchSchedulingEnabled = nbt.getBoolean("LaunchPadSchedulingEnabled")
-        this.hideTargetDestination = nbt.getBoolean("HideTargetDestination")
+        this.launchPadRemovalDisabled = nbt.getBooleanOr("LaunchPadRemovalDisabled", false)
+        this.launchSchedulingEnabled = nbt.getBooleanOr("LaunchPadSchedulingEnabled", false)
+        this.hideTargetDestination = nbt.getBooleanOr("HideTargetDestination", false)
         this.requiresClientUpdate = GCCoreUtil.getEffectiveSide() == Side.SERVER
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
         this.writeStandardItemsToNBT(nbt, (this.stacks)!!)
-        nbt.setString("OwnerName", this.ownerName)
-        nbt.setInteger("LaunchSelection", this.launchDropdownSelection)
-        nbt.setInteger("ControllerFrequency", this.frequency)
-        nbt.setInteger("TargetFrequency", this.destFrequency)
-        nbt.setBoolean("LaunchPadRemovalDisabled", this.launchPadRemovalDisabled)
-        nbt.setBoolean("LaunchPadSchedulingEnabled", this.launchSchedulingEnabled)
-        nbt.setBoolean("HideTargetDestination", this.hideTargetDestination)
+        nbt.putString("OwnerName", this.ownerName)
+        nbt.putInt("LaunchSelection", this.launchDropdownSelection)
+        nbt.putInt("ControllerFrequency", this.frequency)
+        nbt.putInt("TargetFrequency", this.destFrequency)
+        nbt.putBoolean("LaunchPadRemovalDisabled", this.launchPadRemovalDisabled)
+        nbt.putBoolean("LaunchPadSchedulingEnabled", this.launchSchedulingEnabled)
+        nbt.putBoolean("HideTargetDestination", this.hideTargetDestination)
         return nbt
     }
 
@@ -273,15 +273,15 @@ open class TileEntityLaunchController constructor() : TileBaseElectricBlockWithI
         return this.stacks
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.launchcontroller.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.launchcontroller.name")
     }
 
     override fun hasCustomName(): Boolean {
         return true
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemStack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemStack: ItemStack): Boolean {
         return slotID == 0 && ItemElectricBase.isElectricItem(itemStack.getItem())
     }
 
@@ -289,11 +289,11 @@ open class TileEntityLaunchController constructor() : TileBaseElectricBlockWithI
         return intArrayOf(0)
     }
 
-    override fun canInsertItem(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
-        return this.isItemValidForSlot(slotID, par2ItemStack)
+    override fun canPlaceItemThroughFace(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, par2ItemStack)
     }
 
-    override fun canExtractItem(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
         return slotID == 0
     }
 
@@ -347,7 +347,7 @@ open class TileEntityLaunchController constructor() : TileBaseElectricBlockWithI
                 for (tile2: TileEntity? in ArrayList<TileEntity?>(world.loadedTileEntityList)) {
                     var tile2: TileEntity? = tile2
                     if (this !== tile2) {
-                        tile2 = world.getTileEntity(tile2!!.getPos())
+                        tile2 = world.getBlockEntity(tile2!!.getBlockPos())
                         if (tile2 == null) {
                             continue
                         }
@@ -392,7 +392,7 @@ open class TileEntityLaunchController constructor() : TileBaseElectricBlockWithI
                     for (tile2: TileEntity? in ArrayList<TileEntity?>(world.loadedTileEntityList)) {
                         var tile2: TileEntity? = tile2
                         if (this !== tile2) {
-                            tile2 = world.getTileEntity(tile2!!.getPos())
+                            tile2 = world.getBlockEntity(tile2!!.getBlockPos())
                             if (tile2 == null) {
                                 continue
                             }

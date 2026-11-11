@@ -1,15 +1,19 @@
 package micdoodle8.mods.galacticraft.planets.mars.tile
 
+import foundation.block.getMetaFromState
+
+import foundation.persistence.containsTag
+
 import java.util.UUID
 import micdoodle8.mods.galacticraft.planets.mars.entities.EntitySlimeling
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.server.management.PreYggdrasilConverter
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.ITickable
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 
 open class TileEntitySlimelingEgg : TileEntity(), ITickable {
     @JvmField
@@ -61,35 +65,35 @@ open class TileEntitySlimelingEgg : TileEntity(), ITickable {
                 slimeling.setAttackTarget(null as EntityLivingBase?)
                 slimeling.setHealth(20.0f)
 
-                this.world.setBlockToAir(this.getPos())
+                this.world.setBlockAndUpdate(this.getPos(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
             }
         }
     }
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.timeToHatch = nbt.getInteger("TimeToHatch")
+        this.timeToHatch = nbt.getIntOr("TimeToHatch", 0)
 
         val uuid: String
-        if (nbt.hasKey("OwnerUUID", 8)) {
-            uuid = nbt.getString("OwnerUUID")
+        if (nbt.containsTag("OwnerUUID", 8)) {
+            uuid = nbt.getStringOr("OwnerUUID", "")
         } else {
             uuid =
-                PreYggdrasilConverter.convertMobOwnerIfNeeded(this.world.getMinecraftServer(), nbt.getString("Owner"))
+                PreYggdrasilConverter.convertMobOwnerIfNeeded(this.world.getMinecraftServer(), nbt.getStringOr("Owner", ""))
         }
 
         if (uuid.length > 0) {
             lastTouchedPlayerUUID = uuid
         }
 
-        this.lastTouchedPlayerName = nbt.getString("OwnerUsername")
+        this.lastTouchedPlayerName = nbt.getStringOr("OwnerUsername", "")
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setInteger("TimeToHatch", this.timeToHatch)
-        nbt.setString("OwnerUUID", this.lastTouchedPlayerUUID)
-        nbt.setString("OwnerUsername", this.lastTouchedPlayerName)
+        nbt.putInt("TimeToHatch", this.timeToHatch)
+        nbt.putString("OwnerUUID", this.lastTouchedPlayerUUID)
+        nbt.putString("OwnerUsername", this.lastTouchedPlayerName)
         return nbt
     }
 

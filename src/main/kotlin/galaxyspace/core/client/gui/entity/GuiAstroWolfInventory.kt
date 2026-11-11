@@ -1,5 +1,7 @@
 package galaxyspace.core.client.gui.entity
 
+import foundation.item.legacyItemValue
+
 import galaxyspace.GalaxySpace
 import galaxyspace.core.prefab.entities.EntityAstroWolf
 import galaxyspace.core.prefab.inventory.ContainerAstroWolf
@@ -9,14 +11,14 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiAstroWolfInventory constructor(player: EntityPlayer, private val wolf: EntityAstroWolf) :
     GuiContainer(ContainerAstroWolf(player.inventory, wolf, player)) {
     private var invX = 0
@@ -74,7 +76,7 @@ open class GuiAstroWolfInventory constructor(player: EntityPlayer, private val w
         this.drawString(
             fontRenderer,
             GCCoreUtil.translate("item.oxygen_mask.name") + ": " + localeBoolean(
-                !this.wolf.wolfInventory.getStackInSlot(0).isEmpty()
+                !this.wolf.wolfInventory.getItem(0).isEmpty()
             ),
             containerWidth + 80,
             containerHeight + 20,
@@ -83,17 +85,17 @@ open class GuiAstroWolfInventory constructor(player: EntityPlayer, private val w
         this.drawString(
             fontRenderer,
             GCCoreUtil.translate("gui.message.thermal_status.name")
-                .substring(0, 7) + ": " + localeBoolean(!this.wolf.wolfInventory.getStackInSlot(1).isEmpty()),
+                .substring(0, 7) + ": " + localeBoolean(!this.wolf.wolfInventory.getItem(1).isEmpty()),
             containerWidth + 80,
             containerHeight + 30,
             0xFFFFFF
         )
 
         var oxygen: String = ""
-        if (!this.wolf.wolfInventory.getStackInSlot(2).isEmpty()) oxygen =
-            GCCoreUtil.translate("gui.oxygen_storage.desc.1") + ": " + EnumColor.BRIGHT_GREEN + (this.wolf.wolfInventory.getStackInSlot(
+        if (!this.wolf.wolfInventory.getItem(2).isEmpty()) oxygen =
+            GCCoreUtil.translate("gui.oxygen_storage.desc.1") + ": " + EnumColor.BRIGHT_GREEN + (this.wolf.wolfInventory.getItem(
                 2
-            ).getMaxDamage() - this.wolf.wolfInventory.getStackInSlot(2).getItemDamage())
+            ).getMaxDamage() - this.wolf.wolfInventory.getItem(2).legacyItemValue)
         else oxygen =
             GCCoreUtil.translate("gui.oxygen_storage.desc.1") + ": " + EnumColor.DARK_RED + localeBoolean(false)
 
@@ -148,7 +150,7 @@ open class GuiAstroWolfInventory constructor(player: EntityPlayer, private val w
     }
 
     companion object {
-        //private static final Minecraft mc = Minecraft.getMinecraft();
-        private val wolfGui = ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/wolf_inventory.png")
+        //private static final Minecraft mc = Minecraft.getInstance();
+        private val wolfGui = ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/wolf_inventory.png")
     }
 }

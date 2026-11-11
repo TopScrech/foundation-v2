@@ -2,7 +2,7 @@ package asmodeuscore.core.astronomy.dimension.world.gen
 
 import java.util.List
 import micdoodle8.mods.galacticraft.api.prefab.core.BlockMetaPair
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 
 import asmodeuscore.core.astronomy.dimension.world.gen.ACBiome
 import asmodeuscore.core.astronomy.dimension.world.gen.ChunkProviderSpaceLakes.GenType
@@ -14,20 +14,20 @@ import micdoodle8.mods.galacticraft.api.world.ChunkProviderBase
 import micdoodle8.mods.galacticraft.core.perlin.generator.Gradient
 import micdoodle8.mods.galacticraft.core.world.gen.EnumCraterSize
 import net.minecraft.block.BlockFalling
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.entity.EnumCreatureType
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.biome.BiomeCache
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.NoiseGeneratorOctaves
 import net.minecraft.world.gen.NoiseGeneratorPerlin
-import net.minecraftforge.fml.common.FMLLog
+import foundation.logging.FoundationLog as FMLLog
 import java.lang.Exception
 import java.util.ArrayList
 import java.util.Random
@@ -513,7 +513,7 @@ abstract class ChunkProviderSpaceLakes(@JvmField protected var worldObj: World, 
                         }
 
                         if (var16 <= 0 + this.rand.nextInt(5)) {
-                            primer.setBlockState(var8, var16, var9, Blocks.BEDROCK.getDefaultState())
+                            primer.setBlockState(var8, var16, var9, Blocks.BEDROCK.defaultBlockState())
                         } else {
                             val var18: IBlockState = primer.getBlockState(var8, var16, var9)
 
@@ -522,7 +522,7 @@ abstract class ChunkProviderSpaceLakes(@JvmField protected var worldObj: World, 
                             } else if (var18 === stoneblock) {
                                 if (var13 == -1) {
                                     if (var12 <= 0) {
-                                        grassblock = Blocks.AIR.getDefaultState()
+                                        grassblock = Blocks.AIR.defaultBlockState()
                                     } else if (var16 >= var5 - -16 && var16 <= var5 + 1) {
                                         if (this.enableBiomeGenBaseBlock() && !genBlocks.isEmpty()) {
                                             grassblock = genBlocks.get(index).getGrassBlock()
@@ -602,7 +602,7 @@ abstract class ChunkProviderSpaceLakes(@JvmField protected var worldObj: World, 
                     var helper: Int = 0
                     for (y: Int in 127 downTo 1) {
                         if (Blocks.AIR !== primer.getBlockState(x, y, z).getBlock() && helper <= yDev) {
-                            primer.setBlockState(x, y, z, Blocks.AIR.getDefaultState())
+                            primer.setBlockState(x, y, z, Blocks.AIR.defaultBlockState())
                             this.getCraterAdditions(primer, x, y, z)
 
                             helper++
@@ -819,7 +819,7 @@ abstract class ChunkProviderSpaceLakes(@JvmField protected var worldObj: World, 
     }
 
     protected open fun getIceBlock(): IBlockState {
-        return Blocks.PACKED_ICE.getDefaultState()
+        return Blocks.PACKED_ICE.defaultBlockState()
     }
 
     open fun getCraterAdditions(primer: ChunkPrimer?, x: Int, y: Int, z: Int) {}

@@ -1,9 +1,17 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items
 
-import net.minecraft.init.Items
-import net.minecraft.util.ResourceLocation
+import net.minecraft.network.chat.Component
+
+import foundation.item.legacyItemValue
+
+import foundation.block.getMetaFromState
+
+import foundation.persistence.containsTag
+
+import net.minecraft.world.item.Items
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraft.util.math.RayTraceResult.Type
-import net.minecraftforge.fml.common.registry.ForgeRegistries
+import net.minecraftforge.registries.ForgeRegistries
 
 import galaxyspace.core.GSItems
 import galaxyspace.systems.SolarSystem.planets.overworld.items.ItemBasicGS.BasicItems
@@ -28,32 +36,32 @@ import micdoodle8.mods.galacticraft.planets.asteroids.blocks.AsteroidBlocks
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
 import micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityShortRangeTelepad
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityList
-import net.minecraft.entity.ai.attributes.IAttributeInstance
+import net.minecraft.world.entity.ai.attributes.AttributeInstance as IAttributeInstance
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.passive.EntityAnimal
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.Item
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemDye
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.potion.PotionEffect
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
 import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.util.text.TextFormatting
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+
+import net.minecraft.ChatFormatting as TextFormatting
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.items.ItemHandlerHelper
 import java.util.Locale
 
@@ -143,25 +151,25 @@ open class ItemBasicGS constructor() : Item(), ISortableItem {
 
     override fun onUpdate(stack: ItemStack, worldIn: World, entityIn: Entity, itemSlot: Int, isSelected: Boolean) {
         super.onUpdate(stack, worldIn, entityIn, itemSlot, isSelected)
-        val n: Int = stack.getItemDamage()
+        val n: Int = stack.legacyItemValue
 
         if (n == BasicItems.GAS_EXTRACTOR.getMeta()) {
             stack.shrink(1)
-            worldIn.spawnEntity(
+            worldIn.addFreshEntity(
                 EntityItem(
                     worldIn,
-                    entityIn.posX,
-                    entityIn.posY,
-                    entityIn.posZ,
+                    entityIn.x,
+                    entityIn.y,
+                    entityIn.z,
                     ItemStack(GSItems.GAS_EXTRACTOR, 1, GSItems.GAS_EXTRACTOR.getMaxDamage())
                 )
             )
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(stack: ItemStack, world: World?, list: MutableList<String?>, flagIn: ITooltipFlag) {
-        val n: Int = stack.getItemDamage()
+        val n: Int = stack.legacyItemValue
 
         if (n == BasicItems.DOLOMITE_MEAL.getMeta()) list.add(GCCoreUtil.translate("gui.bonemeal.desc"))
         else if (n == BasicItems.SCHEMATIC_BOX.getMeta()) list.add(GCCoreUtil.translate("gui.schematic_box.desc"))
@@ -170,7 +178,7 @@ open class ItemBasicGS constructor() : Item(), ISortableItem {
         } else if (n == BasicItems.TEMP_SHIELD_CONTROL.getMeta()) {
             var time: Int = SHIELD_TIME
             if (stack.hasTagCompound()) {
-                val shieldtime: Int = stack.getTagCompound()!!.getInteger("shieldtime")
+                val shieldtime: Int = stack.getTagCompound()!!.getIntOr("shieldtime", 0)
                 time = shieldtime
             } else {
                 time = SHIELD_TIME
@@ -201,26 +209,26 @@ open class ItemBasicGS constructor() : Item(), ISortableItem {
             list.add(GCCoreUtil.translate("gui.animal_cage.desc"))
 
             if (stack.hasTagCompound()) {
-                if (stack.getTagCompound()!!.hasKey("entityData")) {
+                if (stack.getTagCompound()!!.containsTag("entityData")) {
                     val entity: Entity? =
-                        EntityList.createEntityFromNBT(stack.getTagCompound()!!.getCompoundTag("entityData"), world)
+                        EntityList.createEntityFromNBT(stack.getTagCompound()!!.getCompoundOrEmpty("entityData"), world)
                     list.add(
                         GCCoreUtil.translate("gui.animal_cage_stored.desc") + " " + EnumColor.BRIGHT_GREEN + entity!!.getDisplayName()
                             .getFormattedText()
                     )
                 }
 
-                /*if(stack.getTagCompound().hasKey("destroyedLvl"))
+                /*if(stack.getTagCompound().containsTag("destroyedLvl"))
 				{
-					list.add(stack.getTagCompound().getInteger("destroyedLvl") + "");
+					list.add(stack.getTagCompound().getIntOr("destroyedLvl", 0) + "");
 				}*/
             }
         } else if (n >= 33 && n <= 36) {
             if (stack.hasTagCompound()) {
-                if (stack.getTagCompound()!!.hasKey("destroyedLvl")) {
+                if (stack.getTagCompound()!!.containsTag("destroyedLvl")) {
                     list.add(
                         "Durability: " + (FANS_DURABILITY[n - 33] - stack.getTagCompound()!!
-                            .getInteger("destroyedLvl")) + " / " + FANS_DURABILITY[n - 33]
+                            .getIntOr("destroyedLvl", 0)) + " / " + FANS_DURABILITY[n - 33]
                     )
                 }
             }
@@ -228,9 +236,9 @@ open class ItemBasicGS constructor() : Item(), ISortableItem {
     }
 
     override fun getTranslationKey(stack: ItemStack): String {
-        if (stack.getItemDamage() == BasicItems.THERMAL_CLOTH_T3.getMeta() || stack.getItemDamage() == BasicItems.THERMAL_CLOTH_T4.getMeta()) return "item.thermal_cloth"
+        if (stack.legacyItemValue == BasicItems.THERMAL_CLOTH_T3.getMeta() || stack.legacyItemValue == BasicItems.THERMAL_CLOTH_T4.getMeta()) return "item.thermal_cloth"
 
-        val meta: Int = if (stack.getItemDamage() > BasicItems.entries.size - 1) 0 else stack.getItemDamage()
+        val meta: Int = if (stack.legacyItemValue > BasicItems.entries.size - 1) 0 else stack.legacyItemValue
         return "item." + BasicItems.entries[meta].getName()
     }
 
@@ -243,7 +251,7 @@ open class ItemBasicGS constructor() : Item(), ISortableItem {
     }
 
     override fun getItemStackLimit(stack: ItemStack): Int {
-        val n: Int = stack.getItemDamage()
+        val n: Int = stack.legacyItemValue
 
         for (item: BasicItems in BasicItems.entries) if (item.getMeta() == n) return item.getMaxStackSize()
 
@@ -252,9 +260,9 @@ open class ItemBasicGS constructor() : Item(), ISortableItem {
     }
 
     override fun onItemRightClick(world: World, player: EntityPlayer, hand: EnumHand): ActionResult<ItemStack?> {
-        val stack: ItemStack = player.getHeldItem(hand)
+        val stack: ItemStack = player.getItemInHand(hand)
 
-        if (world.isRemote) return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getHeldItem(hand))
+        if (world.isClientSide) return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getItemInHand(hand))
 
         /*
 		if(stack.getItemDamage() == 28)
@@ -265,7 +273,7 @@ open class ItemBasicGS constructor() : Item(), ISortableItem {
 			if(ray != null) {		
 				for(BlockPos scan : ray.getBlockPos().getAllInBox(ray.getBlockPos().add(-2, -2, -2), ray.getBlockPos().add(2, 2, 2))) {
 					IBlockState block = world.getBlockState(scan);				
-					if(world.isAirBlock(scan)) continue;				
+					if(world.isEmptyBlock(scan)) continue;				
 					
 					if(blocks.containsKey(block)) {
 						blocks.put(block, blocks.get(block) + 1);
@@ -278,22 +286,22 @@ open class ItemBasicGS constructor() : Item(), ISortableItem {
 				for(Entry<IBlockState, Integer> block : blocks.entrySet()) {
 					ItemStack item = new ItemStack(Item.getItemFromBlock(block.getKey().getBlock()), 1, block.getKey().getBlock().getMetaFromState(block.getKey()));				
 						
-					player.sendMessage(new TextComponentString(TextFormatting.GREEN + item.getDisplayName() + " x" + block.getValue()));
+					player.sendMessage(new Component.literal(TextFormatting.GREEN + item.getDisplayName() + " x" + block.getValue()));
 				}//GalaxySpace.debug("" + blocks);
-				player.sendMessage(new TextComponentString(TextFormatting.GREEN + "#################################"));
+				player.sendMessage(new Component.literal(TextFormatting.GREEN + "#################################"));
 				
 			}
 			
 		}*/
-        if (stack.getItemDamage() == BasicItems.ICE_BUCKET.getMeta()) {
+        if (stack.legacyItemValue == BasicItems.ICE_BUCKET.getMeta()) {
             /*	RayTraceResult ray = this.rayTrace(world, player, false);
 			if(ray != null && !world.isRemote) {
-				if(stack.hasTagCompound() && stack.getTagCompound().hasKey("current_block")) {
+				if(stack.hasTagCompound() && stack.getTagCompound().containsTag("current_block")) {
 
 					Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(stack.getTagCompound().getString("current_block")));
 
-					if(block != null && world.isAirBlock(ray.getBlockPos().up())) {
-						world.setBlockState(ray.getBlockPos().up(), block.getDefaultState());
+					if(block != null && world.isEmptyBlock(ray.getBlockPos().up())) {
+						world.setBlockAndUpdate(ray.getBlockPos().up(), block.defaultBlockState());
 
 						return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, new ItemStack(Items.BUCKET));
 					}
@@ -301,67 +309,67 @@ open class ItemBasicGS constructor() : Item(), ISortableItem {
 
 			}*/
 
-            return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getHeldItem(hand))
+            return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getItemInHand(hand))
         }
 
-        if (stack.getItemDamage() == BasicItems.DOLOMITE_MEAL.getMeta()) {
+        if (stack.legacyItemValue == BasicItems.DOLOMITE_MEAL.getMeta()) {
             val ray: RayTraceResult? = GSUtils.getRay(world, player, true)
             if (ray != null && ItemDye.applyBonemeal(stack, world, ray.getBlockPos(), player, hand)) {
-                if (!world.isRemote) {
+                if (!world.isClientSide) {
                     world.playEvent(2005, ray.getBlockPos(), 0)
                 }
 
-                return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getHeldItem(hand))
+                return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getItemInHand(hand))
             }
-            return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getHeldItem(hand))
-        } else if (stack.getItemDamage() == 6) {
+            return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getItemInHand(hand))
+        } else if (stack.legacyItemValue == 6) {
             /*StatsCapability gs_stats = galaxyspace.core.handler.capabilities.StatsCapability.get(player);
 			gs_stats.setKnowledgeResearch(1, 6);
 			GalaxySpace.packetPipeline.sendTo(new GSPacketSimple(GSEnumSimplePacket.C_UPDATE_RESEARCH, player.world, new Object[] {1, 6}), (EntityPlayerMP) player);
 			*/
 
-            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getHeldItem(hand))
-        } else if (stack.getItemDamage() == BasicItems.GUIDE_BOOK.getMeta()) {
+            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getItemInHand(hand))
+        } else if (stack.legacyItemValue == BasicItems.GUIDE_BOOK.getMeta()) {
             player.openGui(GalaxySpace.MODID, GSConfigCore.guiIDGuideBook, world, 0, 0, 0)
 
-            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getHeldItem(hand))
-        } else if (stack.getItemDamage() == BasicItems.ANTIRADIATION_TABLETS.getMeta()) {
-            val lvl: IAttributeInstance = player.getEntityAttribute(ACAttributePlayer.RADIATION_LVL)
-            if (lvl.getAttributeValue() > 0) {
-                player.addPotionEffect(PotionEffect(GSPotions.antiradiation, 20 * 10))
+            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getItemInHand(hand))
+        } else if (stack.legacyItemValue == BasicItems.ANTIRADIATION_TABLETS.getMeta()) {
+            val lvl: IAttributeInstance = player.getAttribute(ACAttributePlayer.RADIATION_LVL)!!
+            if (lvl.getValue() > 0) {
+                player.addEffect(PotionEffect(GSPotions.holder(GSPotions.antiradiation), 20 * 10))
                 stack.shrink(1)
-                return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getHeldItem(hand))
+                return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getItemInHand(hand))
             } else {
-                player.sendMessage(TextComponentString(TextFormatting.DARK_GREEN.toString() + GCCoreUtil.translate(("gui.message.noradiation"))))
-                return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getHeldItem(hand))
+                player.sendSystemMessage(Component.literal(TextFormatting.DARK_GREEN.toString() + GCCoreUtil.translate(("gui.message.noradiation"))))
+                return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getItemInHand(hand))
             }
-        } else if (stack.getItemDamage() == BasicItems.SCHEMATIC_BOX.getMeta()) {
-            for (i: Int in 0..4) if (player.inventory.getFirstEmptyStack() != -1) player.inventory.addItemStackToInventory(
-                ItemStack(GSItems.SCHEMATICS, 1, i)
+        } else if (stack.legacyItemValue == BasicItems.SCHEMATIC_BOX.getMeta()) {
+            for (i: Int in 0..4) if (player.inventory.getFreeSlot() != -1) player.inventory.add(
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GSItems.SCHEMATICS), 1, i)
             )
-            else world.spawnEntity(
+            else world.addFreshEntity(
                 EntityItem(
-                    world, player.posX, player.posY, player.posZ,
-                    ItemStack(GSItems.SCHEMATICS, 1, i)
+                    world, player.x, player.y, player.z,
+                    foundation.item.FoundationItemVariants.stack(requireNotNull(GSItems.SCHEMATICS), 1, i)
                 )
             )
 
             stack.shrink(1)
-            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getHeldItem(hand))
-        } else if (stack.getItemDamage() == BasicItems.EMERGENCY_PORTABLE_TELEPORT.getMeta()) {
-            if (!player.isSneaking()) return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getHeldItem(hand))
+            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getItemInHand(hand))
+        } else if (stack.legacyItemValue == BasicItems.EMERGENCY_PORTABLE_TELEPORT.getMeta()) {
+            if (!player.isShiftKeyDown()) return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getItemInHand(hand))
 
             if (!stack.hasTagCompound()) stack.setTagCompound(NBTTagCompound())
 
-            val ray: RayTraceResult? = player.rayTrace(5.0, player.ticksExisted.toFloat())
+            val ray: RayTraceResult? = player.rayTrace(5.0, player.tickCount.toFloat())
             val block: Block = world.getBlockState(ray!!.getBlockPos()).getBlock()
 
             if (block === AsteroidBlocks.shortRangeTelepad) {
                 val tile: TileEntityShortRangeTelepad? =
-                    world.getTileEntity(ray.getBlockPos()) as TileEntityShortRangeTelepad?
+                    world.getBlockEntity(ray.getBlockPos()) as TileEntityShortRangeTelepad?
 
                 if (tile!!.hasEnoughEnergyToRun && tile.addressValid) {
-                    stack.getTagCompound()!!.setIntArray(
+                    stack.getTagCompound()!!.putIntArray(
                         "position",
                         intArrayOf(
                             ray.getBlockPos().getX(),
@@ -371,13 +379,13 @@ open class ItemBasicGS constructor() : Item(), ISortableItem {
                         )
                     )
                 } else {
-                    player.sendMessage(TextComponentString(TextFormatting.DARK_RED.toString() + GCCoreUtil.translate(("gui.message.invalid_teleport_conf"))))
+                    player.sendSystemMessage(Component.literal(TextFormatting.DARK_RED.toString() + GCCoreUtil.translate(("gui.message.invalid_teleport_conf"))))
                 }
             } else {
-                stack.getTagCompound()!!.setBoolean("turnonoff", !stack.getTagCompound()!!.getBoolean("turnonoff"))
+                stack.getTagCompound()!!.putBoolean("turnonoff", !stack.getTagCompound()!!.getBoolean("turnonoff"))
             }
-            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getHeldItem(hand))
-        } else if (stack.getItemDamage() == BasicItems.ADVANCED_EMERGENCY_KIT.getMeta()) {
+            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getItemInHand(hand))
+        } else if (stack.legacyItemValue == BasicItems.ADVANCED_EMERGENCY_KIT.getMeta()) {
             if (player is EntityPlayerMP) {
                 for (i: Int in 0..<SIZE) {
                     var newGear: ItemStack? = getContents(i)
@@ -392,7 +400,7 @@ open class ItemBasicGS constructor() : Item(), ISortableItem {
                 stack.shrink(1)
                 return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, stack)
             }
-        } else if (stack.getItemDamage() == BasicItems.COLONIST_KIT.getMeta()) {
+        } else if (stack.legacyItemValue == BasicItems.COLONIST_KIT.getMeta()) {
             if (player is EntityPlayerMP) {
                 val stacks: Array<ItemStack?> = ((arrayOf<ItemStack>(
                     ItemStack(GCBlocks.oxygenDistributor, 1),
@@ -411,11 +419,11 @@ open class ItemBasicGS constructor() : Item(), ISortableItem {
                 stack.shrink(1)
                 return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, stack)
             }
-        } else if (stack.getItemDamage() == BasicItems.ANIMAL_CAGE.getMeta()) {
+        } else if (stack.legacyItemValue == BasicItems.ANIMAL_CAGE.getMeta()) {
             if (!stack.hasTagCompound()) stack.setTagCompound(NBTTagCompound())
 
-            if (!stack.getTagCompound()!!.hasKey("hasMob")) stack.getTagCompound()!!.setBoolean("hasMob", false)
-            if (!stack.getTagCompound()!!.hasKey("destroyedLvl")) stack.getTagCompound()!!.setInteger("destroyedLvl", 0)
+            if (!stack.getTagCompound()!!.containsTag("hasMob")) stack.getTagCompound()!!.putBoolean("hasMob", false)
+            if (!stack.getTagCompound()!!.containsTag("destroyedLvl")) stack.getTagCompound()!!.putInt("destroyedLvl", 0)
 
             if (!stack.getTagCompound()!!.getBoolean("hasMob")) {
                 //RayTraceResult ray = player.rayTrace(5, player.ticksExisted);//this.getRay(world, player, false);
@@ -424,76 +432,76 @@ open class ItemBasicGS constructor() : Item(), ISortableItem {
                     (GalaxySpace.packetPipeline)!!.sendTo(
                         GSPacketSimple(
                             GSEnumSimplePacket.C_GET_CAGE_ENTITY,
-                            GCCoreUtil.getDimensionID(player.world)
+                            GCCoreUtil.getDimensionID(player.level())
                         ), player
                     )
                 }
-                return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getHeldItem(hand))
+                return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getItemInHand(hand))
             } else {
                 val result: RayTraceResult? = GSUtils.getRay(world, player, false)
                 if (result != null && result.typeOfHit != null) {
                     if (result.typeOfHit == RayTraceResult.Type.BLOCK && stack.getTagCompound()!!
-                            .hasKey("entityData")
+                            .containsTag("entityData")
                     ) {
                         var entity: Entity? = EntityList.createEntityFromNBT(
-                            stack.getTagCompound()!!.getCompoundTag("entityData"),
-                            player.world
+                            stack.getTagCompound()!!.getCompoundOrEmpty("entityData"),
+                            player.level()
                         )
 
                         if (entity is EntityAnimal) {
                             val pos: BlockPos = result.getBlockPos()
                             entity.dimension = player.dimension
-                            entity.world = player.world
+                            entity.world = player.level()
                             entity.setPosition(pos.getX().toDouble(), pos.getY() + 1.0, pos.getZ().toDouble())
-                            if (!world.isRemote) {
-                                world.spawnEntity(entity)
+                            if (!world.isClientSide) {
+                                world.addFreshEntity(entity)
                             }
                             entity = null
 
-                            stack.getTagCompound()!!.setBoolean("hasMob", false)
+                            stack.getTagCompound()!!.putBoolean("hasMob", false)
                             stack.getTagCompound()!!.removeTag("entityData")
-                            if (stack.getTagCompound()!!.getInteger("destroyedLvl") < 2) stack.getTagCompound()!!
-                                .setInteger("destroyedLvl", stack.getTagCompound()!!.getInteger("destroyedLvl") + 1)
+                            if (stack.getTagCompound()!!.getIntOr("destroyedLvl", 0) < 2) stack.getTagCompound()!!
+                                .putInt("destroyedLvl", stack.getTagCompound()!!.getIntOr("destroyedLvl", 0) + 1)
                             else stack.splitStack(1)
 
-                            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getHeldItem(hand))
+                            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getItemInHand(hand))
                         }
                     }
                 }
             }
         }
 
-        return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getHeldItem(hand))
+        return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getItemInHand(hand))
     }
 
 
     override fun showDurabilityBar(stack: ItemStack): Boolean {
-        if (stack.hasTagCompound() && stack.getTagCompound()!!.hasKey("destroyedLvl")) {
-            return stack.getTagCompound()!!.getInteger("destroyedLvl") >= 0
+        if (stack.hasTagCompound() && stack.getTagCompound()!!.containsTag("destroyedLvl")) {
+            return stack.getTagCompound()!!.getIntOr("destroyedLvl", 0) >= 0
         }
 
         return stack.isItemDamaged()
     }
 
     override fun getDurabilityForDisplay(stack: ItemStack): Double {
-        if (stack.getItemDamage() == BasicItems.ANIMAL_CAGE.getMeta()) {
+        if (stack.legacyItemValue == BasicItems.ANIMAL_CAGE.getMeta()) {
             if (stack.hasTagCompound()) {
-                return (stack.getTagCompound()!!.getInteger("destroyedLvl") / 10.0) / 0.31
+                return (stack.getTagCompound()!!.getIntOr("destroyedLvl", 0) / 10.0) / 0.31
             }
         }
-        if (stack.getItemDamage() >= 33 && stack.getItemDamage() < 37) {
+        if (stack.legacyItemValue >= 33 && stack.legacyItemValue < 37) {
             if (stack.hasTagCompound()) {
-                return stack.getTagCompound()!!.getInteger("destroyedLvl")
-                    .toDouble() / FANS_DURABILITY[stack.getItemDamage() - 33].toDouble()
+                return stack.getTagCompound()!!.getIntOr("destroyedLvl", 0)
+                    .toDouble() / FANS_DURABILITY[stack.legacyItemValue - 33].toDouble()
             }
         }
 
-        return stack.getItemDamage().toDouble() / stack.getMaxDamage().toDouble()
+        return stack.legacyItemValue.toDouble() / stack.getMaxDamage().toDouble()
     }
 
     //END
     override fun getItemBurnTime(itemStack: ItemStack): Int {
-        if (itemStack.getItemDamage() == BasicItems.VOLCANIC_STONE.getMeta()) return 128000
+        if (itemStack.legacyItemValue == BasicItems.VOLCANIC_STONE.getMeta()) return 128000
         return -1
     }
 

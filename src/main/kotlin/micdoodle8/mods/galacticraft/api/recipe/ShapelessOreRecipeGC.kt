@@ -4,13 +4,16 @@ import java.util.ArrayList
 import java.util.LinkedList
 
 import micdoodle8.mods.galacticraft.core.util.RecipeUtil
-import net.minecraft.block.Block
-import net.minecraft.inventory.InventoryCrafting
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.inventory.CraftingContainer as InventoryCrafting
+import foundation.inventory.getSizeInventory
+import foundation.inventory.getStackInSlot
+import foundation.inventory.getStackInRowAndColumn
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
-import net.minecraft.util.NonNullList
-import net.minecraft.world.World
+import net.minecraft.core.NonNullList
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.oredict.OreDictionary
 import net.minecraftforge.registries.IForgeRegistryEntry

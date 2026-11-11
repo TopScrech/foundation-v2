@@ -12,19 +12,19 @@ import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.blocks.BlockMulti
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityLaunchController
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.HashSet
 
@@ -56,7 +56,7 @@ open class TileEntityLandingPad constructor() : TileEntityMulti(null), IMultiBlo
             var docked: Boolean = false
 
             for (o: Any? in list) {
-                if (o is IDockable && !(o as Entity).isDead) {
+                if (o is IDockable && !(o as Entity).isRemoved()) {
                     val fuelable: IDockable = o as IDockable
 
                     if (!fuelable.inFlight()) {
@@ -175,7 +175,7 @@ open class TileEntityLandingPad constructor() : TileEntityMulti(null), IMultiBlo
         val testPos: BlockPos = BlockPos(x, this.getPos().getY(), z)
         if (!this.world.isBlockLoaded(testPos, false)) return
 
-        val tile: TileEntity? = this.world.getTileEntity(testPos)
+        val tile: TileEntity? = this.world.getBlockEntity(testPos)
 
         if (tile is ILandingPadAttachable && (tile as ILandingPadAttachable).canAttachToLandingPad(
                 this.world,
@@ -205,7 +205,7 @@ open class TileEntityLandingPad constructor() : TileEntityMulti(null), IMultiBlo
         return ICargoEntity.RemovalResult(ICargoEntity.EnumCargoLoadingState.NOTARGET, ItemStack.EMPTY)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         return AxisAlignedBB(
             (getPos().getX() - 1).toDouble(),

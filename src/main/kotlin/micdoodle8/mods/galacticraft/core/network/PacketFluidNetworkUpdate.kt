@@ -4,9 +4,9 @@ import io.netty.buffer.ByteBuf
 import com.google.common.collect.Sets
 import micdoodle8.mods.galacticraft.api.transmission.tile.IBufferTransmitter
 import micdoodle8.mods.galacticraft.core.fluid.FluidNetwork
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
 import net.minecraftforge.fluids.FluidStack
@@ -66,9 +66,9 @@ open class PacketFluidNetworkUpdate : PacketBase {
 
                 for (transmitter: IBufferTransmitter<*>? in this.transmittersAdded!!) {
                     val tile: TileEntity = transmitter as TileEntity
-                    (buffer)!!.writeInt(tile.getPos().getX())
-                    (buffer)!!.writeInt(tile.getPos().getY())
-                    (buffer)!!.writeInt(tile.getPos().getZ())
+                    (buffer)!!.writeInt(tile.getBlockPos().getX())
+                    (buffer)!!.writeInt(tile.getBlockPos().getY())
+                    (buffer)!!.writeInt(tile.getBlockPos().getZ())
                 }
             }
 
@@ -125,7 +125,7 @@ else -> {}
     }
 
     override fun handleClientSide(player: EntityPlayer?) {
-        val tile: TileEntity? = (player)!!.world.getTileEntity(this.pos)
+        val tile: TileEntity? = (player)!!.level().getBlockEntity(this.pos)
 
         if (tile is IBufferTransmitter<*>) {
             val transmitter: IBufferTransmitter<FluidStack?> = tile as IBufferTransmitter<FluidStack?>
@@ -138,7 +138,7 @@ when (this.type) {
                     transmitter.setNetwork(network)
 
                     for (pos: BlockPos in this.transmittersCoords!!) {
-                        val transmitterTile: TileEntity? = (player)!!.world.getTileEntity(pos)
+                        val transmitterTile: TileEntity? = (player)!!.level().getBlockEntity(pos)
 
                         if (transmitterTile is IBufferTransmitter<*>) {
                             (transmitterTile as IBufferTransmitter<*>).setNetwork(network)

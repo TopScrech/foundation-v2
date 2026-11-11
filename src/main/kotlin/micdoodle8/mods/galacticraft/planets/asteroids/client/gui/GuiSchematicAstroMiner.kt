@@ -8,10 +8,10 @@ import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.asteroids.inventory.ContainerSchematicAstroMiner
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
 import org.lwjgl.opengl.GL11
 
 open class GuiSchematicAstroMiner constructor(par1InventoryPlayer: InventoryPlayer, pos: BlockPos) :
@@ -84,6 +84,6 @@ open class GuiSchematicAstroMiner constructor(par1InventoryPlayer: InventoryPlay
     companion object {
         @JvmField
         val schematicTexture: ResourceLocation =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/schematic_astro_miner.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/schematic_astro_miner.png")
     }
 }

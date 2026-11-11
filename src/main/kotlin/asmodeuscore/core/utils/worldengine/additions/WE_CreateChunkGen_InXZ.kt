@@ -1,7 +1,7 @@
 package asmodeuscore.core.utils.worldengine.additions
 
 import asmodeuscore.core.utils.worldengine.WE_Biome
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 
 abstract class WE_CreateChunkGen_InXZ {
     abstract fun gen(var1: WE_GeneratorData?)

@@ -2,19 +2,18 @@ package micdoodle8.mods.galacticraft.api.client.tabs
 
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.client.renderer.RenderItem
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.client.FMLClientHandler
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
 
 abstract class AbstractTab(id: Int, posX: Int, posY: Int, @JvmField var renderStack: ItemStack) :
     GuiButton(id, posX, posY, 28, 32, "") {
     @JvmField
-    var texture: ResourceLocation = ResourceLocation("textures/gui/container/creative_inventory/tabs.png")
+    var texture: ResourceLocation = ResourceLocation.parse("textures/gui/container/creative_inventory/tabs.png")
 
     @JvmField
     var potionOffsetLast: Int = 0
@@ -23,12 +22,12 @@ abstract class AbstractTab(id: Int, posX: Int, posY: Int, @JvmField var renderSt
     protected var itemRender: RenderItem
 
     init {
-        this.itemRender = FMLClientHandler.instance().getClient().getRenderItem()
+        this.itemRender = Minecraft.getInstance().getRenderItem()
     }
 
     override fun drawButton(mc: Minecraft, mouseX: Int, mouseY: Int, partialTicks: Float) {
         var newPotionOffset: Int = TabRegistry.Companion.getPotionOffsetNEI()
-        val screen: GuiScreen? = FMLClientHandler.instance().getClient().currentScreen
+        val screen: GuiScreen? = Minecraft.getInstance().gui.screen()
         if (screen is GuiInventory) {
             newPotionOffset += TabRegistry.Companion.getRecipeBookOffset(screen) - TabRegistry.Companion.recipeBookOffset
         }

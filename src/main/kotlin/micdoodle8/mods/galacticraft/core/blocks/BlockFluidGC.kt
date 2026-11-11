@@ -1,23 +1,27 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.getMetaFromState
+
+import foundation.level.offset
+
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.GCFluids
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import net.minecraft.block.BlockLiquid
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.SoundEvents
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.property.IExtendedBlockState
 import net.minecraftforge.fluids.BlockFluidBase
 import net.minecraftforge.fluids.BlockFluidClassic
@@ -62,7 +66,7 @@ open class BlockFluidGC constructor(private val fluid: Fluid, private val galact
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        if (worldIn.isRemote && this.galacticraftFluidName.startsWith("oil") && playerIn is EntityPlayerSP) {
+        if (worldIn.isClientSide && this.galacticraftFluidName.startsWith("oil") && playerIn is EntityPlayerSP) {
             ClientProxyCore.playerClientHandler.onBuild(7, playerIn)
         }
 
@@ -85,10 +89,10 @@ open class BlockFluidGC constructor(private val fluid: Fluid, private val galact
             )
         }
         if (this.galacticraftFluidName == "oil" && rand.nextInt(10) == 0) {
-            val below: BlockPos = pos.down()
+            val below: BlockPos = pos.below()
             val state: IBlockState = worldIn.getBlockState(below)
             if (state.getBlock()
-                    .isSideSolid(state, worldIn, below, EnumFacing.UP) && !worldIn.getBlockState(pos.down(2))
+                    .isSideSolid(state, worldIn, below, EnumFacing.UP) && !worldIn.getBlockState(pos.below(2))
                     .getMaterial().blocksMovement()
             ) {
                 (GalacticraftCore.Companion.proxy)!!.spawnParticle(
@@ -138,11 +142,11 @@ open class BlockFluidGC constructor(private val fluid: Fluid, private val galact
 
     override fun getExtendedState(oldState: IBlockState, world: IBlockAccess, pos: BlockPos): IBlockState {
         var state: IExtendedBlockState = oldState as IExtendedBlockState
-        state = state.withProperty(FLOW_DIRECTION, getFlowDirection(state, world, pos).toFloat())
+        state = state.setValue(FLOW_DIRECTION, getFlowDirection(state, world, pos).toFloat())
         val upBlockState: Array<Array<IBlockState?>?> = Array<Array<IBlockState?>?>(3) { arrayOfNulls<IBlockState>(3) }
         val height: Array<FloatArray?> = Array<FloatArray?>(3) { FloatArray(3) }
         val corner: Array<FloatArray?> = Array<FloatArray?>(2) { FloatArray(2) }
-        upBlockState[1]!![1] = world.getBlockState(pos.down(this.densityDir))
+        upBlockState[1]!![1] = world.getBlockState(pos.below(this.densityDir))
         height[1]!![1] = this.getFluidHeightForRender(world, pos, (upBlockState[1]!![1])!!)
 
         if (height[1]!![1] == 1f) {
@@ -155,9 +159,9 @@ open class BlockFluidGC constructor(private val fluid: Fluid, private val galact
             for (i: Int in 0..2) {
                 for (j: Int in 0..2) {
                     if (i != 1 || j != 1) {
-                        upBlockState[i]!![j] = world.getBlockState(pos.add(i - 1, 0, j - 1).down(this.densityDir))
+                        upBlockState[i]!![j] = world.getBlockState(pos.offset(i - 1, 0, j - 1).down(this.densityDir))
                         height[i]!![j] =
-                            this.getFluidHeightForRender(world, pos.add(i - 1, 0, j - 1), (upBlockState[i]!![j])!!)
+                            this.getFluidHeightForRender(world, pos.offset(i - 1, 0, j - 1), (upBlockState[i]!![j])!!)
                     }
                 }
             }
@@ -194,10 +198,10 @@ open class BlockFluidGC constructor(private val fluid: Fluid, private val galact
                 corner[1]!![1] = 0.999f
             }
         }
-        state = state.withProperty(LEVEL_CORNERS[0], corner[0]!![0])
-        state = state.withProperty(LEVEL_CORNERS[1], corner[0]!![1])
-        state = state.withProperty(LEVEL_CORNERS[2], corner[1]!![1])
-        state = state.withProperty(LEVEL_CORNERS[3], corner[1]!![0])
+        state = state.setValue(LEVEL_CORNERS[0], corner[0]!![0])
+        state = state.setValue(LEVEL_CORNERS[1], corner[0]!![1])
+        state = state.setValue(LEVEL_CORNERS[2], corner[1]!![1])
+        state = state.setValue(LEVEL_CORNERS[3], corner[1]!![0])
         return state
     }
 

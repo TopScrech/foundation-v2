@@ -1,13 +1,15 @@
 package micdoodle8.mods.galacticraft.planets.mars.recipe
 
+import foundation.item.FoundationItemVariants
+
 import micdoodle8.mods.galacticraft.api.recipe.CompressorRecipes
 import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
 import micdoodle8.mods.galacticraft.planets.mars.util.MarsUtil
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.FurnaceRecipes
 import net.minecraftforge.oredict.OreDictionary
 import java.util.HashMap
@@ -19,46 +21,46 @@ object RecipeManagerMars {
 
     @JvmStatic
     fun addUniversalRecipes() {
-        OreDictionary.registerOre("ingotDesh", ItemStack(MarsItems.marsItemBasic, 1, 2))
-        OreDictionary.registerOre("compressedDesh", ItemStack(MarsItems.marsItemBasic, 1, 5))
+        OreDictionary.registerOre("ingotDesh", FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 2))
+        OreDictionary.registerOre("compressedDesh", FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 5))
 
         CompressorRecipes.addShapelessRecipe(
-            ItemStack(MarsItems.marsItemBasic, 1, 3),
+            FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3),
             ItemStack(GCItems.heavyPlatingTier1),
-            ItemStack(GCItems.itemBasicMoon, 1, 1)
+            FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 1)
         )
         CompressorRecipes.addShapelessRecipe(
-            ItemStack(MarsItems.marsItemBasic, 1, 5),
-            ItemStack(MarsItems.marsItemBasic, 1, 2)
+            FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 5),
+            FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 2)
         )
 
         // Smelting
         FurnaceRecipes.instance()
-            .addSmeltingRecipe(ItemStack(MarsItems.marsItemBasic, 1, 0), ItemStack(MarsItems.marsItemBasic, 1, 2), 0.2f)
+            .addSmeltingRecipe(FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 0), FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 2), 0.2f)
         FurnaceRecipes.instance()
             .addSmeltingRecipe(ItemStack(MarsBlocks.marsBlock, 1, 4), ItemStack(MarsBlocks.marsBlock, 1, 9), 0.0f)
         FurnaceRecipes.instance()
-            .addSmeltingRecipe(ItemStack(MarsBlocks.marsBlock, 1, 0), ItemStack(GCItems.basicItem, 1, 3), 1.0f)
+            .addSmeltingRecipe(ItemStack(MarsBlocks.marsBlock, 1, 0), FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 3), 1.0f)
         FurnaceRecipes.instance()
-            .addSmeltingRecipe(ItemStack(MarsBlocks.marsBlock, 1, 1), ItemStack(GCItems.basicItem, 1, 4), 1.0f)
+            .addSmeltingRecipe(ItemStack(MarsBlocks.marsBlock, 1, 1), FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 4), 1.0f)
         FurnaceRecipes.instance()
-            .addSmeltingRecipe(ItemStack(MarsBlocks.marsBlock, 1, 2), ItemStack(MarsItems.marsItemBasic, 1, 2), 0.2f)
+            .addSmeltingRecipe(ItemStack(MarsBlocks.marsBlock, 1, 2), FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 2), 0.2f)
         FurnaceRecipes.instance()
             .addSmeltingRecipe(ItemStack(MarsBlocks.marsBlock, 1, 3), ItemStack(Items.IRON_INGOT), 0.2f)
 
         // Schematic
         var input: HashMap<Int, ItemStack?> = HashMap<Int, ItemStack?>()
         input.put(1, ItemStack(GCItems.partNoseCone))
-        input.put(2, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(3, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(4, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(5, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(6, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(7, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(8, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(9, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(10, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(11, ItemStack(MarsItems.marsItemBasic, 1, 3))
+        input.put(2, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(3, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(4, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(5, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(6, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(7, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(8, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(9, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(10, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(11, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
         input.put(12, ItemStack(GCItems.rocketEngine, 1, 1))
         input.put(13, ItemStack(GCItems.partFins))
         input.put(14, ItemStack(GCItems.partFins))
@@ -116,13 +118,13 @@ object RecipeManagerMars {
         //
         input = HashMap<Int, ItemStack?>()
         input.put(1, ItemStack(GCItems.partNoseCone))
-        input.put(2, ItemStack(GCItems.basicItem, 1, 14))
-        input.put(3, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(4, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(5, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(6, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(7, ItemStack(MarsItems.marsItemBasic, 1, 3))
-        input.put(8, ItemStack(MarsItems.marsItemBasic, 1, 3))
+        input.put(2, FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 14))
+        input.put(3, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(4, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(5, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(6, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(7, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
+        input.put(8, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3))
         input.put(9, ItemStack(GCItems.partFins))
         input.put(10, ItemStack(GCItems.partFins))
         input.put(11, ItemStack(GCItems.rocketEngine))

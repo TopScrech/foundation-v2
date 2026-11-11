@@ -1,11 +1,13 @@
 package micdoodle8.mods.galacticraft.core.util
 
-import net.minecraft.block.Block
+import foundation.level.offset
+
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockAir
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 
 object RedstoneUtil {
     /**
@@ -19,10 +21,10 @@ object RedstoneUtil {
         }
 
         // Check up/down without chunk load test first
-        if (getStrongPower(w, pos.down(), EnumFacing.DOWN) > 0) {
+        if (getStrongPower(w, pos.below(), EnumFacing.DOWN) > 0) {
             return true
         }
-        if (getStrongPower(w, pos.up(), EnumFacing.UP) > 0) {
+        if (getStrongPower(w, pos.above(), EnumFacing.UP) > 0) {
             return true
         }
 
@@ -68,10 +70,10 @@ object RedstoneUtil {
         }
 
         // Check up/down without chunk load test first
-        if (getRedstonePowerIndirect(w, pos.up(1), EnumFacing.UP) > 0) {
+        if (getRedstonePowerIndirect(w, pos.above(1), EnumFacing.UP) > 0) {
             return true
         }
-        if (getRedstonePowerIndirect(w, pos.down(1), EnumFacing.DOWN) > 0) {
+        if (getRedstonePowerIndirect(w, pos.below(1), EnumFacing.DOWN) > 0) {
             return true
         }
 
@@ -117,7 +119,7 @@ object RedstoneUtil {
         var sidePos: BlockPos
 
         if (skip != EnumFacing.DOWN) {
-            sidePos = pos.add(0, -1, 0)
+            sidePos = pos.offset(0, -1, 0)
             bs = w.getBlockState(sidePos)
             i = bs.getBlock().getStrongPower(bs, w, sidePos, EnumFacing.DOWN)
             if (i >= 15) {
@@ -126,7 +128,7 @@ object RedstoneUtil {
         }
 
         if (skip != EnumFacing.UP) {
-            sidePos = pos.add(0, 1, 0)
+            sidePos = pos.offset(0, 1, 0)
             bs = w.getBlockState(sidePos)
             p = bs.getBlock().getStrongPower(bs, w, sidePos, EnumFacing.UP)
             if (p >= 15) {
@@ -140,7 +142,7 @@ object RedstoneUtil {
                 continue
             }
             //This is a slightly faster pos.offset(side)
-            sidePos = pos.add(side.getXOffset(), 0, side.getZOffset())
+            sidePos = pos.offset(side.getStepX(), 0, side.getStepZ())
             if (!w.isBlockLoaded(sidePos, false)) {
                 continue
             }

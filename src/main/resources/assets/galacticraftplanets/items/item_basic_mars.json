@@ -1,0 +1,62 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:component",
+    "component": "foundation:legacy_metadata",
+    "cases": [
+      {
+        "when": 0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/raw_desh"
+        }
+      },
+      {
+        "when": 1,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/desh_stick"
+        }
+      },
+      {
+        "when": 2,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/ingot_desh"
+        }
+      },
+      {
+        "when": 3,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/reinforced_plate_t2"
+        }
+      },
+      {
+        "when": 4,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/slimeling_cargo"
+        }
+      },
+      {
+        "when": 5,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/compressed_desh"
+        }
+      },
+      {
+        "when": 6,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/fluid_manip"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "galacticraftplanets:item/raw_desh"
+    }
+  }
+}

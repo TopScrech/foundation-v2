@@ -12,9 +12,9 @@ import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Slot
-import net.minecraft.util.text.TextFormatting
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.Slot
+import net.minecraft.ChatFormatting as TextFormatting
 import org.lwjgl.opengl.GL11
 import kotlin.math.floor
 

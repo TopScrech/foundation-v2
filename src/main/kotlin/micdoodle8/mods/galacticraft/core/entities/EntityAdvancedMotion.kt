@@ -14,18 +14,17 @@ import micdoodle8.mods.galacticraft.core.network.PacketEntityUpdate
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.particle.Particle
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.MoverType
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.DamageSource
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
-import net.minecraftforge.fml.client.FMLClientHandler
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.MoverType
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.*
 import kotlin.math.cos
 import kotlin.math.sin
@@ -198,7 +197,7 @@ abstract class EntityAdvancedMotion(world: World?) : InventoryEntity(world), ICo
      */
     abstract fun getParticleMap(): MutableMap<Vector3?, Vector3?>?
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     abstract fun getParticle(
         rand: Random?,
         x: Double,
@@ -251,7 +250,7 @@ abstract class EntityAdvancedMotion(world: World?) : InventoryEntity(world), ICo
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setPositionAndRotationDirect(
         x: Double,
         y: Double,
@@ -262,7 +261,7 @@ abstract class EntityAdvancedMotion(world: World?) : InventoryEntity(world), ICo
         b: Boolean
     ) {
         if (!this.getPassengers().isEmpty()) {
-            if (this.getPassengers().contains(FMLClientHandler.instance().getClient().player)) {
+            if (this.getPassengers().contains(Minecraft.getInstance().player)) {
             } else {
                 this.posRotIncrements = posRotationIncrements + 5
                 this.advancedPositionX = x
@@ -290,7 +289,7 @@ abstract class EntityAdvancedMotion(world: World?) : InventoryEntity(world), ICo
         super.onUpdate()
 
         if (this.canSetPositionClient() && this.world.isRemote && (this.getPassengers()
-                .isEmpty() || !this.getPassengers().contains(FMLClientHandler.instance().getClient().player))
+                .isEmpty() || !this.getPassengers().contains(Minecraft.getInstance().player))
         ) {
             val x: Double
             val y: Double
@@ -379,7 +378,7 @@ abstract class EntityAdvancedMotion(world: World?) : InventoryEntity(world), ICo
         this.readNetworkedData(buffer)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun spawnParticles(points: MutableMap<Vector3?, Vector3?>) {
         for (vec in points.entries) {
             val posVec: Vector3 = (vec.key)!!
@@ -399,9 +398,9 @@ abstract class EntityAdvancedMotion(world: World?) : InventoryEntity(world), ICo
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun spawnParticle(fx: Particle?) {
-        val mc: Minecraft? = FMLClientHandler.instance().getClient()
+        val mc: Minecraft? = Minecraft.getInstance()
 
         if (mc != null && mc.getRenderViewEntity() != null && mc.effectRenderer != null) {
             if (fx != null) {

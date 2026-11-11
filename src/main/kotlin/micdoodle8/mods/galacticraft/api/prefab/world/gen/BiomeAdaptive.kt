@@ -6,18 +6,18 @@ import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody
 import micdoodle8.mods.galacticraft.api.world.BiomeGenBaseGC
 import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import net.minecraft.block.BlockFlower
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.entity.EnumCreatureType
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.biome.BiomeDecorator
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.feature.WorldGenAbstractTree
 import net.minecraft.world.gen.feature.WorldGenerator
 import net.minecraftforge.common.BiomeDictionary
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.LinkedList
 import java.util.Random
 
@@ -85,7 +85,7 @@ open class BiomeAdaptive constructor(private val index: Int, private var biomeTr
         return biomeTrue!!.pickRandomFlower(rand, pos)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyColorByTemp(currentTemperature: Float): Int {
         return biomeTrue!!.getSkyColorByTemp(currentTemperature)
     }
@@ -139,7 +139,7 @@ open class BiomeAdaptive constructor(private val index: Int, private var biomeTr
         biomeTrue!!.genTerrainBlocks(worldIn, rand, chunkPrimerIn, x, z, noiseVal)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getGrassColorAtPos(pos: BlockPos): Int {
         return biomeTrue!!.getGrassColorAtPos(pos)
     }
@@ -160,7 +160,7 @@ open class BiomeAdaptive constructor(private val index: Int, private var biomeTr
         biomeTrue!!.generateBiomeTerrain(worldIn, rand, chunkPrimerIn, x, z, noiseVal)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getFoliageColorAtPos(pos: BlockPos): Int {
         return biomeTrue!!.getFoliageColorAtPos(pos)
     }
@@ -185,7 +185,7 @@ open class BiomeAdaptive constructor(private val index: Int, private var biomeTr
         return biomeTrue!!.getRainfall()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getBiomeName(): String {
         return biomeTrue!!.getBiomeName()
     }
@@ -198,7 +198,7 @@ open class BiomeAdaptive constructor(private val index: Int, private var biomeTr
         return biomeTrue!!.getDefaultTemperature()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getWaterColor(): Int {
         return biomeTrue!!.getWaterColor()
     }

@@ -6,11 +6,11 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedEnderman
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.entity.layers.LayerRenderer
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class LayerEvolvedEndermanEyes constructor(private val render: RenderEvolvedEnderman) :
     LayerRenderer<EntityEvolvedEnderman> {
     override fun shouldCombineTextures(): Boolean {
@@ -45,6 +45,6 @@ open class LayerEvolvedEndermanEyes constructor(private val render: RenderEvolve
     }
 
     companion object {
-        private val eyesTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/evolved_enderman_eyes.png")
+        private val eyesTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/evolved_enderman_eyes.png")
     }
 }

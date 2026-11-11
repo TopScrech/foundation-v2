@@ -7,41 +7,41 @@ import asmodeuscore.core.handler.ProviderFogHandler
 import asmodeuscore.api.dimension.IProviderFog
 import asmodeuscore.core.utils.Utils
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.ActiveRenderInfo
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.settings.GameSettings
-import net.minecraft.enchantment.EnchantmentHelper
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.MobEffects
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraft.world.EnumSkyBlock
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 import net.minecraftforge.client.event.EntityViewRenderEvent
 import net.minecraftforge.common.ForgeModContainer
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.min
 
 open class ProviderFogHandler {
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun onGetFogColour(event: EntityViewRenderEvent.FogColors) {
         if (event.getEntity() is EntityPlayer) {
             val player: EntityPlayer = event.getEntity() as EntityPlayer
-            val world: World = player.world
-            val x: Int = MathHelper.floor(player.posX)
-            val y: Int = MathHelper.floor(player.posY)
-            val z: Int = MathHelper.floor(player.posZ)
+            val world: World = player.level()
+            val x: Int = MathHelper.floor(player.x)
+            val y: Int = MathHelper.floor(player.y)
+            val z: Int = MathHelper.floor(player.z)
             val blockAtEyes: IBlockState = ActiveRenderInfo.getBlockStateAtEntityViewpoint(
                 world,
                 event.getEntity(),
@@ -69,7 +69,7 @@ open class ProviderFogHandler {
                     event.getRenderPartialTicks()
                 )
             }
-            val temp: Float = (player.posY / 700).toFloat() % 255
+            val temp: Float = (player.y / 700).toFloat() % 255
 
             val r: Float = (if (mixedColor.x - temp < 0) 0.0 else mixedColor.x - temp).toFloat()
             val g: Float = (if (mixedColor.y - temp < 0) 0.0 else mixedColor.y - temp).toFloat()
@@ -82,7 +82,7 @@ open class ProviderFogHandler {
 
     @SubscribeEvent
     open fun renderFog(event: EntityViewRenderEvent.RenderFogEvent) {
-        val world: World = Minecraft.getMinecraft().player.world
+        val world: World = Minecraft.getInstance().player.level()
         val provider: WorldProvider? = world.provider
 
         if (provider is IProviderFog) {
@@ -91,9 +91,9 @@ open class ProviderFogHandler {
 
 
             val player: EntityPlayer = event.getEntity() as EntityPlayer
-            val playerX: Int = MathHelper.floor(player.posX)
-            val playerY: Int = MathHelper.floor(player.posY)
-            val playerZ: Int = MathHelper.floor(player.posZ)
+            val playerX: Int = MathHelper.floor(player.x)
+            val playerY: Int = MathHelper.floor(player.y)
+            val playerZ: Int = MathHelper.floor(player.z)
 
             var fogDensity: Float = 1 - providerAtum.getFogDensity(playerX, playerY, playerZ) //0.015F default;
 
@@ -115,7 +115,7 @@ open class ProviderFogHandler {
                 fogDensity *= sandstormFog - (sandstormFog - sandstormFog * 1.0f)
 
                 val light: Int =
-                    player.world.getLightFor(EnumSkyBlock.SKY, BlockPos(player.posX, player.posY + 1, player.posZ))
+                    player.level().getLightFor(EnumSkyBlock.SKY, BlockPos(player.x, player.y + 1, player.z))
                 if (light < 12) {
                     if (light <= 0) fogDensity = 0.001f
                     else fogDensity = fogDensity / ((12 - light) * 2)
@@ -123,7 +123,7 @@ open class ProviderFogHandler {
 
 
                 //if(player.posY > 150)
-                fogDensity = (fogDensity / (player.posY / 30)).toFloat()
+                fogDensity = (fogDensity / (player.y / 30)).toFloat()
 
                 //}
                 if (AsmodeusClientEvent.Companion.inOxygenBlock) fogDensity = 0.05f
@@ -143,7 +143,7 @@ open class ProviderFogHandler {
 
         /*
 	@SubscribeEvent
-	@SideOnly(Side.CLIENT)
+	@OnlyIn(Dist.CLIENT)
 	public void onRenderFog(EntityViewRenderEvent.RenderFogEvent event)
 	{
 		
@@ -181,7 +181,7 @@ open class ProviderFogHandler {
 					
 					
 					
-					int light = Minecraft.getMinecraft().world.getLightFor(EnumSkyBlock.SKY, Minecraft.getMinecraft().player.getPosition());
+					int light = Minecraft.getInstance().level.getLightFor(EnumSkyBlock.SKY, Minecraft.getInstance().player.getPosition());
 					//System.out.println(light);
 					if(light < 6)
 					{
@@ -257,10 +257,10 @@ open class ProviderFogHandler {
             var g: Float = g
             var b: Float = b
             var darkScale: Double =
-                (player.lastTickPosY + (player.posY - player.lastTickPosY) * renderPartialTicks) * world.provider.getVoidFogYFactor()
+                (player.lastTickPosY + (player.y - player.lastTickPosY) * renderPartialTicks) * world.provider.getVoidFogYFactor()
 
-            if (player.isPotionActive(MobEffects.BLINDNESS)) {
-                val duration: Int = player.getActivePotionEffect(MobEffects.BLINDNESS)!!.getDuration()
+            if (player.hasEffect(MobEffects.BLINDNESS)) {
+                val duration: Int = player.getEffect(MobEffects.BLINDNESS)!!.getDuration()
                 darkScale *= (if (duration < 20) 1 - duration / 20f else 0f).toDouble()
             }
             if (darkScale < 1) {
@@ -270,8 +270,8 @@ open class ProviderFogHandler {
                 b *= darkScale.toFloat()
             }
 
-            if (player.isPotionActive(MobEffects.NIGHT_VISION)) {
-                val duration: Int = player.getActivePotionEffect(MobEffects.NIGHT_VISION)!!.getDuration()
+            if (player.hasEffect(MobEffects.NIGHT_VISION)) {
+                val duration: Int = player.getEffect(MobEffects.NIGHT_VISION)!!.getDuration()
                 val brightness: Float =
                     if (duration > 200) 1f else 0.7f + MathHelper.sin(((duration - renderPartialTicks) * Math.PI * 0.2f).toFloat()) * 0.3f
                 var scale: Float = 1 / r
@@ -281,7 +281,7 @@ open class ProviderFogHandler {
                 g = g * (1 - brightness) + g * scale * brightness
                 b = b * (1 - brightness) + b * scale * brightness
             }
-            if (Minecraft.getMinecraft().gameSettings.anaglyph) {
+            if (Minecraft.getInstance().gameSettings.anaglyph) {
                 val aR: Float = (r * 30 + g * 59 + b * 11) / 100
                 val aG: Float = (r * 30 + g * 70) / 100
                 val aB: Float = (r * 30 + b * 70) / 100
@@ -311,7 +311,7 @@ open class ProviderFogHandler {
                     val biome: Biome = world.getBiomeForCoordsBody(
                         BlockPos(
                             (playerX + x).toDouble(),
-                            playerEntity.posY,
+                            playerEntity.y,
                             (playerZ + z).toDouble()
                         )
                     )
@@ -321,24 +321,24 @@ open class ProviderFogHandler {
                     var bPart: Float = (waterColorMult and 0x0000FF).toFloat()
 
                     if (x == -distance) {
-                        val xDiff: Double = 1 - (playerEntity.posX - playerX)
+                        val xDiff: Double = 1 - (playerEntity.x - playerX)
                         rPart *= xDiff.toFloat()
                         gPart *= xDiff.toFloat()
                         bPart *= xDiff.toFloat()
                     } else if (x == distance) {
-                        val xDiff: Double = playerEntity.posX - playerX
+                        val xDiff: Double = playerEntity.x - playerX
                         rPart *= xDiff.toFloat()
                         gPart *= xDiff.toFloat()
                         bPart *= xDiff.toFloat()
                     }
 
                     if (z == -distance) {
-                        val zDiff: Double = 1 - (playerEntity.posZ - playerZ)
+                        val zDiff: Double = 1 - (playerEntity.z - playerZ)
                         rPart *= zDiff.toFloat()
                         gPart *= zDiff.toFloat()
                         bPart *= zDiff.toFloat()
                     } else if (z == distance) {
-                        val zDiff: Double = playerEntity.posZ - playerZ
+                        val zDiff: Double = playerEntity.z - playerZ
                         rPart *= zDiff.toFloat()
                         gPart *= zDiff.toFloat()
                         bPart *= zDiff.toFloat()
@@ -374,7 +374,7 @@ open class ProviderFogHandler {
             defB: Float,
             renderPartialTicks: Double
         ): Vec3d {
-            val settings: GameSettings = Minecraft.getMinecraft().gameSettings
+            val settings: GameSettings = Minecraft.getInstance().gameSettings
             val ranges: IntArray = ForgeModContainer.blendRanges
             var distance: Int = 6
 
@@ -408,13 +408,13 @@ open class ProviderFogHandler {
                         var weightPart: Float = 1f
 
                         if (x == -distance) {
-                            val xDiff: Double = 1 - (playerEntity.posX - playerX)
+                            val xDiff: Double = 1 - (playerEntity.x - playerX)
                             rPart *= xDiff.toFloat()
                             gPart *= xDiff.toFloat()
                             bPart *= xDiff.toFloat()
                             weightPart *= xDiff.toFloat()
                         } else if (x == distance) {
-                            val xDiff: Double = playerEntity.posX - playerX
+                            val xDiff: Double = playerEntity.x - playerX
                             rPart *= xDiff.toFloat()
                             gPart *= xDiff.toFloat()
                             bPart *= xDiff.toFloat()
@@ -422,20 +422,20 @@ open class ProviderFogHandler {
                         }
 
                         if (z == -distance) {
-                            val zDiff: Double = 1 - (playerEntity.posZ - playerZ)
+                            val zDiff: Double = 1 - (playerEntity.z - playerZ)
                             rPart *= zDiff.toFloat()
                             gPart *= zDiff.toFloat()
                             bPart *= zDiff.toFloat()
                             weightPart *= zDiff.toFloat()
                         } else if (z == distance) {
-                            val zDiff: Double = playerEntity.posZ - playerZ
+                            val zDiff: Double = playerEntity.z - playerZ
                             rPart *= zDiff.toFloat()
                             gPart *= zDiff.toFloat()
                             bPart *= zDiff.toFloat()
                             weightPart *= zDiff.toFloat()
                         }
 
-                        val temp: Float = (playerEntity.posY / 1000).toFloat()
+                        val temp: Float = (playerEntity.y / 1000).toFloat()
 
                         rBiomeFog += rPart
                         gBiomeFog += gPart

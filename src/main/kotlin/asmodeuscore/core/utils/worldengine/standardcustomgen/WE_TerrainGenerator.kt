@@ -1,19 +1,21 @@
 package asmodeuscore.core.utils.worldengine.standardcustomgen
 
+import foundation.math.LegacyTerrainMath
+
 import asmodeuscore.core.utils.worldengine.WE_Biome
 import asmodeuscore.core.utils.worldengine.additions.WE_CreateChunkGen
 import asmodeuscore.core.utils.worldengine.additions.WE_GeneratorData
 import asmodeuscore.core.utils.worldengine.perlinnoise.PerlinNoise
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.util.Mth as MathHelper
 
 open class WE_TerrainGenerator : WE_CreateChunkGen() {
     @JvmField
-    var worldStoneBlock: IBlockState = Blocks.STONE.getDefaultState()
+    var worldStoneBlock: IBlockState = Blocks.STONE.defaultBlockState()
 
     @JvmField
-    var worldSeaGenBlock: IBlockState = Blocks.WATER.getDefaultState()
+    var worldSeaGenBlock: IBlockState = Blocks.WATER.defaultBlockState()
 
     @JvmField
     var worldSeaGen: Boolean = true
@@ -72,7 +74,7 @@ open class WE_TerrainGenerator : WE_CreateChunkGen() {
                             this.setBlock((data)!!, this.worldSeaGenBlock, x, y, z)
                         }
                     } else {
-                        this.setBlock((data)!!, Blocks.BEDROCK.getDefaultState(), x, y, z)
+                        this.setBlock((data)!!, Blocks.BEDROCK.defaultBlockState(), x, y, z)
                     }
                 }
             }
@@ -112,9 +114,9 @@ open class WE_TerrainGenerator : WE_CreateChunkGen() {
             for (i: Int in 0..360) {
                 for (i2: Int in 0..biomeListOfChunk[bx]!![bz]!!.biomeInterpolateQuality) {
                     val cbx: Int =
-                        MathHelper.floor(bx.toFloat() + MathHelper.cos(i.toFloat() * Math.PI.toFloat() / 180.0f) * i2.toFloat())
+                        MathHelper.floor(bx.toFloat() + LegacyTerrainMath.cos(i.toFloat() * Math.PI.toFloat() / 180.0f) * i2.toFloat())
                     val cbz: Int =
-                        MathHelper.floor(bz.toFloat() + MathHelper.sin(i.toFloat() * Math.PI.toFloat() / 180.0f) * i2.toFloat())
+                        MathHelper.floor(bz.toFloat() + LegacyTerrainMath.sin(i.toFloat() * Math.PI.toFloat() / 180.0f) * i2.toFloat())
                     c++
                     genPersistence += biomeListOfChunk[cbx]!![cbz]!!.biomePersistence
                     genNumberOfOctaves += biomeListOfChunk[cbx]!![cbz]!!.biomeNumberOfOctaves

@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.world.gen
 
+import foundation.block.getStateFromMeta
+
 import net.minecraft.block.BlockFlower.EnumFlowerType
 
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeAdaptive
@@ -14,7 +16,7 @@ import micdoodle8.mods.galacticraft.planets.asteroids.ConfigManagerAsteroids
 import micdoodle8.mods.galacticraft.planets.asteroids.blocks.AsteroidBlocks
 import micdoodle8.mods.galacticraft.planets.asteroids.dimension.WorldProviderAsteroids
 import micdoodle8.mods.galacticraft.planets.asteroids.world.gen.base.MapGenAbandonedBase
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockAir
 import net.minecraft.block.BlockFlower
 import net.minecraft.block.BlockLeaves
@@ -22,14 +24,14 @@ import net.minecraft.block.BlockOldLeaf
 import net.minecraft.block.BlockOldLog
 import net.minecraft.block.BlockPlanks
 import net.minecraft.block.BlockTallGrass
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.entity.EnumCreatureType
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage
 import net.minecraft.world.gen.feature.WorldGenFlowers
@@ -363,7 +365,7 @@ open class ChunkProviderAsteroids constructor(private val world: World, par2: Lo
         val asteroidCore: IBlockState = (core.block)!!.getStateFromMeta(core.meta.toInt())
         val asteroidRock0: IBlockState = this.ASTEROID_STONE.getStateFromMeta(this.ASTEROID_STONE_META_0.toInt())
         val asteroidRock1: IBlockState = this.ASTEROID_STONE.getStateFromMeta(this.ASTEROID_STONE_META_1.toInt())
-        val airBlock: IBlockState = Blocks.AIR.getDefaultState()
+        val airBlock: IBlockState = Blocks.AIR.defaultBlockState()
         val dirtBlock: IBlockState = this.DIRT.getStateFromMeta(this.DIRT_META.toInt())
         val grassBlock: IBlockState = this.GRASS.getStateFromMeta(this.GRASS_META.toInt())
 
@@ -694,7 +696,7 @@ open class ChunkProviderAsteroids constructor(private val world: World, par2: Lo
                         }
                     }
 
-                    world.setBlockState(BlockPos(px, y, pz), block.getStateFromMeta(meta), 2)
+                    world.setBlock(BlockPos(px, y, pz), block.getStateFromMeta(meta), 2)
                     var count: Int = 9
                     if (world.getBlockState(BlockPos(px - 1, y, pz)).getBlock() !is BlockAir) {
                         count = 1
@@ -737,16 +739,16 @@ open class ChunkProviderAsteroids constructor(private val world: World, par2: Lo
                     if (treeType == 1) {
                         treeType = 0
                     }
-                    val log: IBlockState = Blocks.LOG.getDefaultState()
-                        .withProperty(
+                    val log: IBlockState = Blocks.LOG.defaultBlockState()
+                        .setValue(
                             BlockOldLog.VARIANT,
                             BlockPlanks.EnumType.OAK
                         )
-                    val leaves: IBlockState = Blocks.LEAVES.getDefaultState()
-                        .withProperty(
+                    val leaves: IBlockState = Blocks.LEAVES.defaultBlockState()
+                        .setValue(
                             BlockOldLeaf.VARIANT,
                             BlockPlanks.EnumType.OAK
-                        ).withProperty(BlockLeaves.CHECK_DECAY, false)
+                        ).setValue(BlockLeaves.CHECK_DECAY, false)
                     val wg: WorldGenTrees = WorldGenTrees(false, 2, log, leaves, false)
                     for (tries: Int in 0..4) {
                         val i: Int = rand.nextInt(16) + x + 8

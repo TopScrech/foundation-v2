@@ -2,7 +2,7 @@ package micdoodle8.mods.galacticraft.api.entity
 
 import javax.annotation.Nonnull
 
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 /**
  * Implement into entities that can be loaded with cargo

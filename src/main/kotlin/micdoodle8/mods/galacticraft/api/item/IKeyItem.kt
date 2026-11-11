@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.api.item
 
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 /**
  * Implement into a key Item class to allow @IKeyable tile entities to get

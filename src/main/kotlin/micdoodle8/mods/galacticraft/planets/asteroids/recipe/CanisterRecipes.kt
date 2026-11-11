@@ -1,15 +1,20 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.recipe
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
 import micdoodle8.mods.galacticraft.planets.asteroids.items.ItemCanisterLiquidOxygen
-import net.minecraft.inventory.InventoryCrafting
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.item.crafting.Ingredient
+import net.minecraft.world.inventory.CraftingContainer as InventoryCrafting
+import foundation.inventory.getSizeInventory
+import foundation.inventory.getStackInSlot
+import foundation.inventory.getStackInRowAndColumn
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.item.crafting.ShapelessRecipes
-import net.minecraft.util.NonNullList
-import net.minecraft.world.World
+import net.minecraft.core.NonNullList
+import net.minecraft.world.level.Level as World
 
 open class CanisterRecipes constructor(stack: ItemStack, list: NonNullList<Ingredient?>) :
     ShapelessRecipes("canisters", stack, list) {
@@ -49,12 +54,12 @@ open class CanisterRecipes constructor(stack: ItemStack, list: NonNullList<Ingre
         }
 
         //Empty canister
-        if (itemCanister.getItemDamage() >= itemCanister.getMaxDamage()) {
+        if (itemCanister.legacyItemValue >= itemCanister.getMaxDamage()) {
             return false
         }
 
         //Full tank
-        if (itemTank.getItemDamage() <= 0) {
+        if (ItemOxygenTank.used(itemTank) <= 0) {
             return false
         }
 
@@ -99,30 +104,30 @@ open class CanisterRecipes constructor(stack: ItemStack, list: NonNullList<Ingre
         }
 
         //Empty canister
-        if (itemCanister.getItemDamage() >= itemCanister.getMaxDamage()) {
+        if (itemCanister.legacyItemValue >= itemCanister.getMaxDamage()) {
             return ItemStack.EMPTY
         }
 
         //Full tank
-        if (itemTank.getItemDamage() <= 0) {
+        if (ItemOxygenTank.used(itemTank) <= 0) {
             return ItemStack.EMPTY
         }
 
-        val oxygenAvail: Int = itemCanister.getMaxDamage() - itemCanister.getItemDamage()
-        val oxygenToFill: Int = itemTank.getItemDamage() * 5 / 54
+        val oxygenAvail: Int = itemCanister.getMaxDamage() - itemCanister.legacyItemValue
+        val oxygenToFill: Int = ItemOxygenTank.used(itemTank) * 5 / 54
 
         if (oxygenAvail >= oxygenToFill) {
             val result: ItemStack = itemTank.copy()
-            result.setItemDamage(0)
+            ItemOxygenTank.setUsed(result, 0)
             if (itemCanister.getItem() is ItemCanisterLiquidOxygen) {
-                ItemCanisterLiquidOxygen.Companion.saveDamage(itemCanister, itemCanister.getItemDamage() + oxygenToFill)
+                ItemCanisterLiquidOxygen.Companion.saveDamage(itemCanister, itemCanister.legacyItemValue + oxygenToFill)
             }
             return result
         }
 
         val tankDamageNew: Int = (oxygenToFill - oxygenAvail) * 54 / 5
         val result: ItemStack = itemTank.copy()
-        result.setItemDamage(tankDamageNew)
+        ItemOxygenTank.setUsed(result, tankDamageNew)
         if (itemCanister.getItem() is ItemCanisterLiquidOxygen) {
             ItemCanisterLiquidOxygen.Companion.saveDamage(itemCanister, itemCanister.getMaxDamage())
         }

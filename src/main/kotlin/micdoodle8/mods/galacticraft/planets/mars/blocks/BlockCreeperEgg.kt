@@ -9,20 +9,20 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
 import net.minecraft.block.BlockDragonEgg
 import net.minecraft.block.state.BlockFaceShape
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.Explosion
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.Explosion
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class BlockCreeperEgg constructor(assetName: String?) : BlockDragonEgg(), IShiftDescription, ISortableBlock {
     init {
@@ -37,7 +37,7 @@ open class BlockCreeperEgg constructor(assetName: String?) : BlockDragonEgg(), I
         return false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
@@ -72,7 +72,7 @@ open class BlockCreeperEgg constructor(assetName: String?) : BlockDragonEgg(), I
     override fun onBlockClicked(worldIn: World, pos: BlockPos, playerIn: EntityPlayer) {
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getPickBlock(
         state: IBlockState,
         target: RayTraceResult,
@@ -84,14 +84,14 @@ open class BlockCreeperEgg constructor(assetName: String?) : BlockDragonEgg(), I
     }
 
     override fun onBlockExploded(world: World, pos: BlockPos, explosion: Explosion) {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             val creeper: EntityEvolvedCreeper = EntityEvolvedCreeper(world)
             creeper.setPosition(pos.getX() + 0.5, (pos.getY() + 3).toDouble(), pos.getZ() + 0.5)
             creeper.setChild(true)
-            world.spawnEntity(creeper)
+            world.addFreshEntity(creeper)
         }
 
-        world.setBlockToAir(pos)
+        world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
         this.onExplosionDestroy(world, pos, explosion)
     }
 
@@ -101,7 +101,7 @@ open class BlockCreeperEgg constructor(assetName: String?) : BlockDragonEgg(), I
 
     //Can only be harvested with a Sticky Desh Pickaxe
     override fun canHarvestBlock(world: IBlockAccess, pos: BlockPos, player: EntityPlayer): Boolean {
-        val stack: ItemStack = player.inventory.getCurrentItem()
+        val stack: ItemStack = player.inventory.getSelectedItem()
         if (stack.isEmpty()) {
             return player.canHarvestBlock(world.getBlockState(pos))
         }
@@ -114,7 +114,7 @@ open class BlockCreeperEgg constructor(assetName: String?) : BlockDragonEgg(), I
         worldIn: World,
         pos: BlockPos
     ): Float {
-        val stack: ItemStack = player.inventory.getCurrentItem()
+        val stack: ItemStack = player.inventory.getSelectedItem()
         if (stack != null && stack.getItem() === MarsItems.deshPickSlime) {
             return 0.2f
         }

@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
+import foundation.persistence.listOfType
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import java.util.EnumSet
@@ -16,20 +18,20 @@ import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import micdoodle8.mods.galacticraft.api.world.ISolarLevel
 import galaxyspace.core.prefab.tile.TileEntityInventorySource
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.util.EnumFacing
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.world.WorldProviderHell
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.HashMap
 import kotlin.math.abs
 
@@ -94,7 +96,7 @@ open class TileEntityPanelController constructor() :
 
                                 if (!flag) break@x
 
-                                if (flag && this.world.canBlockSeeSky(pos.up())) {
+                                if (flag && this.world.canBlockSeeSky(pos.above())) {
                                     panels.put(
                                         pos,
                                         (world.getBlockState(pos).getBlock() as BlockSingleSolarPanel).getTier()
@@ -129,7 +131,7 @@ open class TileEntityPanelController constructor() :
 
                             if (!flag) break@x
 
-                            if (flag && this.world.canBlockSeeSky(pos.up())) {
+                            if (flag && this.world.canBlockSeeSky(pos.above())) {
                                 panels.put(
                                     pos,
                                     (world.getBlockState(pos).getBlock() as BlockSingleSolarPanel).getTier()
@@ -167,7 +169,7 @@ open class TileEntityPanelController constructor() :
 
                                 if (!flag) break@z
 
-                                if (flag && this.world.canBlockSeeSky(pos.up())) {
+                                if (flag && this.world.canBlockSeeSky(pos.above())) {
                                     panels.put(
                                         pos,
                                         (world.getBlockState(pos).getBlock() as BlockSingleSolarPanel).getTier()
@@ -202,7 +204,7 @@ open class TileEntityPanelController constructor() :
 
                             if (!flag) break@x
 
-                            if (flag && this.world.canBlockSeeSky(pos.up())) {
+                            if (flag && this.world.canBlockSeeSky(pos.above())) {
                                 panels.put(
                                     pos,
                                     (world.getBlockState(pos).getBlock() as BlockSingleSolarPanel).getTier()
@@ -272,9 +274,9 @@ open class TileEntityPanelController constructor() :
 
     override fun readFromNBT(par1NBTTagCompound: NBTTagCompound) {
         super.readFromNBT(par1NBTTagCompound)
-        val var2: NBTTagList = par1NBTTagCompound.getTagList("Items", 10)
+        val var2: NBTTagList = par1NBTTagCompound.listOfType("Items", 10)
 
-        this.inventory = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.inventory = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(par1NBTTagCompound, this.getInventory())
     }
 
@@ -284,30 +286,30 @@ open class TileEntityPanelController constructor() :
         return par1NBTTagCompound
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
     }
 
 
-    override fun isItemValidForSlot(index: Int, stack: ItemStack): Boolean {
+    override fun canPlaceItem(index: Int, stack: ItemStack): Boolean {
         return false
     }
 
-    override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf()
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, direction: EnumFacing?): Boolean {
-        return this.isItemValidForSlot(slotID, itemstack)
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, direction: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, itemstack)
     }
 
-    override fun canExtractItem(index: Int, stack: ItemStack, direction: EnumFacing?): Boolean {
+    override fun canTakeItemThroughFace(index: Int, stack: ItemStack, direction: EnumFacing): Boolean {
         return false
     }
 

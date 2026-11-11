@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.api.item
 
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 interface IItemOxygenSupply {
     /*

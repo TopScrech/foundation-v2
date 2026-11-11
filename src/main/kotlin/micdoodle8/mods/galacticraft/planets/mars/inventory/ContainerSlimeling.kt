@@ -1,15 +1,18 @@
 package micdoodle8.mods.galacticraft.planets.mars.inventory
 
+import foundation.item.legacyItemValue
+
+import foundation.item.FoundationItemVariants
 import java.util.Collections
 
 import micdoodle8.mods.galacticraft.core.inventory.SlotSpecific
 import micdoodle8.mods.galacticraft.planets.mars.entities.EntitySlimeling
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
 import java.util.*
 
 open class ContainerSlimeling constructor(
@@ -24,43 +27,43 @@ open class ContainerSlimeling constructor(
         this.slimelingInventory.currentContainer = this
 
         addSlots(this, playerInventory, slimeling)
-        addAdditionalSlots(this, slimeling, this.slimelingInventory.getStackInSlot(1))
+        addAdditionalSlots(this, slimeling, this.slimelingInventory.getItem(1))
 
         this.slimelingInventory.openInventory(player)
     }
 
-    override fun onContainerClosed(entityplayer: EntityPlayer) {
+    override fun removed(entityplayer: EntityPlayer) {
         this.slimelingInventory.closeInventory(entityplayer)
     }
 
-    override fun canInteractWith(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.slimelingInventory.isUsableByPlayer(par1EntityPlayer)
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.slimelingInventory.stillValid(par1EntityPlayer)
     }
 
-    override fun transferStackInSlot(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
+    override fun quickMoveStack(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
         var var2: ItemStack = ItemStack.EMPTY
         val slot: Slot? = this.inventorySlots.get(par1)
         val b: Int = this.inventorySlots.size
 
-        if (slot != null && slot.getHasStack()) {
-            val var4: ItemStack = slot.getStack()
+        if (slot != null && slot.hasItem()) {
+            val var4: ItemStack = slot.getItem()
             var2 = var4.copy()
 
             if (b < 39) {
                 if (par1 < b - 36) {
-                    if (!this.mergeItemStack(var4, b - 36, b, true)) {
+                    if (!this.moveItemStackTo(var4, b - 36, b, true)) {
                         return ItemStack.EMPTY
                     }
                 } else {
-                    if (var4.getItem() === MarsItems.marsItemBasic && var4.getItemDamage() == 4) {
-                        if (!this.mergeItemStack(var4, 0, 1, false)) {
+                    if (var4.getItem() === MarsItems.marsItemBasic && var4.legacyItemValue == 4) {
+                        if (!this.moveItemStackTo(var4, 0, 1, false)) {
                             return ItemStack.EMPTY
                         }
                     } else if (par1 < b - 9) {
-                        if (!this.mergeItemStack(var4, b - 9, b, false)) {
+                        if (!this.moveItemStackTo(var4, b - 9, b, false)) {
                             return ItemStack.EMPTY
                         }
-                    } else if (!this.mergeItemStack(var4, b - 36, b - 9, false)) {
+                    } else if (!this.moveItemStackTo(var4, b - 36, b - 9, false)) {
                         return ItemStack.EMPTY
                     }
                 }
@@ -73,18 +76,18 @@ open class ContainerSlimeling constructor(
                 }
 
                 if (par1 > 36) {
-                    if (!this.mergeItemStack(var4, 1, 37, true)) {
+                    if (!this.moveItemStackTo(var4, 1, 37, true)) {
                         return ItemStack.EMPTY
                     }
                 } else {
                     if (par1 < 28) {
-                        if (!this.mergeItemStack(var4, 37, 64, false)) {
-                            if (!this.mergeItemStack(var4, 28, 37, false)) {
+                        if (!this.moveItemStackTo(var4, 37, 64, false)) {
+                            if (!this.moveItemStackTo(var4, 28, 37, false)) {
                                 return ItemStack.EMPTY
                             }
                         }
-                    } else if (!this.mergeItemStack(var4, 37, 64, false)) {
-                        if (!this.mergeItemStack(var4, 1, 28, false)) {
+                    } else if (!this.moveItemStackTo(var4, 37, 64, false)) {
+                        if (!this.moveItemStackTo(var4, 1, 28, false)) {
                             return ItemStack.EMPTY
                         }
                     }
@@ -92,9 +95,9 @@ open class ContainerSlimeling constructor(
             }
 
             if (var4.isEmpty()) {
-                slot.putStack(ItemStack.EMPTY)
+                slot.set(ItemStack.EMPTY)
             } else {
-                slot.onSlotChanged()
+                slot.setChanged()
             }
 
             if (var4.getCount() == var2.getCount()) {
@@ -111,7 +114,7 @@ open class ContainerSlimeling constructor(
         @JvmStatic
         fun addSlots(container: ContainerSlimeling, playerInventory: InventoryPlayer, slimeling: EntitySlimeling) {
             var slot: Slot =
-                SlotSpecific(slimeling.slimelingInventory, 1, 9, 30, ItemStack(MarsItems.marsItemBasic, 1, 4))
+                SlotSpecific(slimeling.slimelingInventory, 1, 9, 30, FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 4))
             container.addSlotToContainer(slot)
 
             var var3: Int
@@ -141,14 +144,14 @@ open class ContainerSlimeling constructor(
 
         @JvmStatic
         fun addAdditionalSlots(container: ContainerSlimeling, slimeling: EntitySlimeling, stack: ItemStack) {
-            if (!stack.isEmpty() && stack.getItem() === MarsItems.marsItemBasic && stack.getItemDamage() == 4) {
+            if (!stack.isEmpty() && stack.getItem() === MarsItems.marsItemBasic && stack.legacyItemValue == 4) {
                 //Note that if NEI is installed, this can be called by InventorySlimeling.setInventorySlotContents even if the container already has the slots
                 if (container.inventorySlots.size < 63) {
                     for (var3: Int in 0..2) {
                         for (var4: Int in 0..8) {
                             val slot: Slot =
                                 Slot(slimeling.slimelingInventory, var4 + var3 * 9 + 2, 8 + var4 * 18, 54 + var3 * 18)
-                            slot.slotNumber = container.inventorySlots.size
+                            slot.index = container.inventorySlots.size
                             container.inventorySlots.add(slot)
                             container.inventoryItemStacks.add(ItemStack.EMPTY)
                         }

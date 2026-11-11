@@ -2,11 +2,11 @@ package micdoodle8.mods.galacticraft.core.client.model
 
 import net.minecraft.client.model.ModelBiped
 import net.minecraft.client.model.ModelRenderer
-import net.minecraft.entity.Entity
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.Entity
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class ModelEvolvedEnderman constructor() : ModelBiped(0.0f, -14.0f, 64, 64) {
     @JvmField
     var isCarrying: Boolean = false

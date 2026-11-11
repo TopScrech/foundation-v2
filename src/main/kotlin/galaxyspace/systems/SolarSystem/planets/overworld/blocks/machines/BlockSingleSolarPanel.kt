@@ -5,15 +5,15 @@ import galaxyspace.systems.SolarSystem.planets.overworld.blocks.machines.BlockSi
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 
 open class BlockSingleSolarPanel constructor(name: String, tier: Int) : Block(Material.IRON), IShiftDescription,
     ISortableBlock {

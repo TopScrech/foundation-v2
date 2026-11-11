@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.core.wrappers
 
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 
 open class ScheduledDimensionChange
 constructor(private var player: EntityPlayerMP?, private var dimensionName: String?) {

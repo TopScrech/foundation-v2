@@ -6,12 +6,12 @@ import micdoodle8.mods.galacticraft.core.client.model.ModelEvolvedSpider
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSpider
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderEvolvedSpider constructor(manager: RenderManager) :
     RenderLiving<EntityEvolvedSpider>(manager, ModelEvolvedSpider(), 1.0f) {
     private var texSwitch = false
@@ -49,6 +49,6 @@ open class RenderEvolvedSpider constructor(manager: RenderManager) :
     }
 
     companion object {
-        private val spiderTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/spider.png")
+        private val spiderTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/spider.png")
     }
 }

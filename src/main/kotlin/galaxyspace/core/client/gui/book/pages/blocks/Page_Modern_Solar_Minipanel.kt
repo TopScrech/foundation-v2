@@ -5,8 +5,8 @@ import galaxyspace.api.IPage
 import galaxyspace.core.GSBlocks
 import galaxyspace.core.client.gui.book.BookRegister
 import galaxyspace.core.client.gui.book.pages.Page_AssemblerCraft
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
 
 @IPage
 open class Page_Modern_Solar_Minipanel : Page_AssemblerCraft() {

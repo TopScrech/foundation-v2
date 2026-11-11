@@ -1,5 +1,8 @@
 package galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
 import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.blocks.Barnarda_C1_Blocks.EnumBlockBarnardaC1
 import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.blocks.Barnarda_C1_Decorations.EnumBlockBarnardaC1Decoration
@@ -7,43 +10,43 @@ import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.blocks.Barnarda_C1_B
 import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.blocks.Barnarda_C1_Decorations
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
-import net.minecraft.block.material.MapColor
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.material.MapColor
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyBool
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.BooleanProperty as PropertyBool
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 
-open class Barnarda_C1_Decorations constructor() : Block(Material.ROCK), ISortableBlock {
+open class Barnarda_C1_Decorations constructor() : Block(Material.ROCK), ISortableBlock, LegacyBlockMetadata {
     init {
         this.setTranslationKey("barnarda_c1_decorations")
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(
+            this.blockState.getBaseState().setValue(
                 BASIC_TYPE,
                 EnumBlockBarnardaC1Decoration.ICY_DRIPSTONE_BASE
-            ).withProperty(UP, false)
+            ).setValue(UP, false)
         )
     }
 
@@ -73,24 +76,24 @@ open class Barnarda_C1_Decorations constructor() : Block(Material.ROCK), ISortab
     }
 
     override fun canPlaceBlockOnSide(world: World, pos: BlockPos, side: EnumFacing): Boolean {
-        return (world.getBlockState(pos.up()) === BRBlocks.BARNARDA_C1_BLOCKS.getDefaultState()
-            .withProperty(
+        return (world.getBlockState(pos.above()) === BRBlocks.BARNARDA_C1_BLOCKS.defaultBlockState()
+            .setValue(
                 Barnarda_C1_Blocks.Companion.BASIC_TYPE,
                 EnumBlockBarnardaC1.ICY_SUBSURFACE
-            ) || world.getBlockState(pos.down()) === BRBlocks.BARNARDA_C1_BLOCKS.getDefaultState()
-            .withProperty(
+            ) || world.getBlockState(pos.below()) === BRBlocks.BARNARDA_C1_BLOCKS.defaultBlockState()
+            .setValue(
                 Barnarda_C1_Blocks.Companion.BASIC_TYPE,
                 EnumBlockBarnardaC1.ICY_SUBSURFACE
-            ) || world.getBlockState(pos.up()).getBlock() === this || world.getBlockState(pos.down())
+            ) || world.getBlockState(pos.above()).getBlock() === this || world.getBlockState(pos.below())
             .getBlock() === this)
                 && (side == EnumFacing.UP || side == EnumFacing.DOWN)
     }
 
     override fun neighborChanged(state: IBlockState, world: World, pos: BlockPos, block: Block, fromPos: BlockPos) {
         if (state.getValue(UP)) {
-            if (world.isAirBlock(pos.up())) world.destroyBlock(pos, false)
+            if (world.isEmptyBlock(pos.above())) world.destroyBlock(pos, false)
         } else {
-            if (world.isAirBlock(pos.down())) world.destroyBlock(pos, false)
+            if (world.isEmptyBlock(pos.below())) world.destroyBlock(pos, false)
         }
     }
 
@@ -106,14 +109,14 @@ open class Barnarda_C1_Decorations constructor() : Block(Material.ROCK), ISortab
         hand: EnumHand
     ): IBlockState {
         val state: IBlockState = getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer)
-        return if (facing != EnumFacing.DOWN && (facing == EnumFacing.UP || hitY.toDouble() <= 0.5)) state.withProperty(
+        return if (facing != EnumFacing.DOWN && (facing == EnumFacing.UP || hitY.toDouble() <= 0.5)) state.setValue(
             UP,
             false
-        ) else state.withProperty(UP, true)
+        ) else state.setValue(UP, true)
         // return getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer);
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (blockBasic: EnumBlockBarnardaC1Decoration in EnumBlockBarnardaC1Decoration.entries) list.add(
             ItemStack(
@@ -147,7 +150,7 @@ open class Barnarda_C1_Decorations constructor() : Block(Material.ROCK), ISortab
         state: IBlockState,
         fortune: Int
     ) {
-        val rand: Random = if (world is World) world.rand else RANDOM
+        val rand: Random = if (world is World) world.random else RANDOM
 
         val count: Int = quantityDropped(state, fortune, rand)
         for (i: Int in 0..<count) {
@@ -166,7 +169,7 @@ open class Barnarda_C1_Decorations constructor() : Block(Material.ROCK), ISortab
         return EnumSortCategoryBlock.GENERAL
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.TRANSLUCENT
     }
@@ -195,7 +198,9 @@ open class Barnarda_C1_Decorations constructor() : Block(Material.ROCK), ISortab
             return this.sound
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -208,10 +213,10 @@ open class Barnarda_C1_Decorations constructor() : Block(Material.ROCK), ISortab
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(
+        return this.defaultBlockState().setValue(
             BASIC_TYPE,
             EnumBlockBarnardaC1Decoration.entries[meta % 5]
-        ).withProperty(UP, meta - 5 >= 0)
+        ).setValue(UP, meta - 5 >= 0)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {

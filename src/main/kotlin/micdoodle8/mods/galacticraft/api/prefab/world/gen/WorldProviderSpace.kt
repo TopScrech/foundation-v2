@@ -7,19 +7,19 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.JavaUtil
 import net.minecraft.command.CommandTime
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.entity.Entity
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraft.village.VillageCollection
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
 import net.minecraft.world.biome.BiomeProvider
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.gen.IChunkGenerator
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
@@ -145,22 +145,11 @@ abstract class WorldProviderSpace : WorldProvider(), IGalacticraftWorldProvider 
     }
 
     override fun getSoundVolReductionAmount(): Float {
-        val d: Float = (this.getCelestialBody())!!.atmosphere.relativeDensity()
-        if (d <= 0.0f) {
-            return 20.0f
-        }
-        if (d > 5.0f) {
-            return 0.2f
-        }
-        return 1.0f / d
+        return foundation.level.FoundationAtmosphere.soundReduction(this.getCelestialBody()!!.atmosphere.relativeDensity())
     }
 
     override fun getMeteorFrequency(): Double {
-        val d: Float = (this.getCelestialBody())!!.atmosphere.relativeDensity()
-        if (d <= 0.0f) {
-            return 5.0
-        }
-        return d * 100.0
+        return foundation.level.FoundationAtmosphere.meteorFrequency(this.getCelestialBody()!!.atmosphere.relativeDensity())
     }
 
     override fun getThermalLevelModifier(): Float {
@@ -197,25 +186,10 @@ abstract class WorldProviderSpace : WorldProvider(), IGalacticraftWorldProvider 
     }
 
     override fun calculateCelestialAngle(par1: Long, par3: Float): Float {
-        var par1: Long = par1
-        par1 = this.getWorldTime()
-        val j: Int = (par1 % this.getDayLength()).toInt()
-        var f1: Float = (j + par3) / this.getDayLength() - 0.25f
-
-        if (f1 < 0.0f) {
-            ++f1
-        }
-
-        if (f1 > 1.0f) {
-            --f1
-        }
-
-        val f2: Float = f1
-        f1 = 0.5f - MathHelper.cos(f1 * 3.1415927f) / 2.0f
-        return f2 + (f1 - f2) / 3.0f
+        return foundation.level.FoundationPlanetClocks.celestialAngle(this.getWorldTime(), par3, this.getDayLength())
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getFogColor(var1: Float, var2: Float): Vec3d {
         val fogColor: Vector3 = this.getFogColor()
         return Vec3d(fogColor.floatX().toDouble(), fogColor.floatY().toDouble(), fogColor.floatZ().toDouble())

@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.api.power
 
-import net.minecraft.util.EnumFacing
+import net.minecraft.core.Direction as EnumFacing
 
 abstract class EnergySource {
     open class EnergySourceWireless constructor(@JvmField val nodes: MutableList<ILaserNode?>?) : EnergySource()

@@ -8,13 +8,13 @@ import micdoodle8.mods.galacticraft.core.entities.EntityLanderBase
 import micdoodle8.mods.galacticraft.core.entities.IScaleableFuelLevel
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.particle.Particle
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class EntityEntryPod : EntityLanderBase, IScaleableFuelLevel, ICameraZoomEntity, IIgnoreShift {
@@ -73,8 +73,8 @@ open class EntityEntryPod : EntityLanderBase, IScaleableFuelLevel, ICameraZoomEn
     }
 
     override fun onGroundHit() {
-        val pos: BlockPos = BlockPos(this).up(2)
-        this.world.setBlockState(pos, (GCBlocks.brightAir)!!.getDefaultState(), 2)
+        val pos: BlockPos = BlockPos(this).above(2)
+        this.world.setBlock(pos, (GCBlocks.brightAir)!!.defaultBlockState(), 2)
     }
 
     override fun getMotionVec(): Vector3 {
@@ -101,8 +101,8 @@ open class EntityEntryPod : EntityLanderBase, IScaleableFuelLevel, ICameraZoomEn
         return false
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.entry_pod.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.entry_pod.name")
     }
 
     override fun hasCustomName(): Boolean {

@@ -7,7 +7,7 @@ import micdoodle8.mods.galacticraft.core.wrappers.ModelTransformWrapper
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.block.model.IBakedModel
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import javax.vecmath.Matrix4f
 import javax.vecmath.Vector3f
 
@@ -51,16 +51,16 @@ open class ItemModelFlag constructor(modelToWrap: IBakedModel?) : ModelTransform
             mul.rotY(-(Math.PI / 3.0f).toFloat())
             ret.mul(mul)
             mul.setIdentity()
-            val player: EntityLivingBase? = Minecraft.getMinecraft().player
-            if (player != null && player.isHandActive() && !player.getActiveItemStack().isEmpty()) {
-                val useTime: Int = Minecraft.getMinecraft().player.getItemInUseMaxCount()
+            val player: EntityLivingBase? = Minecraft.getInstance().player
+            if (player != null && player.isUsingItem() && !player.getUseItem().isEmpty()) {
+                val useTime: Int = Minecraft.getInstance().player.getTicksUsingItem()
                 var interpolate0: Float = useTime / 20.0f
                 interpolate0 = (interpolate0 * interpolate0 + interpolate0 * 2.0f) / 3.0f
 
                 if (interpolate0 > 1.0f) {
                     interpolate0 = 1.0f
                 }
-                val useTimeFuture: Int = Minecraft.getMinecraft().player.getItemInUseMaxCount() + 1
+                val useTimeFuture: Int = Minecraft.getInstance().player.getTicksUsingItem() + 1
                 var interpolate1: Float = useTimeFuture / 20.0f
                 interpolate1 = (interpolate1 * interpolate1 + interpolate1 * 2.0f) / 3.0f
 
@@ -68,7 +68,7 @@ open class ItemModelFlag constructor(modelToWrap: IBakedModel?) : ModelTransform
                     interpolate1 = 1.0f
                 }
                 mul.rotX(
-                    ((interpolate0 + (interpolate1 - interpolate0) * Minecraft.getMinecraft()
+                    ((interpolate0 + (interpolate1 - interpolate0) * Minecraft.getInstance()
                         .getRenderPartialTicks()) * 75.0f) / Constants.RADIANS_TO_DEGREES
                 )
             }

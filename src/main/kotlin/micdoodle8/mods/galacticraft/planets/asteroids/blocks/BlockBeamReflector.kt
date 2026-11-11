@@ -7,24 +7,24 @@ import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityBeamReflector
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.BlockFaceShape
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class BlockBeamReflector constructor(assetName: String?) : BlockTileGC(Material.IRON), IShiftDescription,
     ISortableBlock {
@@ -37,7 +37,7 @@ open class BlockBeamReflector constructor(assetName: String?) : BlockTileGC(Mate
         return AABB
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
@@ -79,7 +79,7 @@ open class BlockBeamReflector constructor(assetName: String?) : BlockTileGC(Mate
         return TileEntityBeamReflector()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         list.add(ItemStack(this, 1, 0))
     }
@@ -95,7 +95,7 @@ open class BlockBeamReflector constructor(assetName: String?) : BlockTileGC(Mate
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val tile: TileEntity? = (world)!!.getTileEntity(pos)
+        val tile: TileEntity? = (world)!!.getBlockEntity(pos)
 
         if (tile is TileEntityBeamReflector) {
             return tile.onMachineActivated(

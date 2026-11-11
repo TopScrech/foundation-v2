@@ -11,7 +11,7 @@ import micdoodle8.mods.galacticraft.core.Constants
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 
 open class SkyProviderEnceladus : SkyProviderBase() {
@@ -122,7 +122,7 @@ open class SkyProviderEnceladus : SkyProviderBase() {
     }
 
     override fun sunImage(): ResourceLocation {
-        return ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
+        return ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
     }
 
     override fun modeLight(): ModeLight {
@@ -142,11 +142,11 @@ open class SkyProviderEnceladus : SkyProviderBase() {
     }
 
     companion object {
-        private val saturnTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/saturn.png")
+        private val saturnTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/saturn.png")
         private val saturnRingsTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/saturn_rings.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/saturn_rings.png")
 
         private val titanTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/moons/titan.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/moons/titan.png")
     }
 }

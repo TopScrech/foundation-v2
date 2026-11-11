@@ -1,16 +1,18 @@
 package micdoodle8.mods.galacticraft.core.items
 
+import net.minecraft.network.chat.Component
+
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.Style
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.util.text.TextFormatting
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.network.chat.Style
+
+import net.minecraft.ChatFormatting as TextFormatting
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.client.FMLClientHandler
 import kotlin.math.abs
 
@@ -36,9 +38,9 @@ open class ItemBlockNasaWorkbench constructor(block: Block?) : ItemBlockDesc(blo
 
                             if ((y == 0 || y == 3) && x == 0 && z == 0) {
                                 if (!stateAt.getMaterial().isReplaceable()) {
-                                    if (world.isRemote) {
+                                    if (world.isClientSide) {
                                         FMLClientHandler.instance().getClient().ingameGUI.setOverlayMessage(
-                                            TextComponentString(GCCoreUtil.translate("gui.warning.noroom")).setStyle(
+                                            Component.literal(GCCoreUtil.translate("gui.warning.noroom")).setStyle(
                                                 Style().setColor(TextFormatting.RED)
                                             ).getFormattedText(),
                                             false
@@ -48,9 +50,9 @@ open class ItemBlockNasaWorkbench constructor(block: Block?) : ItemBlockDesc(blo
                                 }
                             } else if (y != 0 && y != 3) {
                                 if (!stateAt.getMaterial().isReplaceable()) {
-                                    if (world.isRemote) {
+                                    if (world.isClientSide) {
                                         FMLClientHandler.instance().getClient().ingameGUI.setOverlayMessage(
-                                            TextComponentString(GCCoreUtil.translate("gui.warning.noroom")).setStyle(
+                                            Component.literal(GCCoreUtil.translate("gui.warning.noroom")).setStyle(
                                                 Style().setColor(TextFormatting.RED)
                                             ).getFormattedText(),
                                             false

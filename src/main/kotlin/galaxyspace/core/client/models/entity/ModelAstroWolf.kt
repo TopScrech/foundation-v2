@@ -7,13 +7,13 @@ import micdoodle8.mods.galacticraft.core.util.OxygenUtil
 import net.minecraft.client.model.ModelBase
 import net.minecraft.client.model.ModelRenderer
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.util.math.MathHelper
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.util.Mth as MathHelper
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class ModelAstroWolf constructor() : ModelBase() {
     /** main box for the wolf head  */
     @JvmField
@@ -182,7 +182,7 @@ open class ModelAstroWolf constructor() : ModelBase() {
             this.wolfTail.renderWithRotation(scale)
             this.wolfMane.render(scale)
 
-            if (entitywolf.wolfInventory.getStackInSlot(0)
+            if (entitywolf.wolfInventory.getItem(0)
                     .getItem() === GCItems.oxMask && !OxygenUtil.isAABBInBreathableAirBlock(entitywolf)
             ) {
                 this.wolfHelmet.renderWithRotation(scale)
@@ -196,7 +196,7 @@ open class ModelAstroWolf constructor() : ModelBase() {
                 this.tube1_5.render(scale)
             }
 
-            if (entitywolf.wolfInventory.getStackInSlot(2).getItem() is ItemOxygenTank) this.oxBallon.render(scale)
+            if (entitywolf.wolfInventory.getItem(2).getItem() is ItemOxygenTank) this.oxBallon.render(scale)
 
             GlStateManager.popMatrix()
         } else {
@@ -208,7 +208,7 @@ open class ModelAstroWolf constructor() : ModelBase() {
             this.wolfLeg4.render(scale)
             this.wolfTail.renderWithRotation(scale)
             this.wolfMane.render(scale)
-            if (entitywolf.wolfInventory.getStackInSlot(0)
+            if (entitywolf.wolfInventory.getItem(0)
                     .getItem() === GCItems.oxMask && !OxygenUtil.isAABBInBreathableAirBlock(entitywolf)
             ) {
                 this.wolfHelmet.render(scale)
@@ -221,7 +221,7 @@ open class ModelAstroWolf constructor() : ModelBase() {
                 this.tube1_4.render(scale)
                 this.tube1_5.render(scale)
             }
-            if (entitywolf.wolfInventory.getStackInSlot(2).getItem() is ItemOxygenTank) this.oxBallon.render(scale)
+            if (entitywolf.wolfInventory.getItem(2).getItem() is ItemOxygenTank) this.oxBallon.render(scale)
         }
     }
 

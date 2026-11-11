@@ -16,17 +16,17 @@ import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
 import micdoodle8.mods.galacticraft.core.event.EventLandingPadRemoval
-import net.minecraft.block.Block
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.ItemStack
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fluids.FluidStack
 import kotlin.math.cos
@@ -47,7 +47,7 @@ open class EntityTier5Rocket : EntityTieredRocketWithEngine {
         rocketType: IRocketType.EnumRocketType?
     ) : super(par1World, par2, par4, par6, 5, rocketType) {
         this.rocketType = rocketType
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
     }
 
     constructor(
@@ -98,8 +98,8 @@ open class EntityTier5Rocket : EntityTieredRocketWithEngine {
                         (stats)!!.setLaunchpadStack(null)
 
                         if (this.world.provider !is IOrbitDimension) {
-                            (stats)!!.setCoordsTeleportedFromX(player.posX)
-                            (stats)!!.setCoordsTeleportedFromZ(player.posZ)
+                            (stats)!!.setCoordsTeleportedFromX(player.x)
+                            (stats)!!.setCoordsTeleportedFromZ(player.z)
                         }
                     }
                 }
@@ -122,7 +122,7 @@ open class EntityTier5Rocket : EntityTieredRocketWithEngine {
                                 MinecraftForge.EVENT_BUS.post(event)
 
                                 if (event.allow) {
-                                    this.world.setBlockToAir(pos)
+                                    this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                                     amountRemoved = 25
                                 }
                                 break@PADSEARCH

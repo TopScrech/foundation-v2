@@ -10,14 +10,14 @@ import micdoodle8.mods.galacticraft.api.transmission.tile.INetworkProvider
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
 import micdoodle8.mods.galacticraft.core.energy.grid.EnergyNetwork
 import micdoodle8.mods.galacticraft.core.tick.TickHandlerServer
-import net.minecraft.block.state.IBlockState
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 /**
  * This tile entity pre-fabricated for all conductors.
@@ -72,7 +72,7 @@ abstract class TileBaseConductor : TileEntity(), IConductor {
             this.getNetwork()!!.refresh()
 
             val thisVec: BlockVec3 = BlockVec3(this)
-            for (side: EnumFacing in EnumFacing.VALUES) {
+            for (side: EnumFacing in EnumFacing.values()) {
                 val tileEntity: TileEntity? = thisVec.getTileEntityOnSide(this.world, side)
 
                 if (tileEntity is TileBaseConductor && tileEntity.canConnect(side.getOpposite(), NetworkType.POWER)) {
@@ -96,7 +96,7 @@ abstract class TileBaseConductor : TileEntity(), IConductor {
 
             val thisVec: BlockVec3 = BlockVec3(this)
             for (i: Int in 0..5) {
-                val side: EnumFacing = EnumFacing.byIndex(i)
+                val side: EnumFacing = EnumFacing.from3DDataValue(i)
                 val tileEntity: TileEntity? = thisVec.getTileEntityOnSide(this.world, side)
 
                 if (tileEntity is IConnector) {
@@ -118,7 +118,7 @@ abstract class TileBaseConductor : TileEntity(), IConductor {
         return type == NetworkType.POWER
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         return AxisAlignedBB(
             this.getPos().getX().toDouble(),

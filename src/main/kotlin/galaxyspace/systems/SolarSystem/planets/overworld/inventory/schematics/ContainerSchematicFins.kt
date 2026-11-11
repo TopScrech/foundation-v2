@@ -7,15 +7,15 @@ import galaxyspace.core.util.GSRecipeUtil
 import galaxyspace.systems.SolarSystem.planets.overworld.inventory.schematics.InventorySchematicFins
 import galaxyspace.systems.SolarSystem.planets.overworld.inventory.schematics.SlotSchematicFins
 import micdoodle8.mods.galacticraft.core.inventory.SlotRocketBenchResult
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.Container as IInventory
 import net.minecraft.inventory.InventoryCraftResult
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 
 open class ContainerSchematicFins constructor(par1InventoryPlayer: InventoryPlayer, pos: BlockPos?) : Container() {
     @JvmField
@@ -28,7 +28,7 @@ open class ContainerSchematicFins constructor(par1InventoryPlayer: InventoryPlay
     init {
         val change: Int = 27
         this.worldObj = par1InventoryPlayer.player.world
-        this.addSlotToContainer(
+        this.addSlot(
             SlotRocketBenchResult(
                 par1InventoryPlayer.player,
                 this.craftMatrix,
@@ -46,7 +46,7 @@ open class ContainerSchematicFins constructor(par1InventoryPlayer: InventoryPlay
         while (var6 < 2) {
             var7 = 0
             while (var7 < 2) {
-                this.addSlotToContainer(
+                this.addSlot(
                     SlotSchematicFins(
                         this.craftMatrix,
                         var6 + var7 * 2 + 1,
@@ -67,7 +67,7 @@ open class ContainerSchematicFins constructor(par1InventoryPlayer: InventoryPlay
         while (var6 < 2) {
             var7 = 0
             while (var7 < 4) {
-                this.addSlotToContainer(
+                this.addSlot(
                     SlotSchematicFins(
                         this.craftMatrix,
                         var6 + var7 * 2 + 5,
@@ -87,7 +87,7 @@ open class ContainerSchematicFins constructor(par1InventoryPlayer: InventoryPlay
         while (var6 < 3) {
             var7 = 0
             while (var7 < 9) {
-                this.addSlotToContainer(
+                this.addSlot(
                     Slot(
                         par1InventoryPlayer,
                         var7 + var6 * 9 + 9,
@@ -102,17 +102,17 @@ open class ContainerSchematicFins constructor(par1InventoryPlayer: InventoryPlay
 
         var6 = 0
         while (var6 < 9) {
-            this.addSlotToContainer(Slot(par1InventoryPlayer, var6, 17 + var6 * 18, 18 + 184 + change))
+            this.addSlot(Slot(par1InventoryPlayer, var6, 17 + var6 * 18, 18 + 184 + change))
             ++var6
         }
 
-        this.onCraftMatrixChanged(this.craftMatrix)
+        this.slotsChanged(this.craftMatrix)
     }
 
-    override fun onContainerClosed(par1EntityPlayer: EntityPlayer) {
-        super.onContainerClosed(par1EntityPlayer)
+    override fun removed(par1EntityPlayer: EntityPlayer) {
+        super.removed(par1EntityPlayer)
 
-        if (!this.worldObj.isRemote) {
+        if (!this.worldObj.isClientSide) {
             for (var2: Int in 1..<this.craftMatrix.getSizeInventory()) {
                 val var3: ItemStack = this.craftMatrix.removeStackFromSlot(var2)
 
@@ -123,32 +123,32 @@ open class ContainerSchematicFins constructor(par1InventoryPlayer: InventoryPlay
         }
     }
 
-    override fun onCraftMatrixChanged(par1IInventory: IInventory) {
-        this.craftResult.setInventorySlotContents(
+    override fun slotsChanged(par1IInventory: IInventory) {
+        this.craftResult.setItem(
             0,
             GSUtils.findMatchingNASARecipe((GSRecipeUtil.getFinsRecipes() as MutableList<INasaWorkbenchRecipe>), this.craftMatrix)
         )
     }
 
-    override fun canInteractWith(par1EntityPlayer: EntityPlayer): Boolean {
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
         return true
     }
 
-    override fun transferStackInSlot(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
+    override fun quickMoveStack(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
         var var2: ItemStack = ItemStack.EMPTY
         val slot: Slot? = this.inventorySlots.get(par1)
         val b: Int = this.inventorySlots.size
 
-        if (slot != null && slot.getHasStack()) {
-            val var4: ItemStack = slot.getStack()
+        if (slot != null && slot.hasItem()) {
+            val var4: ItemStack = slot.getItem()
             var2 = var4.copy()
 
             if (par1 <= 12) {
-                if (!this.mergeItemStack(var4, 13, this.inventorySlots.size, false)) {
+                if (!this.moveItemStackTo(var4, 13, this.inventorySlots.size, false)) {
                     return ItemStack.EMPTY
                 }
                 if (par1 == 0) {
-                    slot.onSlotChange(var4, var2)
+                    slot.onQuickCraft(var4, var2)
                 }
             } else if (!this.mergeOneItem(var4, 1, 13, false)) {
                 return ItemStack.EMPTY
@@ -158,7 +158,7 @@ open class ContainerSchematicFins constructor(par1InventoryPlayer: InventoryPlay
                 if (par1 == 0) {
                     slot.onTake(par1EntityPlayer, var4)
                 }
-                slot.putStack(ItemStack.EMPTY)
+                slot.set(ItemStack.EMPTY)
                 return var2
             }
 
@@ -168,7 +168,7 @@ open class ContainerSchematicFins constructor(par1InventoryPlayer: InventoryPlay
 
             slot.onTake(par1EntityPlayer, var4)
             if (par1 == 0) {
-                slot.onSlotChanged()
+                slot.setChanged()
             }
         }
 
@@ -183,14 +183,14 @@ open class ContainerSchematicFins constructor(par1InventoryPlayer: InventoryPlay
 
             for (k: Int in par2..<par3) {
                 slot = this.inventorySlots.get(k) as Slot
-                slotStack = slot.getStack()
+                slotStack = slot.getItem()
 
                 if (slotStack == null) {
                     val stackOneItem: ItemStack = par1ItemStack.copy()
                     stackOneItem.setCount(1)
                     par1ItemStack.shrink(1)
-                    slot.putStack(stackOneItem)
-                    slot.onSlotChanged()
+                    slot.set(stackOneItem)
+                    slot.setChanged()
                     flag1 = true
                     break
                 }

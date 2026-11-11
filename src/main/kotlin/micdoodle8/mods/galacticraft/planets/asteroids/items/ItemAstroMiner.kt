@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.items
 
+import net.minecraft.network.chat.Component
+
 import micdoodle8.mods.galacticraft.api.item.IHoldableItem
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
@@ -14,23 +16,23 @@ import micdoodle8.mods.galacticraft.planets.asteroids.ConfigManagerAsteroids
 import micdoodle8.mods.galacticraft.planets.asteroids.blocks.AsteroidBlocks
 import micdoodle8.mods.galacticraft.planets.asteroids.entities.EntityAstroMiner
 import micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityMinerBase
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
+
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemAstroMiner constructor(assetName: String?) : Item(), IHoldableItem, ISortableItem {
     init {
@@ -40,12 +42,12 @@ open class ItemAstroMiner constructor(assetName: String?) : Item(), IHoldableIte
         //this.setTextureName("arrow");
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftItemsTab
     }
@@ -68,7 +70,7 @@ open class ItemAstroMiner constructor(assetName: String?) : Item(), IHoldableIte
             val id: Block = worldIn.getBlockState(pos).getBlock()
 
             if (id === GCBlocks.fakeBlock) {
-                tile = worldIn.getTileEntity(pos)
+                tile = worldIn.getBlockEntity(pos)
 
                 if (tile is TileEntityMulti) {
                     tile = tile.getMainBlockTile()
@@ -76,22 +78,22 @@ open class ItemAstroMiner constructor(assetName: String?) : Item(), IHoldableIte
             }
 
             if (id === AsteroidBlocks.minerBaseFull) {
-                tile = worldIn.getTileEntity(pos)
+                tile = worldIn.getBlockEntity(pos)
             }
 
             if (tile is TileEntityMinerBase) {
                 //Don't open GUI on client
-                if (worldIn.isRemote) {
+                if (worldIn.isClientSide) {
                     return EnumActionResult.FAIL
                 }
 
                 if (worldIn.provider is WorldProviderSpaceStation) {
-                    playerIn.sendMessage(TextComponentString(GCCoreUtil.translate("gui.message.astro_miner7.fail")))
+                    playerIn.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.message.astro_miner7.fail")))
                     return EnumActionResult.FAIL
                 }
 
                 if (tile.getLinkedMiner() != null) {
-                    playerIn.sendMessage(TextComponentString(GCCoreUtil.translate("gui.message.astro_miner.fail")))
+                    playerIn.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.message.astro_miner.fail")))
                     return EnumActionResult.FAIL
                 }
 
@@ -105,13 +107,13 @@ open class ItemAstroMiner constructor(assetName: String?) : Item(), IHoldableIte
 
                 val astroCount: Int = stats.getAstroMinerCount()
                 if (astroCount >= ConfigManagerAsteroids.astroMinerMax && (!playerIn.capabilities.isCreativeMode)) {
-                    playerIn.sendMessage(TextComponentString(GCCoreUtil.translate("gui.message.astro_miner2.fail")))
+                    playerIn.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.message.astro_miner2.fail")))
                     return EnumActionResult.FAIL
                 }
 
                 if (!tile.spawnMiner(playerMP)) {
-                    playerIn.sendMessage(
-                        TextComponentString(
+                    playerIn.sendSystemMessage(
+                        Component.literal(
                             GCCoreUtil.translate("gui.message.astro_miner1.fail") + " " + GCCoreUtil.translate(
                                 EntityAstroMiner.blockingBlock.toString()
                             )
@@ -122,7 +124,7 @@ open class ItemAstroMiner constructor(assetName: String?) : Item(), IHoldableIte
 
                 if (!playerIn.capabilities.isCreativeMode) {
                     stats.setAstroMinerCount(stats.getAstroMinerCount() + 1)
-                    playerIn.getHeldItem(hand).shrink(1)
+                    playerIn.getItemInHand(hand).shrink(1)
                 }
                 return EnumActionResult.SUCCESS
             }
@@ -130,7 +132,7 @@ open class ItemAstroMiner constructor(assetName: String?) : Item(), IHoldableIte
         return EnumActionResult.PASS
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(
         par1ItemStack: ItemStack,
         worldIn: World?,

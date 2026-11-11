@@ -13,13 +13,13 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.event.EventHandlerGC
 import micdoodle8.mods.galacticraft.core.world.gen.ChunkProviderMoon
 import micdoodle8.mods.galacticraft.core.world.gen.dungeon.RoomTreasure
-import net.minecraft.block.Block
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
+import net.minecraft.world.level.block.Block
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.gen.IChunkGenerator
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.*
 
 open class WorldProviderMoon : WorldProviderSpace(), IGalacticraftWorldProvider, ISolarLevel {
@@ -47,7 +47,7 @@ open class WorldProviderMoon : WorldProviderSpace(), IGalacticraftWorldProvider,
         return ChunkProviderMoon::class.java
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val var2: Float = this.world.getCelestialAngle(par1)
         var var3: Float = 1.0f - (MathHelper.cos(var2 * Constants.twoPI) * 2.0f + 0.25f)

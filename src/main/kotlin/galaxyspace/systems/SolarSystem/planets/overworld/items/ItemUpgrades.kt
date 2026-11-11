@@ -1,16 +1,18 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items
 
+import foundation.item.legacyItemValue
+
 import galaxyspace.core.util.GSCreativeTabs
 import micdoodle8.mods.galacticraft.core.items.ISortableItem
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.NonNullList
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.NonNullList
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemUpgrades constructor() : Item(), ISortableItem {
     init {
@@ -28,13 +30,13 @@ open class ItemUpgrades constructor() : Item(), ISortableItem {
     }
 
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(stack: ItemStack, worldIn: World?, list: MutableList<String?>, flagIn: ITooltipFlag) {
-        val n: Int = stack.getItemDamage()
+        val n: Int = stack.legacyItemValue
     }
 
     override fun getTranslationKey(par1ItemStack: ItemStack): String {
-        return "item." + names[par1ItemStack.getItemDamage()]
+        return "item." + names[par1ItemStack.legacyItemValue]
     }
 
     override fun getMetadata(meta: Int): Int {

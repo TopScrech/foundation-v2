@@ -8,9 +8,9 @@ import micdoodle8.mods.galacticraft.core.client.gui.container.GuiContainerGC
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
 import org.lwjgl.opengl.GL11
 
 open class GuiSchematicBody constructor(par1InventoryPlayer: InventoryPlayer, pos: BlockPos?) :
@@ -100,8 +100,8 @@ open class GuiSchematicBody constructor(par1InventoryPlayer: InventoryPlayer, po
 
     companion object {
         private val SchematicTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/schematics/schematic_clear.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/schematics/schematic_clear.png")
         private val BodyTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/schematics/schematic_parts.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/schematics/schematic_parts.png")
     }
 }

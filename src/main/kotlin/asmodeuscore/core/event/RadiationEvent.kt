@@ -1,7 +1,7 @@
 package asmodeuscore.core.event
 
 import asmodeuscore.core.event.RadiationEvent
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraftforge.event.entity.EntityEvent
 import net.minecraftforge.fml.common.eventhandler.Cancelable
 

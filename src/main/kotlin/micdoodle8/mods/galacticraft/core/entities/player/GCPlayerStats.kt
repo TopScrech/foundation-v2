@@ -4,13 +4,13 @@ import micdoodle8.mods.galacticraft.api.recipe.ISchematicPage
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.inventory.InventoryExtended
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.NonNullList
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.NonNullList
 import java.lang.ref.WeakReference
 import java.util.HashMap
 

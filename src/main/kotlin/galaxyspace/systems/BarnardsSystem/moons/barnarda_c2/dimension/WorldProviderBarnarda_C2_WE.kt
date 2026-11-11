@@ -19,19 +19,19 @@ import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.client.CloudRenderer
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.block.Block
-import net.minecraft.init.Blocks
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.biome.BiomeProvider
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class WorldProviderBarnarda_C2_WE : WE_WorldProviderSpace(), IProviderFreeze {
     override fun getHorizon(): Double {
@@ -70,7 +70,7 @@ open class WorldProviderBarnarda_C2_WE : WE_WorldProviderSpace(), IProviderFreez
         return WE_BiomeProvider::class.java
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCloudHeight(): Float {
         return 180.0f
     }
@@ -79,13 +79,13 @@ open class WorldProviderBarnarda_C2_WE : WE_WorldProviderSpace(), IProviderFreez
         return true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getFogColor(): Vector3 {
         val f: Float = 1.0f - this.getStarBrightness(1.0f)
         return Vector3((160 / 255.0f * f).toDouble(), (167 / 255.0f * f).toDouble(), (190 / 255.0f * f).toDouble())
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyColor(): Vector3 {
         return Vector3(0.0)
     }
@@ -102,7 +102,7 @@ open class WorldProviderBarnarda_C2_WE : WE_WorldProviderSpace(), IProviderFreez
         return !ConfigManagerCore.forceOverworldRespawn
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val f: Float = this.world.getCelestialAngle(par1)
         var f1: Float = 1.0f - (MathHelper.cos(f * (Math.PI.toFloat() * 2f)) * 2.0f + 0.25f)
@@ -110,7 +110,7 @@ open class WorldProviderBarnarda_C2_WE : WE_WorldProviderSpace(), IProviderFreez
         return f1 * f1 * 0.5f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSunBrightness(par1: Float): Float {
         val f1: Float = this.world.getCelestialAngle(1.0f)
         var f2: Float = 1.0f - (MathHelper.cos(f1 * 3.1415927f * 2.0f) * 2.0f + 0.2f)
@@ -124,7 +124,7 @@ open class WorldProviderBarnarda_C2_WE : WE_WorldProviderSpace(), IProviderFreez
         return CloudRenderer()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyRenderer(): IRenderHandler? {
         if (super.getSkyRenderer() == null) {
             this.setSkyRenderer(SkyProviderAsteroids())
@@ -157,9 +157,9 @@ open class WorldProviderBarnarda_C2_WE : WE_WorldProviderSpace(), IProviderFreez
 
 
         val terrainGenerator: WE_TerrainGenerator = WE_TerrainGenerator()
-        terrainGenerator.worldStoneBlock = Blocks.STONE.getDefaultState()
+        terrainGenerator.worldStoneBlock = Blocks.STONE.defaultBlockState()
         terrainGenerator.worldSeaGen = true
-        terrainGenerator.worldSeaGenBlock = Blocks.LAVA.getDefaultState()
+        terrainGenerator.worldSeaGenBlock = Blocks.LAVA.defaultBlockState()
         terrainGenerator.worldSeaGenMaxY = 64
         (cp)!!.createChunkGen_List.add(terrainGenerator)
 
@@ -177,7 +177,7 @@ open class WorldProviderBarnarda_C2_WE : WE_WorldProviderSpace(), IProviderFreez
         val rg: WE_RavineGen = WE_RavineGen()
         rg.replaceBlocksList.clear()
         rg.addReplacingBlock(terrainGenerator.worldStoneBlock)
-        rg.lavaBlock = Blocks.LAVA.getDefaultState()
+        rg.lavaBlock = Blocks.LAVA.defaultBlockState()
         rg.lavaMaxY = 15
         rg.range = 32
         (cp)!!.createChunkGen_List.add(rg)
@@ -186,9 +186,9 @@ open class WorldProviderBarnarda_C2_WE : WE_WorldProviderSpace(), IProviderFreez
         cp.biomesList.clear()
 
         val layer: WE_BiomeLayer = WE_BiomeLayer()
-        layer.add(Blocks.BEDROCK.getDefaultState(), 0, 0, 1, 2, true)
-        layer.add(Blocks.OBSIDIAN.getDefaultState(), terrainGenerator.worldStoneBlock, -256, 0, -4, -10, true)
-        layer.add(Blocks.COAL_BLOCK.getDefaultState(), Blocks.OBSIDIAN.getDefaultState(), -256, 0, -2, -1, false)
+        layer.add(Blocks.BEDROCK.defaultBlockState(), 0, 0, 1, 2, true)
+        layer.add(Blocks.OBSIDIAN.defaultBlockState(), terrainGenerator.worldStoneBlock, -256, 0, -4, -10, true)
+        layer.add(Blocks.COAL_BLOCK.defaultBlockState(), Blocks.OBSIDIAN.defaultBlockState(), -256, 0, -2, -1, false)
 
 
         WE_Biome.addBiomeToGeneration(cp, WE_BaseBiome(0.0, 2.0, 1.8, 4, 64, 10, layer))

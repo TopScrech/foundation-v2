@@ -6,8 +6,8 @@ import galaxyspace.core.GSItems
 import galaxyspace.core.prefab.tile.TileEntityElectricInventory
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.item.ItemStack
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.world.item.ItemStack
+import net.minecraftforge.fml.LogicalSide as Side
 
 abstract class TileEntityUpgradeMachine(tileName: String?) : TileEntityElectricInventory(tileName) {
     private var boost_speed = 0
@@ -44,11 +44,11 @@ abstract class TileEntityUpgradeMachine(tileName: String?) : TileEntityElectricI
         }
     }
 
-    public override fun getInventoryStackLimit(): Int {
+    public override fun getMaxStackSize(): Int {
         return 64
     }
 
-    public override fun getStackInSlot(var1: Int): ItemStack {
+    public override fun getItem(var1: Int): ItemStack {
         return this.getInventory().get(var1)
     }
 
@@ -57,7 +57,7 @@ abstract class TileEntityUpgradeMachine(tileName: String?) : TileEntityElectricI
     }
 
     override fun getBatteryInSlot(): ItemStack? {
-        return this.getStackInSlot(0)
+        return this.getItem(0)
     }
 
     fun getBoost(): Int {

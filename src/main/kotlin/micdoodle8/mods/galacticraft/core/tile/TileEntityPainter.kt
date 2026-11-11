@@ -1,6 +1,13 @@
 package micdoodle8.mods.galacticraft.core.tile
 
-import net.minecraft.item.EnumDyeColor
+import foundation.item.legacyItemValue
+
+import net.minecraft.world.ContainerHelper
+import foundation.block.getStateFromMeta
+
+import foundation.persistence.containsTag
+
+import net.minecraft.world.item.DyeColor as EnumDyeColor
 
 import io.netty.buffer.ByteBuf
 import micdoodle8.mods.galacticraft.api.item.IPaintable
@@ -15,23 +22,23 @@ import micdoodle8.mods.galacticraft.core.network.PacketDynamic
 import micdoodle8.mods.galacticraft.core.util.ColorUtil
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
-import net.minecraft.block.Block
-import net.minecraft.block.material.MapColor
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Items
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.material.MapColor
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.Items
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.Item
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemBlock
 import net.minecraft.item.ItemDye
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.fml.LogicalSide as Side
 import java.lang.Exception
 import java.util.ArrayList
 import java.util.HashMap
@@ -39,7 +46,7 @@ import java.util.HashSet
 
 //import net.minecraft.item.EnumDyeColor;
 open class TileEntityPainter : TileEntity(), IDisableableMachine, IInventoryDefaults, IPacketReceiver {
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent? = super<TileEntity>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = super<TileEntity>.getDisplayName()
 
     @JvmField
     var range: Int = RANGE_DEFAULT //currently unused
@@ -50,7 +57,7 @@ open class TileEntityPainter : TileEntity(), IDisableableMachine, IInventoryDefa
     @JvmField
     val playersUsing: MutableSet<EntityPlayer> = HashSet<EntityPlayer>()
     private val containingItems: NonNullList<ItemStack> =
-        NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
 
     @JvmField
     var guiColor: Int = 0xffffff
@@ -64,10 +71,10 @@ open class TileEntityPainter : TileEntity(), IDisableableMachine, IInventoryDefa
         val item: Item = itemStack.getItem()
         var color: Int = -1
         if (item === Items.DYE) {
-            color = ItemDye.DYE_COLORS[itemStack.getItemDamage()]
+            color = ItemDye.DYE_COLORS[itemStack.legacyItemValue]
         } else if (item is ItemBlock) {
             val b: Block = item.getBlock()
-            val bs: IBlockState = b.getStateFromMeta(itemStack.getItemDamage())
+            val bs: IBlockState = b.getStateFromMeta(itemStack.legacyItemValue)
             try {
                 val mc: MapColor = b.getMapColor(bs, null, null)
                 color = mc.colorValue
@@ -131,12 +138,12 @@ open class TileEntityPainter : TileEntity(), IDisableableMachine, IInventoryDefa
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        if (nbt.hasKey("guic")) {
-            this.glassColor[0] = nbt.getInteger("G1")
-            this.glassColor[1] = nbt.getInteger("G2")
-            this.glassColor[2] = nbt.getInteger("G3")
-            this.range = nbt.getInteger("rge")
-            this.guiColor = nbt.getInteger("guic")
+        if (nbt.containsTag("guic")) {
+            this.glassColor[0] = nbt.getIntOr("G1", 0)
+            this.glassColor[1] = nbt.getIntOr("G2", 0)
+            this.glassColor[2] = nbt.getIntOr("G3", 0)
+            this.range = nbt.getIntOr("rge", 0)
+            this.guiColor = nbt.getIntOr("guic", 0)
         }
 
         ItemStackHelper.loadAllItems(nbt, this.containingItems)
@@ -144,11 +151,11 @@ open class TileEntityPainter : TileEntity(), IDisableableMachine, IInventoryDefa
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setInteger("G1", this.glassColor[0])
-        nbt.setInteger("G2", this.glassColor[1])
-        nbt.setInteger("G3", this.glassColor[2])
-        nbt.setInteger("guic", this.guiColor)
-        nbt.setInteger("rge", this.range)
+        nbt.putInt("G1", this.glassColor[0])
+        nbt.putInt("G2", this.glassColor[1])
+        nbt.putInt("G3", this.glassColor[2])
+        nbt.putInt("guic", this.guiColor)
+        nbt.putInt("rge", this.range)
 
         ItemStackHelper.saveAllItems(nbt, this.containingItems)
         return nbt
@@ -185,12 +192,12 @@ open class TileEntityPainter : TileEntity(), IDisableableMachine, IInventoryDefa
         return oldState.getBlock() !== newSate.getBlock()
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("tile.machine3.9.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("tile.machine3.9.name")
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
     }
@@ -204,8 +211,8 @@ open class TileEntityPainter : TileEntity(), IDisableableMachine, IInventoryDefa
 
     open fun buttonPressed(index: Int, player: EntityPlayer?, side: Side?) {
         when (index) {
-            0 -> this.applyColorToItem(this.getStackInSlot(1), this.guiColor, side, player)
-            1 -> this.takeColorFromItem(this.getStackInSlot(0))
+            0 -> this.applyColorToItem(this.getItem(1), this.guiColor, side, player)
+            1 -> this.takeColorFromItem(this.getItem(0))
             2 -> this.guiColor = 0xffffff
         }
     }
@@ -214,47 +221,47 @@ open class TileEntityPainter : TileEntity(), IDisableableMachine, IInventoryDefa
         return false
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return 2
     }
 
-    override fun isItemValidForSlot(index: Int, stack: ItemStack): Boolean {
+    override fun canPlaceItem(index: Int, stack: ItemStack): Boolean {
         return false
     }
 
-    override fun getStackInSlot(par1: Int): ItemStack {
+    override fun getItem(par1: Int): ItemStack {
         return this.containingItems.get(par1)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.containingItems, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.containingItems, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        val oldstack: ItemStack = ItemStackHelper.getAndRemove(this.containingItems, index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        val oldstack: ItemStack = ContainerHelper.takeItem(this.containingItems, index)
         if (!oldstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
         return oldstack
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.containingItems.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 

@@ -5,22 +5,22 @@ import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.texture.TextureManager
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
 import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 
 object RenderPlanet {
     private val renderEngine: TextureManager = FMLClientHandler.instance().getClient().renderEngine
 
-    private val textureEuropa = ResourceLocation(Constants.ASSET_PREFIX, "textures/misc/planets/europa.png")
-    private val textureGanymede = ResourceLocation(Constants.ASSET_PREFIX, "textures/misc/planets/ganymede.png")
-    private val textureIo = ResourceLocation(Constants.ASSET_PREFIX, "textures/misc/planets/io.png")
-    private val textureSaturn = ResourceLocation(Constants.ASSET_PREFIX, "textures/misc/planets/saturn.png")
+    private val textureEuropa = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/misc/planets/europa.png")
+    private val textureGanymede = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/misc/planets/ganymede.png")
+    private val textureIo = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/misc/planets/io.png")
+    private val textureSaturn = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/misc/planets/saturn.png")
     private val textureJupiterInner =
-        ResourceLocation(Constants.ASSET_PREFIX, "textures/misc/planets/jupiter_inner.png")
+        ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/misc/planets/jupiter_inner.png")
     private val textureJupiterUpper =
-        ResourceLocation(Constants.ASSET_PREFIX, "textures/misc/planets/jupiter_upper.png")
+        ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/misc/planets/jupiter_upper.png")
 
     @JvmStatic
     fun renderPlanet(textureId: Int, scale: Float, ticks: Float, relSize: Float) {

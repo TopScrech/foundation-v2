@@ -9,23 +9,22 @@ import galaxyspace.GalaxySpace
 import micdoodle8.mods.galacticraft.api.event.client.CelestialBodyRenderEvent
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import net.minecraft.client.Minecraft
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class GSMapHandler {
-    //private static final ResourceLocation acrdisk = new ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/acrdisk.png");
+    //private static final ResourceLocation acrdisk = new ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/acrdisk.png");
     @JvmField
-    val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+    val minecraft: Minecraft = Minecraft.getInstance()
 
     @JvmField
     var rand: Random? = null
 
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onBodyRender(renderEvent: CelestialBodyRenderEvent.Pre) {
         if (renderEvent.celestialBody == SolarSystemBodies.planetKuiperBelt) {
@@ -41,7 +40,7 @@ open class GSMapHandler {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onRenderPlanetPost(event: CelestialBodyRenderEvent.Post) {
         //FIXME TEMP
@@ -107,9 +106,9 @@ open class GSMapHandler {
     }
 
     companion object {
-        //private static final ResourceLocation saturnRingTexture = new ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/saturn_rings.png");    
-        //private static final ResourceLocation uranusRingTexture = new ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/uranus_rings.png");
+        //private static final ResourceLocation saturnRingTexture = new ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/saturn_rings.png");
+        //private static final ResourceLocation uranusRingTexture = new ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/uranus_rings.png");
         private val haumeaRingTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/haumea_rings.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/haumea_rings.png")
     }
 }

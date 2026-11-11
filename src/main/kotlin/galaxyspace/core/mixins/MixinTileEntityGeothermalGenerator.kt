@@ -12,9 +12,9 @@ import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
 import micdoodle8.mods.galacticraft.planets.venus.VenusModule
 import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntityGeothermalGenerator
-import net.minecraft.block.state.IBlockState
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
 import org.spongepowered.asm.mixin.Mixin
 import kotlin.math.floor
 import kotlin.math.max
@@ -55,7 +55,7 @@ open class MixinTileEntityGeothermalGenerator {
             //ReflectionHelper.setPrivateValue(TileEntityGeothermalGenerator.class, te, validSpoutHook, "validSpout");
             validSpout = validSpoutHook
             if (stateBelow.getBlock() is IEnergyGeyser) {
-                var pos1: BlockPos = below.down()
+                var pos1: BlockPos = below.below()
                 while (te.getPos().getY() - pos1.getY() < 20) {
                     val state: IBlockState = te.getWorld().getBlockState(pos1)
                     val geyser: IEnergyGeyser = stateBelow.getBlock() as IEnergyGeyser
@@ -70,10 +70,10 @@ open class MixinTileEntityGeothermalGenerator {
                         // Not valid
                         break
                     }
-                    pos1 = pos1.down()
+                    pos1 = pos1.below()
                 }
             } else if (stateBelow.getBlock() === VenusBlocks.spout) {
-                var pos1: BlockPos = below.down()
+                var pos1: BlockPos = below.below()
                 while (te.getPos().getY() - pos1.getY() < 20) {
                     val state: IBlockState = te.getWorld().getBlockState(pos1)
                     if (state.getBlock() === (VenusModule.sulphuricAcid)!!.getBlock()) {
@@ -84,7 +84,7 @@ open class MixinTileEntityGeothermalGenerator {
                     if (!state.getBlock().isAir(te.getWorld().getBlockState(pos1), te.getWorld(), pos1)) {
                         break
                     }
-                    pos1 = pos1.down()
+                    pos1 = pos1.below()
                 }
             }
 
@@ -96,7 +96,7 @@ open class MixinTileEntityGeothermalGenerator {
         }
 
         if (!te.getWorld().isRemote) {
-            te.recharge(te.getStackInSlot(0) as ItemStack?)
+            te.recharge(te.getItem(0) as ItemStack?)
             if (te.disableCooldown > 0) {
                 --te.disableCooldown
             }

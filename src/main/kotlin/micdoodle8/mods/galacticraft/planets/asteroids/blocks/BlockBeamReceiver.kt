@@ -1,5 +1,11 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.blocks
 
+import net.minecraft.network.chat.Component
+
+import foundation.block.LegacyBlockMetadata
+
+import foundation.level.offset
+
 import micdoodle8.mods.galacticraft.api.transmission.tile.IConductor
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.blocks.BlockTileGC
@@ -11,33 +17,35 @@ import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityBeamReceiver
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyDirection
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class BlockBeamReceiver constructor(assetName: String?) : BlockTileGC(Material.IRON), IShiftDescription,
-    ISortableBlock {
+    ISortableBlock, LegacyBlockMetadata {
     init {
         this.setTranslationKey(assetName)
         this.setSoundType(SoundType.METAL)
@@ -55,23 +63,23 @@ open class BlockBeamReceiver constructor(assetName: String?) : BlockTileGC(Mater
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
 
     override fun neighborChanged(state: IBlockState, worldIn: World, pos: BlockPos, blockIn: Block, fromPos: BlockPos) {
         val oldMeta: Int = getMetaFromState(worldIn.getBlockState(pos))
-        val meta: Int = this.getMetadataFromAngle(worldIn, pos, EnumFacing.byIndex(oldMeta).getOpposite())
+        val meta: Int = this.getMetadataFromAngle(worldIn, pos, EnumFacing.from3DDataValue(oldMeta).getOpposite())
 
         if (meta == -1) {
             worldIn.destroyBlock(pos, true)
         } else if (meta != oldMeta) {
-            worldIn.setBlockState(pos, getStateFromMeta(meta), 3)
-            val thisTile: TileEntity? = worldIn.getTileEntity(pos)
+            worldIn.setBlock(pos, getStateFromMeta(meta), 3)
+            val thisTile: TileEntity? = worldIn.getBlockEntity(pos)
             if (thisTile is TileEntityBeamReceiver) {
                 val thisReceiver: TileEntityBeamReceiver = thisTile
-                thisReceiver.setFacing(EnumFacing.byIndex(meta))
+                thisReceiver.setFacing(EnumFacing.from3DDataValue(meta))
                 thisReceiver.invalidateReflector()
                 thisReceiver.initiateReflector()
             }
@@ -81,9 +89,9 @@ open class BlockBeamReceiver constructor(assetName: String?) : BlockTileGC(Mater
     }
 
     override fun onBlockAdded(world: World, pos: BlockPos, state: IBlockState) {
-        val thisTile: TileEntity? = world.getTileEntity(pos)
+        val thisTile: TileEntity? = world.getBlockEntity(pos)
         if (thisTile is TileEntityBeamReceiver) {
-            thisTile.setFacing(EnumFacing.byIndex(getMetaFromState(state)))
+            thisTile.setFacing(EnumFacing.from3DDataValue(getMetaFromState(state)))
         }
     }
 
@@ -94,7 +102,7 @@ open class BlockBeamReceiver constructor(assetName: String?) : BlockTileGC(Mater
     //
     //        if (meta != -1)
     //        {
-    //            EnumFacing dir = EnumFacing.byIndex(meta);
+    //            EnumFacing dir = EnumFacing.from3DDataValue(meta);
     //
     //            switch (dir)
     //            {
@@ -131,11 +139,11 @@ open class BlockBeamReceiver constructor(assetName: String?) : BlockTileGC(Mater
     private fun getMetadataFromAngle(world: World, pos: BlockPos, side: EnumFacing): Int {
         val direction: EnumFacing = side.getOpposite()
 
-        var tileAt: TileEntity? = world.getTileEntity(
-            pos.add(
-                direction.getXOffset(),
-                direction.getYOffset(),
-                direction.getZOffset()
+        var tileAt: TileEntity? = world.getBlockEntity(
+            pos.offset(
+                direction.getStepX(),
+                direction.getStepY(),
+                direction.getStepZ()
             )
         )
 
@@ -151,15 +159,15 @@ open class BlockBeamReceiver constructor(assetName: String?) : BlockTileGC(Mater
             return direction.ordinal
         }
 
-        for (adjacentDir: EnumFacing in EnumFacing.VALUES) {
+        for (adjacentDir: EnumFacing in EnumFacing.values()) {
             if (adjacentDir == direction) {
                 continue
             }
-            tileAt = world.getTileEntity(
-                pos.add(
-                    adjacentDir.getXOffset(),
-                    adjacentDir.getYOffset(),
-                    adjacentDir.getZOffset()
+            tileAt = world.getBlockEntity(
+                pos.offset(
+                    adjacentDir.getStepX(),
+                    adjacentDir.getStepY(),
+                    adjacentDir.getStepZ()
                 )
             )
 
@@ -198,17 +206,17 @@ open class BlockBeamReceiver constructor(assetName: String?) : BlockTileGC(Mater
             return true
         }
 
-        if (worldIn.isRemote) {
+        if (worldIn.isClientSide) {
             this.sendIncorrectSideMessage()
         }
 
         return false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private fun sendIncorrectSideMessage() {
         FMLClientHandler.instance()
-            .getClient().player.sendMessage(TextComponentString(EnumColor.RED.toString() + GCCoreUtil.translate("gui.receiver.cannot_attach")))
+            .getClient().player.sendMessage(Component.literal(EnumColor.RED.toString() + GCCoreUtil.translate("gui.receiver.cannot_attach")))
     }
 
     override fun isOpaqueCube(state: IBlockState): Boolean {
@@ -240,7 +248,7 @@ open class BlockBeamReceiver constructor(assetName: String?) : BlockTileGC(Mater
         return TileEntityBeamReceiver()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         list.add(ItemStack(this, 1, 0))
     }
@@ -257,7 +265,7 @@ open class BlockBeamReceiver constructor(assetName: String?) : BlockTileGC(Mater
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val tile: TileEntity? = (worldIn)!!.getTileEntity(pos)
+        val tile: TileEntity? = (worldIn)!!.getBlockEntity(pos)
 
         if (tile is TileEntityBeamReceiver) {
             return tile.onMachineActivated(worldIn, pos, state, playerIn, hand, heldItem, side, hitX, hitY, hitZ)
@@ -275,8 +283,8 @@ open class BlockBeamReceiver constructor(assetName: String?) : BlockTileGC(Mater
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        val enumfacing: EnumFacing = EnumFacing.byIndex(meta)
-        return this.getDefaultState().withProperty(FACING, enumfacing)
+        val enumfacing: EnumFacing = EnumFacing.from3DDataValue(meta)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -293,7 +301,7 @@ open class BlockBeamReceiver constructor(assetName: String?) : BlockTileGC(Mater
 
     companion object {
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing")
+        val FACING: EnumProperty<Direction> = BlockStateProperties.FACING
 
         @JvmField
         protected val UP_AABB: AxisAlignedBB = AxisAlignedBB(0.3, 0.3, 0.3, 0.7, 1.0, 0.7)

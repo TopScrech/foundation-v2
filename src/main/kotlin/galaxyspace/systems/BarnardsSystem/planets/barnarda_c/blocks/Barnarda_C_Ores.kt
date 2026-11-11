@@ -1,50 +1,53 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Ores.EnumBlockBarnardaCOres
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Ores
 import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
-open class Barnarda_C_Ores constructor() : Block(Material.ROCK), ISortableBlock {
+open class Barnarda_C_Ores constructor() : Block(Material.ROCK), ISortableBlock, LegacyBlockMetadata {
     init {
         this.setTranslationKey("barnarda_c_ores")
         this.setSoundType(SoundType.STONE)
         this.setHarvestLevel(
             "pickaxe",
             0,
-            this.getDefaultState()
-                .withProperty(BASIC_TYPE, EnumBlockBarnardaCOres.COAL)
+            this.defaultBlockState()
+                .setValue(BASIC_TYPE, EnumBlockBarnardaCOres.COAL)
         )
         this.setHarvestLevel(
             "pickaxe",
             1,
-            this.getDefaultState()
-                .withProperty(BASIC_TYPE, EnumBlockBarnardaCOres.IRON)
+            this.defaultBlockState()
+                .setValue(BASIC_TYPE, EnumBlockBarnardaCOres.IRON)
         )
         this.setHarvestLevel(
             "pickaxe",
             1,
-            this.getDefaultState().withProperty(
+            this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockBarnardaCOres.COPPER
             )
@@ -52,13 +55,13 @@ open class Barnarda_C_Ores constructor() : Block(Material.ROCK), ISortableBlock 
         this.setHarvestLevel(
             "pickaxe",
             1,
-            this.getDefaultState()
-                .withProperty(BASIC_TYPE, EnumBlockBarnardaCOres.TIN)
+            this.defaultBlockState()
+                .setValue(BASIC_TYPE, EnumBlockBarnardaCOres.TIN)
         )
         this.setHarvestLevel(
             "pickaxe",
             1,
-            this.getDefaultState().withProperty(
+            this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockBarnardaCOres.LAPIS
             )
@@ -66,13 +69,13 @@ open class Barnarda_C_Ores constructor() : Block(Material.ROCK), ISortableBlock 
         this.setHarvestLevel(
             "pickaxe",
             2,
-            this.getDefaultState()
-                .withProperty(BASIC_TYPE, EnumBlockBarnardaCOres.GOLD)
+            this.defaultBlockState()
+                .setValue(BASIC_TYPE, EnumBlockBarnardaCOres.GOLD)
         )
         this.setHarvestLevel(
             "pickaxe",
             2,
-            this.getDefaultState().withProperty(
+            this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockBarnardaCOres.REDSTONE
             )
@@ -80,7 +83,7 @@ open class Barnarda_C_Ores constructor() : Block(Material.ROCK), ISortableBlock 
         this.setHarvestLevel(
             "pickaxe",
             2,
-            this.getDefaultState().withProperty(
+            this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockBarnardaCOres.DIAMOND
             )
@@ -88,7 +91,7 @@ open class Barnarda_C_Ores constructor() : Block(Material.ROCK), ISortableBlock 
         this.setHarvestLevel(
             "pickaxe",
             2,
-            this.getDefaultState().withProperty(
+            this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockBarnardaCOres.NICKEL
             )
@@ -96,7 +99,7 @@ open class Barnarda_C_Ores constructor() : Block(Material.ROCK), ISortableBlock 
         this.setHarvestLevel(
             "pickaxe",
             2,
-            this.getDefaultState().withProperty(
+            this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockBarnardaCOres.COBALT
             )
@@ -104,7 +107,7 @@ open class Barnarda_C_Ores constructor() : Block(Material.ROCK), ISortableBlock 
         this.setHarvestLevel(
             "pickaxe",
             2,
-            this.getDefaultState().withProperty(
+            this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockBarnardaCOres.QUARTZ
             )
@@ -112,7 +115,7 @@ open class Barnarda_C_Ores constructor() : Block(Material.ROCK), ISortableBlock 
         this.setHarvestLevel(
             "pickaxe",
             2,
-            this.getDefaultState().withProperty(
+            this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockBarnardaCOres.SILICON
             )
@@ -127,7 +130,7 @@ open class Barnarda_C_Ores constructor() : Block(Material.ROCK), ISortableBlock 
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (blockBasic: EnumBlockBarnardaCOres in EnumBlockBarnardaCOres.entries) {
             list.add(ItemStack(this, 1, blockBasic.getMeta()))
@@ -250,7 +253,9 @@ open class Barnarda_C_Ores constructor() : Block(Material.ROCK), ISortableBlock 
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -265,7 +270,7 @@ open class Barnarda_C_Ores constructor() : Block(Material.ROCK), ISortableBlock 
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(
+        return this.defaultBlockState().setValue(
             BASIC_TYPE,
             (EnumBlockBarnardaCOres.byMetadata(meta))!!
         )

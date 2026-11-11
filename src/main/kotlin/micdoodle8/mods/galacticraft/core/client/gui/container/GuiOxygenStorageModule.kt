@@ -7,13 +7,13 @@ import micdoodle8.mods.galacticraft.core.client.gui.element.GuiElementInfoRegion
 import micdoodle8.mods.galacticraft.core.inventory.ContainerOxygenStorageModule
 import micdoodle8.mods.galacticraft.core.tile.TileEntityOxygenStorageModule
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiOxygenStorageModule constructor(
     par1InventoryPlayer: InventoryPlayer?,
     private val tileEntity: TileEntityOxygenStorageModule
@@ -98,6 +98,6 @@ open class GuiOxygenStorageModule constructor(
 
     companion object {
         private val batteryBoxTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/oxygen_storage_module.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/oxygen_storage_module.png")
     }
 }

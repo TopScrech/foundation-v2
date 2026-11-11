@@ -13,22 +13,22 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.util.ResourceLocation
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraft.world.WorldProvider
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fml.common.Optional
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.apache.commons.lang3.ArrayUtils
 import java.util.ArrayList
 import java.util.HashMap
@@ -107,7 +107,7 @@ object UtilsGC {
                 scale = 0
             }
 
-            Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
+            Minecraft.getInstance().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
             drawTexturedModalRect(
                 guiWidth + xPos,
                 guiHeight + yPos + 58 - renderRemaining - start,
@@ -202,7 +202,7 @@ object UtilsGC {
         }
 
         for (element: Int in (WorldUtil.registeredSpaceStations)!!.keys) {
-            val data: SpaceStationWorldData = (SpaceStationWorldData.getStationData(playerBase!!.world, element, null))!!
+            val data: SpaceStationWorldData = (SpaceStationWorldData.getStationData(playerBase!!.level(), element, null))!!
 
             if (!ConfigManagerCore.spaceStationsRequirePermission || data.getAllowedAll() || data.getAllowedPlayers()
                     .contains(PlayerUtil.getName(playerBase)) || ArrayUtils.contains(
@@ -217,10 +217,10 @@ object UtilsGC {
                         temp.add(element)
                         continue
                     }
-                    if (playerBase.world.provider is IOrbitDimension) {
+                    if (playerBase.level().provider is IOrbitDimension) {
                         //Player is currently on another space station around the same planet
                         val dataCurrent: SpaceStationWorldData =
-                            (SpaceStationWorldData.getStationData(playerBase.world, playerBase.dimension, null))!!
+                            (SpaceStationWorldData.getStationData(playerBase.level(), playerBase.dimension, null))!!
                         if (dataCurrent.getHomePlanet() == data.getHomePlanet()) {
                             temp.add(element)
                             continue
@@ -259,7 +259,7 @@ object UtilsGC {
                 celestialBody = GalacticraftCore.satelliteSpaceStation
                 //This no longer checks whether a WorldProvider can be created, for performance reasons (that causes the dimension to load unnecessarily at map building stage)
                 if (playerBase != null) {
-                    val data: SpaceStationWorldData = (SpaceStationWorldData.getStationData(playerBase.world, id, null))!!
+                    val data: SpaceStationWorldData = (SpaceStationWorldData.getStationData(playerBase.level(), id, null))!!
                     map.put(
                         (celestialBody)!!.getName() + "$" + data.getOwner() + "$" + data.getSpaceStationName() + "$" + id + "$" + data.getHomePlanet(),
                         id
@@ -315,14 +315,14 @@ object UtilsGC {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @Optional.Method(modid = "planetprogression")
     fun hasUnlocks(player: EntityPlayerSP?, body: SolarSystem?): Boolean {
         return ResearchHooksSP::class.java.getMethod("hasUnlockedBodiesInSystem", EntityPlayerSP::class.java, SolarSystem::class.java).invoke(null, player, body) as Boolean
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @Optional.Method(modid = "planetprogression")
     fun isReasearched(player: EntityPlayerSP?, body: CelestialBody?): Boolean {
         return ResearchHooksSP::class.java.getMethod("hasUnlockedCelestialBody", EntityPlayerSP::class.java, CelestialBody::class.java).invoke(null, player, body) as Boolean

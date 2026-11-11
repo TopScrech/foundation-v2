@@ -1,5 +1,6 @@
 package asmodeuscore.core.event
 
+import foundation.inventory.armorItems
 import java.util.Arrays
 import net.minecraftforge.common.config.Config.Type
 import net.minecraftforge.event.entity.EntityEvent.EntityConstructing
@@ -43,16 +44,16 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.OxygenUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import net.minecraft.block.material.Material
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.ai.attributes.IAttributeInstance
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.MobEffects
-import net.minecraft.potion.PotionEffect
-import net.minecraft.util.DamageSource
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.ai.attributes.AttributeInstance as IAttributeInstance
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.config.Config
 import net.minecraftforge.common.config.ConfigManager
@@ -62,7 +63,7 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent
 import net.minecraftforge.event.entity.living.LivingEvent
 import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.client.event.ConfigChangedEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.PlayerEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.server.permission.PermissionAPI
@@ -71,13 +72,6 @@ import java.util.HashMap
 
 open class AsmodeusEvent {
     private var engine_id = 0
-
-    @SubscribeEvent
-    open fun onEntityConstructing(e: EntityEvent.EntityConstructing) {
-        if (e.getEntity() is EntityPlayer) {
-            (e.getEntity() as EntityPlayer).getAttributeMap().registerAttribute(ACAttributePlayer.RADIATION_LVL)
-        }
-    }
 
     @SubscribeEvent
     open fun onAttachCapability(event: AttachCapabilitiesEvent<Entity?>) {
@@ -160,14 +154,14 @@ open class AsmodeusEvent {
         val newStats: IStatsCapability = (ACStatsCapability.Companion.get(event.getEntityPlayer()))!!
         newStats.copyFrom(
             oldStats,
-            !event.isWasDeath() || event.getOriginal().world.getGameRules().getBoolean("keepInventory")
+            !event.isWasDeath() || event.getOriginal().level().getGameRules().getBoolean("keepInventory")
         )
     }
 
     @SubscribeEvent
     open fun onEntityUpdate(event: LivingEvent.LivingUpdateEvent) {
         val living: EntityLivingBase = event.getEntityLiving()
-        val world: World = living.world
+        val world: World = living.level()
 
         this.doStormEffectForEntity(world, living)
 
@@ -195,12 +189,12 @@ open class AsmodeusEvent {
                 this.doWaterPressureForEntity(world, player)
             }
 
-            if (player.getRidingEntity() is ICustomEngine) {
-                val rocket: ICustomEngine? = player.getRidingEntity() as ICustomEngine?
+            if (player.getVehicle() is ICustomEngine) {
+                val rocket: ICustomEngine? = player.getVehicle() as ICustomEngine?
                 engine_id = (rocket!!.getEngine())!!.getID()
             }
 
-            if (player.ticksExisted % 100 == 0 && world.provider is IGalacticraftWorldProvider) {
+            if (player.tickCount % 100 == 0 && world.provider is IGalacticraftWorldProvider) {
                 val thermal: Float = (world.provider as IGalacticraftWorldProvider).getThermalLevelModifier()
                 val warn_temp: Float = 2f // > 60C
                 val cool_temp: Float = -1.2f // < -36
@@ -218,7 +212,7 @@ open class AsmodeusEvent {
     @SubscribeEvent
     open fun onWorldTick(e: TickEvent.WorldTickEvent) {
         val w: World = e.world
-        if (!w.isRemote) {
+        if (!w.isClientSide) {
             val flag: Boolean = w.getGameRules().getBoolean("doWeatherCycle")
 
             if (flag && w.provider is IGalacticraftWorldProvider && w.provider is IProviderWeather) {
@@ -229,16 +223,16 @@ open class AsmodeusEvent {
                 try {
                     if ((weaher.getWeather())!!.getWeatherType() == WeatherType.DUST_STORM) {
                         val storm_data: DustStormSaveData = DustStormSaveData.get(w, name)
-                        DustStormSaveData.calculateWeather(storm_data, w.rand)
+                        DustStormSaveData.calculateWeather(storm_data, w.random)
                     }
                     if ((weaher.getWeather())!!.getWeatherType() == WeatherType.METEORIC_RAIN) {
                         val rain_data: MeteoricRainSaveData = MeteoricRainSaveData.get(w, name)
-                        MeteoricRainSaveData.calculateWeather(rain_data, w.rand)
-                        MeteoricRainSaveData.spawnMeteor(rain_data)
+                        MeteoricRainSaveData.calculateWeather(rain_data, w.random)
+                        asmodeuscore.core.astronomy.dimension.world.MeteoricRainSpawner.spawnMeteor(rain_data, w as net.minecraft.server.level.ServerLevel)
                     }
                     if ((weaher.getWeather())!!.getWeatherType() == WeatherType.FROZEN_STORM) {
                         val frozenstorm_data: FrozenStormSaveData = FrozenStormSaveData.get(w, name)
-                        FrozenStormSaveData.calculateWeather(frozenstorm_data, w.rand)
+                        FrozenStormSaveData.calculateWeather(frozenstorm_data, w.random)
                     }
                 } catch (ignored: AbstractMethodError) {
                 } catch (ignored: NullPointerException) {
@@ -248,7 +242,7 @@ open class AsmodeusEvent {
     }
 
     private fun doStormEffectForEntity(world: World, living: EntityLivingBase) {
-        if (!world.isRemote && world.getTotalWorldTime() % 20 == 0L && world.provider is IProviderWeather
+        if (!world.isClientSide && world.getGameTime() % 20 == 0L && world.provider is IProviderWeather
             && world.provider is IGalacticraftWorldProvider
         ) {
             val gcprovider: IGalacticraftWorldProvider = world.provider as IGalacticraftWorldProvider
@@ -286,7 +280,7 @@ open class AsmodeusEvent {
             if (msd.isDustStorm()) {
                 var flag: Boolean = true
                 for (y: Int in 256 downTo living.getPosition().getY() + 1) {
-                    if (!world.isAirBlock(BlockPos(living.getPosition().getX(), y, living.getPosition().getZ()))) {
+                    if (!world.isEmptyBlock(BlockPos(living.getPosition().getX(), y, living.getPosition().getZ()))) {
                         flag = false
                         break
                     }
@@ -301,13 +295,13 @@ open class AsmodeusEvent {
 
     private fun doWaterPressureForEntity(world: World, living: EntityLivingBase) {
         val player: EntityPlayerMP = living as EntityPlayerMP
-        if (player.world.provider is IGalacticraftWorldProvider && !player.capabilities.isCreativeMode) {
-            val provider: IGalacticraftWorldProvider = player.world.provider as IGalacticraftWorldProvider
+        if (player.level().provider is IGalacticraftWorldProvider && !player.capabilities.isCreativeMode) {
+            val provider: IGalacticraftWorldProvider = player.level().provider as IGalacticraftWorldProvider
             if (provider.getCelestialBody() is IExBody) {
                 var i: Float = 0f
                 var blocks: Int = 0
 
-                while (player.world.getBlockState(player.getPosition().up(blocks)).getMaterial() !== Material.AIR) {
+                while (player.level().getBlockState(player.getPosition().up(blocks)).getMaterial() !== Material.AIR) {
                     i += (0.1 * (provider.getCelestialBody() as IExBody).getWaterPressure()).toFloat()
                     blocks++
                 }
@@ -322,8 +316,8 @@ open class AsmodeusEvent {
         val player: EntityPlayerMP = living as EntityPlayerMP
 
         // TODO Experimental
-        if (player.world.provider is IGalacticraftWorldProvider && !player.capabilities.isCreativeMode) {
-            val provider: IGalacticraftWorldProvider = player.world.provider as IGalacticraftWorldProvider
+        if (player.level().provider is IGalacticraftWorldProvider && !player.capabilities.isCreativeMode) {
+            val provider: IGalacticraftWorldProvider = player.level().provider as IGalacticraftWorldProvider
 
             var level: Float = 0f
 
@@ -337,12 +331,11 @@ open class AsmodeusEvent {
             MinecraftForge.EVENT_BUS.post(event)
 
             if (!event.isCanceled() && !getPressureArmor(player)) {
-                if (player.ticksExisted % 50 == 0) {
-                    if (level > 10) player.addPotionEffect(PotionEffect(MobEffects.NAUSEA, 10 * 20))
-                    if (level > 35) player.addPotionEffect(PotionEffect(MobEffects.BLINDNESS, 10 * 20))
-                    if (level > 25) player.addPotionEffect(PotionEffect(MobEffects.SLOWNESS, 280, 4))
-                    if (level > 45) player.attackEntityFrom(
-                        ACDamageSource.Companion.pressure,
+                if (player.tickCount % 50 == 0) {
+                    if (level > 10) player.addEffect(PotionEffect(MobEffects.NAUSEA, 10 * 20))
+                    if (level > 35) player.addEffect(PotionEffect(MobEffects.BLINDNESS, 10 * 20))
+                    if (level > 25) player.addEffect(PotionEffect(MobEffects.SLOWNESS, 280, 4))
+                    if (level > 45) foundation.damage.FoundationDamageTypes.hurt(player, ACDamageSource.pressure,
                         2.5f * AsmodeusConfig.Companion.atmospherePressureDamageRate
                     )
                 }
@@ -353,13 +346,13 @@ open class AsmodeusEvent {
     private fun doRadiatoinForEntity(world: World, living: EntityLivingBase) {
         val player: EntityPlayerMP = living as EntityPlayerMP
 
-        val lvl: IAttributeInstance = player.getEntityAttribute(ACAttributePlayer.RADIATION_LVL)
+        val lvl: IAttributeInstance = player.getAttribute(ACAttributePlayer.RADIATION_LVL)!!
 
-        if (player.world.provider is IGalacticraftWorldProvider && !player.capabilities.isCreativeMode) {
-            val provider: IGalacticraftWorldProvider = player.world.provider as IGalacticraftWorldProvider
+        if (player.level().provider is IGalacticraftWorldProvider && !player.capabilities.isCreativeMode) {
+            val provider: IGalacticraftWorldProvider = player.level().provider as IGalacticraftWorldProvider
             val getModify: Float = 1.0f
 
-            val eventR: RadiationEvent = RadiationEvent(living, lvl.getAttributeValue().toInt(), 20)
+            val eventR: RadiationEvent = RadiationEvent(living, lvl.getValue().toInt(), 20)
             MinecraftForge.EVENT_BUS.post(eventR)
 
             var isRad: Boolean = false
@@ -373,47 +366,47 @@ open class AsmodeusEvent {
                 if (!getRadiationArmor(
                         player,
                         getModify
-                    ) && !eventR.isCanceled() && player.ticksExisted % eventR.getRadiationSpeed() == 0
+                    ) && !eventR.isCanceled() && player.tickCount % eventR.getRadiationSpeed() == 0
                 ) {
-                    if (lvl.getAttributeValue() < 58 && player.getEntityWorld().isDaytime()
-                        && player.getEntityWorld().canBlockSeeSky(player.getPosition())
+                    if (lvl.getValue() < 58 && player.level().isDaytime()
+                        && player.level().canBlockSeeSky(player.getPosition())
                     ) {
-                        lvl.setBaseValue(lvl.getAttributeValue() + 1)
-                    } else if (lvl.getAttributeValue() > 45) lvl.setBaseValue(lvl.getAttributeValue() - 1)
+                        lvl.setBaseValue(lvl.getValue() + 1)
+                    } else if (lvl.getValue() > 45) lvl.setBaseValue(lvl.getValue() - 1)
 
-                    if (lvl.getAttributeValue() > 54) {
-                        if (living is EntityPlayerMP && living.posY <= 1000) {
-                            if (player.ticksExisted % 20 == 0 && lvl.getAttributeValue() > 48) {
-                                player.addPotionEffect(PotionEffect(ACPotions.radiation, 20 * 5))
+                    if (lvl.getValue() > 54) {
+                        if (living is EntityPlayerMP && living.y <= 1000) {
+                            if (player.tickCount % 20 == 0 && lvl.getValue() > 48) {
+                                player.addEffect(PotionEffect(ACPotions.holder(ACPotions.radiation), 20 * 5))
                             }
                         }
                     }
                 } else if (getRadiationArmor(player, getModify)) {
-                    player.removePotionEffect(ACPotions.radiation)
+                    player.removeEffect(ACPotions.holder(ACPotions.radiation))
                 } // else
 
                 // lvl.setBaseValue(0);
             } else {
-                if (player.ticksExisted % 600 == 0 && lvl.getAttributeValue() > 0) lvl.setBaseValue(lvl.getAttributeValue() - 1)
+                if (player.tickCount % 600 == 0 && lvl.getValue() > 0) lvl.setBaseValue(lvl.getValue() - 1)
             }
         }
 
         /*
-		 * if (lvl.getAttributeValue() > 54) { WorldProvider provider =
+		 * if (lvl.getValue() > 54) { WorldProvider provider =
 		 * player.world.provider;
 		 * 
 		 * if(living.posY <= 1000) { if (living instanceof EntityPlayerMP) { if
 		 * (player.ticksExisted % 20 == 0 && !player.capabilities.isCreativeMode &&
-		 * lvl.getAttributeValue() > 48 && !(this.getRadiationArmor(player))) {
-		 * player.addPotionEffect(new PotionEffect(ACPotions.radiation, 5)); } else if
+		 * lvl.getValue() > 48 && !(this.getRadiationArmor(player))) {
+		 * player.addEffect(new PotionEffect(ACPotions.holder(ACPotions.radiation), 5)); } else if
 		 * (this.getRadiationArmor(player)) {
-		 * player.removePotionEffect(ACPotions.radiation); } } } }
+		 * player.removeEffect(ACPotions.holder(ACPotions.radiation)); } } } }
 		 */
     }
 
     protected open fun sendPlanetList(player: EntityPlayerMP, playerStats: GCPlayerStats, acstats: IStatsCapability) {
         val map: HashMap<String?,Int>
-        if (player.ticksExisted % 50 == 0)  // Check for genuine update - e.g. maybe some other player created a space
+        if (player.tickCount % 50 == 0)  // Check for genuine update - e.g. maybe some other player created a space
         // station or changed permissions
         // CAUTION: possible server load due to dimension loading, if any planets or
         // moons were (contrary to GC default) set to hotload
@@ -428,12 +421,12 @@ open class AsmodeusEvent {
             count++
         }
 
-        if (temp != playerStats.getSavedPlanetList() || (player.ticksExisted % 1 == 0)) {
+        if (temp != playerStats.getSavedPlanetList() || (player.tickCount % 1 == 0)) {
             val canCreateStations: Boolean = PermissionAPI.hasPermission(player, Constants.PERMISSION_CREATE_STATION)
             (AsmodeusCore.packetPipeline)!!.sendTo(
                 ACPacketSimple(
                     ACEnumSimplePacket.C_UPDATE_DIMENSION_LIST,
-                    GCCoreUtil.getDimensionID(player.world),
+                    GCCoreUtil.getDimensionID(player.level()),
                     *arrayOf<Any?>(
                         player.getGameProfile().getName(), temp, canCreateStations,
                         playerStats.getSpaceshipTier(), engine_id, playerStats.getFuelLevel(),
@@ -455,17 +448,17 @@ open class AsmodeusEvent {
     companion object {
         @JvmStatic
         fun getPressureArmor(player: EntityPlayerMP): Boolean {
-            for (i: Int in 0..3) if (player.inventory.armorInventory.get(i).isEmpty()
-                || player.inventory.armorInventory.get(i).getItem() !is IItemPressurized
+            for (i: Int in 0..3) if (player.inventory.armorItems.get(i).isEmpty()
+                || player.inventory.armorItems.get(i).getItem() !is IItemPressurized
             ) return false
             return true
         }
 
         @JvmStatic
         fun getRadiationArmor(player: EntityPlayerMP, dimModify: Float): Boolean {
-            for (i: Int in 0..3) if (player.inventory.armorInventory.get(i).isEmpty()
-                || !(player.inventory.armorInventory.get(i).getItem() is IItemRadiation
-                        && (player.inventory.armorInventory.get(i).getItem() as IItemRadiation)
+            for (i: Int in 0..3) if (player.inventory.armorItems.get(i).isEmpty()
+                || !(player.inventory.armorItems.get(i).getItem() is IItemRadiation
+                        && (player.inventory.armorItems.get(i).getItem() as IItemRadiation)
                     .getSolarRadiationProtectModify() >= dimModify)
             ) return false
             return true

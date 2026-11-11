@@ -6,8 +6,8 @@ import galaxyspace.systems.SolarSystem.moons.io.tile.TileEntityTreasureChestIo
 import micdoodle8.mods.galacticraft.core.blocks.BlockTier1TreasureChest
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.level.Level as World
 
 open class BlockTier5TreasureChest constructor(assetName: String?) : BlockTier1TreasureChest(assetName),
     IShiftDescription {

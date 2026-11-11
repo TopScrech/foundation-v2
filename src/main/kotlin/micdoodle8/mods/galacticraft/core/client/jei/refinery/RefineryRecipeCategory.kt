@@ -12,7 +12,7 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.client.jei.RecipeCategories
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class RefineryRecipeCategory constructor(guiHelper: IGuiHelper) : IRecipeCategory<IRecipeWrapper> {
     @Nonnull
@@ -77,6 +77,6 @@ open class RefineryRecipeCategory constructor(guiHelper: IGuiHelper) : IRecipeCa
     }
 
     companion object {
-        private val refineryGuiTex = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/refinery_recipe.png")
+        private val refineryGuiTex = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/refinery_recipe.png")
     }
 }

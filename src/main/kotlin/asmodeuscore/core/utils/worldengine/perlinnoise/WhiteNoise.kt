@@ -1,6 +1,7 @@
 package asmodeuscore.core.utils.worldengine.perlinnoise
 
-import net.minecraft.util.math.MathHelper
+import foundation.math.LegacyTerrainMath
+
 import kotlin.math.pow
 
 open class WhiteNoise constructor(genSeed: Long) {
@@ -25,12 +26,12 @@ open class WhiteNoise constructor(genSeed: Long) {
 
     open fun vecGen2d(x: Long, z: Long): DoubleArray {
         val angle: Double = this.gen2d(x, z) * Math.PI
-        return doubleArrayOf(MathHelper.cos(angle.toFloat()).toDouble(), MathHelper.sin(angle.toFloat()).toDouble())
+        return doubleArrayOf(LegacyTerrainMath.cos(angle.toFloat()).toDouble(), LegacyTerrainMath.sin(angle.toFloat()).toDouble())
     }
 
     open fun vecGen2f(x: Int, z: Int): FloatArray {
         val angle: Float = this.gen2f(x, z) * Math.PI.toFloat()
-        return floatArrayOf(MathHelper.cos(angle), MathHelper.sin(angle))
+        return floatArrayOf(LegacyTerrainMath.cos(angle), LegacyTerrainMath.sin(angle))
     }
 
     open fun smartGen2d(x: Long, z: Long): Double {

@@ -1,10 +1,15 @@
 package micdoodle8.mods.galacticraft.api.recipe
 
-import net.minecraft.inventory.InventoryCrafting
-import net.minecraft.item.ItemStack
+import foundation.item.legacyItemValue
+
+import net.minecraft.world.inventory.CraftingContainer as InventoryCrafting
+import foundation.inventory.getSizeInventory
+import foundation.inventory.getStackInSlot
+import foundation.inventory.getStackInRowAndColumn
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
-import net.minecraft.util.NonNullList
-import net.minecraft.world.World
+import net.minecraft.core.NonNullList
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.registries.IForgeRegistryEntry
 
@@ -77,7 +82,7 @@ open class ShapedRecipesGC constructor(
                         return false
                     }
 
-                    if (itemstack.getMetadata() != 32767 && itemstack.getMetadata() != itemstack1.getMetadata()) {
+                    if (itemstack.legacyItemValue != 32767 && itemstack.legacyItemValue != itemstack1.legacyItemValue) {
                         return false
                     }
                 }

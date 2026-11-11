@@ -1,30 +1,33 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.api.block.IDetectableResource
 import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.Explosion
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.Explosion
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 /**
@@ -32,7 +35,7 @@ import java.util.Random
  * Ore; 6 = Tin Ore; 7 = Aluminium Ore; 8 = Silicon Ore; 9 = Copper Block;
  * 10 = Tin Block;  11 = Aluminium Block;  12 = Meteoric Iron Block; 13 = Silicon Block;
  */
-open class BlockBasic constructor(assetName: String?) : Block(Material.ROCK), IDetectableResource, ISortableBlock {
+open class BlockBasic constructor(assetName: String?) : Block(Material.ROCK), IDetectableResource, ISortableBlock, LegacyBlockMetadata {
     enum class EnumBlockBasic(private val meta: Int, private val serializedName: String) : IStringSerializable {
         ALUMINUM_DECORATION_BLOCK_0(3, "deco_block_0"),
         ALUMINUM_DECORATION_BLOCK_1(4, "deco_block_1"),
@@ -50,7 +53,9 @@ open class BlockBasic constructor(assetName: String?) : Block(Material.ROCK), ID
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -67,7 +72,7 @@ open class BlockBasic constructor(assetName: String?) : Block(Material.ROCK), ID
         this.blockResistance = 15f
         this.setDefaultState(
             this.blockState.getBaseState()
-                .withProperty(BASIC_TYPE, EnumBlockBasic.ALUMINUM_DECORATION_BLOCK_0)
+                .setValue(BASIC_TYPE, EnumBlockBasic.ALUMINUM_DECORATION_BLOCK_0)
         )
         this.setTranslationKey(assetName)
     }
@@ -143,7 +148,7 @@ open class BlockBasic constructor(assetName: String?) : Block(Material.ROCK), ID
         return this.blockHardness
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (var4: Int in 3..13) {
             list.add(ItemStack(this, 1, var4))
@@ -174,8 +179,8 @@ open class BlockBasic constructor(assetName: String?) : Block(Material.ROCK), ID
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(BASIC_TYPE, (EnumBlockBasic.Companion.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(BASIC_TYPE, (EnumBlockBasic.Companion.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -200,7 +205,7 @@ open class BlockBasic constructor(assetName: String?) : Block(Material.ROCK), ID
 
         val meta: Int = this.getMetaFromState(state)
         if (meta == 8) {
-            val rand: Random = if (world is World) world.rand else Random()
+            val rand: Random = if (world is World) world.random else Random()
             return MathHelper.getInt(rand, 2, 5)
         }
         return 0

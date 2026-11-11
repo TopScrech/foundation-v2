@@ -2,7 +2,7 @@ package galaxyspace.core.handler.capabilities
 
 import galaxyspace.core.handler.capabilities.GSCapabilityStatsHandler
 import galaxyspace.core.handler.capabilities.StatsCapabilityClient
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 
 abstract class StatsCapabilityClient {
     abstract fun getKnowledgeResearches(): IntArray?

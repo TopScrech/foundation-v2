@@ -1,10 +1,10 @@
 package micdoodle8.mods.galacticraft.core.inventory
 
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
 
 open class ContainerParaChest constructor(
     par1IInventory: IInventory,
@@ -15,7 +15,7 @@ open class ContainerParaChest constructor(
     var numRows: Int
 
     init {
-        this.numRows = (parachestInventory.getSizeInventory() - 3) / 9
+        this.numRows = (parachestInventory.getContainerSize() - 3) / 9
         parachestInventory.openInventory(player)
         val i: Int = (this.numRows - 4) * 18 + 19
         var j: Int
@@ -25,32 +25,32 @@ open class ContainerParaChest constructor(
         while (j < this.numRows) {
             k = 0
             while (k < 9) {
-                this.addSlotToContainer(Slot(parachestInventory, k + j * 9, 8 + k * 18, 18 + j * 18))
+                this.addSlot(Slot(parachestInventory, k + j * 9, 8 + k * 18, 18 + j * 18))
                 ++k
             }
             ++j
         }
 
-        this.addSlotToContainer(
+        this.addSlot(
             Slot(
                 parachestInventory,
-                parachestInventory.getSizeInventory() - 3,
+                parachestInventory.getContainerSize() - 3,
                 125 + 0 * 18,
                 (if (this.numRows == 0) 24 else 26) + this.numRows * 18
             )
         )
-        this.addSlotToContainer(
+        this.addSlot(
             Slot(
                 parachestInventory,
-                parachestInventory.getSizeInventory() - 2,
+                parachestInventory.getContainerSize() - 2,
                 125 + 1 * 18,
                 (if (this.numRows == 0) 24 else 26) + this.numRows * 18
             )
         )
-        this.addSlotToContainer(
+        this.addSlot(
             Slot(
                 parachestInventory,
-                parachestInventory.getSizeInventory() - 1,
+                parachestInventory.getContainerSize() - 1,
                 75,
                 (if (this.numRows == 0) 24 else 26) + this.numRows * 18
             )
@@ -60,7 +60,7 @@ open class ContainerParaChest constructor(
         while (j < 3) {
             k = 0
             while (k < 9) {
-                this.addSlotToContainer(
+                this.addSlot(
                     Slot(
                         par1IInventory,
                         k + j * 9 + 9,
@@ -75,36 +75,36 @@ open class ContainerParaChest constructor(
 
         j = 0
         while (j < 9) {
-            this.addSlotToContainer(Slot(par1IInventory, j, 8 + j * 18, (if (this.numRows == 0) 174 else 176) + i))
+            this.addSlot(Slot(par1IInventory, j, 8 + j * 18, (if (this.numRows == 0) 174 else 176) + i))
             ++j
         }
     }
 
-    override fun canInteractWith(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.parachestInventory.isUsableByPlayer(par1EntityPlayer)
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.parachestInventory.stillValid(par1EntityPlayer)
     }
 
-    override fun transferStackInSlot(par1EntityPlayer: EntityPlayer, par2: Int): ItemStack {
+    override fun quickMoveStack(par1EntityPlayer: EntityPlayer, par2: Int): ItemStack {
         var itemstack: ItemStack = ItemStack.EMPTY
         val slot: Slot? = this.inventorySlots.get(par2)
         val b: Int = this.inventorySlots.size
 
-        if (slot != null && slot.getHasStack()) {
-            val itemstack1: ItemStack = slot.getStack()
+        if (slot != null && slot.hasItem()) {
+            val itemstack1: ItemStack = slot.getItem()
             itemstack = itemstack1.copy()
 
-            if (par2 < this.parachestInventory.getSizeInventory()) {
-                if (!this.mergeItemStack(itemstack1, b - 36, b, true)) {
+            if (par2 < this.parachestInventory.getContainerSize()) {
+                if (!this.moveItemStackTo(itemstack1, b - 36, b, true)) {
                     return ItemStack.EMPTY
                 }
-            } else if (!this.mergeItemStack(itemstack1, 0, this.parachestInventory.getSizeInventory(), false)) {
+            } else if (!this.moveItemStackTo(itemstack1, 0, this.parachestInventory.getContainerSize(), false)) {
                 return ItemStack.EMPTY
             }
 
             if (itemstack1.getCount() == 0) {
-                slot.putStack(ItemStack.EMPTY)
+                slot.set(ItemStack.EMPTY)
             } else {
-                slot.onSlotChanged()
+                slot.setChanged()
             }
         }
 
@@ -114,8 +114,8 @@ open class ContainerParaChest constructor(
     /**
      * Callback for when the crafting gui is closed.
      */
-    override fun onContainerClosed(par1EntityPlayer: EntityPlayer) {
-        super.onContainerClosed(par1EntityPlayer)
+    override fun removed(par1EntityPlayer: EntityPlayer) {
+        super.removed(par1EntityPlayer)
         this.parachestInventory.closeInventory(par1EntityPlayer)
     }
 

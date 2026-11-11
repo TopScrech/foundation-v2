@@ -1,5 +1,11 @@
 package micdoodle8.mods.galacticraft.planets.mars.tile
 
+import foundation.item.legacyItemValue
+
+import foundation.block.getMetaFromState
+
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.WorldProviderSpace
@@ -23,14 +29,14 @@ import micdoodle8.mods.galacticraft.planets.asteroids.items.ItemAtmosphericValve
 import micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMarsT2
 import micdoodle8.mods.miccore.Annotations
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.WorldlyContainer as ISidedInventory
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.world.WorldProvider
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.Fluid
@@ -40,7 +46,7 @@ import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.FluidUtil
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.ArrayList
 import java.util.Locale
 import kotlin.math.max
@@ -166,7 +172,7 @@ open class TileEntityGasLiquefier constructor() : TileBaseElectricBlockWithInven
                         }
                     }
                 } else if (inputCanister.getItem() is ItemCanisterGeneric) {
-                    val amount: Int = ItemCanisterGeneric.EMPTY - inputCanister.getItemDamage()
+                    val amount: Int = ItemCanisterGeneric.EMPTY - inputCanister.legacyItemValue
                     if (amount > 0) {
                         val canisterType: Item = inputCanister.getItem()
                         var canisterGas: FluidStack? = null
@@ -457,35 +463,35 @@ open class TileEntityGasLiquefier constructor() : TileBaseElectricBlockWithInven
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.processTicks = nbt.getInteger("smeltingTicks")
+        this.processTicks = nbt.getIntOr("smeltingTicks", 0)
         this.stacks = this.readStandardItemsFromNBT(nbt)
 
-        if (nbt.hasKey("gasTank")) {
-            this.gasTank.readFromNBT(nbt.getCompoundTag("gasTank"))
+        if (nbt.containsTag("gasTank")) {
+            this.gasTank.readFromNBT(nbt.getCompoundOrEmpty("gasTank"))
         }
 
-        if (nbt.hasKey("liquidTank")) {
-            this.liquidTank.readFromNBT(nbt.getCompoundTag("liquidTank"))
+        if (nbt.containsTag("liquidTank")) {
+            this.liquidTank.readFromNBT(nbt.getCompoundOrEmpty("liquidTank"))
         }
-        if (nbt.hasKey("liquidTank2")) {
-            this.liquidTank2.readFromNBT(nbt.getCompoundTag("liquidTank2"))
+        if (nbt.containsTag("liquidTank2")) {
+            this.liquidTank2.readFromNBT(nbt.getCompoundOrEmpty("liquidTank2"))
         }
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setInteger("smeltingTicks", this.processTicks)
+        nbt.putInt("smeltingTicks", this.processTicks)
         this.writeStandardItemsToNBT(nbt, this.stacks)
 
         if (this.gasTank.getFluid() != null) {
-            nbt.setTag("gasTank", this.gasTank.writeToNBT(NBTTagCompound()))
+            nbt.put("gasTank", this.gasTank.writeToNBT(NBTTagCompound()))
         }
 
         if (this.liquidTank.getFluid() != null) {
-            nbt.setTag("liquidTank", this.liquidTank.writeToNBT(NBTTagCompound()))
+            nbt.put("liquidTank", this.liquidTank.writeToNBT(NBTTagCompound()))
         }
         if (this.liquidTank2.getFluid() != null) {
-            nbt.setTag("liquidTank2", this.liquidTank2.writeToNBT(NBTTagCompound()))
+            nbt.put("liquidTank2", this.liquidTank2.writeToNBT(NBTTagCompound()))
         }
 
         return nbt
@@ -499,8 +505,8 @@ open class TileEntityGasLiquefier constructor() : TileBaseElectricBlockWithInven
         return true
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("tile.mars_machine.4.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("tile.mars_machine.4.name")
     }
 
     // ISidedInventory Implementation:
@@ -516,8 +522,8 @@ open class TileEntityGasLiquefier constructor() : TileBaseElectricBlockWithInven
         return intArrayOf(1, 2, 3)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
-        if (this.isItemValidForSlot(slotID, itemstack)) {
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        if (this.canPlaceItem(slotID, itemstack)) {
             when (slotID) {
                 0 -> return ItemElectricBase.isElectricItemCharged(itemstack)
                 1 -> return micdoodle8.mods.galacticraft.core.util.FluidUtil.isMethaneContainerAny(itemstack)
@@ -537,7 +543,7 @@ open class TileEntityGasLiquefier constructor() : TileBaseElectricBlockWithInven
         return false
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         when (slotID) {
             0 -> return ItemElectricBase.isElectricItemEmpty(itemstack)
             1 -> return micdoodle8.mods.galacticraft.core.util.FluidUtil.isEmptyContainer(itemstack)
@@ -547,7 +553,7 @@ open class TileEntityGasLiquefier constructor() : TileBaseElectricBlockWithInven
         }
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         when (slotID) {
             0 -> return ItemElectricBase.isElectricItem(itemstack.getItem())
             1, 2, 3 -> return micdoodle8.mods.galacticraft.core.util.FluidUtil.isValidContainer(itemstack)

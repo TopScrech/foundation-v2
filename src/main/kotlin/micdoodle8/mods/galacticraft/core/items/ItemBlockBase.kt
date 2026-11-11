@@ -1,12 +1,14 @@
 package micdoodle8.mods.galacticraft.core.items
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.core.blocks.BlockBasic
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.ItemStack
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.max
 import kotlin.math.min
 
@@ -20,7 +22,7 @@ open class ItemBlockBase constructor(block: Block?) : ItemBlockDesc(block) {
         return meta
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
@@ -28,7 +30,7 @@ open class ItemBlockBase constructor(block: Block?) : ItemBlockDesc(block) {
     public override fun getTranslationKey(itemstack: ItemStack): String {
         val name: String =
             micdoodle8.mods.galacticraft.core.blocks.BlockBasic.EnumBlockBasic.entries.toTypedArray()[min(
-                max(itemstack.getItemDamage() - 3, 0),
+                max(itemstack.legacyItemValue - 3, 0),
                 10
             )].getName()
 

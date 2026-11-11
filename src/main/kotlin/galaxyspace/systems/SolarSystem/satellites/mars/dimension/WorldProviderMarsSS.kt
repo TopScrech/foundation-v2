@@ -18,15 +18,15 @@ import micdoodle8.mods.galacticraft.core.dimension.WorldProviderSpaceStation
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.world.gen.dungeon.RoomTreasure
 import micdoodle8.mods.galacticraft.planets.mars.MarsModule
-import net.minecraft.block.Block
-import net.minecraft.entity.Entity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.Entity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.biome.BiomeProvider
 import net.minecraft.world.gen.IChunkGenerator
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.HashSet
 
 open class WorldProviderMarsSS : WorldProviderSpaceStation(), IOrbitDimension, IZeroGDimension, ISolarLevel,
@@ -60,7 +60,7 @@ open class WorldProviderMarsSS : WorldProviderSpaceStation(), IOrbitDimension, I
         return a < 0.42f || a > 0.58f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val var2: Float = this.world.getCelestialAngle(par1)
         var var3: Float = 1.0f - (MathHelper.cos(var2 * Constants.twoPI) * 2.0f + 0.25f)
@@ -170,19 +170,19 @@ open class WorldProviderMarsSS : WorldProviderSpaceStation(), IOrbitDimension, I
         return ChunkProviderMarsSS::class.java
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun setSpinDeltaPerTick(angle: Float) {
         val skyProvider: SkyProviderMarsSS? = (this.getSkyRenderer() as SkyProviderMarsSS?)
         if (skyProvider != null) skyProvider.spinDeltaPerTick = angle
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyRotation(): Float {
         val skyProvider: SkyProviderMarsSS? = (this.getSkyRenderer() as SkyProviderMarsSS?)
         return skyProvider!!.spinAngle
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun createSkyProvider() {
         this.setSkyRenderer(SkyProviderMarsSS())
         this.setSpinDeltaPerTick(this.getSpinManager().getSpinRate())

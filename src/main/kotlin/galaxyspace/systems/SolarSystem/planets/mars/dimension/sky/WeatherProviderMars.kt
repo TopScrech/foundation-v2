@@ -7,15 +7,15 @@ import galaxyspace.systems.SolarSystem.planets.mars.dimension.WorldProviderMars_
 import galaxyspace.systems.SolarSystem.planets.mars.dimension.sky.WeatherProviderMars
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.Entity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraftforge.client.IRenderHandler
 import java.lang.Exception
 import java.lang.reflect.Field
@@ -61,9 +61,9 @@ open class WeatherProviderMars constructor() : IRenderHandler() {
             GlStateManager.enableBlend()
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0)
             GlStateManager.alphaFunc(516, 0.1f)
-            val d0: Double = entity!!.lastTickPosX + (entity.posX - entity.lastTickPosX) * partialTicks.toDouble()
-            val d1: Double = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * partialTicks.toDouble()
-            val d2: Double = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * partialTicks.toDouble()
+            val d0: Double = entity!!.lastTickPosX + (entity.x - entity.lastTickPosX) * partialTicks.toDouble()
+            val d1: Double = entity.lastTickPosY + (entity.y - entity.lastTickPosY) * partialTicks.toDouble()
+            val d2: Double = entity.lastTickPosZ + (entity.z - entity.lastTickPosZ) * partialTicks.toDouble()
             val l: Int = MathHelper.floor(d1)
 
             var r: Int = 4
@@ -76,9 +76,9 @@ open class WeatherProviderMars constructor() : IRenderHandler() {
             GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
 
             val mutablePos: BlockPos.MutableBlockPos = BlockPos.MutableBlockPos()
-            val px: Int = MathHelper.floor(entity.posX)
-            val py: Int = MathHelper.floor(entity.posY)
-            val pz: Int = MathHelper.floor(entity.posZ)
+            val px: Int = MathHelper.floor(entity.x)
+            val py: Int = MathHelper.floor(entity.y)
+            val pz: Int = MathHelper.floor(entity.z)
 
             for (z: Int in pz - r..pz + r) {
                 val indexZ: Int = (z - pz + 16) * 32
@@ -127,8 +127,8 @@ open class WeatherProviderMars constructor() : IRenderHandler() {
                                 .toFloat()).toDouble()
 
                         val yo: Double = this.random.nextDouble() / 1.8
-                        val xx: Double = x + 0.5 - entity.posX
-                        val zz: Double = z + 0.5 - entity.posZ
+                        val xx: Double = x + 0.5 - entity.x
+                        val zz: Double = z + 0.5 - entity.z
                         val rr: Float = MathHelper.sqrt(xx * xx + zz * zz) / r
                         val alpha: Float =
                             ((1.0f - rr * rr) * 0.5f + 0.5f) * strength / 0.6f //0.6F is the max rainstrength on Venus
@@ -168,6 +168,6 @@ open class WeatherProviderMars constructor() : IRenderHandler() {
 
     companion object {
         private val RAIN_TEXTURES =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/environment/dust_particles.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/environment/dust_particles.png")
     }
 }

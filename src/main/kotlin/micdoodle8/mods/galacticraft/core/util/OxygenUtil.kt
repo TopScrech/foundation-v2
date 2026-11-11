@@ -1,5 +1,10 @@
 package micdoodle8.mods.galacticraft.core.util
 
+import foundation.inventory.armorItems
+import foundation.block.getMetaFromState
+
+import foundation.level.offset
+
 import micdoodle8.mods.galacticraft.api.item.IBreathableArmor.EnumGearType
 
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
@@ -18,7 +23,7 @@ import micdoodle8.mods.galacticraft.core.items.ItemOxygenGear
 import micdoodle8.mods.galacticraft.core.items.ItemOxygenMask
 import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
 import micdoodle8.mods.galacticraft.core.tile.TileEntityOxygenDistributor
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockEnchantmentTable
 import net.minecraft.block.BlockFarmland
 import net.minecraft.block.BlockGlass
@@ -30,25 +35,25 @@ import net.minecraft.block.BlockSlab
 import net.minecraft.block.BlockSponge
 import net.minecraft.block.BlockStainedGlass
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.gui.GuiChat
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 import net.minecraft.client.gui.inventory.GuiInventory
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
 import net.minecraftforge.fluids.capability.IFluidHandler
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.HashSet
 import kotlin.math.min
@@ -57,7 +62,7 @@ object OxygenUtil {
     private var checked: HashSet<BlockPos?>? = null
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun shouldDisplayTankGui(gui: GuiScreen?): Boolean {
         if (FMLClientHandler.instance().getClient().gameSettings.hideGUI) {
             return false
@@ -81,13 +86,13 @@ object OxygenUtil {
 
     @JvmStatic
     fun isAABBInBreathableAirBlock(entity: EntityLivingBase, testThermal: Boolean): Boolean {
-        val y: Double = entity.posY + entity.getEyeHeight()
-        val x: Double = entity.posX
-        val z: Double = entity.posZ
+        val y: Double = entity.y + entity.getEyeHeight()
+        val x: Double = entity.x
+        val z: Double = entity.z
 
-        val sx: Double = entity.getEntityBoundingBox().maxX - entity.getEntityBoundingBox().minX
-        val sy: Double = entity.getEntityBoundingBox().maxY - entity.getEntityBoundingBox().minY
-        val sz: Double = entity.getEntityBoundingBox().maxZ - entity.getEntityBoundingBox().minZ
+        val sx: Double = entity.getBoundingBox().maxX - entity.getBoundingBox().minX
+        val sy: Double = entity.getBoundingBox().maxY - entity.getBoundingBox().minY
+        val sz: Double = entity.getBoundingBox().maxZ - entity.getBoundingBox().minZ
 
         //A good first estimate of head size is that it's the smallest of the entity's 3 dimensions (e.g. front to back, for Steve)
         val smin: Double = min(sx, min(sy, sz)) / 2
@@ -95,12 +100,12 @@ object OxygenUtil {
 
         // If entity is within air lock wall, check adjacent blocks for oxygen
         // The value is equal to the max distance from an adjacent oxygen block to the edge of a sealer wall
-        if (entity.world.getBlockState(entity.getPosition()).getBlock() === GCBlocks.airLockSeal) {
+        if (entity.level().getBlockState(entity.getPosition()).getBlock() === GCBlocks.airLockSeal) {
             offsetXZ = 0.75
         }
 
         return isAABBInBreathableAirBlock(
-            entity.world,
+            entity.level(),
             AxisAlignedBB(
                 x - smin - offsetXZ,
                 y - smin,
@@ -258,10 +263,10 @@ object OxygenUtil {
 
         //Testing a non-air, permeable block (for example a torch or a ladder)
         if (limitCount < 5) {
-            for (side: EnumFacing in EnumFacing.VALUES) {
+            for (side: EnumFacing in EnumFacing.values()) {
                 if (permeableFlag || canBlockPassAirOnSide(world, block, pos, side)) {
                     val sidevec: BlockPos =
-                        pos.add(side.getXOffset(), side.getYOffset(), side.getZOffset())
+                        pos.offset(side.getStepX(), side.getStepY(), side.getStepZ())
                     if (!checked!!.contains(sidevec)) {
                         val newblock: Block = world.getBlockState(sidevec).getBlock()
                         val adjResult: Int = testContactWithBreathableAir(world, newblock, sidevec, limitCount + 1)
@@ -306,15 +311,15 @@ object OxygenUtil {
             return false
         }
 
-        return !block.isSideSolid(world.getBlockState(vec), world, vec, EnumFacing.byIndex(side.getIndex() xor 1))
+        return !block.isSideSolid(world.getBlockState(vec), world, vec, EnumFacing.from3DDataValue(side.getIndex() xor 1))
     }
 
     @JvmStatic
     fun getDrainSpacing(tank: ItemStack, tank2: ItemStack): Int {
         val tank1Valid: Boolean =
-            !tank.isEmpty() && tank.getItem() is ItemOxygenTank && tank.getMaxDamage() - tank.getItemDamage() > 0
+            !tank.isEmpty() && tank.getItem() is ItemOxygenTank && ItemOxygenTank.capacityOf(tank) - ItemOxygenTank.used(tank) > 0
         val tank2Valid: Boolean =
-            !tank2.isEmpty() && tank2.getItem() is ItemOxygenTank && tank2.getMaxDamage() - tank2.getItemDamage() > 0
+            !tank2.isEmpty() && tank2.getItem() is ItemOxygenTank && ItemOxygenTank.capacityOf(tank2) - ItemOxygenTank.used(tank2) > 0
 
         if (!tank1Valid && !tank2Valid) {
             return 0
@@ -332,7 +337,7 @@ object OxygenUtil {
         if (!isItemValidForPlayerTankInv(0, (stats.getExtendedInventory())!!.getStackInSlot(0))) {
             var handled: Boolean = false
 
-            for (armorStack: ItemStack in player.inventory.armorInventory) {
+            for (armorStack: ItemStack in player.inventory.armorItems) {
                 if (!armorStack.isEmpty() && armorStack.getItem() is IBreathableArmor) {
                     val breathableArmor: IBreathableArmor = armorStack.getItem() as IBreathableArmor
 
@@ -352,7 +357,7 @@ object OxygenUtil {
         if (!isItemValidForPlayerTankInv(1, (stats.getExtendedInventory())!!.getStackInSlot(1))) {
             var handled: Boolean = false
 
-            for (armorStack: ItemStack in player.inventory.armorInventory) {
+            for (armorStack: ItemStack in player.inventory.armorItems) {
                 if (!armorStack.isEmpty() && armorStack.getItem() is IBreathableArmor) {
                     val breathableArmor: IBreathableArmor = armorStack.getItem() as IBreathableArmor
 
@@ -376,7 +381,7 @@ object OxygenUtil {
         ) {
             var handled: Boolean = false
 
-            for (armorStack: ItemStack in player.inventory.armorInventory) {
+            for (armorStack: ItemStack in player.inventory.armorItems) {
                 if (!armorStack.isEmpty() && armorStack.getItem() is IBreathableArmor) {
                     val breathableArmor: IBreathableArmor = armorStack.getItem() as IBreathableArmor
 
@@ -420,15 +425,15 @@ object OxygenUtil {
 
     @JvmStatic
     fun getAdjacentFluidConnections(tile: TileEntity?, ignoreConnect: Boolean): Array<TileEntity?> {
-        val adjacentConnections: Array<TileEntity?> = arrayOfNulls<TileEntity>(EnumFacing.VALUES.size)
+        val adjacentConnections: Array<TileEntity?> = arrayOfNulls<TileEntity>(EnumFacing.values().size)
 
         if (tile == null) {
             return adjacentConnections
         }
 
         val thisVec: BlockVec3 = BlockVec3(tile)
-        for (direction: EnumFacing in EnumFacing.VALUES) {
-            val tileEntity: TileEntity? = thisVec.getTileEntityOnSide(tile.getWorld(), direction)
+        for (direction: EnumFacing in EnumFacing.values()) {
+            val tileEntity: TileEntity? = thisVec.getTileEntityOnSide(tile.getLevel(), direction)
 
             var connectable: Boolean = false
             if (tileEntity is IConnector) {

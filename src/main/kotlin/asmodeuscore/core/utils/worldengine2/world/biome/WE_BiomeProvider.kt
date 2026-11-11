@@ -29,12 +29,12 @@ import asmodeuscore.core.utils.Utils
 import asmodeuscore.core.utils.worldengine2.util.ISmartMathFunction
 import asmodeuscore.core.utils.worldengine2.util.WE_RegionBuffer
 import asmodeuscore.core.utils.worldengine2.world.properties.WE_IWorldProperties
-import net.minecraft.init.Biomes
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biomes
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.biome.BiomeProvider
-import net.minecraftforge.fml.common.registry.ForgeRegistries
+import net.minecraftforge.registries.ForgeRegistries
 import kotlin.math.pow
 
 /**

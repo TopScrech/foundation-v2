@@ -9,7 +9,7 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
 import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.BlockPos
 import net.minecraftforge.fml.common.network.NetworkRegistry
 import kotlin.math.max
 import kotlin.math.min

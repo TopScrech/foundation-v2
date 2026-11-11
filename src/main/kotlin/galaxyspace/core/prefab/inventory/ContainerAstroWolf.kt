@@ -9,11 +9,11 @@ import micdoodle8.mods.galacticraft.core.inventory.SlotSpecific
 import micdoodle8.mods.galacticraft.core.items.ItemCanisterOxygenInfinite
 import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
 import micdoodle8.mods.galacticraft.planets.mars.inventory.ContainerSlimeling
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
 import java.util.Collections
 
 open class ContainerAstroWolf constructor(
@@ -52,54 +52,54 @@ open class ContainerAstroWolf constructor(
         	}
         }
     }*/
-    override fun onContainerClosed(entityplayer: EntityPlayer) {
-        //super.onContainerClosed(entityplayer);
+    override fun removed(entityplayer: EntityPlayer) {
+        //super.removed(entityplayer);
         this.wolfInventory.closeInventory(entityplayer)
     }
 
-    override fun canInteractWith(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.wolfInventory.isUsableByPlayer(par1EntityPlayer)
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.wolfInventory.stillValid(par1EntityPlayer)
     }
 
-    override fun transferStackInSlot(par1EntityPlayer: EntityPlayer, index: Int): ItemStack {
+    override fun quickMoveStack(par1EntityPlayer: EntityPlayer, index: Int): ItemStack {
         var itemstack: ItemStack = ItemStack.EMPTY
         val slot: Slot? = this.inventorySlots.get(index)
 
-        if (slot != null && slot.getHasStack()) {
-            val itemstack1: ItemStack = slot.getStack()
+        if (slot != null && slot.hasItem()) {
+            val itemstack1: ItemStack = slot.getItem()
             itemstack = itemstack1.copy()
 
-            if (index < this.wolfInventory.getSizeInventory()) {
-                if (!this.mergeItemStack(
+            if (index < this.wolfInventory.getContainerSize()) {
+                if (!this.moveItemStackTo(
                         itemstack1,
-                        this.wolfInventory.getSizeInventory(),
+                        this.wolfInventory.getContainerSize(),
                         this.inventorySlots.size,
                         true
                     )
                 ) {
                     return ItemStack.EMPTY
                 }
-            } else if (this.getSlot(0).isItemValid(itemstack1)) {
-                if (!this.mergeItemStack(itemstack1, 0, 1, false)) {
+            } else if (this.getSlot(0).mayPlace(itemstack1)) {
+                if (!this.moveItemStackTo(itemstack1, 0, 1, false)) {
                     return ItemStack.EMPTY
                 }
             }
 
-            if (this.getSlot(1).isItemValid(itemstack1)) {
-                if (!this.mergeItemStack(itemstack1, 1, 2, false)) {
+            if (this.getSlot(1).mayPlace(itemstack1)) {
+                if (!this.moveItemStackTo(itemstack1, 1, 2, false)) {
                     return ItemStack.EMPTY
                 }
             }
-            if (this.getSlot(2).isItemValid(itemstack1)) {
-                if (!this.mergeItemStack(itemstack1, 2, 3, false)) {
+            if (this.getSlot(2).mayPlace(itemstack1)) {
+                if (!this.moveItemStackTo(itemstack1, 2, 3, false)) {
                     return ItemStack.EMPTY
                 }
             }
 
-            if (this.wolfInventory.getSizeInventory() <= 3 || !this.mergeItemStack(
+            if (this.wolfInventory.getContainerSize() <= 3 || !this.moveItemStackTo(
                     itemstack1,
                     3,
-                    this.wolfInventory.getSizeInventory(),
+                    this.wolfInventory.getContainerSize(),
                     false
                 )
             ) {
@@ -107,9 +107,9 @@ open class ContainerAstroWolf constructor(
             }
 
             if (itemstack1.isEmpty()) {
-                slot.putStack(ItemStack.EMPTY)
+                slot.set(ItemStack.EMPTY)
             } else {
-                slot.onSlotChanged()
+                slot.setChanged()
             }
         }
 

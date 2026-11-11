@@ -10,10 +10,10 @@ import micdoodle8.mods.galacticraft.api.recipe.ShapelessOreRecipeGC
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.renderer.RenderHelper
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
-import net.minecraft.util.NonNullList
-import net.minecraft.util.ResourceLocation
+import net.minecraft.core.NonNullList
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 
 @IPage

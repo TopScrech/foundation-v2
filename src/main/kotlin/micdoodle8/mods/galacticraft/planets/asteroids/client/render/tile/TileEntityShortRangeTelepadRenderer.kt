@@ -13,14 +13,14 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.client.model.IModel
 import net.minecraftforge.client.model.obj.OBJModel
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class TileEntityShortRangeTelepadRenderer : TileEntitySpecialRenderer<TileEntityShortRangeTelepad>() {
     private fun updateModels() {
         if (teleporterTop == null) {
@@ -33,7 +33,7 @@ open class TileEntityShortRangeTelepadRenderer : TileEntitySpecialRenderer<TileE
                 )
                 val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> =
                     Function { location: ResourceLocation? ->
-                        Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+                        Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
                     }
 
                 teleporterTop = model.bake(

@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.items
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.core.blocks.BlockEnclosed.EnumEnclosedBlockType
 
 import appeng.api.AEApi
@@ -7,20 +9,20 @@ import appeng.api.util.AEColor
 import micdoodle8.mods.galacticraft.core.blocks.BlockEnclosed
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.CompatibilityManager
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.reflect.Method
 
 open class ItemBlockEnclosed constructor(block: Block?) : ItemBlockDesc(block) {
@@ -33,7 +35,7 @@ open class ItemBlockEnclosed constructor(block: Block?) : ItemBlockDesc(block) {
         var name: String
 
         try {
-            name = BlockEnclosed.EnumEnclosedBlockType.byMetadata(par1ItemStack.getItemDamage()).getName()
+            name = BlockEnclosed.EnumEnclosedBlockType.byMetadata(par1ItemStack.legacyItemValue).getName()
             name = name.substring(9, name.length) // Remove "enclosed_"
         } catch (e: Exception) {
             name = "null"
@@ -53,8 +55,8 @@ open class ItemBlockEnclosed constructor(block: Block?) : ItemBlockDesc(block) {
         hitZ: Float
     ): EnumActionResult {
         var pos: BlockPos = pos
-        val itemstack: ItemStack = playerIn.getHeldItem(hand)
-        val metadata: Int = this.getMetadata(itemstack.getItemDamage())
+        val itemstack: ItemStack = playerIn.getItemInHand(hand)
+        val metadata: Int = this.getMetadata(itemstack.legacyItemValue)
         if (metadata == BlockEnclosed.EnumEnclosedBlockType.ME_CABLE.getMeta() && CompatibilityManager.isAppEngLoaded()) {
             val iblockstate: IBlockState = worldIn.getBlockState(pos)
             val block: Block = iblockstate.getBlock()
@@ -69,7 +71,7 @@ open class ItemBlockEnclosed constructor(block: Block?) : ItemBlockDesc(block) {
             } else if (!playerIn.canPlayerEdit(pos, side, itemstack)) {
                 return EnumActionResult.FAIL
             } else if (worldIn.mayPlace(this.block, pos, false, side, null)) {
-                val i: Int = this.getMetadata(itemstack.getMetadata())
+                val i: Int = this.getMetadata(itemstack.legacyItemValue)
                 val iblockstate1: IBlockState =
                     this.block.getStateForPlacement(worldIn, pos, side, hitX, hitY, hitZ, i, playerIn)
 
@@ -130,7 +132,7 @@ open class ItemBlockEnclosed constructor(block: Block?) : ItemBlockDesc(block) {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }

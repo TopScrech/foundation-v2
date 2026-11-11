@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.items
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
@@ -7,20 +9,20 @@ import micdoodle8.mods.galacticraft.core.util.CompatibilityManager
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.JavaUtil
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.NonNullList
-import net.minecraft.world.World
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.NonNullList
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.capability.ItemFluidContainer
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import kotlin.math.max
@@ -46,7 +48,7 @@ abstract class ItemCanisterGeneric(assetName: String?) : ItemFluidContainer(Flui
         return ItemCanisterGenericHandler(stack)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
@@ -55,7 +57,7 @@ abstract class ItemCanisterGeneric(assetName: String?) : ItemFluidContainer(Flui
         return GalacticraftCore.galacticraftItemsTab
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubItems(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         if (tab === GalacticraftCore.galacticraftItemsTab || tab === CreativeTabs.SEARCH) {
             list.add(ItemStack(this, 1, 1))
@@ -74,12 +76,12 @@ abstract class ItemCanisterGeneric(assetName: String?) : ItemFluidContainer(Flui
     }
 
     override fun onUpdate(par1ItemStack: ItemStack, par2World: World, par3Entity: Entity, par4: Int, par5: Boolean) {
-        if (EMPTY == par1ItemStack.getItemDamage()) {
+        if (EMPTY == par1ItemStack.legacyItemValue) {
             if (par1ItemStack.getItem() !== GCItems.oilCanister) {
                 this.replaceEmptyCanisterItem(par1ItemStack, GCItems.oilCanister)
             }
             par1ItemStack.setTagCompound(null)
-        } else if (par1ItemStack.getItemDamage() <= 0) {
+        } else if (par1ItemStack.legacyItemValue <= 0) {
             par1ItemStack.setItemDamage(1)
         }
     }
@@ -93,12 +95,12 @@ abstract class ItemCanisterGeneric(assetName: String?) : ItemFluidContainer(Flui
     }
 
     open fun fill(container: ItemStack?, resource: FluidStack?, doFill: Boolean): Int {
-        if (resource == null || resource.getFluid() == null || resource.amount <= 0 || container == null || container.getItemDamage() <= 1 || (container.getItem() !is ItemCanisterGeneric)) {
+        if (resource == null || resource.getFluid() == null || resource.amount <= 0 || container == null || container.legacyItemValue <= 1 || (container.getItem() !is ItemCanisterGeneric)) {
             return 0
         }
         val fluidName: String = resource.getFluid().getName()
 
-        var capacityPlusOne: Int = container.getItemDamage()
+        var capacityPlusOne: Int = container.legacyItemValue
         if (capacityPlusOne <= 1) {
             if (capacityPlusOne < 1) {
                 //It shouldn't be possible, but just in case, set this to a proper filled item
@@ -128,7 +130,7 @@ abstract class ItemCanisterGeneric(assetName: String?) : ItemFluidContainer(Flui
         if (fluidName.equals((container.getItem() as ItemCanisterGeneric).allowedFluid, ignoreCase = true)) {
             val added: Int = min(resource.amount, capacityPlusOne - 1)
             if (doFill && added > 0) {
-                container.setItemDamage(max(1, container.getItemDamage() - added))
+                container.setItemDamage(max(1, container.legacyItemValue - added))
             }
             return added
         }
@@ -137,14 +139,14 @@ abstract class ItemCanisterGeneric(assetName: String?) : ItemFluidContainer(Flui
     }
 
     open fun drain(container: ItemStack, maxDrain: Int, doDrain: Boolean): FluidStack? {
-        if (this.allowedFluid == null || container.getItemDamage() >= EMPTY) {
+        if (this.allowedFluid == null || container.legacyItemValue >= EMPTY) {
             return null
         }
 
         val used: FluidStack? = this.getFluid(container)
         if (used != null && used.amount > maxDrain) used.amount = maxDrain
         if (doDrain && used != null && used.amount > 0) {
-            this.setNewDamage(container, container.getItemDamage() + used.amount)
+            this.setNewDamage(container, container.legacyItemValue + used.amount)
         }
         return used
     }
@@ -177,7 +179,7 @@ abstract class ItemCanisterGeneric(assetName: String?) : ItemFluidContainer(Flui
 
     fun getFluid(container: ItemStack): FluidStack? {
         val fluidName: String? = (container.getItem() as ItemCanisterGeneric).allowedFluid
-        if (fluidName == null || container.getItemDamage() >= EMPTY) {
+        if (fluidName == null || container.legacyItemValue >= EMPTY) {
             return null
         }
 
@@ -186,7 +188,7 @@ abstract class ItemCanisterGeneric(assetName: String?) : ItemFluidContainer(Flui
             return null
         }
 
-        return FluidStack(fluid, EMPTY - container.getItemDamage())
+        return FluidStack(fluid, EMPTY - container.legacyItemValue)
     }
 
     companion object {

@@ -8,11 +8,11 @@ import asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart.Dungeon
 import asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart.RoomBoss
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.tile.TileEntityDungeonSpawner
-import net.minecraft.init.Blocks
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import java.util.Random
 
 open class RoomBossCeres : RoomBoss {
@@ -37,15 +37,15 @@ open class RoomBossCeres : RoomBoss {
         entranceDir: EnumFacing
     ) : super((configuration)!!, rand, blockPosX, blockPosZ, 24, 11, 24, entranceDir)
 
-    override fun addComponentParts(worldIn: World, random: Random, chunkBox: StructureBoundingBox): Boolean {
+    override fun addComponentParts(worldIn: World, random: Random, chunkBox: BoundingBox): Boolean {
         for (i: Int in 0..this.sizeX) {
             for (j: Int in 0..this.sizeY) {
                 for (k: Int in 0..this.sizeZ) {
                     if (i == 0 || i == this.sizeX || j == 0 || k == 0 || k == this.sizeZ) {
                         var placeBlock: Boolean = true
                         if ((getDirection())!!.getAxis() == EnumFacing.Axis.Z) {
-                            val start: Int = (this.boundingBox.maxX - this.boundingBox.minX) / 2 - 1
-                            val end: Int = (this.boundingBox.maxX - this.boundingBox.minX) / 2 + 1
+                            val start: Int = (this.boundingBox.maxX() - this.boundingBox.minX()) / 2 - 1
+                            val end: Int = (this.boundingBox.maxX() - this.boundingBox.minX()) / 2 + 1
                             if (i > start && i <= end && j < 3 && j > 0) {
                                 if (getDirection() == EnumFacing.SOUTH && k == 0) {
                                     placeBlock = false
@@ -54,8 +54,8 @@ open class RoomBossCeres : RoomBoss {
                                 }
                             }
                         } else {
-                            val start: Int = (this.boundingBox.maxZ - this.boundingBox.minZ) / 2 - 1
-                            val end: Int = (this.boundingBox.maxZ - this.boundingBox.minZ) / 2 + 1
+                            val start: Int = (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2 - 1
+                            val end: Int = (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2 + 1
                             if (k > start && k <= end && j < 3 && j > 0) {
                                 if (getDirection() == EnumFacing.EAST && i == 0) {
                                     placeBlock = false
@@ -69,7 +69,7 @@ open class RoomBossCeres : RoomBoss {
                                 if (i == this.sizeX / 2 && k > 1 && k < this.sizeZ - 1) {
                                     this.setBlockState(
                                         worldIn,
-                                        GSBlocks.FUTURE_GLASS_BASIC.getDefaultState(),
+                                        GSBlocks.FUTURE_GLASS_BASIC.defaultBlockState(),
                                         i,
                                         j,
                                         k,
@@ -77,7 +77,7 @@ open class RoomBossCeres : RoomBoss {
                                     )
                                     this.setBlockState(
                                         worldIn,
-                                        Blocks.PACKED_ICE.getDefaultState(),
+                                        Blocks.PACKED_ICE.defaultBlockState(),
                                         i,
                                         j - 1,
                                         k,
@@ -86,7 +86,7 @@ open class RoomBossCeres : RoomBoss {
                                 } else if (k == this.sizeZ / 2 && i > 1 && i < this.sizeX - 1) {
                                     this.setBlockState(
                                         worldIn,
-                                        GSBlocks.FUTURE_GLASS_BASIC.getDefaultState(),
+                                        GSBlocks.FUTURE_GLASS_BASIC.defaultBlockState(),
                                         i,
                                         j,
                                         k,
@@ -94,7 +94,7 @@ open class RoomBossCeres : RoomBoss {
                                     )
                                     this.setBlockState(
                                         worldIn,
-                                        Blocks.PACKED_ICE.getDefaultState(),
+                                        Blocks.PACKED_ICE.defaultBlockState(),
                                         i,
                                         j - 1,
                                         k,
@@ -102,7 +102,7 @@ open class RoomBossCeres : RoomBoss {
                                     )
                                 } else if ((i == 3 || i == this.sizeX - 3) && (k == 3 || k == this.sizeZ - 3)) this.setBlockState(
                                     worldIn,
-                                    Blocks.GLOWSTONE.getDefaultState(),
+                                    Blocks.GLOWSTONE.defaultBlockState(),
                                     i,
                                     j,
                                     k,
@@ -110,8 +110,8 @@ open class RoomBossCeres : RoomBoss {
                                 )
                                 else this.setBlockState(
                                     worldIn,
-                                    GSBlocks.CERES_BLOCKS.getDefaultState()
-                                        .withProperty(
+                                    GSBlocks.CERES_BLOCKS.defaultBlockState()
+                                        .setValue(
                                             CeresBlocks.BASIC_TYPE,
                                             EnumCeresBlocks.CERES_DUNGEON_FLOOR
                                         ),
@@ -122,16 +122,16 @@ open class RoomBossCeres : RoomBoss {
                                 )
                             } else this.setBlockState(worldIn, (this.configuration)!!.getBrickBlock(), i, j, k, chunkBox)
                         } else {
-                            this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i, j, k, chunkBox)
+                            this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i, j, k, chunkBox)
                         }
                     } else if (j == this.sizeY) {
                         if ((i <= 2 || k <= 2 || i >= this.sizeX - 2 || k >= this.sizeZ - 2) && random.nextInt(4) == 0) {
-                            this.setBlockState(worldIn, Blocks.GLOWSTONE.getDefaultState(), i, j, k, chunkBox)
+                            this.setBlockState(worldIn, Blocks.GLOWSTONE.defaultBlockState(), i, j, k, chunkBox)
                         } else {
                             this.setBlockState(
                                 worldIn,
-                                GSBlocks.CERES_BLOCKS.getDefaultState()
-                                    .withProperty(
+                                GSBlocks.CERES_BLOCKS.defaultBlockState()
+                                    .setValue(
                                         CeresBlocks.BASIC_TYPE,
                                         EnumCeresBlocks.CERES_DUNGEON_TOP
                                     ),
@@ -147,8 +147,8 @@ open class RoomBossCeres : RoomBoss {
                     } else {
                         if ((i == 2 || i == 4 || i == this.sizeX - 2 || i == this.sizeX - 4) &&
                             (k == 2 || k == 4 && i != 4 && i != this.sizeX - 4 || k == this.sizeZ - 2 || k == this.sizeZ - 4 && i != 4 && i != this.sizeX - 4)
-                        ) this.setBlockState(worldIn, Blocks.PACKED_ICE.getDefaultState(), i, j, k, chunkBox)
-                        else this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i, j, k, chunkBox)
+                        ) this.setBlockState(worldIn, Blocks.PACKED_ICE.defaultBlockState(), i, j, k, chunkBox)
+                        else this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i, j, k, chunkBox)
                     }
                 }
             }
@@ -163,15 +163,15 @@ open class RoomBossCeres : RoomBoss {
             this.getZWithOffset(spawnerX, spawnerZ)
         )
         //Is this position inside the chunk currently being generated?
-        if (chunkBox.isVecInside(blockpos)) {
-            worldIn.setBlockState(blockpos, GSBlocks.BOSS_SPAWNER_CERES.getDefaultState(), 2)
-            val spawner: TileEntityDungeonSpawner<*>? = worldIn.getTileEntity(blockpos) as TileEntityDungeonSpawner<*>?
+        if (chunkBox.isInside(blockpos)) {
+            worldIn.setBlock(blockpos, GSBlocks.BOSS_SPAWNER_CERES.defaultBlockState(), 2)
+            val spawner: TileEntityDungeonSpawner<*>? = worldIn.getBlockEntity(blockpos) as TileEntityDungeonSpawner<*>?
             if (spawner != null) {
                 spawner.setRoom(
                     Vector3(
-                        (this.boundingBox.minX + 1).toDouble(),
-                        (this.boundingBox.minY + 1).toDouble(),
-                        (this.boundingBox.minZ + 1).toDouble()
+                        (this.boundingBox.minX() + 1).toDouble(),
+                        (this.boundingBox.minY() + 1).toDouble(),
+                        (this.boundingBox.minZ() + 1).toDouble()
                     ), Vector3((this.sizeX - 1).toDouble(), (this.sizeY - 1).toDouble(), (this.sizeZ - 1).toDouble())
                 )
             }

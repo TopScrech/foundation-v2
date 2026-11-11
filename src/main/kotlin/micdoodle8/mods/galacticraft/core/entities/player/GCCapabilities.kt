@@ -1,10 +1,10 @@
 package micdoodle8.mods.galacticraft.core.entities.player
 
 import micdoodle8.mods.galacticraft.core.Constants
-import net.minecraft.nbt.NBTBase
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
+import net.minecraft.nbt.Tag as NBTBase
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
 import net.minecraftforge.common.capabilities.CapabilityManager
@@ -20,10 +20,10 @@ object GCCapabilities {
     var GC_STATS_CLIENT_CAPABILITY: Capability<GCPlayerStatsClient?>? = null
 
     @JvmField
-    val GC_PLAYER_PROP: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "player_stats")
+    val GC_PLAYER_PROP: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "player_stats")
 
     @JvmField
-    val GC_PLAYER_CLIENT_PROP: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "player_stats_client")
+    val GC_PLAYER_CLIENT_PROP: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "player_stats_client")
 
     @JvmStatic
     fun register() {

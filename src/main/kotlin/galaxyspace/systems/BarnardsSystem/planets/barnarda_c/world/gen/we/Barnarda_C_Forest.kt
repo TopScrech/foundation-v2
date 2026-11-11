@@ -1,5 +1,9 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.world.gen.we
 
+import foundation.block.getStateFromMeta
+
+import foundation.level.offset
+
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Blocks.EnumBlockBarnardaC
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Dandelions
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
@@ -21,9 +25,9 @@ import net.minecraft.entity.passive.EntityChicken
 import net.minecraft.entity.passive.EntityPig
 import net.minecraft.entity.passive.EntitySheep
 import net.minecraft.entity.passive.EntitySquid
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class Barnarda_C_Forest constructor(min: Double, max: Double) :
@@ -83,17 +87,17 @@ open class Barnarda_C_Forest constructor(min: Double, max: Double) :
             false
         )
 
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         createChunkGen_InXZ_List.add(standardBiomeLayers)
 
         var lakes: WE_LakesGen = WE_LakesGen()
-        lakes.lakeBlock = Blocks.WATER.getDefaultState()
+        lakes.lakeBlock = Blocks.WATER.defaultBlockState()
         lakes.iceGen = false
         lakes.chunksForLake = 6
         decorateChunkGen_List.add(lakes)
 
         lakes = WE_LakesGen()
-        lakes.lakeBlock = Blocks.LAVA.getDefaultState()
+        lakes.lakeBlock = Blocks.LAVA.defaultBlockState()
         lakes.iceGen = false
         lakes.chunksForLake = 100
         decorateChunkGen_List.add(lakes)
@@ -109,15 +113,15 @@ open class Barnarda_C_Forest constructor(min: Double, max: Double) :
             randPosZ = z + (rand)!!.nextInt(16) + 8
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-            if ((world)!!.getBlockState(pos.down()) === BRBlocks.BARNARDA_C_GRASS.getDefaultState()
-                    .withProperty(
+            if ((world)!!.getBlockState(pos.below()) === BRBlocks.BARNARDA_C_GRASS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Grass.BASIC_TYPE,
                         Barnarda_C_Grass.EnumBlockGrass.GRASS
                     )
-            ) (world)!!.setBlockState(
+            ) (world)!!.setBlockAndUpdate(
                 pos,
-                BRBlocks.BARNARDA_C_DANDELIONS.getDefaultState()
-                    .withProperty(
+                BRBlocks.BARNARDA_C_DANDELIONS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Dandelions.BASIC_TYPE,
                         Barnarda_C_Dandelions.EnumBlockDandelions.GRASS
                     )
@@ -129,15 +133,15 @@ open class Barnarda_C_Forest constructor(min: Double, max: Double) :
             randPosZ = z + (rand)!!.nextInt(16) + 8
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-            if ((world)!!.getBlockState(pos.down()) === BRBlocks.BARNARDA_C_GRASS.getDefaultState()
-                    .withProperty(
+            if ((world)!!.getBlockState(pos.below()) === BRBlocks.BARNARDA_C_GRASS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Grass.BASIC_TYPE,
                         Barnarda_C_Grass.EnumBlockGrass.GRASS
                     )
-            ) (world)!!.setBlockState(
+            ) (world)!!.setBlockAndUpdate(
                 pos,
-                BRBlocks.BARNARDA_C_DANDELIONS.getDefaultState()
-                    .withProperty(
+                BRBlocks.BARNARDA_C_DANDELIONS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Dandelions.BASIC_TYPE,
                         Barnarda_C_Dandelions.EnumBlockDandelions.HOPPER
                     )
@@ -152,7 +156,7 @@ open class Barnarda_C_Forest constructor(min: Double, max: Double) :
             var cangen: Boolean = true
 
             cangen = true
-            for (pos1: BlockPos in BlockPos.getAllInBox(pos.add(-3, -1, -3), pos.add(3, -1, 3))) if ((world)!!.isAirBlock(
+            for (pos1: BlockPos in BlockPos.getAllInBox(pos.offset(-3, -1, -3), pos.offset(3, -1, 3))) if ((world)!!.isEmptyBlock(
                     pos1
                 ) || (world)!!.getBlockState(pos1) === BRBlocks.BARNARDA_C_VIOLET_LOG.getStateFromMeta(0)
             ) cangen = (world)!!.getBlockState(pos1).getMaterial() === Material.WATER
@@ -162,8 +166,8 @@ open class Barnarda_C_Forest constructor(min: Double, max: Double) :
                     18,
                     false
                 )
-            ) if (cangen && pos.getY() > 50 && (world)!!.getBlockState(pos.down()) === BRBlocks.BARNARDA_C_GRASS.getDefaultState()
-                    .withProperty(
+            ) if (cangen && pos.getY() > 50 && (world)!!.getBlockState(pos.below()) === BRBlocks.BARNARDA_C_GRASS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Grass.BASIC_TYPE,
                         Barnarda_C_Grass.EnumBlockGrass.GRASS
                     )
@@ -190,14 +194,14 @@ open class Barnarda_C_Forest constructor(min: Double, max: Double) :
                 randPosZ = z + (rand)!!.nextInt(16) + 8
                 pos = BlockPos(randPosX, y, randPosZ)
 
-                if ((world)!!.isAirBlock(pos.down()) && (world)!!.getBlockState(pos.up()) === BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(
+                if ((world)!!.isEmptyBlock(pos.below()) && (world)!!.getBlockState(pos.above()) === BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(
                         0
                     )
                 ) {
-                    (world)!!.setBlockState(
+                    (world)!!.setBlockAndUpdate(
                         pos,
-                        BRBlocks.BARNARDA_C_DANDELIONS.getDefaultState()
-                            .withProperty(
+                        BRBlocks.BARNARDA_C_DANDELIONS.defaultBlockState()
+                            .setValue(
                                 Barnarda_C_Dandelions.BASIC_TYPE,
                                 Barnarda_C_Dandelions.EnumBlockDandelions.LEAVES_BALLS
                             )
@@ -214,26 +218,26 @@ open class Barnarda_C_Forest constructor(min: Double, max: Double) :
             var cangen: Boolean = false
             val range: Int = 2
             for (pos1: BlockPos in BlockPos.getAllInBox(
-                pos.add(-range, -range, -range),
-                pos.add(range, range, range)
+                pos.offset(-range, -range, -range),
+                pos.offset(range, range, range)
             )) if ((world)!!.getBlockState(pos1).getMaterial() === Material.WATER) cangen = true
 
             if (cangen &&
-                ((world)!!.getBlockState(pos.down()) === BRBlocks.BARNARDA_C_GRASS.getDefaultState()
-                    .withProperty(
+                ((world)!!.getBlockState(pos.below()) === BRBlocks.BARNARDA_C_GRASS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Grass.BASIC_TYPE,
                         Barnarda_C_Grass.EnumBlockGrass.GRASS
                     ) ||
-                        (world)!!.getBlockState(pos.down()) === BRBlocks.BARNARDA_C_BLOCKS.getDefaultState()
-                    .withProperty(
+                        (world)!!.getBlockState(pos.below()) === BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Blocks.BASIC_TYPE,
                         EnumBlockBarnardaC.DIRT
                     ))
             ) {
-                (world)!!.setBlockState(
+                (world)!!.setBlockAndUpdate(
                     pos,
-                    BRBlocks.BARNARDA_C_DANDELIONS.getDefaultState()
-                        .withProperty(
+                    BRBlocks.BARNARDA_C_DANDELIONS.defaultBlockState()
+                        .setValue(
                             Barnarda_C_Dandelions.BASIC_TYPE,
                             Barnarda_C_Dandelions.EnumBlockDandelions.LIGHT_BALLS
                         )

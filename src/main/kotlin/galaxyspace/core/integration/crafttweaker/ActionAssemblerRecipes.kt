@@ -4,7 +4,7 @@ import crafttweaker.api.item.IItemStack
 import crafttweaker.IAction
 import crafttweaker.api.minecraft.CraftTweakerMC
 import galaxyspace.systems.SolarSystem.planets.overworld.recipes.AssemblyRecipes
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import java.util.ArrayList
 
 open class ActionAssemblerRecipes {

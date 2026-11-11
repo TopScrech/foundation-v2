@@ -1,12 +1,14 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import net.minecraft.block.BlockPlanks
-import net.minecraft.init.Blocks
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.StructureComponent
 import net.minecraft.world.gen.structure.template.TemplateManager
 import java.util.Random
@@ -23,24 +25,24 @@ open class StructureComponentVillageWell : StructureComponentVillage {
         par4: Int,
         par5: Int
     ) : super(par1ComponentVillageStartPiece, par2) {
-        this.setCoordBaseMode(EnumFacing.byIndex(par3Random.nextInt(4)))
+        this.setCoordBaseMode(EnumFacing.from3DDataValue(par3Random.nextInt(4)))
 
         when (this.getCoordBaseMode()!!.getHorizontalIndex()) {
-            0, 2 -> this.boundingBox = StructureBoundingBox(par4, 64, par5, par4 + 6 - 1, 78, par5 + 6 - 1)
-            else -> this.boundingBox = StructureBoundingBox(par4, 64, par5, par4 + 6 - 1, 78, par5 + 6 - 1)
+            0, 2 -> this.boundingBox = BoundingBox(par4, 64, par5, par4 + 6 - 1, 78, par5 + 6 - 1)
+            else -> this.boundingBox = BoundingBox(par4, 64, par5, par4 + 6 - 1, 78, par5 + 6 - 1)
         }
     }
 
     override fun writeStructureToNBT(nbt: NBTTagCompound) {
         super.writeStructureToNBT(nbt)
 
-        nbt.setInteger("AvgGroundLevel", this.averageGroundLevel)
+        nbt.putInt("AvgGroundLevel", this.averageGroundLevel)
     }
 
     override fun readStructureFromNBT(nbt: NBTTagCompound, manager: TemplateManager) {
         super.readStructureFromNBT(nbt, manager)
 
-        this.averageGroundLevel = nbt.getInteger("AvgGroundLevel")
+        this.averageGroundLevel = nbt.getIntOr("AvgGroundLevel", 0)
     }
 
     override fun buildComponent(
@@ -52,9 +54,9 @@ open class StructureComponentVillageWell : StructureComponentVillage {
             par1StructureComponent as StructureComponentVillageStartPiece,
             par2List,
             par3Random,
-            this.boundingBox.minX - 1,
-            this.boundingBox.maxY - 4,
-            this.boundingBox.minZ + 1,
+            this.boundingBox.minX() - 1,
+            this.boundingBox.maxY() - 4,
+            this.boundingBox.minZ() + 1,
             EnumFacing.byHorizontalIndex(1),
             this.getComponentType()
         )
@@ -62,9 +64,9 @@ open class StructureComponentVillageWell : StructureComponentVillage {
             par1StructureComponent,
             par2List,
             par3Random,
-            this.boundingBox.maxX + 1,
-            this.boundingBox.maxY - 4,
-            this.boundingBox.minZ + 1,
+            this.boundingBox.maxX() + 1,
+            this.boundingBox.maxY() - 4,
+            this.boundingBox.minZ() + 1,
             EnumFacing.byHorizontalIndex(3),
             this.getComponentType()
         )
@@ -72,9 +74,9 @@ open class StructureComponentVillageWell : StructureComponentVillage {
             par1StructureComponent,
             par2List,
             par3Random,
-            this.boundingBox.minX + 1,
-            this.boundingBox.maxY - 4,
-            this.boundingBox.minZ - 1,
+            this.boundingBox.minX() + 1,
+            this.boundingBox.maxY() - 4,
+            this.boundingBox.minZ() - 1,
             EnumFacing.byHorizontalIndex(2),
             this.getComponentType()
         )
@@ -82,9 +84,9 @@ open class StructureComponentVillageWell : StructureComponentVillage {
             par1StructureComponent,
             par2List,
             par3Random,
-            this.boundingBox.minX + 1,
-            this.boundingBox.maxY - 4,
-            this.boundingBox.maxZ + 1,
+            this.boundingBox.minX() + 1,
+            this.boundingBox.maxY() - 4,
+            this.boundingBox.maxZ() + 1,
             EnumFacing.byHorizontalIndex(0),
             this.getComponentType()
         )
@@ -93,7 +95,7 @@ open class StructureComponentVillageWell : StructureComponentVillage {
     override fun addComponentParts(
         par1World: World,
         par2Random: Random,
-        par3StructureBoundingBox: StructureBoundingBox
+        par3StructureBoundingBox: BoundingBox
     ): Boolean {
         if (this.averageGroundLevel < 0) {
             this.averageGroundLevel = this.getAverageGroundLevel(par1World, par3StructureBoundingBox)
@@ -102,7 +104,7 @@ open class StructureComponentVillageWell : StructureComponentVillage {
                 return true
             }
 
-            this.boundingBox.offset(0, this.averageGroundLevel - this.boundingBox.maxY + 3, 0)
+            this.boundingBox.move(0, this.averageGroundLevel - this.boundingBox.maxY() + 3, 0)
         }
 
         this.fillWithBlocks(
@@ -115,21 +117,21 @@ open class StructureComponentVillageWell : StructureComponentVillage {
             12,
             4,
             (GCBlocks.basicBlock)!!.getStateFromMeta(4),
-            Blocks.FLOWING_WATER.getDefaultState(),
+            Blocks.FLOWING_WATER.defaultBlockState(),
             false
         )
-        this.setBlockState(par1World, Blocks.AIR.getDefaultState(), 2, 12, 2, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.AIR.getDefaultState(), 3, 12, 2, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.AIR.getDefaultState(), 2, 12, 3, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.AIR.getDefaultState(), 3, 12, 3, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.getDefaultState(), 1, 13, 1, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.getDefaultState(), 1, 14, 1, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.getDefaultState(), 4, 13, 1, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.getDefaultState(), 4, 14, 1, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.getDefaultState(), 1, 13, 4, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.getDefaultState(), 1, 14, 4, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.getDefaultState(), 4, 13, 4, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.getDefaultState(), 4, 14, 4, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.AIR.defaultBlockState(), 2, 12, 2, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.AIR.defaultBlockState(), 3, 12, 2, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.AIR.defaultBlockState(), 2, 12, 3, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.AIR.defaultBlockState(), 3, 12, 3, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.defaultBlockState(), 1, 13, 1, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.defaultBlockState(), 1, 14, 1, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.defaultBlockState(), 4, 13, 1, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.defaultBlockState(), 4, 14, 1, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.defaultBlockState(), 1, 13, 4, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.defaultBlockState(), 1, 14, 4, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.defaultBlockState(), 4, 13, 4, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.defaultBlockState(), 4, 14, 4, par3StructureBoundingBox)
         this.fillWithBlocks(
             par1World,
             par3StructureBoundingBox,
@@ -149,7 +151,7 @@ open class StructureComponentVillageWell : StructureComponentVillage {
                 if (var5 == 0 || var5 == 5 || var4 == 0 || var4 == 5) {
                     this.setBlockState(
                         par1World,
-                        Blocks.PLANKS.getDefaultState().withProperty(
+                        Blocks.PLANKS.defaultBlockState().setValue(
                             BlockPlanks.VARIANT,
                             BlockPlanks.EnumType.SPRUCE
                         ),

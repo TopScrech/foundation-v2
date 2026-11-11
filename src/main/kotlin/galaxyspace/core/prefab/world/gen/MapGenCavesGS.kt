@@ -1,13 +1,15 @@
 package galaxyspace.core.prefab.world.gen
 
+import foundation.block.getMetaFromState
+
 import galaxyspace.core.prefab.world.gen.MapGenCavesGS
 import galaxyspace.core.GSBlocks
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.ChunkPrimer
 import java.util.Random
 
@@ -226,7 +228,7 @@ open class MapGenCavesGS constructor(
                                                     localX,
                                                     localY,
                                                     localZ,
-                                                    Blocks.AIR.getDefaultState()
+                                                    Blocks.AIR.defaultBlockState()
                                                 )
                                             } else if (state == this.subsurface_block || state == this.stone_block) {
                                                 if (localY <= this.y_down) primer.setBlockState(
@@ -239,22 +241,22 @@ open class MapGenCavesGS constructor(
                                                     localX,
                                                     localY,
                                                     localZ,
-                                                    Blocks.AIR.getDefaultState()
+                                                    Blocks.AIR.defaultBlockState()
                                                 )
                                             }
                                             /*
 											if (block == this.surface_block.getBlock()) {
 												if (metadata == this.subsurface_block.getBlock().getMetaFromState(state) || metadata == this.stoneMeta) {
-													primer.setBlockState(localX, localY, localZ, Blocks.AIR.getDefaultState());
+													primer.setBlockState(localX, localY, localZ, Blocks.AIR.defaultBlockState());
 												} else if (metadata == this.surfaceMeta && random.nextInt(BREAK_THROUGH_CHANCE) == 0) {
-													primer.setBlockState(localX, localY, localZ, Blocks.AIR.getDefaultState());
+													primer.setBlockState(localX, localY, localZ, Blocks.AIR.defaultBlockState());
 												}
 											}
 											*/
                                             /*
 											if(block == GSBlocks.SURFACE_ICE)
 											{
-												primer.setBlockState(localX, localY, localZ, Blocks.AIR.getDefaultState());
+												primer.setBlockState(localX, localY, localZ, Blocks.AIR.defaultBlockState());
 											}*/
                                         }
                                     }

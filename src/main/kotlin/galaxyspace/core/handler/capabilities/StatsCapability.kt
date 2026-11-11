@@ -1,9 +1,9 @@
 package galaxyspace.core.handler.capabilities
 
 import galaxyspace.core.handler.capabilities.GSCapabilityStatsHandler
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.Entity
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import java.lang.ref.WeakReference
 
 abstract class StatsCapability {

@@ -3,13 +3,13 @@ package micdoodle8.mods.galacticraft.core.client.fx
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import net.minecraft.client.particle.Particle
 import net.minecraft.client.renderer.BufferBuilder
-import net.minecraft.entity.Entity
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class ParticleSmokeSmall constructor(par1World: World, position: Vector3, motion: Vector3) :
     Particle(par1World, position.x, position.y, position.z, 0.0, 0.0, 0.0) {
     @JvmField

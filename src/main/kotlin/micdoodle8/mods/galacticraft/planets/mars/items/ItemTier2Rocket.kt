@@ -1,5 +1,13 @@
 package micdoodle8.mods.galacticraft.planets.mars.items
 
+import foundation.item.legacyItemValue
+
+import foundation.block.getMetaFromState
+
+import foundation.level.offset
+
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.galacticraft.api.entity.IRocketType.EnumRocketType
 
 import micdoodle8.mods.galacticraft.api.entity.IRocketType
@@ -17,25 +25,25 @@ import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.mars.entities.EntityCargoRocket
 import micdoodle8.mods.galacticraft.planets.mars.entities.EntityTier2Rocket
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemTier2Rocket constructor() : Item(), IHoldableItem, ISortableItem {
     init {
@@ -44,12 +52,12 @@ open class ItemTier2Rocket constructor() : Item(), IHoldableItem, ISortableItem 
         this.setMaxStackSize(1)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftItemsTab
     }
@@ -64,11 +72,11 @@ open class ItemTier2Rocket constructor() : Item(), IHoldableItem, ISortableItem 
         hitZ: Float,
         hand: EnumHand
     ): EnumActionResult {
-        val stack: ItemStack = player.getHeldItem(hand)
+        val stack: ItemStack = player.getItemInHand(hand)
         var padFound: Boolean = false
         var tile: TileEntity? = null
 
-        if (world.isRemote) {
+        if (world.isClientSide) {
             return EnumActionResult.PASS
         } else {
             var centerX: Float = -1f
@@ -77,14 +85,14 @@ open class ItemTier2Rocket constructor() : Item(), IHoldableItem, ISortableItem 
 
             for (i: Int in -1..1) {
                 for (j: Int in -1..1) {
-                    val pos1: BlockPos = pos.add(i, 0, j)
+                    val pos1: BlockPos = pos.offset(i, 0, j)
                     val state: IBlockState = world.getBlockState(pos1)
                     val id: Block = state.getBlock()
                     val meta: Int = id.getMetaFromState(state)
 
                     if (id === GCBlocks.landingPadFull && meta == 0) {
                         padFound = true
-                        tile = world.getTileEntity(pos1)
+                        tile = world.getBlockEntity(pos1)
 
                         centerX = pos.getX() + i + 0.5f
                         centerY = pos.getY() + 0.4f
@@ -126,7 +134,7 @@ open class ItemTier2Rocket constructor() : Item(), IHoldableItem, ISortableItem 
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(
         par1ItemStack: ItemStack,
         worldIn: World?,
@@ -135,10 +143,10 @@ open class ItemTier2Rocket constructor() : Item(), IHoldableItem, ISortableItem 
     ) {
         val type: IRocketType.EnumRocketType
 
-        if (par1ItemStack.getItemDamage() < 10) {
-            type = IRocketType.EnumRocketType.entries[par1ItemStack.getItemDamage()]
+        if (par1ItemStack.legacyItemValue < 10) {
+            type = IRocketType.EnumRocketType.entries[par1ItemStack.legacyItemValue]
         } else {
-            type = IRocketType.EnumRocketType.entries[par1ItemStack.getItemDamage() - 10]
+            type = IRocketType.EnumRocketType.entries[par1ItemStack.legacyItemValue - 10]
         }
 
         if (!type.getTooltip().isEmpty()) {
@@ -149,16 +157,16 @@ open class ItemTier2Rocket constructor() : Item(), IHoldableItem, ISortableItem 
             tooltip.add(EnumColor.RED.toString() + "\u00a7o" + GCCoreUtil.translate("gui.creative_only.desc"))
         }
 
-        if (par1ItemStack.hasTagCompound() && par1ItemStack.getTagCompound()!!.hasKey("RocketFuel")) {
+        if (par1ItemStack.hasTagCompound() && par1ItemStack.getTagCompound()!!.containsTag("RocketFuel")) {
             val rocket: EntityAutoRocket
 
-            if (par1ItemStack.getItemDamage() < 10) {
+            if (par1ItemStack.legacyItemValue < 10) {
                 rocket = EntityTier2Rocket(
                     FMLClientHandler.instance().getWorldClient(),
                     0.0,
                     0.0,
                     0.0,
-                    IRocketType.EnumRocketType.entries[par1ItemStack.getItemDamage()]
+                    IRocketType.EnumRocketType.entries[par1ItemStack.legacyItemValue]
                 )
             } else {
                 rocket = EntityCargoRocket(
@@ -166,23 +174,23 @@ open class ItemTier2Rocket constructor() : Item(), IHoldableItem, ISortableItem 
                     0.0,
                     0.0,
                     0.0,
-                    IRocketType.EnumRocketType.entries[par1ItemStack.getItemDamage() - 10]
+                    IRocketType.EnumRocketType.entries[par1ItemStack.legacyItemValue - 10]
                 )
             }
 
             tooltip.add(
                 GCCoreUtil.translate("gui.message.fuel.name") + ": " + par1ItemStack.getTagCompound()!!
-                    .getInteger("RocketFuel") + " / " + rocket.fuelTank.getCapacity()
+                    .getIntOr("RocketFuel", 0) + " / " + rocket.fuelTank.getCapacity()
             )
         }
 
-        if (par1ItemStack.getItemDamage() >= 10) {
+        if (par1ItemStack.legacyItemValue >= 10) {
             tooltip.add(EnumColor.AQUA.toString() + GCCoreUtil.translate("gui.requires_controller.desc"))
         }
     }
 
     public override fun getTranslationKey(par1ItemStack: ItemStack): String {
-        return super.getTranslationKey(par1ItemStack) + (if (par1ItemStack.getItemDamage() < 10) ".t2Rocket" else ".cargo_rocket")
+        return super.getTranslationKey(par1ItemStack) + (if (par1ItemStack.legacyItemValue < 10) ".t2Rocket" else ".cargo_rocket")
     }
 
     override fun shouldHoldLeftHandUp(player: EntityPlayer?): Boolean {
@@ -222,13 +230,13 @@ open class ItemTier2Rocket constructor() : Item(), IHoldableItem, ISortableItem 
 
             val rocket: EntityAutoRocket
 
-            if (stack.getItemDamage() < 10) {
+            if (stack.legacyItemValue < 10) {
                 rocket = EntityTier2Rocket(
                     world,
                     centerX.toDouble(),
                     centerY.toDouble(),
                     centerZ.toDouble(),
-                    IRocketType.EnumRocketType.entries[stack.getItemDamage()]
+                    IRocketType.EnumRocketType.entries[stack.legacyItemValue]
                 )
             } else {
                 rocket = EntityCargoRocket(
@@ -236,12 +244,12 @@ open class ItemTier2Rocket constructor() : Item(), IHoldableItem, ISortableItem 
                     centerX.toDouble(),
                     centerY.toDouble(),
                     centerZ.toDouble(),
-                    IRocketType.EnumRocketType.entries[stack.getItemDamage() - 10]
+                    IRocketType.EnumRocketType.entries[stack.legacyItemValue - 10]
                 )
             }
 
             rocket.setPosition(rocket.posX, rocket.posY + rocket.getOnPadYOffset(), rocket.posZ)
-            world.spawnEntity(rocket)
+            world.addFreshEntity(rocket)
 
             if (((rocket as IRocketType).getType())!!.getPreFueled()) {
                 if (rocket is EntityTieredRocket) {
@@ -252,9 +260,9 @@ open class ItemTier2Rocket constructor() : Item(), IHoldableItem, ISortableItem 
                         true
                     )
                 }
-            } else if (stack.hasTagCompound() && stack.getTagCompound()!!.hasKey("RocketFuel")) {
+            } else if (stack.hasTagCompound() && stack.getTagCompound()!!.containsTag("RocketFuel")) {
                 rocket.fuelTank.fill(
-                    FluidStack(GCFluids.fluidFuel, stack.getTagCompound()!!.getInteger("RocketFuel")),
+                    FluidStack(GCFluids.fluidFuel, stack.getTagCompound()!!.getIntOr("RocketFuel", 0)),
                     true
                 )
             }

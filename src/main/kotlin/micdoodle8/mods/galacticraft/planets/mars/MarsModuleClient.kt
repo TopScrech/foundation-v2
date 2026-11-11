@@ -51,41 +51,40 @@ import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityLaunchController
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityMethaneSynthesizer
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityTerraformer
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityTreasureChestMars
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.particle.Particle
 import net.minecraft.client.renderer.block.model.ModelBakery
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.renderer.block.statemap.StateMapperBase
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.client.event.ModelBakeEvent
 import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.client.model.ModelLoader
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.model.IModelState
 import net.minecraftforge.common.model.TRSRTransformation
-import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.client.registry.IRenderFactory
 import net.minecraftforge.fml.client.registry.RenderingRegistry
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class MarsModuleClient : IPlanetsModuleClient {
-    override fun preInit(event: FMLPreInitializationEvent?) {
+    override fun preInit() {
         MinecraftForge.EVENT_BUS.register(this)
 
         RenderingRegistry.registerEntityRenderingHandler<EntitySludgeling>(
@@ -112,7 +111,7 @@ open class MarsModuleClient : IPlanetsModuleClient {
     }
 
     private fun addPlanetVariants(name: String, vararg variants: String?) {
-        val itemBlockVariants: Item? = Item.REGISTRY.getObject(ResourceLocation(Constants.MOD_ID_PLANETS, name))
+        val itemBlockVariants: Item? = Item.REGISTRY.getObject(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_PLANETS, name))
         val variants0: Array<ResourceLocation?> = arrayOfNulls<ResourceLocation>(variants.size)
         for (i: Int in variants.indices) {
             variants0[i] = ResourceLocation(GalacticraftPlanets.TEXTURE_PREFIX + variants[i])
@@ -151,7 +150,7 @@ open class MarsModuleClient : IPlanetsModuleClient {
         addPlanetVariants("mars_machine_t2", "gas_liquefier", "methane_synthesizer", "electrolyzer")
 
         val sludge: Item = Item.getItemFromBlock(MarsBlocks.blockSludge)
-        ModelBakery.registerItemVariants(sludge, ResourceLocation(GalacticraftPlanets.TEXTURE_PREFIX + "sludge"))
+        ModelBakery.registerItemVariants(sludge, ResourceLocation.parse(GalacticraftPlanets.TEXTURE_PREFIX + "sludge"))
         ModelLoader.setCustomMeshDefinition(
             sludge,
             IItemMeshDefinitionCustom.create(IItemMeshDefinitionCustom { stack: ItemStack? -> sludgeLocation })
@@ -180,7 +179,7 @@ open class MarsModuleClient : IPlanetsModuleClient {
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun loadTextures(event: TextureStitchEvent.Pre) {
         registerTexture(event, "rocket_t2")
         registerTexture(event, "cargo_rocket")
@@ -188,11 +187,11 @@ open class MarsModuleClient : IPlanetsModuleClient {
     }
 
     private fun registerTexture(event: TextureStitchEvent.Pre, texture: String) {
-        event.getMap().registerSprite(ResourceLocation(GalacticraftPlanets.TEXTURE_PREFIX + "blocks/" + texture))
+        event.getMap().registerSprite(ResourceLocation.parse(GalacticraftPlanets.TEXTURE_PREFIX + "blocks/" + texture))
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun onModelBakeEvent(event: ModelBakeEvent?) {
         replaceModelDefault(
             event,
@@ -234,8 +233,8 @@ open class MarsModuleClient : IPlanetsModuleClient {
     }
 
     override fun postInit(event: FMLPostInitializationEvent?) {
-//            IModelCustom chamberModel = AdvancedModelLoader.loadModel(new ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "models/chamber.obj"));
-//            IModelCustom cargoRocketModel = AdvancedModelLoader.loadModel(new ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "models/cargoRocket.obj"));
+//            IModelCustom chamberModel = AdvancedModelLoader.loadModel(new ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "models/chamber.obj"));
+//            IModelCustom cargoRocketModel = AdvancedModelLoader.loadModel(new ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "models/cargoRocket.obj"));
 //
 //        // Tile Entity Renderers
         ClientRegistry.bindTileEntitySpecialRenderer<TileEntityTreasureChestMars>(
@@ -255,7 +254,7 @@ open class MarsModuleClient : IPlanetsModuleClient {
 
     override fun getGuiElement(side: Side?, ID: Int, player: EntityPlayer?, world: World?, x: Int, y: Int, z: Int): Any? {
         if (side == Side.CLIENT) {
-            val tile: TileEntity? = (world)!!.getTileEntity(BlockPos(x, y, z))
+            val tile: TileEntity? = (world)!!.getBlockEntity(BlockPos(x, y, z))
 
             if (ID == GuiIdsPlanets.MACHINE_MARS) {
                 if (tile is TileEntityTerraformer) {
@@ -276,7 +275,7 @@ open class MarsModuleClient : IPlanetsModuleClient {
     }
 
     override fun spawnParticle(particleID: String?, position: Vector3?, motion: Vector3?, vararg extraData: Any?) {
-        val mc: Minecraft? = FMLClientHandler.instance().getClient()
+        val mc: Minecraft? = Minecraft.getInstance()
 
         if (mc != null && mc.getRenderViewEntity() != null && mc.effectRenderer != null) {
             val dPosX: Double = mc.getRenderViewEntity()!!.posX - (position)!!.x
@@ -304,10 +303,10 @@ open class MarsModuleClient : IPlanetsModuleClient {
     }
 
     open class TickHandlerClient {
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         @SubscribeEvent
         open fun onClientTick(event: TickEvent.ClientTickEvent?) {
-            val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+            val minecraft: Minecraft = Minecraft.getInstance()
 
             val world: WorldClient? = minecraft.world
 
@@ -413,8 +412,8 @@ open class MarsModuleClient : IPlanetsModuleClient {
         @JvmStatic
         fun openSlimelingGui(slimeling: EntitySlimeling?, gui: Int) {
             when (gui) {
-                0 -> FMLClientHandler.instance().getClient().displayGuiScreen(GuiSlimeling((slimeling)!!))
-                1 -> FMLClientHandler.instance().getClient().displayGuiScreen(GuiSlimelingFeed((slimeling)!!))
+                0 -> Minecraft.getInstance().gui.setScreen(GuiSlimeling((slimeling)!!))
+                1 -> Minecraft.getInstance().gui.setScreen(GuiSlimelingFeed((slimeling)!!))
             }
         }
     }

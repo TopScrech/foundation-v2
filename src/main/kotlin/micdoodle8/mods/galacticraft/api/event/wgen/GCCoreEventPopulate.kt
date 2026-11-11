@@ -1,26 +1,30 @@
 package micdoodle8.mods.galacticraft.api.event.wgen
 
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraftforge.fml.common.eventhandler.Event
-import java.util.Random
+import net.minecraft.core.BlockPos
+import net.minecraft.util.RandomSource
+import net.minecraft.world.level.WorldGenLevel
+import net.minecraftforge.eventbus.api.bus.EventBus
+import net.minecraftforge.eventbus.api.event.MutableEvent
 
-/**
- * Event is thrown when a chunk is populated on planets.
- *
- *
- * If you're adding your own dimensions, make sure you post these two events to
- * the forge event bus when decorating your planet/moon
- */
-open class GCCoreEventPopulate constructor(
-    @JvmField val world: World?,
-    @JvmField val rand: Random?,
+/** Events surrounding a planet or moon decoration pass */
+abstract class GCCoreEventPopulate(
+    @JvmField val world: WorldGenLevel?,
+    @JvmField val rand: RandomSource?,
     @JvmField val pos: BlockPos?
-) : Event() {
-    open class Pre constructor(world: World?, rand: Random?, pos: BlockPos?) :
-        GCCoreEventPopulate(world, rand, pos)
+) : MutableEvent() {
+    abstract fun post(): Boolean
 
+    class Pre(world: WorldGenLevel?, rand: RandomSource?, pos: BlockPos?) : GCCoreEventPopulate(world, rand, pos) {
+        override fun post(): Boolean = BUS.post(this)
+        companion object {
+            @JvmField val BUS: EventBus<Pre> = EventBus.create(Pre::class.java)
+        }
+    }
 
-    open class Post constructor(world: World?, rand: Random?, pos: BlockPos?) :
-        GCCoreEventPopulate(world, rand, pos)
+    class Post(world: WorldGenLevel?, rand: RandomSource?, pos: BlockPos?) : GCCoreEventPopulate(world, rand, pos) {
+        override fun post(): Boolean = BUS.post(this)
+        companion object {
+            @JvmField val BUS: EventBus<Post> = EventBus.create(Post::class.java)
+        }
+    }
 }

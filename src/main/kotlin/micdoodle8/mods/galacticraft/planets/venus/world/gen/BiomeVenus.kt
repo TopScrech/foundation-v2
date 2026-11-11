@@ -6,10 +6,10 @@ import micdoodle8.mods.galacticraft.api.world.BiomeGenBaseGC
 import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
 import micdoodle8.mods.galacticraft.planets.venus.blocks.BlockBasicVenus
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.biome.BiomeDecorator
 import net.minecraft.world.chunk.ChunkPrimer
 import java.util.*
@@ -44,8 +44,8 @@ open class BiomeVenus constructor(properties: BiomeProperties?) : BiomeGenBaseGC
         val i: Int = worldIn.getSeaLevel()
         var topBlock: IBlockState? = this.topBlock
         var fillerBlock: IBlockState = this.fillerBlock
-        val stoneBlock: IBlockState = (VenusBlocks.venusBlock)!!.getDefaultState()
-            .withProperty(
+        val stoneBlock: IBlockState = (VenusBlocks.venusBlock)!!.defaultBlockState()
+            .setValue(
                 BlockBasicVenus.BASIC_TYPE_VENUS,
                 BlockBasicVenus.EnumBlockBasicVenus.ROCK_HARD
             )
@@ -56,7 +56,7 @@ open class BiomeVenus constructor(properties: BiomeProperties?) : BiomeGenBaseGC
 
         for (j1: Int in 255 downTo 0) {
             if (j1 <= rand.nextInt(5)) {
-                chunkPrimerIn.setBlockState(i1, j1, l, Blocks.BEDROCK.getDefaultState())
+                chunkPrimerIn.setBlockState(i1, j1, l, Blocks.BEDROCK.defaultBlockState())
             } else {
                 val iblockstate2: IBlockState = chunkPrimerIn.getBlockState(i1, j1, l)
 

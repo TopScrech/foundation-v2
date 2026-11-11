@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.command
 
+import net.minecraft.network.chat.Component
+
 import com.google.common.collect.Sets
 import micdoodle8.mods.galacticraft.core.dimension.SpaceStationWorldData
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
@@ -9,10 +11,9 @@ import net.minecraft.command.CommandBase
 import net.minecraft.command.CommandException
 import net.minecraft.command.ICommandSender
 import net.minecraft.command.WrongUsageException
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
+import net.minecraft.core.BlockPos
 
 open class CommandSpaceStationRemoveOwner : CommandBase() {
     override fun getUsage(var1: ICommandSender): String {
@@ -53,7 +54,7 @@ open class CommandSpaceStationRemoveOwner : CommandBase() {
                     } else {
                         for (e: MutableMap.MutableEntry<Int,Int> in (stats.getSpaceStationDimensionData())!!.entries) {
                             val data: SpaceStationWorldData =
-                                (SpaceStationWorldData.getStationData(playerBase.world, e.value!!, playerBase))!!
+                                (SpaceStationWorldData.getStationData(playerBase.level(), e.value!!, playerBase))!!
 
                             var str: String? = null
                             for (name in data.getAllowedPlayers()) {
@@ -90,8 +91,8 @@ open class CommandSpaceStationRemoveOwner : CommandBase() {
         }
 
         if (playerBase != null) {
-            playerBase.sendMessage(
-                TextComponentString(
+            playerBase.sendSystemMessage(
+                Component.literal(
                     GCCoreUtil.translateWithFormat(
                         "gui.spacestation.removesuccess",
                         var3
@@ -127,7 +128,7 @@ open class CommandSpaceStationRemoveOwner : CommandBase() {
 
                 for (e: MutableMap.MutableEntry<Int,Int> in (stats.getSpaceStationDimensionData())!!.entries) {
                     val data: SpaceStationWorldData =
-                        (SpaceStationWorldData.getStationData(playerBase.world, e.value!!, playerBase))!!
+                        (SpaceStationWorldData.getStationData(playerBase.level(), e.value!!, playerBase))!!
                     allowedNames.addAll(data.getAllowedPlayers())
                 }
 

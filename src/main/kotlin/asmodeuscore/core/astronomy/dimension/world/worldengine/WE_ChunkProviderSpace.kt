@@ -22,13 +22,13 @@ import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
 import micdoodle8.mods.galacticraft.core.perlin.generator.Gradient
 import micdoodle8.mods.galacticraft.core.world.gen.EnumCraterSize
 import net.minecraft.entity.EnumCreatureType
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
-import net.minecraftforge.fml.common.FMLLog
+import foundation.logging.FoundationLog as FMLLog
 import java.lang.Exception
 import java.util.ArrayList
 import java.util.Random
@@ -69,16 +69,16 @@ open class WE_ChunkProviderSpace constructor(wp: WE_WorldProviderSpace) : WE_Chu
         createChunkGen_List.add(WE_RavineGen())
 
         val standardOres: WE_OreGen = WE_OreGen()
-        standardOres.add(Blocks.GOLD_ORE.getDefaultState(), Blocks.STONE.getDefaultState(), 4, 0, 32, 16)
-        standardOres.add(Blocks.IRON_ORE.getDefaultState(), Blocks.STONE.getDefaultState(), 6, 0, 64, 72)
-        standardOres.add(Blocks.COAL_ORE.getDefaultState(), Blocks.STONE.getDefaultState(), 6, 32, 128, 56)
-        standardOres.add(Blocks.LAPIS_ORE.getDefaultState(), Blocks.STONE.getDefaultState(), 4, 0, 16, 16)
-        standardOres.add(Blocks.DIAMOND_ORE.getDefaultState(), Blocks.STONE.getDefaultState(), 3, 0, 16, 16)
-        standardOres.add(Blocks.EMERALD_ORE.getDefaultState(), Blocks.STONE.getDefaultState(), 2, 0, 16, 24)
+        standardOres.add(Blocks.GOLD_ORE.defaultBlockState(), Blocks.STONE.defaultBlockState(), 4, 0, 32, 16)
+        standardOres.add(Blocks.IRON_ORE.defaultBlockState(), Blocks.STONE.defaultBlockState(), 6, 0, 64, 72)
+        standardOres.add(Blocks.COAL_ORE.defaultBlockState(), Blocks.STONE.defaultBlockState(), 6, 32, 128, 56)
+        standardOres.add(Blocks.LAPIS_ORE.defaultBlockState(), Blocks.STONE.defaultBlockState(), 4, 0, 16, 16)
+        standardOres.add(Blocks.DIAMOND_ORE.defaultBlockState(), Blocks.STONE.defaultBlockState(), 3, 0, 16, 16)
+        standardOres.add(Blocks.EMERALD_ORE.defaultBlockState(), Blocks.STONE.defaultBlockState(), 2, 0, 16, 24)
         decorateChunkGen_List.add(standardOres)
         //-//
         val lavaLakes: WE_LakeGen = WE_LakeGen()
-        lavaLakes.lakeBlock = Blocks.LAVA.getDefaultState()
+        lavaLakes.lakeBlock = Blocks.LAVA.defaultBlockState()
         lavaLakes.iceGen = false
         lavaLakes.maxY = 32
         decorateChunkGen_List.add(lavaLakes)
@@ -249,7 +249,7 @@ open class WE_ChunkProviderSpace constructor(wp: WE_WorldProviderSpace) : WE_Chu
                         if (!primer.getBlockState(x, y, z).getMaterial()
                                 .isLiquid() && Blocks.AIR !== primer.getBlockState(x, y, z).getBlock() && helper <= yDev
                         ) {
-                            primer.setBlockState(x, y, z, Blocks.AIR.getDefaultState())
+                            primer.setBlockState(x, y, z, Blocks.AIR.defaultBlockState())
                             //                            chunkArray[this.getIndex(x, y, z)] = Blocks.AIR;
 //                            metaArray[this.getIndex(x, y, z)] = 0;
                             helper++

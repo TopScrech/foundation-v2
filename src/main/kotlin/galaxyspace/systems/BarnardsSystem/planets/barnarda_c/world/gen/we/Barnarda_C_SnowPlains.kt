@@ -1,5 +1,7 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.world.gen.we
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
 import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_BiomeLayer
 import galaxyspace.systems.BarnardsSystem.core.configs.BRConfigCore
@@ -11,8 +13,8 @@ import net.minecraft.entity.monster.EntitySkeleton
 import net.minecraft.entity.monster.EntitySpider
 import net.minecraft.entity.monster.EntityZombie
 import net.minecraft.entity.passive.EntityCow
-import net.minecraft.init.Blocks
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class Barnarda_C_SnowPlains constructor(min: Double, max: Double, height: Int) :
@@ -59,7 +61,7 @@ open class Barnarda_C_SnowPlains constructor(min: Double, max: Double, height: I
             false
         )
         standardBiomeLayers.add(
-            Blocks.SNOW_LAYER.getDefaultState(),
+            Blocks.SNOW_LAYER.defaultBlockState(),
             BRBlocks.BARNARDA_C_GRASS.getStateFromMeta(0),
             -256,
             0,
@@ -67,7 +69,7 @@ open class Barnarda_C_SnowPlains constructor(min: Double, max: Double, height: I
             0,
             false
         )
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         createChunkGen_InXZ_List.add(standardBiomeLayers)
     }
 

@@ -3,8 +3,8 @@ package micdoodle8.mods.galacticraft.planets.asteroids.world.gen.base
 import micdoodle8.mods.galacticraft.planets.asteroids.world.gen.base.BaseDeck.EnumBaseType
 import micdoodle8.mods.galacticraft.planets.asteroids.world.gen.base.BaseRoom.EnumRoomType
 
-import net.minecraft.block.state.IBlockState
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import java.lang.Exception
 import java.util.Random
 
@@ -67,23 +67,23 @@ open class BaseConfiguration {
     }
 
     open fun writeToNBT(tagCompound: NBTTagCompound) {
-        tagCompound.setInteger("yPos", this.yPosition)
-        tagCompound.setInteger("dT", this.baseType + (if (this.hangar) 16 else 0))
-        tagCompound.setInteger("rmD", this.roomDepth)
-        tagCompound.setInteger("rmN", this.roomsNo)
+        tagCompound.putInt("yPos", this.yPosition)
+        tagCompound.putInt("dT", this.baseType + (if (this.hangar) 16 else 0))
+        tagCompound.putInt("rmD", this.roomDepth)
+        tagCompound.putInt("rmN", this.roomsNo)
     }
 
     open fun readFromNBT(tagCompound: NBTTagCompound) {
         try {
-            this.yPosition = tagCompound.getInteger("yPos")
-            this.baseType = tagCompound.getInteger("dT")
+            this.yPosition = tagCompound.getIntOr("yPos", 0)
+            this.baseType = tagCompound.getIntOr("dT", 0)
             this.hangar = false
             if (this.baseType >= 16) {
                 this.hangar = true
                 this.baseType -= 16
             }
-            this.roomDepth = tagCompound.getInteger("rmD")
-            this.roomsNo = tagCompound.getInteger("rmN")
+            this.roomDepth = tagCompound.getIntOr("rmD", 0)
+            this.roomsNo = tagCompound.getIntOr("rmN", 0)
             this.roomHeight = BaseDeck.EnumBaseType.entries[this.baseType].height
             this.wallBlock = BaseDeck.EnumBaseType.entries[this.baseType].wall
         } catch (e: Exception) {

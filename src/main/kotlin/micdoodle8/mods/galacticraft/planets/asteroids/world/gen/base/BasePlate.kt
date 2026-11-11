@@ -1,9 +1,9 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.world.gen.base
 
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import java.util.Random
 
 open class BasePlate : SizedPiece {
@@ -20,10 +20,10 @@ open class BasePlate : SizedPiece {
     ) : super(configuration, sizeX, 1, sizeZ, dir) {
         this.setCoordBaseMode(dir)
         this.boundingBox =
-            StructureBoundingBox(blockPosX, yPos, blockPosZ, blockPosX + this.sizeX, yPos, blockPosZ + this.sizeZ)
+            BoundingBox(blockPosX, yPos, blockPosZ, blockPosX + this.sizeX, yPos, blockPosZ + this.sizeZ)
     }
 
-    override fun addComponentParts(worldIn: World, random: Random, boundingBox: StructureBoundingBox): Boolean {
+    override fun addComponentParts(worldIn: World, random: Random, boundingBox: BoundingBox): Boolean {
         val blockWall: IBlockState = ((this.configuration)!!.getWallBlock())!!
         val axisEW: Boolean = (getDirection())!!.getAxis() == EnumFacing.Axis.X
         val maxX: Int = if (axisEW) this.sizeZ else this.sizeX

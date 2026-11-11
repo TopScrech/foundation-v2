@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.moons.triton.world.gen.we
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import galaxyspace.systems.SolarSystem.moons.triton.blocks.TritonBlocks.EnumTritonBlocks
 import galaxyspace.systems.SolarSystem.moons.triton.blocks.TritonBlocks
@@ -11,10 +13,10 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedEnderman
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSkeleton
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSpider
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedZombie
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidRegistry
 import java.util.Random
 
@@ -59,7 +61,7 @@ open class Triton_Plains constructor(min: Double, max: Double, per: Double, heig
             -1,
             true
         )
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         createChunkGen_InXZ_List.add(standardBiomeLayers)
     }
 
@@ -75,26 +77,26 @@ open class Triton_Plains constructor(min: Double, max: Double, per: Double, heig
 
             val pos: BlockPos = BlockPos(randPosX, randPosY, randPosZ)
 
-            if ((world)!!.isAirBlock(pos.up())) {
-                val state: IBlockState = (world)!!.getBlockState(pos.down())
-                if (state === GSBlocks.TRITON_BLOCKS.getDefaultState()
-                        .withProperty(
+            if ((world)!!.isEmptyBlock(pos.above())) {
+                val state: IBlockState = (world)!!.getBlockState(pos.below())
+                if (state === GSBlocks.TRITON_BLOCKS.defaultBlockState()
+                        .setValue(
                             TritonBlocks.Companion.BASIC_TYPE,
                             EnumTritonBlocks.TRITON_GRUNT
                         )
                 ) {
-                    (world)!!.setBlockState(pos.down(2), FluidRegistry.WATER.getBlock().getDefaultState())
-                    (world)!!.setBlockState(
-                        pos.down(),
-                        GSBlocks.TRITON_BLOCKS.getDefaultState().withProperty(
+                    (world)!!.setBlockAndUpdate(pos.below(2), FluidRegistry.WATER.getBlock().defaultBlockState())
+                    (world)!!.setBlock(
+                        pos.below(),
+                        GSBlocks.TRITON_BLOCKS.defaultBlockState().setValue(
                             TritonBlocks.Companion.BASIC_TYPE,
                             EnumTritonBlocks.TRITON_GEYSER
                         ),
                         3
                     )
                     (world)!!.scheduleBlockUpdate(
-                        pos.down(),
-                        GSBlocks.TRITON_BLOCKS.getDefaultState().withProperty(
+                        pos.below(),
+                        GSBlocks.TRITON_BLOCKS.defaultBlockState().setValue(
                             TritonBlocks.Companion.BASIC_TYPE,
                             EnumTritonBlocks.TRITON_GEYSER
                         ).getBlock(),
@@ -112,25 +114,25 @@ open class Triton_Plains constructor(min: Double, max: Double, per: Double, heig
 
             val pos: BlockPos = BlockPos(randPosX, randPosY, randPosZ)
 
-            if ((world)!!.isAirBlock(pos.up()) && randPosX % 150 == 0) {
-                val state: IBlockState = (world)!!.getBlockState(pos.down())
-                if (state === GSBlocks.TRITON_BLOCKS.getDefaultState()
-                        .withProperty(
+            if ((world)!!.isEmptyBlock(pos.above()) && randPosX % 150 == 0) {
+                val state: IBlockState = (world)!!.getBlockState(pos.below())
+                if (state === GSBlocks.TRITON_BLOCKS.defaultBlockState()
+                        .setValue(
                             TritonBlocks.Companion.BASIC_TYPE,
                             EnumTritonBlocks.TRITON_GRUNT
                         )
                 ) {
-                    (world)!!.setBlockState(
-                        pos.down(),
-                        GSBlocks.TRITON_BLOCKS.getDefaultState().withProperty(
+                    (world)!!.setBlock(
+                        pos.below(),
+                        GSBlocks.TRITON_BLOCKS.defaultBlockState().setValue(
                             TritonBlocks.Companion.BASIC_TYPE,
                             EnumTritonBlocks.TRITON_GEYSER_2
                         ),
                         3
                     )
                     (world)!!.scheduleBlockUpdate(
-                        pos.down(),
-                        GSBlocks.TRITON_BLOCKS.getDefaultState().withProperty(
+                        pos.below(),
+                        GSBlocks.TRITON_BLOCKS.defaultBlockState().setValue(
                             TritonBlocks.Companion.BASIC_TYPE,
                             EnumTritonBlocks.TRITON_GEYSER_2
                         ).getBlock(),

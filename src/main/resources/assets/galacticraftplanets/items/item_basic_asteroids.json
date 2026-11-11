@@ -1,0 +1,83 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:component",
+    "component": "foundation:legacy_metadata",
+    "cases": [
+      {
+        "when": 0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/ingot_titanium"
+        }
+      },
+      {
+        "when": 1,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/engine_t2"
+        }
+      },
+      {
+        "when": 2,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/rocket_fins_t2"
+        }
+      },
+      {
+        "when": 3,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/shard_iron"
+        }
+      },
+      {
+        "when": 4,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/shard_titanium"
+        }
+      },
+      {
+        "when": 5,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/item_basic_asteroids"
+        }
+      },
+      {
+        "when": 6,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/compressed_titanium"
+        }
+      },
+      {
+        "when": 7,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/thermal_cloth"
+        }
+      },
+      {
+        "when": 8,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/beam_core"
+        }
+      },
+      {
+        "when": 9,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftplanets:item/dust_titanium"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "galacticraftplanets:item/ingot_titanium"
+    }
+  }
+}

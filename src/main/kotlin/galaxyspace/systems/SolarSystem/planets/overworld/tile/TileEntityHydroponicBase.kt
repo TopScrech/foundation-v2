@@ -1,5 +1,9 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
+import foundation.item.legacyItemValue
+
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import galaxyspace.core.GSItems
@@ -16,18 +20,18 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.wrappers.FluidHandlerWrapper
 import micdoodle8.mods.galacticraft.core.wrappers.IFluidHandlerWrapper
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Items
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.item.Items
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.NetworkManager
 import net.minecraft.network.play.server.SPacketUpdateTileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
@@ -37,7 +41,7 @@ import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.FluidUtil
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
 import net.minecraftforge.fluids.capability.IFluidHandlerItem
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.ArrayList
 import java.util.Random
 
@@ -200,9 +204,9 @@ open class TileEntityHydroponicBase constructor() :
                     this.waterTank.drain(1, true)
 
                     if (!this.getInventory().get(8).isEmpty() && (this.getInventory().get(8).getItem() === Items.DYE
-                                && this.getInventory().get(8).getItemDamage() === 15
+                                && this.getInventory().get(8).legacyItemValue === 15
                                 || this.getInventory().get(8).getItem() === GSItems.BASIC
-                                && this.getInventory().get(8).getItemDamage() === 4)
+                                && this.getInventory().get(8).legacyItemValue === 4)
                     ) {
                         if (this.processTicks_0 % 100 == 0) {
                             this.processTicks_0 += 2000
@@ -338,8 +342,8 @@ open class TileEntityHydroponicBase constructor() :
             else if (i == 2) ticks = processTicks_1
             else if (i == 3) ticks = processTicks_2
 
-            if (world.getTileEntity(pos.up(i)) is TileEntityHydroponicFarm) {
-                val farm: TileEntityHydroponicFarm? = world.getTileEntity(pos.up(i)) as TileEntityHydroponicFarm?
+            if (world.getBlockEntity(pos.up(i)) is TileEntityHydroponicFarm) {
+                val farm: TileEntityHydroponicFarm? = world.getBlockEntity(pos.up(i)) as TileEntityHydroponicFarm?
 
                 if (farm != null) {
                     if (!this.getInventory().get(i * 2).isEmpty()) {
@@ -394,30 +398,30 @@ open class TileEntityHydroponicBase constructor() :
     override fun readFromNBT(par1NBTTagCompound: NBTTagCompound) {
         super.readFromNBT(par1NBTTagCompound)
 
-        this.moduleLevel = par1NBTTagCompound.getInteger("moduleTier")
-        this.processTicks_0 = par1NBTTagCompound.getInteger("smeltingTicks_0")
-        this.processTicks_1 = par1NBTTagCompound.getInteger("smeltingTicks_1")
-        this.processTicks_2 = par1NBTTagCompound.getInteger("smeltingTicks_2")
+        this.moduleLevel = par1NBTTagCompound.getIntOr("moduleTier", 0)
+        this.processTicks_0 = par1NBTTagCompound.getIntOr("smeltingTicks_0", 0)
+        this.processTicks_1 = par1NBTTagCompound.getIntOr("smeltingTicks_1", 0)
+        this.processTicks_2 = par1NBTTagCompound.getIntOr("smeltingTicks_2", 0)
 
         ItemStackHelper.loadAllItems(par1NBTTagCompound, this.getInventory())
 
 
-        if (par1NBTTagCompound.hasKey("waterTank")) {
-            this.waterTank.readFromNBT(par1NBTTagCompound.getCompoundTag("waterTank"))
+        if (par1NBTTagCompound.containsTag("waterTank")) {
+            this.waterTank.readFromNBT(par1NBTTagCompound.getCompoundOrEmpty("waterTank"))
         }
     }
 
     override fun writeToNBT(par1NBTTagCompound: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(par1NBTTagCompound)
-        par1NBTTagCompound.setInteger("smeltingTicks_0", this.processTicks_0)
-        par1NBTTagCompound.setInteger("smeltingTicks_1", this.processTicks_1)
-        par1NBTTagCompound.setInteger("smeltingTicks_2", this.processTicks_2)
-        par1NBTTagCompound.setInteger("moduleTier", this.moduleLevel)
+        par1NBTTagCompound.putInt("smeltingTicks_0", this.processTicks_0)
+        par1NBTTagCompound.putInt("smeltingTicks_1", this.processTicks_1)
+        par1NBTTagCompound.putInt("smeltingTicks_2", this.processTicks_2)
+        par1NBTTagCompound.putInt("moduleTier", this.moduleLevel)
 
         ItemStackHelper.saveAllItems(par1NBTTagCompound, this.getInventory())
 
         if (this.waterTank.getFluid() != null) {
-            par1NBTTagCompound.setTag("waterTank", this.waterTank.writeToNBT(NBTTagCompound()))
+            par1NBTTagCompound.put("waterTank", this.waterTank.writeToNBT(NBTTagCompound()))
         }
         return par1NBTTagCompound
     }
@@ -430,24 +434,24 @@ open class TileEntityHydroponicBase constructor() :
         this.moduleLevel = newTier
     }
 
-    override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
-        return this.isItemValidForSlot(slotID, itemstack)
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, itemstack)
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         return slotID == 1 || slotID == 3 || slotID == 5 || slotID == 7 || slotID == 9 || slotID == 10 || slotID == 11
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         when (slotID) {
             0 -> return ItemElectricBase.isElectricItem(itemstack.getItem())
             1 -> return itemstack.getItem() === Items.WATER_BUCKET
             2, 4, 6 -> return itemstack.getItem() === Items.WHEAT_SEEDS || itemstack.getItem() === Items.CARROT || itemstack.getItem() === Items.POTATO
-            8 -> return itemstack.getItem() === Items.DYE && itemstack.getItemDamage() == 15 || itemstack.getItem() === GSItems.BASIC && itemstack.getItemDamage() == 4
+            8 -> return itemstack.getItem() === Items.DYE && itemstack.legacyItemValue == 15 || itemstack.getItem() === GSItems.BASIC && itemstack.legacyItemValue == 4
         }
 
         return false
@@ -458,7 +462,7 @@ open class TileEntityHydroponicBase constructor() :
     }
 
     override fun getBatteryInSlot(): ItemStack {
-        return this.getStackInSlot(0)
+        return this.getItem(0)
     }
 
     override fun getTankInfo(from: EnumFacing?): Array<FluidTankInfo?> {

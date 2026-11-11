@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.util
 
+import foundation.item.legacyItemValue
+
 import javax.annotation.Nonnull
 
 import micdoodle8.mods.galacticraft.core.GCFluids
@@ -7,15 +9,15 @@ import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.items.ItemBucketGC
 import micdoodle8.mods.galacticraft.core.items.ItemCanisterGeneric
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
-import net.minecraft.block.Block
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidActionResult
 import net.minecraftforge.fluids.FluidRegistry
@@ -25,8 +27,8 @@ import net.minecraftforge.fluids.FluidUtil
 import net.minecraftforge.fluids.IFluidBlock
 import net.minecraftforge.fluids.capability.IFluidHandler
 import net.minecraftforge.fluids.capability.IFluidHandlerItem
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.items.IItemHandler
 import net.minecraftforge.items.ItemHandlerHelper
 import net.minecraftforge.items.wrapper.PlayerMainInvWrapper
@@ -50,7 +52,7 @@ object FluidUtil {
     @JvmStatic
     fun isFuelContainerAny(var4: ItemStack): Boolean {
         if (var4.getItem() is ItemCanisterGeneric) {
-            return var4.getItem() === GCItems.fuelCanister && var4.getItemDamage() < var4.getMaxDamage()
+            return var4.getItem() === GCItems.fuelCanister && var4.legacyItemValue < var4.getMaxDamage()
         }
 
         if (var4.getItem() === GCItems.bucketFuel) {
@@ -164,7 +166,7 @@ object FluidUtil {
     @JvmStatic
     fun isOilContainerAny(var4: ItemStack): Boolean {
         if (var4.getItem() is ItemCanisterGeneric) {
-            return var4.getItem() === GCItems.oilCanister && var4.getItemDamage() < var4.getMaxDamage()
+            return var4.getItem() === GCItems.oilCanister && var4.legacyItemValue < var4.getMaxDamage()
         }
 
         if (var4.getItem() === GCItems.bucketOil) {
@@ -184,7 +186,7 @@ object FluidUtil {
     @JvmStatic
     fun isMethaneContainerAny(var4: ItemStack): Boolean {
         if (var4.getItem() is ItemCanisterGeneric) {
-            return var4.getItem() === AsteroidsItems.methaneCanister && var4.getItemDamage() < var4.getMaxDamage()
+            return var4.getItem() === AsteroidsItems.methaneCanister && var4.legacyItemValue < var4.getMaxDamage()
         }
 
         val stack: FluidStack? = FluidUtil.getFluidContained(var4)
@@ -202,7 +204,7 @@ object FluidUtil {
     @JvmStatic
     fun isFullContainer(var4: ItemStack): Boolean {
         if (var4.getItem() is ItemCanisterGeneric) {
-            return var4.getItemDamage() == 1
+            return var4.legacyItemValue == 1
         }
 
         if (var4.getItem() is ItemBucketGC) {
@@ -239,13 +241,13 @@ object FluidUtil {
         }
 
         if (slotItem.getItem() is ItemCanisterGeneric) {
-            if (slotItem.getCount() != 1 || slotItem.getItem() !== canisterType && slotItem.getItemDamage() != ItemCanisterGeneric.EMPTY) {
+            if (slotItem.getCount() != 1 || slotItem.getItem() !== canisterType && slotItem.legacyItemValue != ItemCanisterGeneric.EMPTY) {
                 return
             }
 
-            val used: Int = min(liquid.amount, slotItem.getItemDamage() - 1)
+            val used: Int = min(liquid.amount, slotItem.legacyItemValue - 1)
             if (used > 0) {
-                inventory.set(slot, ItemStack(canisterType, 1, slotItem.getItemDamage() - used))
+                inventory.set(slot, ItemStack(canisterType, 1, slotItem.legacyItemValue - used))
                 tank.drain(used, true)
             }
             return
@@ -337,7 +339,7 @@ object FluidUtil {
         val slotItem: ItemStack = stacks.get(slot)
 
         if (slotItem.getItem() is ItemCanisterGeneric) {
-            val originalDamage: Int = slotItem.getItemDamage()
+            val originalDamage: Int = slotItem.legacyItemValue
             val used: Int = tank.fill(FluidStack(desiredLiquid, ItemCanisterGeneric.EMPTY - originalDamage), true)
             if (originalDamage + used >= ItemCanisterGeneric.EMPTY) {
                 stacks.set(slot, ItemStack(GCItems.oilCanister, 1, ItemCanisterGeneric.EMPTY))
@@ -397,7 +399,7 @@ object FluidUtil {
     @JvmStatic
     fun isPartialContainer(var4: ItemStack, canisterType: Item?): Boolean {
         if (var4.getItem() is ItemCanisterGeneric) {
-            return var4.getItemDamage() == ItemCanisterGeneric.EMPTY || (var4.getItem() === canisterType && var4.getItemDamage() > 1)
+            return var4.legacyItemValue == ItemCanisterGeneric.EMPTY || (var4.getItem() === canisterType && var4.legacyItemValue > 1)
         }
 
         val handler: IFluidHandlerItem? = FluidUtil.getFluidHandler(var4)
@@ -430,10 +432,10 @@ object FluidUtil {
     @JvmStatic
     fun isEmptyContainerFor(var4: ItemStack, targetFluid: FluidStack?): Boolean {
         if (var4.getItem() is ItemCanisterGeneric) {
-            if (var4.getItemDamage() == ItemCanisterGeneric.EMPTY) {
+            if (var4.legacyItemValue == ItemCanisterGeneric.EMPTY) {
                 return true
             }
-            if (var4.getItemDamage() == 1) {
+            if (var4.legacyItemValue == 1) {
                 return false
             }
 
@@ -458,7 +460,7 @@ object FluidUtil {
     fun getContainerCapacity(container: ItemStack): Int {
         var container: ItemStack = container
         if (container.getItem() is ItemCanisterGeneric) {
-            return container.getItemDamage() - 1
+            return container.legacyItemValue - 1
         }
         if (!container.isEmpty()) {
             container = container.copy()
@@ -535,7 +537,7 @@ object FluidUtil {
     @JvmStatic
     fun isEmptyContainer(var4: ItemStack): Boolean {
         if (var4.getItem() is ItemCanisterGeneric) {
-            return var4.getItemDamage() == ItemCanisterGeneric.EMPTY
+            return var4.legacyItemValue == ItemCanisterGeneric.EMPTY
         }
 
         if (var4.getItem() === Items.BUCKET) {
@@ -565,7 +567,7 @@ object FluidUtil {
             return false
         }
         if (var4.getItem() is ItemCanisterGeneric) {
-            return var4.getItemDamage() < ItemCanisterGeneric.EMPTY
+            return var4.legacyItemValue < ItemCanisterGeneric.EMPTY
         }
         return FluidUtil.getFluidContained(var4) != null
     }
@@ -643,19 +645,19 @@ object FluidUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun isInsideOfFluid(entity: Entity, fluid: Fluid): Boolean {
-        val d0: Double = entity.posY + entity.getEyeHeight()
-        val i: Int = MathHelper.floor(entity.posX)
+        val d0: Double = entity.y + entity.getEyeHeight()
+        val i: Int = MathHelper.floor(entity.x)
         val j: Int = MathHelper.floor(MathHelper.floor(d0).toFloat())
-        val k: Int = MathHelper.floor(entity.posZ)
+        val k: Int = MathHelper.floor(entity.z)
         val pos: BlockPos = BlockPos(i, j, k)
-        val block: Block = entity.world.getBlockState(pos).getBlock()
+        val block: Block = entity.level().getBlockState(pos).getBlock()
 
         if (block != null && block is IFluidBlock && (block as IFluidBlock).getFluid() != null && (block as IFluidBlock).getFluid()
                 .getName() == fluid.getName()
         ) {
-            var filled: Double = (block as IFluidBlock).getFilledPercentage(entity.world, pos).toDouble()
+            var filled: Double = (block as IFluidBlock).getFilledPercentage(entity.level(), pos).toDouble()
             if (filled < 0) {
                 filled *= -1.0
                 return d0 > j + (1 - filled)
@@ -762,7 +764,7 @@ object FluidUtil {
 
     @JvmStatic
     private fun tryFillCanister(canister: ItemStack, tank: IFluidHandler, isCreativeMode: Boolean): ItemStack {
-        val currCapacity: Int = canister.getItemDamage() - 1
+        val currCapacity: Int = canister.legacyItemValue - 1
         if (currCapacity <= 0) {
             return ItemStack.EMPTY
         }
@@ -777,7 +779,7 @@ object FluidUtil {
 
     @JvmStatic
     private fun tryEmptyCanister(canister: ItemStack, tank: IFluidHandler, isCreativeMode: Boolean): ItemStack {
-        val currContents: Int = ItemCanisterGeneric.EMPTY - canister.getItemDamage()
+        val currContents: Int = ItemCanisterGeneric.EMPTY - canister.legacyItemValue
         if (currContents <= 0) {
             return ItemStack.EMPTY
         }

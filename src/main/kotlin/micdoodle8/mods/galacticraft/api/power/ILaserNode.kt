@@ -2,7 +2,7 @@ package micdoodle8.mods.galacticraft.api.power
 
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
 import micdoodle8.mods.galacticraft.api.vector.Vector3
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 
 interface ILaserNode : IEnergyHandlerGC {
     fun getInputPoint(): Vector3?

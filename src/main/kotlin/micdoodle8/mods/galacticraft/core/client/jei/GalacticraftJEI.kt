@@ -46,7 +46,7 @@ import micdoodle8.mods.galacticraft.core.inventory.ContainerCrafting
 import micdoodle8.mods.galacticraft.core.recipe.ShapedRecipeNBT
 import micdoodle8.mods.galacticraft.core.util.CompatibilityManager
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
 import java.util.*
 

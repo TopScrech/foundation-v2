@@ -3,7 +3,7 @@ package micdoodle8.mods.galacticraft.api.world
 import java.util.LinkedList
 import net.minecraft.world.biome.Biome.SpawnListEntry
 
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 import java.util.*
 
 /**

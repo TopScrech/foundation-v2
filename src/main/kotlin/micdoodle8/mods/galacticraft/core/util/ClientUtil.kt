@@ -16,7 +16,7 @@ import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.wrappers.FlagData
 import micdoodle8.mods.galacticraft.core.wrappers.ModelTransformWrapper
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.BufferBuilder
@@ -27,20 +27,19 @@ import net.minecraft.client.renderer.block.model.ModelBakery
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.item.Item
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.item.Item
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.client.event.ModelBakeEvent
 import net.minecraftforge.client.model.IModel
 import net.minecraftforge.client.model.obj.OBJModel
 import net.minecraftforge.common.model.IModelState
 import net.minecraftforge.common.model.TRSRTransformation
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.lang.RuntimeException
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 object ClientUtil {
     @JvmStatic
     fun getClientTimeTotal(): Long = Sys.getTime() * 1000L / Sys.getTimerResolution()
@@ -53,7 +52,7 @@ object ClientUtil {
     @JvmStatic
     fun addVariant(modID: String, name: String, vararg variants: String?) {
 //        Item itemBlockVariants = GameRegistry.findItem(modID, name);
-        val itemBlockVariants: Item? = Item.REGISTRY.getObject(ResourceLocation(modID, name))
+        val itemBlockVariants: Item? = Item.REGISTRY.getObject(ResourceLocation.fromNamespaceAndPath(modID, name))
         val variants0: Array<ResourceLocation?> = arrayOfNulls<ResourceLocation>(variants.size)
         for (i: Int in variants.indices) {
             variants0[i] = ResourceLocation(modID + ":" + variants[i])
@@ -69,7 +68,7 @@ object ClientUtil {
     @JvmStatic
     fun registerBlockJson(texturePrefix: String?, block: Block, meta: Int, name: String?) {
 //        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(block), meta, new ModelResourceLocation(texturePrefix + name, "inventory"));
-        FMLClientHandler.instance().getClient().getRenderItem().getItemModelMesher()
+        Minecraft.getInstance().getRenderItem().getItemModelMesher()
             .register(Item.getItemFromBlock(block), meta, ModelResourceLocation(texturePrefix + name, "inventory"))
     }
 
@@ -81,7 +80,7 @@ object ClientUtil {
     @JvmStatic
     fun registerItemJson(texturePrefix: String?, item: Item, meta: Int, name: String?) {
 //        ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(texturePrefix + name, "inventory"));
-        FMLClientHandler.instance().getClient().getRenderItem().getItemModelMesher()
+        Minecraft.getInstance().getRenderItem().getItemModelMesher()
             .register(item, meta, ModelResourceLocation(texturePrefix + name, "inventory"))
     }
 
@@ -101,7 +100,7 @@ object ClientUtil {
             (GalacticraftCore.packetPipeline)!!.sendToServer(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.S_REQUEST_FLAG_DATA,
-                    GCCoreUtil.getDimensionID(FMLClientHandler.instance().getClient().world),
+                    GCCoreUtil.getDimensionID(Minecraft.getInstance().level),
                     arrayOf<Any?>(playerName)
                 )
             )
@@ -121,7 +120,7 @@ object ClientUtil {
             (GalacticraftCore.packetPipeline)!!.sendToServer(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.S_REQUEST_FLAG_DATA,
-                    GCCoreUtil.getDimensionID(FMLClientHandler.instance().getClient().world),
+                    GCCoreUtil.getDimensionID(Minecraft.getInstance().level),
                     arrayOf<Any?>(playerName)
                 )
             )
@@ -145,14 +144,14 @@ object ClientUtil {
         var variants: Array<out String> = variants
         val model: OBJModel
         try {
-            model = OBJLoaderGC.instance.loadModel(ResourceLocation(modid, objLoc)) as OBJModel
+            model = OBJLoaderGC.instance.loadModel(ResourceLocation.fromNamespaceAndPath(modid, objLoc)) as OBJModel
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
 
 
         val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> = Function { location: ResourceLocation? ->
-            Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+            Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
         }
         val newModelBase: IBakedModel =
             model.bake(OBJModel.OBJState(visibleGroups, false, parentState), DefaultVertexFormats.ITEM, spriteFunction)
@@ -206,7 +205,7 @@ object ClientUtil {
     ): IBakedModel {
         val model: IModel = OBJLoaderGC.instance.loadModel(loc)
         val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> = Function { location: ResourceLocation? ->
-            Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+            Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
         }
         return model.bake(
             OBJModel.OBJState(visibleGroups, false, parentState),

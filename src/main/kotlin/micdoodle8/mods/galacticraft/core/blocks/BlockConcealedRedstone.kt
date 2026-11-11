@@ -1,26 +1,28 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import com.google.common.collect.Lists
 import com.google.common.collect.Sets
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockRedstoneRepeater
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.IProperty
-import net.minecraft.block.properties.PropertyInteger
+import net.minecraft.world.level.block.state.properties.Property as IProperty
+import net.minecraft.world.level.block.state.properties.IntegerProperty as PropertyInteger
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.init.Blocks
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 
-open class BlockConcealedRedstone constructor(assetName: String?) : Block(Material.IRON), ISortableBlock {
+open class BlockConcealedRedstone constructor(assetName: String?) : Block(Material.IRON), ISortableBlock, LegacyBlockMetadata {
     private var canProvidePower = true
     private val blocksNeedingUpdate: MutableSet<BlockPos?> = Sets.newHashSet<BlockPos?>()
 
@@ -29,7 +31,7 @@ open class BlockConcealedRedstone constructor(assetName: String?) : Block(Materi
         this.setSoundType(SoundType.METAL)
         this.blockResistance = 15f
         this.setTranslationKey(assetName)
-        this.setDefaultState(this.blockState.getBaseState().withProperty(POWER, 0))
+        this.setDefaultState(this.blockState.getBaseState().setValue(POWER, 0))
     }
 
     public override fun getCreativeTab(): CreativeTabs? {
@@ -41,7 +43,7 @@ open class BlockConcealedRedstone constructor(assetName: String?) : Block(Materi
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(POWER, meta)
+        return this.defaultBlockState().setValue(POWER, meta)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -95,13 +97,13 @@ open class BlockConcealedRedstone constructor(assetName: String?) : Block(Materi
             }
 
             val bs: IBlockState = worldIn.getBlockState(blockpos)
-            val bsUp: IBlockState = worldIn.getBlockState(pos1.up())
+            val bsUp: IBlockState = worldIn.getBlockState(pos1.above())
             if (bs.getBlock().isNormalCube(bs) && !bsUp.getBlock().isNormalCube(bsUp)) {
                 if (flag && pos1.getY() >= pos2.getY()) {
-                    l = this.getMaxCurrentStrength(worldIn, blockpos.up(), l)
+                    l = this.getMaxCurrentStrength(worldIn, blockpos.above(), l)
                 }
             } else if (!bs.getBlock().isNormalCube(bs) && flag && pos1.getY() <= pos2.getY()) {
-                l = this.getMaxCurrentStrength(worldIn, blockpos.down(), l)
+                l = this.getMaxCurrentStrength(worldIn, blockpos.below(), l)
             }
         }
 
@@ -118,15 +120,15 @@ open class BlockConcealedRedstone constructor(assetName: String?) : Block(Materi
         }
 
         if (currentPower != maxPower) {
-            state = state.withProperty(POWER, maxPower)
+            state = state.setValue(POWER, maxPower)
 
             if (worldIn.getBlockState(pos1) === iblockstate) {
-                worldIn.setBlockState(pos1, state, 2)
+                worldIn.setBlock(pos1, state, 2)
             }
 
             this.blocksNeedingUpdate.add(pos1)
 
-            for (enumfacing1: EnumFacing in EnumFacing.VALUES) {
+            for (enumfacing1: EnumFacing in EnumFacing.values()) {
                 this.blocksNeedingUpdate.add(pos1.offset(enumfacing1))
             }
         }
@@ -139,14 +141,14 @@ open class BlockConcealedRedstone constructor(assetName: String?) : Block(Materi
         if (b === this || b === Blocks.REDSTONE_WIRE) {
             worldIn.notifyNeighborsOfStateChange(pos, this, false)
 
-            for (enumfacing: EnumFacing in EnumFacing.VALUES) {
+            for (enumfacing: EnumFacing in EnumFacing.values()) {
                 worldIn.notifyNeighborsOfStateChange(pos.offset(enumfacing), this, false)
             }
         }
     }
 
     override fun onBlockAdded(worldIn: World, pos: BlockPos, state: IBlockState) {
-        if (!worldIn.isRemote) {
+        if (!worldIn.isClientSide) {
             this.updateSurroundingRedstone(worldIn, pos, state)
 
             for (enumfacing: EnumFacing in EnumFacing.Plane.VERTICAL) {
@@ -167,9 +169,9 @@ open class BlockConcealedRedstone constructor(assetName: String?) : Block(Materi
 
             val bs: IBlockState = worldIn.getBlockState(blockpos)
             if (bs.getBlock().isNormalCube(bs)) {
-                this.notifyWireNeighborsOfStateChange(worldIn, blockpos.up())
+                this.notifyWireNeighborsOfStateChange(worldIn, blockpos.above())
             } else {
-                this.notifyWireNeighborsOfStateChange(worldIn, blockpos.down())
+                this.notifyWireNeighborsOfStateChange(worldIn, blockpos.below())
             }
         }
     }
@@ -177,8 +179,8 @@ open class BlockConcealedRedstone constructor(assetName: String?) : Block(Materi
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
         super.breakBlock(worldIn, pos, state)
 
-        if (!worldIn.isRemote) {
-            for (enumfacing: EnumFacing in EnumFacing.VALUES) {
+        if (!worldIn.isClientSide) {
+            for (enumfacing: EnumFacing in EnumFacing.values()) {
                 worldIn.notifyNeighborsOfStateChange(pos.offset(enumfacing), this, false)
             }
 
@@ -202,7 +204,7 @@ open class BlockConcealedRedstone constructor(assetName: String?) : Block(Materi
     }
 
     override fun neighborChanged(state: IBlockState, worldIn: World, pos: BlockPos, blockIn: Block, fromPos: BlockPos) {
-        if (!worldIn.isRemote) {
+        if (!worldIn.isClientSide) {
             this.updateSurroundingRedstone(worldIn, pos, state)
         }
     }

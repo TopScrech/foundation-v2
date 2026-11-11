@@ -1,12 +1,14 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.items
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.core.items.ItemCanisterGeneric
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemCanisterLiquidArgon constructor(assetName: String?) : ItemCanisterGeneric(assetName) {
     //    protected IIcon[] icons = new IIcon[7];
@@ -16,7 +18,7 @@ open class ItemCanisterLiquidArgon constructor(assetName: String?) : ItemCaniste
     }
 
     /*@Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void registerIcons(IIconRegister iconRegister)
     {
         for (int i = 0; i < this.icons.length; i++)
@@ -25,11 +27,11 @@ open class ItemCanisterLiquidArgon constructor(assetName: String?) : ItemCaniste
         }
     }*/
     public override fun getTranslationKey(itemStack: ItemStack): String {
-        if (itemStack.getMaxDamage() - itemStack.getItemDamage() == 0) {
+        if (itemStack.getMaxDamage() - itemStack.legacyItemValue == 0) {
             return "item.emptyGasCanister"
         }
 
-        if (itemStack.getItemDamage() == 1) {
+        if (itemStack.legacyItemValue == 1) {
             return "item.canister.liquidArgon.full"
         }
 
@@ -48,15 +50,15 @@ open class ItemCanisterLiquidArgon constructor(assetName: String?) : ItemCaniste
 
         return super.getIconFromDamage(damage);
     }*/
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(
         par1ItemStack: ItemStack,
         worldIn: World?,
         tooltip: MutableList<String?>,
         flagIn: ITooltipFlag
     ) {
-        if (par1ItemStack.getMaxDamage() - par1ItemStack.getItemDamage() > 0) {
-            tooltip.add(GCCoreUtil.translate("item.canister.liquid_argon.name") + ": " + (par1ItemStack.getMaxDamage() - par1ItemStack.getItemDamage()))
+        if (par1ItemStack.getMaxDamage() - par1ItemStack.legacyItemValue > 0) {
+            tooltip.add(GCCoreUtil.translate("item.canister.liquid_argon.name") + ": " + (par1ItemStack.getMaxDamage() - par1ItemStack.legacyItemValue))
         }
     }
 }

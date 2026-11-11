@@ -1,13 +1,15 @@
 package galaxyspace.systems.SolarSystem.moons.io.world.gen.dungeon
 
+import foundation.persistence.containsTag
+
 import galaxyspace.systems.SolarSystem.moons.io.world.gen.dungeon.DungeonStartIo
 import galaxyspace.systems.SolarSystem.moons.io.world.gen.dungeon.SizedPieceIo
 import galaxyspace.systems.SolarSystem.moons.io.world.gen.dungeon.PieceIo
 import galaxyspace.systems.SolarSystem.moons.io.world.gen.dungeon.DirectionalPieceIo
 import asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart.DungeonConfiguration
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.template.TemplateManager
 import java.lang.Exception
 import java.lang.reflect.Constructor
@@ -33,14 +35,14 @@ abstract class DirectionalPieceIo : PieceIo {
     override fun writeStructureToNBT(tagCompound: NBTTagCompound) {
         super.writeStructureToNBT(tagCompound)
 
-        tagCompound.setInteger("direction", this.direction!!.ordinal)
+        tagCompound.putInt("direction", this.direction!!.ordinal)
     }
 
     override fun readStructureFromNBT(nbt: NBTTagCompound, manager: TemplateManager) {
         super.readStructureFromNBT(nbt, manager)
 
-        if (nbt.hasKey("direction")) {
-            this.direction = EnumFacing.byIndex(nbt.getInteger("direction"))
+        if (nbt.containsTag("direction")) {
+            this.direction = EnumFacing.from3DDataValue(nbt.getIntOr("direction", 0))
         } else {
             this.direction = EnumFacing.NORTH
         }
@@ -63,15 +65,15 @@ abstract class DirectionalPieceIo : PieceIo {
             randomDir = EnumFacing.byHorizontalIndex(
                 (if (randDir == getDirection()!!.getOpposite().getHorizontalIndex()) randDir + 1 else randDir) % 4
             )
-            val extension: StructureBoundingBox = getExtension(
+            val extension: BoundingBox = getExtension(
                 randomDir,
                 (this.configuration)!!.getHallwayLengthMin() + rand.nextInt((this.configuration)!!.getHallwayLengthMax() - (this.configuration)!!.getHallwayLengthMin()),
                 width
             )
-            blockX = extension.minX
-            blockZ = extension.minZ
-            sizeX = extension.maxX - extension.minX
-            sizeZ = extension.maxZ - extension.minZ
+            blockX = extension.minX()
+            blockZ = extension.minZ()
+            sizeX = extension.maxX() - extension.minX()
+            sizeZ = extension.maxZ() - extension.minZ()
             valid = !startPiece.checkIntersection(extension)
             attempts--
         } while (!valid && attempts > 0)
@@ -107,16 +109,16 @@ abstract class DirectionalPieceIo : PieceIo {
         try {
             /*Constructor<?> c0 = clazz.getConstructor(DungeonConfiguration.class, Random.class, Integer.TYPE, Integer.TYPE, EnumFacing.class);
             T dummy = (T) c0.newInstance(this.configuration, rand, 0, 0, this.getDirection().getOpposite());
-            StructureBoundingBox extension = getExtension(this.getDirection(), getDirection().getAxis() == EnumFacing.Axis.X ? dummy.getSizeX() : dummy.getSizeZ(), getDirection().getAxis() == EnumFacing.Axis.X ? dummy.getSizeZ() : dummy.getSizeX());
+            BoundingBox extension = getExtension(this.getDirection(), getDirection().getAxis() == EnumFacing.Axis.X ? dummy.getSizeX() : dummy.getSizeZ(), getDirection().getAxis() == EnumFacing.Axis.X ? dummy.getSizeZ() : dummy.getSizeX());
             if (startPiece.checkIntersection(extension))
             {
                 return null;
             }
-            int sizeX = extension.maxX - extension.minX;
-            int sizeZ = extension.maxZ - extension.minZ;
+            int sizeX = extension.maxX() - extension.minX();
+            int sizeZ = extension.maxZ() - extension.minZ();
             int sizeY = small ? 3 : this.configuration.getHallwayHeight();//dummy.sizeY;
-            int blockX = extension.minX;
-            int blockZ = extension.minZ;*/
+            int blockX = extension.minX();
+            int blockZ = extension.minZ();*/
             val c1: Constructor<*> = clazz.getConstructor(
                 DungeonConfiguration::class.java,
                 Random::class.java,

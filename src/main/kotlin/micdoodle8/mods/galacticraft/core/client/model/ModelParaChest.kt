@@ -4,7 +4,7 @@ import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.client.render.entities.RenderParaChest
 import net.minecraft.client.model.ModelChest
 import net.minecraft.client.model.ModelRenderer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 
 open class ModelParaChest @JvmOverloads constructor(par1: Float = 0.0f) : ModelChest() {
@@ -101,6 +101,6 @@ open class ModelParaChest @JvmOverloads constructor(par1: Float = 0.0f) : ModelC
     }
 
     companion object {
-        private val grayParachuteTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/parachute/gray.png")
+        private val grayParachuteTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/parachute/gray.png")
     }
 }

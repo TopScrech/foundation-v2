@@ -10,8 +10,8 @@ import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
 import micdoodle8.mods.galacticraft.core.tile.TileEntityOxygenDecompressor
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 import kotlin.math.floor
@@ -143,14 +143,13 @@ open class GuiOxygenDecompressor constructor(
     }
 
     private fun getStatus(): String? {
-        if (this.decompressor!!.getStackInSlot(0) == null || this.decompressor.getStackInSlot(0)
+        if (this.decompressor!!.getItem(0) == null || this.decompressor.getItem(0)
                 .getItem() !is ItemOxygenTank
         ) {
             return EnumColor.DARK_RED.toString() + GCCoreUtil.translate("gui.status.missingtank.name")
         }
 
-        if (this.decompressor.getStackInSlot(0) != null && this.decompressor.getStackInSlot(0)
-                .getItemDamage() == this.decompressor.getStackInSlot(0).getMaxDamage()
+        if (this.decompressor.getItem(0) != null && ItemOxygenTank.used(this.decompressor.getItem(0)) == ItemOxygenTank.capacityOf(this.decompressor.getItem(0))
         ) {
             return EnumColor.DARK_RED.toString() + GCCoreUtil.translate("gui.status.tank_empty.name")
         }
@@ -201,6 +200,6 @@ open class GuiOxygenDecompressor constructor(
     }
 
     companion object {
-        private val compressorTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/decompressor.png")
+        private val compressorTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/decompressor.png")
     }
 }

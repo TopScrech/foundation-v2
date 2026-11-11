@@ -1,5 +1,8 @@
 package galaxyspace.systems.SolarSystem.moons.io.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import galaxyspace.GalaxySpace
 import galaxyspace.api.block.IEnergyGeyser
 import galaxyspace.core.GSItems
@@ -10,34 +13,34 @@ import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.planets.venus.VenusModule
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.init.MobEffects
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.potion.PotionEffect
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidRegistry
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
-open class IoBlocks constructor() : Block(Material.ROCK), ISortableBlock, ITerraformableBlock, IEnergyGeyser {
+open class IoBlocks constructor() : Block(Material.ROCK), ISortableBlock, ITerraformableBlock, IEnergyGeyser, LegacyBlockMetadata {
     init {
         this.setTranslationKey("ioblocks")
         this.setSoundType(SoundType.STONE)
@@ -45,7 +48,7 @@ open class IoBlocks constructor() : Block(Material.ROCK), ISortableBlock, ITerra
         this.setTickRandomly(true)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (blockBasic: EnumIoBlocks in EnumIoBlocks.entries) {
             list.add(ItemStack(this, 1, blockBasic.getMeta()))
@@ -53,7 +56,7 @@ open class IoBlocks constructor() : Block(Material.ROCK), ISortableBlock, ITerra
     }
 
     override fun getCollisionBoundingBox(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): AxisAlignedBB? {
-        if (state === state.withProperty(
+        if (state === state.setValue(
                 BASIC_TYPE,
                 EnumIoBlocks.IO_ASH
             )
@@ -67,7 +70,7 @@ open class IoBlocks constructor() : Block(Material.ROCK), ISortableBlock, ITerra
             EnumIoBlocks.IO_LAVA_GEYSER, EnumIoBlocks.IO_SULFUR_GEYSER -> world.scheduleBlockUpdate(
                 pos,
                 this,
-                this.tickRate(world) + world.rand.nextInt(10),
+                this.tickRate(world) + world.random.nextInt(10),
                 0
             )
 
@@ -77,26 +80,26 @@ open class IoBlocks constructor() : Block(Material.ROCK), ISortableBlock, ITerra
 
     override fun onEntityWalk(world: World, pos: BlockPos, entity: Entity) {
         if (world.getBlockState(pos) === world.getBlockState(pos)
-                .withProperty(BASIC_TYPE, EnumIoBlocks.IO_LAVA_GEYSER)
+                .setValue(BASIC_TYPE, EnumIoBlocks.IO_LAVA_GEYSER)
         ) {
             if (entity is EntityLivingBase) entity.setFire(5)
         }
 
         if (world.getBlockState(pos) === world.getBlockState(pos)
-                .withProperty(BASIC_TYPE, EnumIoBlocks.IO_SULFUR_GEYSER)
+                .setValue(BASIC_TYPE, EnumIoBlocks.IO_SULFUR_GEYSER)
         ) {
-            if (entity is EntityPlayer) entity.addPotionEffect(PotionEffect(MobEffects.POISON, 40 * 20))
+            if (entity is EntityPlayer) entity.addEffect(PotionEffect(MobEffects.POISON, 40 * 20))
         }
     }
 
     override fun updateTick(world: World, pos: BlockPos, state: IBlockState, rand: Random) {
         if (!world.isAreaLoaded(pos, 16)) return
 
-        if (state === state.withProperty(BASIC_TYPE, EnumIoBlocks.IO_LAVA_GEYSER)) {
-            if (world.getBlockState(pos.down()).getMaterial() === Material.LAVA && !world.isBlockNormalCube(
-                    pos.up(),
+        if (state === state.setValue(BASIC_TYPE, EnumIoBlocks.IO_LAVA_GEYSER)) {
+            if (world.getBlockState(pos.below()).getMaterial() === Material.LAVA && !world.isBlockNormalCube(
+                    pos.above(),
                     false
-                ) && world.rand.nextInt(2) == 0
+                ) && world.random.nextInt(2) == 0
             ) {
                 (GalaxySpace.proxy)!!.spawnParticle(
                     "waterbubbles",
@@ -140,7 +143,7 @@ open class IoBlocks constructor() : Block(Material.ROCK), ISortableBlock, ITerra
                     ),
                     (arrayOf<Any>(200 + rand.nextInt(40), 6, false, Vector3(0.1, 0.1, 0.1), 1.0) as Array<Any?>?)
                 )
-                if (world.rand.nextInt(2) == 0) {
+                if (world.random.nextInt(2) == 0) {
                     (GalaxySpace.proxy)!!.spawnParticle(
                         "waterbubbles",
                         Vector3(
@@ -199,19 +202,19 @@ open class IoBlocks constructor() : Block(Material.ROCK), ISortableBlock, ITerra
                     )
                 }
             }
-            world.scheduleBlockUpdate(pos, this, this.tickRate(world) + world.rand.nextInt(10) + 10, 0)
+            world.scheduleBlockUpdate(pos, this, this.tickRate(world) + world.random.nextInt(10) + 10, 0)
         }
 
-        if (state === state.withProperty(BASIC_TYPE, EnumIoBlocks.IO_SULFUR_GEYSER)) {
+        if (state === state.setValue(BASIC_TYPE, EnumIoBlocks.IO_SULFUR_GEYSER)) {
             var flag: Boolean = false
             for (i: Int in 0..14) {
-                if (world.getBlockState(pos.down(i)).getBlock() === (VenusModule.sulphuricAcid)!!.getBlock()) {
+                if (world.getBlockState(pos.below(i)).getBlock() === (VenusModule.sulphuricAcid)!!.getBlock()) {
                     flag = true
                     break
                 }
             }
 
-            if (world.isAirBlock(pos.up()) && flag && world.rand.nextInt(10) == 0) {
+            if (world.isEmptyBlock(pos.above()) && flag && world.random.nextInt(10) == 0) {
                 (GalaxySpace.proxy)!!.spawnParticle(
                     "waterbubbles",
                     Vector3(
@@ -256,12 +259,12 @@ open class IoBlocks constructor() : Block(Material.ROCK), ISortableBlock, ITerra
                 )
             }
 
-            world.scheduleBlockUpdate(pos, this, this.tickRate(world) + world.rand.nextInt(10) + 10, 0)
+            world.scheduleBlockUpdate(pos, this, this.tickRate(world) + world.random.nextInt(10) + 10, 0)
         }
     }
 
     override fun onEntityCollision(worldIn: World, pos: BlockPos, state: IBlockState, entityIn: Entity) {
-        if (state === state.withProperty(BASIC_TYPE, EnumIoBlocks.IO_ASH)) {
+        if (state === state.setValue(BASIC_TYPE, EnumIoBlocks.IO_ASH)) {
             entityIn.motionX *= 0.4
             entityIn.motionZ *= 0.4
         }
@@ -291,7 +294,7 @@ open class IoBlocks constructor() : Block(Material.ROCK), ISortableBlock, ITerra
         state: IBlockState,
         fortune: Int
     ) {
-        val rand: Random = if (world is World) world.rand else RANDOM
+        val rand: Random = if (world is World) world.random else RANDOM
 
         val count: Int = quantityDropped(state, fortune, rand)
         drops.clear()
@@ -337,7 +340,9 @@ open class IoBlocks constructor() : Block(Material.ROCK), ISortableBlock, ITerra
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -352,8 +357,8 @@ open class IoBlocks constructor() : Block(Material.ROCK), ISortableBlock, ITerra
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(BASIC_TYPE, (EnumIoBlocks.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(BASIC_TYPE, (EnumIoBlocks.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -370,21 +375,21 @@ open class IoBlocks constructor() : Block(Material.ROCK), ISortableBlock, ITerra
     }
 
     override fun isWorkGeyser(world: World?, state: IBlockState?, pos: BlockPos?): Boolean {
-        if (state === (state)!!.withProperty(BASIC_TYPE, EnumIoBlocks.IO_SULFUR_GEYSER)) {
+        if (state === (state)!!.setValue(BASIC_TYPE, EnumIoBlocks.IO_SULFUR_GEYSER)) {
             var flag: Boolean = false
             for (i: Int in 0..14) {
-                if ((world)!!.getBlockState((pos)!!.down(i)).getBlock() === (VenusModule.sulphuricAcid)!!.getBlock()) {
+                if ((world)!!.getBlockState((pos)!!.below(i)).getBlock() === (VenusModule.sulphuricAcid)!!.getBlock()) {
                     flag = true
                     break
                 }
             }
             return flag
         }
-        if (state === (state)!!.withProperty(
+        if (state === (state)!!.setValue(
                 BASIC_TYPE,
                 EnumIoBlocks.IO_LAVA_GEYSER
             )
-        ) return (world)!!.getBlockState((pos)!!.down()).getBlock() === FluidRegistry.LAVA.getBlock()
+        ) return (world)!!.getBlockState((pos)!!.below()).getBlock() === FluidRegistry.LAVA.getBlock()
         return false
     }
 

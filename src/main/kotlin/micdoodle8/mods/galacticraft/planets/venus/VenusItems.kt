@@ -8,7 +8,7 @@ import micdoodle8.mods.galacticraft.planets.venus.items.ItemBatteryAtomic
 import micdoodle8.mods.galacticraft.planets.venus.items.ItemKeyVenus
 import micdoodle8.mods.galacticraft.planets.venus.items.ItemThermalPaddingTier2
 import micdoodle8.mods.galacticraft.planets.venus.items.ItemVolcanicPickaxe
-import net.minecraft.item.Item
+import net.minecraft.world.item.Item
 import net.minecraftforge.common.util.EnumHelper
 
 object VenusItems {

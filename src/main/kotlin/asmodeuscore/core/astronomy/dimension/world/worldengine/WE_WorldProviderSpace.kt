@@ -20,20 +20,20 @@ import micdoodle8.mods.galacticraft.core.event.EventHandlerGC
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.JavaUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.command.CommandTime
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.entity.Entity
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraft.village.VillageCollection
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.biome.BiomeProvider
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.IChunkGenerator
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
@@ -277,7 +277,7 @@ abstract class WE_WorldProviderSpace : WE_WorldProvider(), IGalacticraftWorldPro
         return f1
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getFogColor(var1: Float, var2: Float): Vec3d {
         val fogColor: Vector3 = this.getFogColor()
         return Vec3d(fogColor.floatX().toDouble(), fogColor.floatY().toDouble(), fogColor.floatZ().toDouble())

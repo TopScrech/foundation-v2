@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items.armor
 
+import foundation.item.legacyItemValue
+
 import galaxyspace.api.item.IJetpackArmor
 import galaxyspace.core.prefab.items.ItemElectricArmor
 import galaxyspace.core.util.GSCreativeTabs
@@ -9,17 +11,17 @@ import micdoodle8.mods.galacticraft.core.energy.EnergyDisplayHelper
 import net.minecraft.client.model.ModelBiped
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.DamageSource
-import net.minecraft.util.NonNullList
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.core.NonNullList
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.ISpecialArmor
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemJetpack constructor(materialIn: ArmorMaterial?, equipmentSlotIn: EntityEquipmentSlot?) :
     ItemElectricArmor((materialIn)!!, (equipmentSlotIn)!!), ISpecialArmor, IJetpackArmor {
@@ -33,7 +35,7 @@ open class ItemJetpack constructor(materialIn: ArmorMaterial?, equipmentSlotIn: 
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getArmorModel(
         entityLiving: EntityLivingBase,
         itemStack: ItemStack,
@@ -62,12 +64,12 @@ open class ItemJetpack constructor(materialIn: ArmorMaterial?, equipmentSlotIn: 
     }
 
     override fun getFuel(stack: ItemStack?): Int {
-        return (stack)!!.getTagCompound()!!.getInteger(IJetpackArmor.TAG_FUEL)
+        return (stack)!!.getTagCompound()!!.getIntOr(IJetpackArmor.TAG_FUEL, 0)
     }
 
     override fun canFly(stack: ItemStack?, player: EntityPlayer?): Boolean {
         if ((stack)!!.hasTagCompound()) {
-            if ((stack)!!.getItemDamage() < (stack)!!.getMaxDamage()) {
+            if ((stack)!!.legacyItemValue < (stack)!!.getMaxDamage()) {
                 return true
             }
         }
@@ -80,7 +82,7 @@ open class ItemJetpack constructor(materialIn: ArmorMaterial?, equipmentSlotIn: 
     }
 
     override fun switchState(stack: ItemStack?, state: Boolean) {
-        if ((stack)!!.hasTagCompound()) (stack)!!.getTagCompound()!!.setBoolean(IJetpackArmor.TAG_ACT, state)
+        if ((stack)!!.hasTagCompound()) (stack)!!.getTagCompound()!!.putBoolean(IJetpackArmor.TAG_ACT, state)
         else {
             (stack)!!.setTagCompound(NBTTagCompound())
         }
@@ -90,7 +92,7 @@ open class ItemJetpack constructor(materialIn: ArmorMaterial?, equipmentSlotIn: 
         return 2
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(stack: ItemStack, world: World?, list: MutableList<String?>, flagIn: ITooltipFlag) {
         var color: String = ""
         val joules: Float = this.getElectricityStored(stack)

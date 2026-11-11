@@ -4,13 +4,13 @@ import galaxyspace.GalaxySpace
 import galaxyspace.core.util.GSThreadVersionCheck
 import micdoodle8.mods.galacticraft.core.util.ClientUtil
 import micdoodle8.mods.galacticraft.core.util.ColorUtil
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.client.resources.I18n
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 import java.awt.Desktop
 import java.io.BufferedReader
@@ -203,6 +203,6 @@ open class GSGuiUpdate : GuiScreen() {
     companion object {
         @JvmField
         var guiMain: ResourceLocation =
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/guiupdate.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/guiupdate.png")
     }
 }

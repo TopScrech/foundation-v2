@@ -3,18 +3,18 @@ package galaxyspace.systems.SolarSystem.moons.europa.blocks
 import galaxyspace.GalaxySpace
 import galaxyspace.api.block.IEnergyGeyser
 import micdoodle8.mods.galacticraft.api.vector.Vector3
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProviderSurface
 import net.minecraftforge.fluids.FluidRegistry
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class EuropaBlockGeyser constructor() : Block(Material.GRASS), IEnergyGeyser {
@@ -28,13 +28,13 @@ open class EuropaBlockGeyser constructor() : Block(Material.GRASS), IEnergyGeyse
         entity.motionY += 0.5
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun randomDisplayTick(stateIn: IBlockState, world: World, pos: BlockPos, rand: Random) {
         var gravity: Double = 1.0
         if (world.provider is WorldProviderSurface) gravity = 0.05
 
-        if (world.getBlockState(pos.down()).getBlock() === FluidRegistry.WATER.getBlock()) {
-            if (world.isAirBlock(
+        if (world.getBlockState(pos.below()).getBlock() === FluidRegistry.WATER.getBlock()) {
+            if (world.isEmptyBlock(
                     BlockPos(
                         pos.getX(),
                         pos.getY() + 1,
@@ -195,6 +195,6 @@ open class EuropaBlockGeyser constructor() : Block(Material.GRASS), IEnergyGeyse
     }
 
     override fun isWorkGeyser(world: World?, state: IBlockState?, pos: BlockPos?): Boolean {
-        return (world)!!.getBlockState((pos)!!.down()).getBlock() === FluidRegistry.WATER.getBlock()
+        return (world)!!.getBlockState((pos)!!.below()).getBlock() === FluidRegistry.WATER.getBlock()
     }
 }

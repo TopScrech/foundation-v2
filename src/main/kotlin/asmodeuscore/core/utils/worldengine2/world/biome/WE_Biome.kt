@@ -26,7 +26,7 @@
 package asmodeuscore.core.utils.worldengine2.world.biome
 
 import asmodeuscore.core.utils.worldengine2.world.properties.WE_IBiomeProperties
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 
 /**
  * Класс главного технического биома WorldEngine.

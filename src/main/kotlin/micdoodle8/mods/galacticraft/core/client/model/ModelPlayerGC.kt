@@ -4,8 +4,8 @@ import micdoodle8.mods.galacticraft.core.Constants
 import net.minecraft.client.model.ModelPlayer
 import net.minecraft.client.model.ModelRenderer
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.entity.Entity
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.Entity
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class ModelPlayerGC constructor(var1: Float, smallArms: Boolean) : ModelPlayer(var1, smallArms) {
     init {
@@ -34,9 +34,9 @@ open class ModelPlayerGC constructor(var1: Float, smallArms: Boolean) : ModelPla
 
     companion object {
         @JvmField
-        val oxygenMaskTexture: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/oxygen.png")
+        val oxygenMaskTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/oxygen.png")
 
         @JvmField
-        val playerTexture: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/player.png")
+        val playerTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/player.png")
     }
 }

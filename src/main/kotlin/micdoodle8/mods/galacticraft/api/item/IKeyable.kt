@@ -1,8 +1,8 @@
 package micdoodle8.mods.galacticraft.api.item
 
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
 
 /**
  * Implement into tile entities that do something upon being activated by a key

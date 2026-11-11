@@ -34,20 +34,21 @@ import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import micdoodle8.mods.galacticraft.core.wrappers.ScheduledDimensionChange
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.network.INetHandler
-import net.minecraft.network.Packet
+import net.minecraft.network.protocol.Packet
 import net.minecraft.network.PacketBuffer
 import net.minecraft.server.MinecraftServer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.network.ByteBufUtils
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.lang.RuntimeException
 import java.nio.charset.StandardCharsets
@@ -162,7 +163,7 @@ open class ACPacketSimple : PacketBase, Packet<INetHandler> {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun handleClientSide(player: EntityPlayer?) {
         var playerBaseClient: EntityPlayerSP? = null
 
@@ -194,7 +195,7 @@ when (this.type) {
 
 
                 if (type_storm == 0) {
-                    val msd: DustStormSaveData = DustStormSaveData.get((player)!!.world, name)
+                    val msd: DustStormSaveData = DustStormSaveData.get((player)!!.level(), name)
                     msd.setDustStorm(isDustStorm)
                     msd.tickDustStorm = tickStorm
                     msd.tickClearWeather = clearTick
@@ -203,7 +204,7 @@ when (this.type) {
                 }
 
                 if (type_storm == 1) {
-                    val msd: FrozenStormSaveData = FrozenStormSaveData.get((player)!!.world, name)
+                    val msd: FrozenStormSaveData = FrozenStormSaveData.get((player)!!.level(), name)
                     msd.setFrozenStorm(isDustStorm)
                     msd.tickStorm = tickStorm
                     msd.tickClearWeather = clearTick
@@ -415,7 +416,7 @@ when (this.type) {
         this.encodeInto(var1)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun processPacket(var1: INetHandler) {
         if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
             this.handleClientSide(FMLClientHandler.instance().getClientPlayerEntity())

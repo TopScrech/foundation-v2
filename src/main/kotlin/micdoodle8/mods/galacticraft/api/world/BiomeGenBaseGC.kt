@@ -6,7 +6,7 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import net.minecraft.entity.monster.EntityMob
 import net.minecraft.entity.passive.EntityAmbientCreature
 import net.minecraft.entity.passive.EntityWaterMob
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 import java.util.*
 
 /**

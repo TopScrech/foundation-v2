@@ -3,10 +3,9 @@ package micdoodle8.mods.galacticraft.core.client.gui.element
 import micdoodle8.mods.galacticraft.core.util.ColorUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.client.gui.screens.Screen as GuiScreen
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.util.ChatAllowedCharacters
-import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.input.Keyboard
 import kotlin.math.min
 
@@ -40,7 +39,7 @@ open class GuiElementTextBox constructor(
     @JvmField
     var incorrectUseTimer: Int = 0
 
-    private val mc: Minecraft = FMLClientHandler.instance().getClient()
+    private val mc: Minecraft = Minecraft.getInstance()
 
     /**
      * Call this from the parent GUI class in keyTyped.

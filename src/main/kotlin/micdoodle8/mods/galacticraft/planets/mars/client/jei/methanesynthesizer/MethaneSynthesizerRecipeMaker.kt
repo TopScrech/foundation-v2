@@ -4,7 +4,7 @@ import java.util.ArrayList
 
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 object MethaneSynthesizerRecipeMaker {
     @JvmStatic

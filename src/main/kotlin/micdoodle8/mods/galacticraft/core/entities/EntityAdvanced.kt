@@ -10,11 +10,11 @@ import micdoodle8.mods.galacticraft.core.network.NetworkUtil
 import micdoodle8.mods.galacticraft.core.network.PacketDynamic
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.lang.reflect.Field
 
 abstract class EntityAdvanced(world: World) : Entity(world), IPacketReceiver {
@@ -26,7 +26,7 @@ abstract class EntityAdvanced(world: World) : Entity(world), IPacketReceiver {
     private var networkDataChanged = false
 
     init {
-        if (world != null && world.isRemote) {
+        if (world != null && world.isClientSide) {
             //Empty packet client->server just to kickstart the server into sending this client an initial packet
             this.fieldCacheServer = LinkedHashSet<Field>()
             (GalacticraftCore.packetPipeline)!!.sendToServer(PacketDynamic(this))

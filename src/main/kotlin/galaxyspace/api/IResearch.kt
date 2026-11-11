@@ -1,6 +1,6 @@
 package galaxyspace.api
 
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 interface IResearch {
     fun getID(): Int

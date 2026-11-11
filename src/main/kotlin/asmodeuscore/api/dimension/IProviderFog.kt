@@ -1,13 +1,12 @@
 package asmodeuscore.api.dimension
 
-import net.minecraft.world.WorldProvider
 
 
 interface IProviderFog {
     fun getFogDensity(x: Int, y: Int, z: Int): Float
 
     /**
-     * Now used [WorldProvider.getFogColor]
+     * Dimension fog colors use native environment attributes
      * @param x
      * @param y
      * @param z

@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.core.entities.player
 
 import micdoodle8.mods.galacticraft.api.recipe.ISchematicPage
-import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.world.phys.AABB as AxisAlignedBB
 import java.util.ArrayList
 
 interface IStatsClientCapability {

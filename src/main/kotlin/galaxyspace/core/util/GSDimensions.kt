@@ -1,7 +1,7 @@
 package galaxyspace.core.util
 
 import galaxyspace.core.util.GSDimensions
-import net.minecraft.world.DimensionType
+import net.minecraft.world.level.dimension.DimensionType
 
 object GSDimensions {
     @JvmField

@@ -6,17 +6,16 @@ import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.inventory.ContainerPlayer
 import net.minecraft.network.play.client.CPacketCloseWindow
-import net.minecraft.potion.PotionEffect
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
 import net.minecraftforge.client.event.GuiScreenEvent
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.util.ArrayList
 
 open class TabRegistry {
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun guiPostInit(event: GuiScreenEvent.InitGuiEvent.Post) {
         if (event.getGui() is GuiInventory) {
@@ -70,7 +69,7 @@ open class TabRegistry {
         fun addTabsToInventory(gui: GuiContainer?) {
         }
 
-        private val mc: Minecraft = FMLClientHandler.instance().getClient()
+        private val mc: Minecraft = Minecraft.getInstance()
         private var initWithPotion = false
 
         @JvmField
@@ -131,8 +130,8 @@ open class TabRegistry {
 
         @JvmStatic
         fun doPotionOffsetVanilla(): Boolean {
-            for (potioneffect: PotionEffect in mc.player.getActivePotionEffects()) {
-                if (potioneffect.getPotion().shouldRender(potioneffect)) {
+            for (potioneffect: PotionEffect in mc.player.getActiveEffects()) {
+                if (net.minecraftforge.client.extensions.common.IClientMobEffectExtensions.of(potioneffect).isVisibleInInventory(potioneffect)) {
                     return true
                 }
             }

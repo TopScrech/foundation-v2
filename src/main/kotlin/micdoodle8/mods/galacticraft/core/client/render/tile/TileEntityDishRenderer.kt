@@ -6,8 +6,8 @@ import micdoodle8.mods.galacticraft.core.util.ClientUtil
 import net.minecraft.client.renderer.block.model.IBakedModel
 import net.minecraft.client.renderer.texture.TextureManager
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL12
@@ -18,9 +18,9 @@ open class TileEntityDishRenderer : TileEntitySpecialRenderer<TileEntityDish>() 
     private fun updateModels() {
         if (modelDish == null) {
             try {
-                modelDish = ClientUtil.modelFromOBJ(ResourceLocation(Constants.ASSET_PREFIX, "teledish.obj"))
-                modelFork = ClientUtil.modelFromOBJ(ResourceLocation(Constants.ASSET_PREFIX, "telefork.obj"))
-                modelSupport = ClientUtil.modelFromOBJ(ResourceLocation(Constants.ASSET_PREFIX, "telesupport.obj"))
+                modelDish = ClientUtil.modelFromOBJ(ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "teledish.obj"))
+                modelFork = ClientUtil.modelFromOBJ(ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "telefork.obj"))
+                modelSupport = ClientUtil.modelFromOBJ(ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "telesupport.obj"))
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -73,9 +73,9 @@ open class TileEntityDishRenderer : TileEntitySpecialRenderer<TileEntityDish>() 
     }
 
     companion object {
-        private val textureSupport = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/telesupport.png")
-        private val textureFork = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/telefork.png")
-        private val textureDish = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/teledish.png")
+        private val textureSupport = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/telesupport.png")
+        private val textureFork = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/telefork.png")
+        private val textureDish = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/teledish.png")
         private var modelSupport: IBakedModel? = null
         private var modelFork: IBakedModel? = null
         private var modelDish: IBakedModel? = null

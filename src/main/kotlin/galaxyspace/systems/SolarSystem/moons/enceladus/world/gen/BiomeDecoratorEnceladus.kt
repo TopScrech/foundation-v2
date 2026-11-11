@@ -7,9 +7,9 @@ import galaxyspace.systems.SolarSystem.moons.enceladus.blocks.EnceladusBlocks
 import galaxyspace.systems.SolarSystem.moons.enceladus.blocks.EnceladusCrystal
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
 import micdoodle8.mods.galacticraft.core.world.gen.WorldGenMinableMeta
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 
 open class BiomeDecoratorEnceladus constructor() : BiomeDecoratorSpace() {
@@ -33,22 +33,22 @@ open class BiomeDecoratorEnceladus constructor() : BiomeDecoratorSpace() {
             val randPosZ: Int = posZ + (rand)!!.nextInt(16) + 8
 
             val pos: BlockPos = BlockPos(randPosX, randPosY, randPosZ)
-            if (this.getCurrentWorld()!!.getBlockState(pos) === GSBlocks.ENCELADUS_BLOCKS.getDefaultState()
-                    .withProperty(
+            if (this.getCurrentWorld()!!.getBlockState(pos) === GSBlocks.ENCELADUS_BLOCKS.defaultBlockState()
+                    .setValue(
                         EnceladusBlocks.BASIC_TYPE,
                         EnumEnceladusBlocks.ENCELADUS_GRUNT
                     )
             ) {
-                if (this.getCurrentWorld()!!.isAirBlock(pos.down())) this.getCurrentWorld()!!.setBlockState(
-                    pos.down(),
-                    GSBlocks.ENCELADUS_CRYSTAL.getDefaultState()
-                        .withProperty(EnceladusCrystal.FACING, EnumFacing.HORIZONTALS[j])
+                if (this.getCurrentWorld()!!.isEmptyBlock(pos.below())) this.getCurrentWorld()!!.setBlockAndUpdate(
+                    pos.below(),
+                    GSBlocks.ENCELADUS_CRYSTAL.defaultBlockState()
+                        .setValue(EnceladusCrystal.FACING, EnumFacing.HORIZONTALS[j])
                 )
 
-                if (this.getCurrentWorld()!!.isAirBlock(pos.up())) this.getCurrentWorld()!!.setBlockState(
-                    pos.up(),
-                    GSBlocks.ENCELADUS_CRYSTAL.getDefaultState()
-                        .withProperty(EnceladusCrystal.FACING, EnumFacing.HORIZONTALS[j])
+                if (this.getCurrentWorld()!!.isEmptyBlock(pos.above())) this.getCurrentWorld()!!.setBlockAndUpdate(
+                    pos.above(),
+                    GSBlocks.ENCELADUS_CRYSTAL.defaultBlockState()
+                        .setValue(EnceladusCrystal.FACING, EnumFacing.HORIZONTALS[j])
                 )
             }
         }

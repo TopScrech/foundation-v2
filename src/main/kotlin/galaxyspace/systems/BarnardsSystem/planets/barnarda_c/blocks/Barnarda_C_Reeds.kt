@@ -1,22 +1,24 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Reeds
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockLiquid
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-open class Barnarda_C_Reeds constructor() : Block(Material.WATER) {
+open class Barnarda_C_Reeds constructor() : Block(Material.WATER), LegacyBlockMetadata {
     init {
         this.setTranslationKey("barnarda_c_reeds")
-        setDefaultState(blockState.getBaseState().withProperty(BlockLiquid.LEVEL, 0))
+        setDefaultState(blockState.getBaseState().setValue(BlockLiquid.LEVEL, 0))
     }
 
 
@@ -29,7 +31,7 @@ open class Barnarda_C_Reeds constructor() : Block(Material.WATER) {
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(BlockLiquid.LEVEL, meta)
+        return this.defaultBlockState().setValue(BlockLiquid.LEVEL, meta)
     }
 
     override fun getBoundingBox(state: IBlockState, source: IBlockAccess, pos: BlockPos): AxisAlignedBB {
@@ -52,7 +54,7 @@ open class Barnarda_C_Reeds constructor() : Block(Material.WATER) {
         return false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT_MIPPED
     }

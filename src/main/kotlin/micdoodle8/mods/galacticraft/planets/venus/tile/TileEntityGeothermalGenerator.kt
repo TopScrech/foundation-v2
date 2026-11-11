@@ -1,5 +1,6 @@
 package micdoodle8.mods.galacticraft.planets.venus.tile
 
+import net.minecraft.world.ContainerHelper
 import java.util.EnumSet
 
 import micdoodle8.mods.galacticraft.api.tile.IDisableableMachine
@@ -16,16 +17,16 @@ import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
 import micdoodle8.mods.galacticraft.planets.venus.VenusModule
 import micdoodle8.mods.galacticraft.planets.venus.blocks.BlockGeothermalGenerator
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.*
 import kotlin.math.floor
 import kotlin.math.max
@@ -34,7 +35,7 @@ import kotlin.math.sin
 
 open class TileEntityGeothermalGenerator constructor() : TileBaseUniversalElectricalSource(), IInventoryDefaults,
     ISidedInventory, IConnector, IDisableableMachine {
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent? = super<TileBaseUniversalElectricalSource>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = super<TileBaseUniversalElectricalSource>.getDisplayName()
 
     private var validSpout = false
 
@@ -71,7 +72,7 @@ open class TileEntityGeothermalGenerator constructor() : TileBaseUniversalElectr
             val lastValidSpout: Boolean = this.validSpout
             this.validSpout = false
             if (stateBelow.getBlock() === VenusBlocks.spout) {
-                var pos1: BlockPos = below.down()
+                var pos1: BlockPos = below.below()
                 while (this.getPos().getY() - pos1.getY() < 20) {
                     val state: IBlockState = this.world.getBlockState(pos1)
                     if (state.getBlock() === (VenusModule.sulphuricAcid)!!.getBlock()) {
@@ -81,14 +82,14 @@ open class TileEntityGeothermalGenerator constructor() : TileBaseUniversalElectr
                         // Not valid
                         break
                     }
-                    pos1 = pos1.down()
+                    pos1 = pos1.below()
                 }
             }
 
             if (this.world.isRemote && this.validSpout != lastValidSpout) {
                 // Update active texture
                 val state: IBlockState = this.world.getBlockState(this.getPos())
-                this.world.notifyBlockUpdate(this.getPos(), state, state, 3)
+                this.world.sendBlockUpdated(this.getPos(), state, state, 3)
             }
         }
 
@@ -168,7 +169,7 @@ open class TileEntityGeothermalGenerator constructor() : TileBaseUniversalElectr
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
 
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, this.stacks)
     }
 
@@ -210,8 +211,8 @@ open class TileEntityGeothermalGenerator constructor() : TileBaseUniversalElectr
         return true
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.geothermal_generator.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.geothermal_generator.name")
     }
 
     override fun setDisabled(index: Int, disabled: Boolean) {
@@ -219,7 +220,7 @@ open class TileEntityGeothermalGenerator constructor() : TileBaseUniversalElectr
             if (this.disabled != disabled && this.world.isRemote) {
                 // Update active texture
                 val state: IBlockState = this.world.getBlockState(this.getPos())
-                this.world.notifyBlockUpdate(this.getPos(), state, state, 3)
+                this.world.sendBlockUpdated(this.getPos(), state, state, 3)
             }
 
             this.disabled = disabled
@@ -235,40 +236,40 @@ open class TileEntityGeothermalGenerator constructor() : TileBaseUniversalElectr
         return floor((this.getEnergyStoredGC() * i / this.getMaxEnergyStoredGC()).toDouble()).toInt()
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.stacks.size
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack {
+    override fun getItem(var1: Int): ItemStack {
         return this.stacks.get(var1)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        val oldstack: ItemStack = ItemStackHelper.getAndRemove(this.stacks, index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        val oldstack: ItemStack = ContainerHelper.takeItem(this.stacks, index)
         if (!oldstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
         return oldstack
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.stacks.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
     override fun isEmpty(): Boolean {
@@ -281,12 +282,12 @@ open class TileEntityGeothermalGenerator constructor() : TileBaseUniversalElectr
         return true
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 1
     }
 
-    override fun isUsableByPlayer(player: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && player.getDistanceSq(
+    override fun stillValid(player: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && player.getDistanceSq(
             this.getPos().getX() + 0.5,
             this.getPos().getY() + 0.5,
             this.getPos().getZ() + 0.5
@@ -297,15 +298,15 @@ open class TileEntityGeothermalGenerator constructor() : TileBaseUniversalElectr
         return intArrayOf(0)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
-        return this.isItemValidForSlot(slotID, itemstack)
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, itemstack)
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         return slotID == 0
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         return slotID == 0 && ItemElectricBase.isElectricItem(itemstack.getItem())
     }
 

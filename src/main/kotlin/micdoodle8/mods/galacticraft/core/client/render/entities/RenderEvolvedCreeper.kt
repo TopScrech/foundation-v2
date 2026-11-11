@@ -8,12 +8,12 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedCreeper
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderEvolvedCreeper constructor(manager: RenderManager) :
     RenderLiving<EntityEvolvedCreeper>(manager, ModelEvolvedCreeper(), 0.5f) {
     private var texSwitch = false
@@ -72,6 +72,6 @@ open class RenderEvolvedCreeper constructor(manager: RenderManager) :
     }
 
     companion object {
-        private val creeperTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/creeper.png")
+        private val creeperTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/creeper.png")
     }
 }

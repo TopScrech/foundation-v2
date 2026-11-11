@@ -1,7 +1,9 @@
 package micdoodle8.mods.galacticraft.api.prefab.core
 
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
+import foundation.block.getStateFromMeta
+
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 
 /**
  * Do not include this prefab class in your released mod download.

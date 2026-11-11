@@ -3,8 +3,8 @@ package galaxyspace.systems.SolarSystem.planets.overworld.items.modules.armor
 import galaxyspace.core.prefab.items.modules.ItemModule
 import galaxyspace.core.util.GSUtils.Module_Type
 import micdoodle8.mods.galacticraft.core.GCItems
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.ItemStack
 
 open class SensorLens : ItemModule() {
     override fun getName(): String {

@@ -16,18 +16,18 @@ import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.MathHelper
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.util.Mth as MathHelper
 import net.minecraftforge.client.model.IModel
 import net.minecraftforge.client.model.obj.OBJModel
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import java.io.IOException
 import java.util.*
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderRockets constructor(manager: RenderManager, private val model: String?, vararg parts: String?) :
     Render<EntityAutoRocket>(manager) {
     private var rocketModel: OBJModel.OBJBakedModel? = null
@@ -42,10 +42,10 @@ open class RenderRockets constructor(manager: RenderManager, private val model: 
         if (this.rocketModel == null) {
             try {
                 val model: IModel =
-                    OBJLoaderGC.instance.loadModel(ResourceLocation(GalaxySpace.ASSET_PREFIX, this.model + ".obj"))
+                    OBJLoaderGC.instance.loadModel(ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, this.model + ".obj"))
                 val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> =
                     Function { location: ResourceLocation? ->
-                        Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+                        Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
                     }
                 this.rocketModel = model.bake(
                     OBJModel.OBJState(this.parts, false),

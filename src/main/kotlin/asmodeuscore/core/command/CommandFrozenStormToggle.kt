@@ -1,41 +1,40 @@
 package asmodeuscore.core.command
 
-import asmodeuscore.api.dimension.IProviderWeather
+import foundation.level.FoundationSpaceEnvironment
 import asmodeuscore.core.astronomy.dimension.world.data.FrozenStormSaveData
-import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
-import net.minecraft.command.CommandBase
-import net.minecraft.command.CommandException
-import net.minecraft.command.ICommandSender
-import net.minecraft.server.MinecraftServer
-import net.minecraft.world.World
+import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.StringArgumentType
+import net.minecraft.commands.CommandSourceStack
+import net.minecraft.commands.Commands
+import net.minecraft.network.chat.Component
+import net.minecraft.world.level.Level
 
-open class CommandFrozenStormToggle : CommandBase() {
-    override fun getName(): String {
-        return "togglefrozenstorm"
+object CommandFrozenStormToggle {
+    fun register(dispatcher: CommandDispatcher<CommandSourceStack>) {
+        dispatcher.register(
+            Commands.literal("togglefrozenstorm")
+                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                .executes { execute(it.source) }
+                // Legacy storm commands ignored trailing arguments
+                .then(Commands.argument("arguments", StringArgumentType.greedyString()).executes { execute(it.source) })
+        )
     }
 
-    override fun getUsage(sender: ICommandSender): String {
-        return "/" + this.getName()
+    private fun execute(source: CommandSourceStack): Int {
+        toggleRainfall(source.level)
+        source.sendSuccess({ Component.translatable("commands.downfall.success") }, true)
+        return 1
     }
 
-    override fun getRequiredPermissionLevel(): Int {
-        return 2
-    }
-
-    @Throws(CommandException::class)
-    override fun execute(server: MinecraftServer, sender: ICommandSender, args: Array<String?>) {
-        this.toggleRainfall(server, sender.getEntityWorld())
-        notifyCommandListener(sender, this, "commands.downfall.success", *arrayOfNulls<Any>(0))
-    }
-
-    protected open fun toggleRainfall(server: MinecraftServer?, world: World) {
-        if (world.provider is IProviderWeather && world.provider is IGalacticraftWorldProvider) {
-            val gcprovider: IGalacticraftWorldProvider = world.provider as IGalacticraftWorldProvider
-            val name: String? = (gcprovider.getCelestialBody())!!.getName()
-            val msd: FrozenStormSaveData = FrozenStormSaveData.get(world, name)
-
-            if (msd.isFrozenStorm()) msd.tickStorm = 1
-            else msd.tickClearWeather = 1
+    private fun toggleRainfall(world: Level) {
+        val environment = FoundationSpaceEnvironment.get(world)
+        if (environment.body.isPresent && environment.hasWeather) {
+            val data = FrozenStormSaveData.get(world, environment.saveName)
+            toggleWeather(data)
         }
+    }
+    fun toggleWeather(data: FrozenStormSaveData) {
+        if (data.isFrozenStorm()) data.tickStorm = 1 else data.tickClearWeather = 1
+        data.setDirty()
     }
 }

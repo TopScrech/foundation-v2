@@ -9,8 +9,8 @@ import asmodeuscore.core.astronomy.sky.SkyProviderBase.ModeLight
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.Vec3 as Vec3d
 import kotlin.math.sin
 
 open class SkyProviderCallisto : SkyProviderBase() {
@@ -73,7 +73,7 @@ open class SkyProviderCallisto : SkyProviderBase() {
     }
 
     override fun sunImage(): ResourceLocation {
-        return ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
+        return ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
     }
 
     override fun modeLight(): ModeLight {
@@ -94,10 +94,10 @@ open class SkyProviderCallisto : SkyProviderBase() {
 
     companion object {
         private val jupiterTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/jupiter.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/jupiter.png")
         private val europaTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/moons/europa.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/moons/europa.png")
         private val ganymedeTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/moons/ganymede.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/moons/ganymede.png")
     }
 }

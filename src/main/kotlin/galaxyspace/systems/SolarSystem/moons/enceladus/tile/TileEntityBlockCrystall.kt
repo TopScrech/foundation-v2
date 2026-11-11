@@ -6,9 +6,9 @@ import galaxyspace.GalaxySpace
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
-import net.minecraft.entity.Entity
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class TileEntityBlockCrystall constructor() : TileEntitySpecialRenderer<TileEntity>() {
     private val model: ModelCrystal
@@ -35,11 +35,11 @@ open class TileEntityBlockCrystall constructor() : TileEntitySpecialRenderer<Til
         GL11.glColor4f(1.0f, 1.0f, 1.0f, 0.8f)
         GL11.glTranslatef(x.toFloat() + 0.5f, y.toFloat() + 1.8f, z.toFloat() + 0.5f)
         val textures: ResourceLocation =
-            (ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/model/enceladus_crystal.png"))
-        Minecraft.getMinecraft().renderEngine.bindTexture(textures)
+            (ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/model/enceladus_crystal.png"))
+        Minecraft.getInstance().renderEngine.bindTexture(textures)
         GL11.glScalef(1.2f, 1.2f, 1.2f)
 
-        if (te.getWorld().getBlockState(te.getPos().up()).isNormalCube()) {
+        if (te.getLevel().getBlockState(te.getBlockPos().up()).isNormalCube()) {
             GL11.glTranslatef(0.0f, -2.15f, 0.0f)
             GL11.glRotatef(0f, 0.0f, 0.0f, 1.0f)
         } else GL11.glRotatef(180f, 0.0f, 0.0f, 1.0f)

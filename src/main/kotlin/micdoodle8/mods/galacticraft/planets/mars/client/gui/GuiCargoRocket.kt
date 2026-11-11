@@ -17,14 +17,14 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.mars.entities.EntityCargoRocket
 import micdoodle8.mods.galacticraft.planets.mars.network.PacketSimpleMars
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.inventory.IInventory
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.Container as IInventory
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiCargoRocket @JvmOverloads constructor(
     private val upperChestInventory: IInventory,
     private val rocket: EntityCargoRocket,
@@ -169,7 +169,7 @@ open class GuiCargoRocket @JvmOverloads constructor(
 
         init {
             for (i: Int in 0..3) {
-                rocketTextures[i] = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/rocket_" + i * 18 + ".png")
+                rocketTextures[i] = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/rocket_" + i * 18 + ".png")
             }
         }
     }

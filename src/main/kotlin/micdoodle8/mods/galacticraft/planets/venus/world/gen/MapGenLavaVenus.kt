@@ -6,10 +6,10 @@ import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
 import micdoodle8.mods.galacticraft.planets.venus.blocks.BlockBasicVenus
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.ChunkPrimer
 import java.util.*
 
@@ -195,31 +195,31 @@ open class MapGenLavaVenus : MapGenBaseMeta() {
                                                     ) as BlockBasicVenus.EnumBlockBasicVenus
                                                 if (type == BlockBasicVenus.EnumBlockBasicVenus.ROCK_HARD || type == BlockBasicVenus.EnumBlockBasicVenus.ROCK_SOFT) {
                                                     val north: IBlockState =
-                                                        if (localZ == 0) Blocks.AIR.getDefaultState() else primer.getBlockState(
+                                                        if (localZ == 0) Blocks.AIR.defaultBlockState() else primer.getBlockState(
                                                             localX,
                                                             localY,
                                                             localZ - 1
                                                         )
                                                     val south: IBlockState =
-                                                        if (localZ == 15) Blocks.AIR.getDefaultState() else primer.getBlockState(
+                                                        if (localZ == 15) Blocks.AIR.defaultBlockState() else primer.getBlockState(
                                                             localX,
                                                             localY,
                                                             localZ + 1
                                                         )
                                                     val east: IBlockState =
-                                                        if (localX == 15) Blocks.AIR.getDefaultState() else primer.getBlockState(
+                                                        if (localX == 15) Blocks.AIR.defaultBlockState() else primer.getBlockState(
                                                             localX + 1,
                                                             localY,
                                                             localZ
                                                         )
                                                     val west: IBlockState =
-                                                        if (localX == 0) Blocks.AIR.getDefaultState() else primer.getBlockState(
+                                                        if (localX == 0) Blocks.AIR.defaultBlockState() else primer.getBlockState(
                                                             localX - 1,
                                                             localY,
                                                             localZ
                                                         )
                                                     val below: IBlockState =
-                                                        if (localY == 0) Blocks.AIR.getDefaultState() else primer.getBlockState(
+                                                        if (localY == 0) Blocks.AIR.defaultBlockState() else primer.getBlockState(
                                                             localX,
                                                             localY - 1,
                                                             localZ
@@ -229,8 +229,8 @@ open class MapGenLavaVenus : MapGenBaseMeta() {
                                                             localX,
                                                             localY,
                                                             localZ,
-                                                            (VenusBlocks.venusBlock)!!.getDefaultState()
-                                                                .withProperty(
+                                                            (VenusBlocks.venusBlock)!!.defaultBlockState()
+                                                                .setValue(
                                                                     BlockBasicVenus.BASIC_TYPE_VENUS,
                                                                     BlockBasicVenus.EnumBlockBasicVenus.ROCK_MAGMA
                                                                 )
@@ -240,7 +240,7 @@ open class MapGenLavaVenus : MapGenBaseMeta() {
                                                             localX,
                                                             localY,
                                                             localZ,
-                                                            Blocks.LAVA.getDefaultState()
+                                                            Blocks.LAVA.defaultBlockState()
                                                         )
                                                     }
                                                 }

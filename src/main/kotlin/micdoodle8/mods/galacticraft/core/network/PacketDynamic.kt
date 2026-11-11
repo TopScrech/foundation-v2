@@ -5,14 +5,14 @@ import io.netty.buffer.Unpooled
 import java.io.IOException
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraftforge.fml.common.FMLLog
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import foundation.logging.FoundationLog as FMLLog
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.ArrayList
 
 open class PacketDynamic : PacketBase {
@@ -23,18 +23,18 @@ open class PacketDynamic : PacketBase {
 
     constructor() : super()
 
-    constructor(entity: Entity) : super(GCCoreUtil.getDimensionID(entity.world)) {
+    constructor(entity: Entity) : super(GCCoreUtil.getDimensionID(entity.level())) {
         assert(entity is IPacketReceiver) { "Entity does not implement " + IPacketReceiver::class.java.getSimpleName() }
         this.type = 0
-        this.data = ((arrayOf<Any>(entity.getEntityId()) as Array<Any?>?))!!
+        this.data = ((arrayOf<Any>(entity.getId()) as Array<Any?>?))!!
         this.sendData = ArrayList<Any?>()
         (entity as IPacketReceiver).getNetworkedData(this.sendData)
     }
 
-    constructor(tile: TileEntity) : super(GCCoreUtil.getDimensionID(tile.getWorld())) {
+    constructor(tile: TileEntity) : super(GCCoreUtil.getDimensionID(tile.getLevel())) {
         assert(tile is IPacketReceiver) { "TileEntity does not implement " + IPacketReceiver::class.java.getSimpleName() }
         this.type = 1
-        this.data = ((arrayOf<Any>(tile.getPos()) as Array<Any?>?))!!
+        this.data = ((arrayOf<Any>(tile.getBlockPos()) as Array<Any?>?))!!
         this.sendData = ArrayList<Any?>()
         (tile as IPacketReceiver).getNetworkedData(this.sendData)
     }
@@ -110,7 +110,7 @@ when (this.type) {
     private fun handleData(side: Side, player: EntityPlayer) {
         when (this.type) {
             0 -> {
-                val entity: Entity? = player.world.getEntityByID((this.data!![0] as kotlin.Int?)!!)
+                val entity: Entity? = player.level().getEntityByID((this.data!![0] as kotlin.Int?)!!)
 
                 if (entity is IPacketReceiver) {
                     if (this.payloadData!!.readableBytes() > 0) {
@@ -124,8 +124,8 @@ when (this.type) {
                 }
             }
 
-            1 -> if (player.world.isBlockLoaded(this.data!![0] as BlockPos?, false)) {
-                val tile: TileEntity? = player.world.getTileEntity(this.data!![0] as BlockPos?)
+            1 -> if (player.level().isBlockLoaded(this.data!![0] as BlockPos?, false)) {
+                val tile: TileEntity? = player.level().getBlockEntity(this.data!![0] as BlockPos?)
 
                 if (tile is IPacketReceiver) {
                     if (this.payloadData!!.readableBytes() > 0) {

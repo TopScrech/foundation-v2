@@ -16,12 +16,12 @@ import micdoodle8.mods.galacticraft.api.transmission.tile.IElectrical
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
 import micdoodle8.mods.galacticraft.core.energy.tile.EnergyStorageTile
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseConductor
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.energy.CapabilityEnergy
@@ -50,12 +50,12 @@ object EnergyUtil {
         val adjacentConnections: Array<TileEntity?> = arrayOfNulls<TileEntity>(6)
 
         val thisVec: BlockVec3 = BlockVec3(tile)
-        for (direction: EnumFacing in EnumFacing.VALUES) {
+        for (direction: EnumFacing in EnumFacing.values()) {
             if (tile is IConductor && !(tile as IConductor).canConnect(direction, NetworkType.POWER)) {
                 continue
             }
 
-            val tileEntity: TileEntity? = thisVec.getTileEntityOnSide(tile.getWorld(), direction)
+            val tileEntity: TileEntity? = thisVec.getTileEntityOnSide(tile.getLevel(), direction)
 
             if (tileEntity == null) {
                 continue
@@ -120,8 +120,8 @@ object EnergyUtil {
         directions: MutableList<EnumFacing?>
     ) {
         val thisVec: BlockVec3 = BlockVec3(conductor)
-        val world: World = conductor.getWorld()
-        for (direction: EnumFacing in EnumFacing.VALUES) {
+        val world: World = conductor.getLevel()
+        for (direction: EnumFacing in EnumFacing.values()) {
             val tileEntity: TileEntity? = thisVec.getTileEntityOnSide(world, direction)
 
             if (tileEntity == null || tileEntity is IConductor)  //world.getTileEntity will not have returned an invalid tile, invalid tiles are null

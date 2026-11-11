@@ -1,8 +1,13 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.tile
 
+import foundation.level.offset
+
+import foundation.persistence.containsTag
+import foundation.persistence.listOfType
+
 import micdoodle8.mods.galacticraft.core.blocks.BlockMulti.EnumBlockMultiType
 import micdoodle8.mods.miccore.Annotations.NetworkedField
-import net.minecraft.util.EnumFacing.Axis
+import net.minecraft.core.Direction.Axis
 
 import com.google.common.collect.Lists
 import java.util.UUID
@@ -26,23 +31,24 @@ import micdoodle8.mods.galacticraft.planets.asteroids.dimension.WorldProviderAst
 import micdoodle8.mods.galacticraft.planets.asteroids.entities.EntityAstroMiner
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.WorldlyContainer as ISidedInventory
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.ref.WeakReference
 import java.util.ArrayList
 import java.util.HashMap
@@ -133,7 +139,7 @@ open class TileEntityMinerBase constructor() : TileBaseElectricBlockWithInventor
             this.initialised = true
             if (!this.world.isRemote && !this.isMaster) {
                 if (this.getMaster() == null) {
-                    this.world.setBlockState(this.getPos(), (AsteroidBlocks.blockMinerBase)!!.getDefaultState(), 2)
+                    this.world.setBlock(this.getPos(), (AsteroidBlocks.blockMinerBase)!!.defaultBlockState(), 2)
                 }
             }
         }
@@ -208,7 +214,7 @@ open class TileEntityMinerBase constructor() : TileBaseElectricBlockWithInventor
         val positions: MutableList<BlockPos> = ArrayList<BlockPos>()
         this.getPositions(pos, (positions as MutableList<BlockPos?>?))
         for (vecToAdd: BlockPos in positions) {
-            val tile: TileEntity? = world.getTileEntity(vecToAdd)
+            val tile: TileEntity? = world.getBlockEntity(vecToAdd)
             if (tile is TileEntityMinerBase) {
                 tile.mainBlockPosition = pos
             }
@@ -253,7 +259,7 @@ open class TileEntityMinerBase constructor() : TileBaseElectricBlockWithInventor
         }
 
         if (masterTile == null) {
-            val tileEntity: TileEntity? = this.world.getTileEntity(this.mainBlockPosition)
+            val tileEntity: TileEntity? = this.world.getBlockEntity(this.mainBlockPosition)
 
             if (tileEntity is TileEntityMinerBase) {
                 masterTile = WeakReference<TileEntityMinerBase?>(tileEntity)
@@ -276,35 +282,35 @@ open class TileEntityMinerBase constructor() : TileBaseElectricBlockWithInventor
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
         this.stacks = this.readStandardItemsFromNBT(nbt)
-        this.facing = EnumFacing.byHorizontalIndex(nbt.getInteger("facing"))
+        this.facing = EnumFacing.byHorizontalIndex(nbt.getIntOr("facing", 0))
         if (GCCoreUtil.getEffectiveSide() == Side.SERVER) {
-            this.isMaster = nbt.getBoolean("isMaster")
+            this.isMaster = nbt.getBooleanOr("isMaster", false)
             if (this.isMaster) {
                 this.updateClientFlag = true
             } else {
-                val tagCompound: NBTTagCompound = nbt.getCompoundTag("masterpos")
+                val tagCompound: NBTTagCompound = nbt.getCompoundOrEmpty("masterpos")
                 if (tagCompound.getKeySet().isEmpty()) this.setMainBlockPosition(null)
                 else {
                     this.setMainBlockPosition(
                         BlockPos(
-                            tagCompound.getInteger("x"),
-                            tagCompound.getInteger("y"),
-                            tagCompound.getInteger("z")
+                            tagCompound.getIntOr("x", 0),
+                            tagCompound.getIntOr("y", 0),
+                            tagCompound.getIntOr("z", 0)
                         )
                     )
                     this.updateClientFlag = true
                 }
             }
-            if (nbt.hasKey("LinkedUUIDMost", 4) && nbt.hasKey("LinkedUUIDLeast", 4)) {
-                this.linkedMinerID = UUID(nbt.getLong("LinkedUUIDMost"), nbt.getLong("LinkedUUIDLeast"))
+            if (nbt.containsTag("LinkedUUIDMost", 4) && nbt.containsTag("LinkedUUIDLeast", 4)) {
+                this.linkedMinerID = UUID(nbt.getLongOr("LinkedUUIDMost", 0L), nbt.getLongOr("LinkedUUIDLeast", 0L))
             } else {
                 this.linkedMinerID = null
             }
-            if (nbt.hasKey("TargetPoints")) {
+            if (nbt.containsTag("TargetPoints")) {
                 this.targetPoints.clear()
-                val mpList: NBTTagList = nbt.getTagList("TargetPoints", 10)
-                for (j: Int in 0..<mpList.tagCount()) {
-                    val bvTag: NBTTagCompound = mpList.getCompoundTagAt(j)
+                val mpList: NBTTagList = nbt.listOfType("TargetPoints", 10)
+                for (j: Int in 0..<mpList.size) {
+                    val bvTag: NBTTagCompound = mpList.getCompoundOrEmpty(j)
                     this.targetPoints.add(BlockVec3.readFromNBT(bvTag))
                 }
             } else {
@@ -316,33 +322,33 @@ open class TileEntityMinerBase constructor() : TileBaseElectricBlockWithInventor
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
         this.writeStandardItemsToNBT(nbt, this.stacks)
-        nbt.setBoolean("isMaster", this.isMaster)
+        nbt.putBoolean("isMaster", this.isMaster)
         if (!this.isMaster && this.mainBlockPosition != null) {
             val masterTag: NBTTagCompound = NBTTagCompound()
-            masterTag.setInteger("x", this.mainBlockPosition!!.getX())
-            masterTag.setInteger("y", this.mainBlockPosition!!.getY())
-            masterTag.setInteger("z", this.mainBlockPosition!!.getZ())
-            nbt.setTag("masterpos", masterTag)
+            masterTag.putInt("x", this.mainBlockPosition!!.getX())
+            masterTag.putInt("y", this.mainBlockPosition!!.getY())
+            masterTag.putInt("z", this.mainBlockPosition!!.getZ())
+            nbt.put("masterpos", masterTag)
         }
-        nbt.setInteger("facing", this.facing.getHorizontalIndex())
+        nbt.putInt("facing", this.facing.getHorizontalIndex())
         if (this.isMaster && this.linkedMinerID != null) {
-            nbt.setLong("LinkedUUIDMost", this.linkedMinerID!!.getMostSignificantBits())
-            nbt.setLong("LinkedUUIDLeast", this.linkedMinerID!!.getLeastSignificantBits())
+            nbt.putLong("LinkedUUIDMost", this.linkedMinerID!!.getMostSignificantBits())
+            nbt.putLong("LinkedUUIDLeast", this.linkedMinerID!!.getLeastSignificantBits())
         }
         val mpList: NBTTagList = NBTTagList()
         for (j: Int in this.targetPoints.indices) {
-            mpList.appendTag(this.targetPoints.get(j)!!.writeToNBT(NBTTagCompound()))
+            mpList.add(this.targetPoints.get(j)!!.writeToNBT(NBTTagCompound()))
         }
-        nbt.setTag("TargetPoints", mpList)
+        nbt.put("TargetPoints", mpList)
         return nbt
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
     }
@@ -356,7 +362,7 @@ open class TileEntityMinerBase constructor() : TileBaseElectricBlockWithInventor
 
         var flag1: Boolean = false
         var k: Int = 1
-        val invSize: Int = this.getSizeInventory()
+        val invSize: Int = this.getContainerSize()
 
         var existingStack: ItemStack
 
@@ -399,7 +405,7 @@ open class TileEntityMinerBase constructor() : TileBaseElectricBlockWithInventor
             }
         }
 
-        this.markDirty()
+        this.setChanged()
         return flag1
     }
 
@@ -415,8 +421,8 @@ open class TileEntityMinerBase constructor() : TileBaseElectricBlockWithInventor
         this.updateContainingBlockInfo()
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("tile.miner_base.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("tile.miner_base.name")
     }
 
     override fun getPacketRange(): Double {
@@ -456,7 +462,7 @@ open class TileEntityMinerBase constructor() : TileBaseElectricBlockWithInventor
         }
         this.isMaster = false
         this.setMainBlockPosition(master)
-        this.markDirty()
+        this.setChanged()
     }
 
     open fun onBlockRemoval() {
@@ -475,7 +481,7 @@ open class TileEntityMinerBase constructor() : TileBaseElectricBlockWithInventor
 
     override fun onActivated(entityPlayer: EntityPlayer?): Boolean {
         if (this.isMaster) {
-            val holding: ItemStack = (entityPlayer)!!.getActiveItemStack()
+            val holding: ItemStack = (entityPlayer)!!.getUseItem()
             if (holding != null && holding.getItem() === AsteroidsItems.astroMiner) {
                 return false
             }
@@ -545,7 +551,7 @@ open class TileEntityMinerBase constructor() : TileBaseElectricBlockWithInventor
     //TODO
     //maybe 2 electrical inputs are needed?
     //chest goes above (could be 2 chests or other mods storage)
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         if (this.renderAABB == null) {
             this.renderAABB = AxisAlignedBB(pos, pos.add(2, 2, 2))
@@ -553,7 +559,7 @@ open class TileEntityMinerBase constructor() : TileBaseElectricBlockWithInventor
         return this.renderAABB!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return Constants.RENDERDISTANCE_LONG
     }
@@ -582,9 +588,9 @@ else -> {}
             this.updateAllInDimension()
         }
 
-        for (facing: EnumFacing in EnumFacing.VALUES) {
+        for (facing: EnumFacing in EnumFacing.values()) {
             val offset: BlockPos = this.getPos().offset(facing)
-            val tileOffset: TileEntity? = this.world.getTileEntity(offset)
+            val tileOffset: TileEntity? = this.world.getBlockEntity(offset)
             if (tileOffset != null && tileOffset !is TileEntityMinerBase) {
                 val state: IBlockState = this.world.getBlockState(offset)
                 state.getBlock().neighborChanged(
@@ -598,7 +604,7 @@ else -> {}
             }
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
     override fun buildDataPacket(data: IntArray?) {
@@ -636,14 +642,14 @@ else -> {}
         this.linkedMiner = entityAstroMiner
         this.linkedMinerID = this.linkedMiner!!.getUniqueID()
         this.updateClientFlag = true
-        this.markDirty()
+        this.setChanged()
     }
 
     open fun unlinkMiner() {
         this.linkedMiner = null
         this.linkedMinerID = null
         this.updateClientFlag = true
-        this.markDirty()
+        this.setChanged()
     }
 
     open fun getLinkedMiner(): UUID? {
@@ -670,11 +676,11 @@ else -> {}
         return intArrayOf()
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
         return false
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         if (this.isMaster) {
             if (side != this.facing) {
                 return slotID > 0 || ItemElectricBase.isElectricItemEmpty(itemstack)
@@ -684,68 +690,68 @@ else -> {}
         }
         val master: TileEntityMinerBase? = this.getMaster()
         if (master != null) {
-            return master.canExtractItem(slotID, itemstack, side)
+            return master.canTakeItemThroughFace(slotID, itemstack, side)
         }
 
         return false
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         if (this.isMaster) {
             return slotID > 0 || ItemElectricBase.isElectricItem(itemstack.getItem())
         }
         val master: TileEntityMinerBase? = this.getMaster()
         if (master != null) {
-            return master.isItemValidForSlot(slotID, itemstack)
+            return master.canPlaceItem(slotID, itemstack)
         }
 
         return false
     }
 
-    override fun getStackInSlot(par1: Int): ItemStack {
+    override fun getItem(par1: Int): ItemStack {
         if (this.isMaster) {
-            return super.getStackInSlot(par1)
+            return super.getItem(par1)
         }
         val master: TileEntityMinerBase? = this.getMaster()
         if (master != null) {
-            return master.getStackInSlot(par1)
+            return master.getItem(par1)
         }
 
         return ItemStack.EMPTY
     }
 
-    override fun decrStackSize(par1: Int, par2: Int): ItemStack {
+    override fun removeItem(par1: Int, par2: Int): ItemStack {
         if (this.isMaster) {
-            return super.decrStackSize(par1, par2)
+            return super.removeItem(par1, par2)
         }
         val master: TileEntityMinerBase? = this.getMaster()
         if (master != null) {
-            return master.decrStackSize(par1, par2)
+            return master.removeItem(par1, par2)
         }
 
         return ItemStack.EMPTY
     }
 
-    override fun removeStackFromSlot(par1: Int): ItemStack {
+    override fun removeItemNoUpdate(par1: Int): ItemStack {
         if (this.isMaster) {
-            return super.removeStackFromSlot(par1)
+            return super.removeItemNoUpdate(par1)
         }
         val master: TileEntityMinerBase? = this.getMaster()
         if (master != null) {
-            return master.removeStackFromSlot(par1)
+            return master.removeItemNoUpdate(par1)
         }
 
         return ItemStack.EMPTY
     }
 
-    override fun setInventorySlotContents(par1: Int, par2ItemStack: ItemStack) {
+    override fun setItem(par1: Int, par2ItemStack: ItemStack) {
         if (this.isMaster) {
-            super.setInventorySlotContents(par1, par2ItemStack)
+            super.setItem(par1, par2ItemStack)
             return
         }
         val master: TileEntityMinerBase? = this.getMaster()
         if (master != null) {
-            master.setInventorySlotContents(par1, par2ItemStack)
+            master.setItem(par1, par2ItemStack)
         }
 
         return
@@ -753,7 +759,7 @@ else -> {}
 
     override fun getBatteryInSlot(): ItemStack? {
         if (this.isMaster) {
-            return this.getStackInSlot(0)
+            return this.getItem(0)
         }
         val master: TileEntityMinerBase? = this.getMaster()
         if (master != null) {
@@ -763,14 +769,14 @@ else -> {}
         return null
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return HOLDSIZE + 1
     }
 
     open fun findNextTarget(): BlockVec3? {
         if (!this.targetPoints.isEmpty()) {
             val pos: BlockVec3? = this.targetPoints.removeFirst()
-            this.markDirty()
+            this.setChanged()
             if (pos != null) {
                 return pos.clone()
             }
@@ -849,7 +855,7 @@ else -> {}
             )
         }
 
-        this.markDirty()
+        this.setChanged()
         return
     }
 
@@ -881,7 +887,7 @@ else -> {}
      */
     override fun updateClient(data: MutableList<Any?>?) {
         val data1: Int = (data)!!.get(1) as Int
-        this.facing = EnumFacing.byIndex(data1 and 7)
+        this.facing = EnumFacing.from3DDataValue(data1 and 7)
         this.setMainBlockPos(
             BlockPos(
                 ((data)!!.get(2) as kotlin.Int?)!!,
@@ -941,9 +947,9 @@ else -> {}
                     for (x: Int in 0..1) {
                         for (y: Int in 0..1) {
                             for (z: Int in 0..1) {
-                                val pos: BlockPos = posMain.add(x, y, z)
-                                w.setBlockState(pos, (AsteroidBlocks.minerBaseFull)!!.getDefaultState(), 2)
-                                val tile: TileEntity? = w.getTileEntity(pos)
+                                val pos: BlockPos = posMain.offset(x, y, z)
+                                w.setBlock(pos, (AsteroidBlocks.minerBaseFull)!!.defaultBlockState(), 2)
+                                val tile: TileEntity? = w.getBlockEntity(pos)
 
                                 if (tile is TileEntityMinerBase) {
                                     tile.setMainBlockPos(master)

@@ -2,7 +2,7 @@ package micdoodle8.mods.galacticraft.core.client.model.block
 
 import net.minecraft.client.model.ModelBase
 import net.minecraft.client.model.ModelRenderer
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 
 open class ModelSolarPanel @JvmOverloads constructor(var1: Float = 0.0f) : ModelBase() {
     @JvmField

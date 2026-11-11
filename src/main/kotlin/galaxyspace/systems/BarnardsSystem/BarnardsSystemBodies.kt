@@ -59,25 +59,24 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import net.minecraft.block.BlockDoor
 import net.minecraft.client.renderer.block.statemap.StateMap
-import net.minecraft.init.Blocks
-import net.minecraft.item.Item
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Item
 import net.minecraftforge.client.model.ModelLoader
-import net.minecraftforge.event.RegistryEvent
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.io.File
 
 @IBodiesHandler
 open class BarnardsSystemBodies : IBodies {
-    override fun preInitialization(event: FMLPreInitializationEvent?) {
-        BRConfigCore(File((event)!!.getModConfigurationDirectory(), "GalaxySpace/barnards/core.conf"))
-        BRConfigDimensions(File((event)!!.getModConfigurationDirectory(), "GalaxySpace/barnards/dimensions.conf"))
+    override fun preInitialization() {
+        BRConfigCore(File(foundation.bootstrap.FoundationBootstrap.configDirectory, "GalaxySpace/barnards/core.conf"))
+        BRConfigDimensions(File(foundation.bootstrap.FoundationBootstrap.configDirectory, "GalaxySpace/barnards/dimensions.conf"))
     }
 
-    override fun preInit(event: FMLPreInitializationEvent?) {
+    override fun preInit() {
         BarnardsSystem = BodiesRegistry.registerSolarSystem(
             GalaxySpace.ASSET_PREFIX,
             "barnards",
@@ -152,7 +151,7 @@ open class BarnardsSystemBodies : IBodies {
         BodiesRegistry.setOrbitData((Barnarda_E)!!, Math.PI.toFloat(), 1.0f, 35.9f)
         GalaxyRegistry.registerPlanet((Barnarda_E)!!)
 
-        if ((event)!!.getSide() == Side.CLIENT) (GalaxySpace.proxy)!!.register_event(BRClientEventHandler())
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT) (GalaxySpace.proxy)!!.register_event(BRClientEventHandler())
         (GalaxySpace.proxy)!!.register_event(BREventHandler())
 
         BRBlocks.initialize()
@@ -161,14 +160,14 @@ open class BarnardsSystemBodies : IBodies {
         registrycelestial()
         registryteleport()
 
-        ColorBlockHandler.addBlock(BRBlocks.BARNARDA_C_GRASS.getDefaultState())
-        ColorBlockHandler.addLeavesBlock(Blocks.LEAVES.getDefaultState())
-        ColorBlockHandler.addLeavesBlock(Blocks.LEAVES2.getDefaultState())
-        ColorBlockHandler.addLeavesBlock(Blocks.VINE.getDefaultState())
-        ColorBlockHandler.addLeavesBlock(BRBlocks.BARNARDA_C_LEAVES.getDefaultState())
-        ColorBlockHandler.addBlockWithColor(BRBlocks.BARNARDA_C_WATER_GRASS.getDefaultState(), 0x985cff)
-        ColorBlockHandler.addWaterBlock(Blocks.WATER.getDefaultState())
-        ColorBlockHandler.addWaterBlock(Blocks.FLOWING_WATER.getDefaultState())
+        ColorBlockHandler.addBlock(BRBlocks.BARNARDA_C_GRASS.defaultBlockState())
+        ColorBlockHandler.addLeavesBlock(Blocks.LEAVES.defaultBlockState())
+        ColorBlockHandler.addLeavesBlock(Blocks.LEAVES2.defaultBlockState())
+        ColorBlockHandler.addLeavesBlock(Blocks.VINE.defaultBlockState())
+        ColorBlockHandler.addLeavesBlock(BRBlocks.BARNARDA_C_LEAVES.defaultBlockState())
+        ColorBlockHandler.addBlockWithColor(BRBlocks.BARNARDA_C_WATER_GRASS.defaultBlockState(), 0x985cff)
+        ColorBlockHandler.addWaterBlock(Blocks.WATER.defaultBlockState())
+        ColorBlockHandler.addWaterBlock(Blocks.FLOWING_WATER.defaultBlockState())
     }
 
     override fun init(event: FMLInitializationEvent?) {
@@ -180,7 +179,7 @@ open class BarnardsSystemBodies : IBodies {
         GSDimensions.BARNARDA_C2 = WorldUtil.getDimensionTypeById(BRConfigDimensions.Companion.dimensionIDBarnardaC2)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun registerRender() {
         //	if(BRConfigCore.enableBarnardsSystems) {
 
@@ -295,7 +294,7 @@ open class BarnardsSystemBodies : IBodies {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun registerVariant() {
         var blocks: Array<String> = (arrayOfNulls<String>(EnumBlockBarnardaC.entries.size) as Array<String>)
         for (i: Int in blocks.indices) blocks[i] = (EnumBlockBarnardaC.Companion.byMetadata(i))!!.getName()
@@ -374,7 +373,7 @@ open class BarnardsSystemBodies : IBodies {
         return BRConfigCore.Companion.enableBarnardsSystems
     }
 
-    override fun registerItems(event: RegistryEvent.Register<Item?>?) {
+    override fun registerItems() {
         BRBlocks.oreDictRegistration()
         BRItems.oreDictRegistration()
     }

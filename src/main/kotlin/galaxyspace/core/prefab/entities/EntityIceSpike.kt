@@ -1,18 +1,18 @@
 package galaxyspace.core.prefab.entities
 
 import galaxyspace.core.prefab.entities.EntityIceSpike
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.entity.projectile.EntityThrowable
-import net.minecraft.init.MobEffects
-import net.minecraft.potion.PotionEffect
-import net.minecraft.util.DamageSource
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
+import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.util.EnumParticleTypes
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 import kotlin.math.min
 
@@ -72,7 +72,7 @@ open class EntityIceSpike : EntityThrowable {
             val dmgSrc: DamageSource = (DamageSource.causeMobDamage(this.getThrower()))
             val damage: Int = 10
             entity.attackEntityFrom(dmgSrc, damage.toFloat())
-            if (entity is EntityPlayer) entity.addPotionEffect(PotionEffect(MobEffects.SLOWNESS, 120))
+            if (entity is EntityPlayer) entity.addEffect(PotionEffect(MobEffects.SLOWNESS, 120))
         } else {
             this.setDead()
         }
@@ -82,7 +82,7 @@ open class EntityIceSpike : EntityThrowable {
         return 1.0f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getBrightnessForRender(): Int {
         return 15728880
     }

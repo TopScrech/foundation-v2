@@ -2,7 +2,7 @@ package micdoodle8.mods.galacticraft.core.client.model
 
 import net.minecraft.client.model.ModelRenderer
 import net.minecraft.client.model.ModelVillager
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 
 open class ModelAlienVillager @JvmOverloads constructor(
     par1: Float,

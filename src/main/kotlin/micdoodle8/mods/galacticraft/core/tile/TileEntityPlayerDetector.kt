@@ -2,11 +2,11 @@ package micdoodle8.mods.galacticraft.core.tile
 
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.blocks.BlockConcealedDetector
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.ITickable
-import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.world.phys.AABB as AxisAlignedBB
 
 open class TileEntityPlayerDetector : TileEntity(), ITickable {
     private var ticks = 24

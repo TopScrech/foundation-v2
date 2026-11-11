@@ -14,13 +14,13 @@ import micdoodle8.mods.galacticraft.core.client.CloudRenderer
 import micdoodle8.mods.galacticraft.core.client.SkyProviderOrbit
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.world.gen.dungeon.RoomTreasure
-import net.minecraft.block.Block
-import net.minecraft.entity.Entity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.Entity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class WorldProviderOverworldOrbit : WorldProviderSpaceStation(), IOrbitDimension, IZeroGDimension, ISolarLevel,
     IExitHeight {
@@ -53,7 +53,7 @@ open class WorldProviderOverworldOrbit : WorldProviderSpaceStation(), IOrbitDime
         return a < 0.42f || a > 0.58f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val var2: Float = this.world.getCelestialAngle(par1)
         var var3: Float = 1.0f - (MathHelper.cos(var2 * Constants.twoPI) * 2.0f + 0.25f)
@@ -153,19 +153,19 @@ open class WorldProviderOverworldOrbit : WorldProviderSpaceStation(), IOrbitDime
         super.updateWeather()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun setSpinDeltaPerTick(angle: Float) {
         val skyProvider: SkyProviderOrbit? = (this.getSkyRenderer() as SkyProviderOrbit?)
         if (skyProvider != null) skyProvider.spinDeltaPerTick = angle
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyRotation(): Float {
         val skyProvider: SkyProviderOrbit? = (this.getSkyRenderer() as SkyProviderOrbit?)
         return skyProvider!!.spinAngle
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun createSkyProvider() {
         this.setSkyRenderer(
             SkyProviderOrbit(

@@ -27,7 +27,7 @@ package asmodeuscore.core.utils.worldengine2.world.properties
 
 import net.minecraft.world.biome.Biome.BiomeProperties
 
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 
 /**
  * ИНТЕРФЕЙС. Класс с пользовательскими настройками биома, генератор читает их.

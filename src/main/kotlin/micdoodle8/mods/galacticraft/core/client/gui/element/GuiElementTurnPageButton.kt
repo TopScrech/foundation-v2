@@ -3,12 +3,12 @@ package micdoodle8.mods.galacticraft.core.client.gui.element
 import micdoodle8.mods.galacticraft.core.Constants
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiElementTurnPageButton constructor(par1: Int, par2: Int, par3: Int, private val nextPage: Boolean) :
     GuiButton(par1, par2, par3, 23, 13, "") {
     override fun drawButton(par1Minecraft: Minecraft, par2: Int, par3: Int, partial: Float) {
@@ -33,6 +33,6 @@ open class GuiElementTurnPageButton constructor(par1: Int, par2: Int, par3: Int,
     }
 
     companion object {
-        private val background = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/bookleft.png")
+        private val background = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/bookleft.png")
     }
 }

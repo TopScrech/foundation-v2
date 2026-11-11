@@ -1,56 +1,60 @@
 package galaxyspace.systems.TauCetiSystem.planets.tauceti_f.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
 import galaxyspace.systems.TauCetiSystem.planets.tauceti_f.blocks.TauCeti_F_Blocks.EnumBlockTauCetiF
 import galaxyspace.systems.TauCetiSystem.planets.tauceti_f.blocks.TauCeti_F_Blocks
 import galaxyspace.systems.TauCetiSystem.planets.tauceti_f.blocks.TauCeti_F_Corals.EnumBlockCorals
 import galaxyspace.systems.TauCetiSystem.planets.tauceti_f.blocks.TauCeti_F_Corals
 import galaxyspace.systems.TauCetiSystem.core.TCBlocks
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockBush
 import net.minecraft.block.BlockLiquid
 import net.minecraft.block.IGrowable
-import net.minecraft.block.SoundType
-import net.minecraft.block.material.MapColor
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.material.MapColor
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.IProperty
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.Property as IProperty
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.IShearable
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
-open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable, IShearable {
+open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable, IShearable, LegacyBlockMetadata {
     init {
         this.setTranslationKey("tauceti_f_corals")
         this.setTickRandomly(true)
         this.setHardness(0.0f)
         this.setSoundType(SoundType.PLANT)
         this.setDefaultState(
-            getDefaultState().withProperty(
+            getDefaultState().setValue(
                 BASIC_TYPE,
                 EnumBlockCorals.BRAIN_CORAL
-            ).withProperty(BlockLiquid.LEVEL, 15)
+            ).setValue(BlockLiquid.LEVEL, 15)
         )
     }
 
@@ -113,7 +117,7 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
         return ItemStack(Item.getItemFromBlock(this), 1, this.getMetaFromState(state))
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (blockBasic: EnumBlockCorals in EnumBlockCorals.entries) {
             /*if(!blockBasic.equals(blockBasic.DESERT_UP) 
@@ -139,7 +143,7 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
 		if(!world.isRemote) {	
 			if(type == EnumBlockDandelions.REEDS_FRUITS) {
 				world.spawnEntity(new EntityItem(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(BRItems.FOODS, 1, 0)));
-				world.setBlockState(pos, this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS), 3);
+				world.setBlock(pos, this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.REEDS), 3);
 				return true;	
 			}
 		}
@@ -153,29 +157,29 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
 		
 		if (!world.isRemote)
         {
-			if(state == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS) || state == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS_FRUITS))
+			if(state == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.REEDS) || state == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.REEDS_FRUITS))
 			{
-				if(world.isAirBlock(pos.up())) {
+				if(world.isEmptyBlock(pos.up())) {
 					int length = 1;
-					IBlockState reed1 = this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS);
-					IBlockState reed2 = this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS_FRUITS);
+					IBlockState reed1 = this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.REEDS);
+					IBlockState reed2 = this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.REEDS_FRUITS);
 					
 					while(world.getBlockState(pos.down(length)) == reed1 || world.getBlockState(pos.down(length)) == reed2) 
 						length++;
 							
 					if(length < 4)
-						world.setBlockState(pos.up(), this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS), 3);
+						world.setBlock(pos.up(), this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.REEDS), 3);
 				}
-				if(state == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS))
+				if(state == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.REEDS))
 					if(rand.nextInt(40) == 0)
 					{
-						world.setBlockState(pos, this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS_FRUITS), 3);
+						world.setBlock(pos, this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.REEDS_FRUITS), 3);
 					}
 				
 							
 			}
 			
-			if(state == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.VIOLET_TREE_SAPLING))
+			if(state == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.VIOLET_TREE_SAPLING))
 			{
 				if (world.getLightFromNeighbors(pos.up()) >= 9 && rand.nextInt(7) == 0) {
 					this.grow(world, rand, pos, state);
@@ -186,11 +190,11 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
 
     override fun neighborChanged(state: IBlockState, world: World, pos: BlockPos, block: Block, fromPos: BlockPos) {
         //super.neighborChanged(state, world, pos, block, fromPos);
-        //canPlaceAt(state, world, pos, EnumBlockDandelions.REEDS, BRBlocks.BARNARDA_C_GRASS.getDefaultState(), this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS));
+        //canPlaceAt(state, world, pos, EnumBlockDandelions.REEDS, BRBlocks.BARNARDA_C_GRASS.defaultBlockState(), this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.REEDS));
 
-        /*	if(state == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.YELLOW_GRASS_UP))
+        /*	if(state == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.YELLOW_GRASS_UP))
 		{
-			if(!world.getBlockState(pos.down()).equals(this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.YELLOW_GRASS_DOWN)))
+			if(!world.getBlockState(pos.down()).equals(this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.YELLOW_GRASS_DOWN)))
 			{
 				this.dropBlockAsItem(world, pos, world.getBlockState(pos), 0);
 				world.destroyBlock(pos, false);
@@ -198,22 +202,22 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
 		}
 		
 		
-		if(state == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS))
+		if(state == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.REEDS))
 		{			
-			if(world.isAirBlock(pos.down()))
+			if(world.isEmptyBlock(pos.down()))
 			{
 				this.dropBlockAsItem(world, pos, world.getBlockState(pos), 0);
 				world.destroyBlock(pos, false);
 			}
 		}
 		
-		if(state != this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.LEAVES_BALLS) && world.isAirBlock(pos.down()))
+		if(state != this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.LEAVES_BALLS) && world.isEmptyBlock(pos.down()))
 		{
 			this.dropBlockAsItem(world, pos, world.getBlockState(pos), 0);
 			world.destroyBlock(pos, false);
 		}
 		
-		if(state == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.LEAVES_BALLS) && world.isAirBlock(pos.up()))
+		if(state == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.LEAVES_BALLS) && world.isEmptyBlock(pos.up()))
 		{
 			this.dropBlockAsItem(world, pos, world.getBlockState(pos), 0);
 			world.destroyBlock(pos, false);
@@ -228,21 +232,21 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
         type: EnumBlockCorals,
         vararg valide: IBlockState?
     ) {
-        if (!world.isRemote && state === this.getDefaultState()
-                .withProperty(BASIC_TYPE, type)
+        if (!world.isClientSide && state === this.defaultBlockState()
+                .setValue(BASIC_TYPE, type)
         ) {
             var is_forriden: Boolean = true
-            for (block: IBlockState? in valide) if (world.getBlockState(pos.down()) === block) is_forriden = false
+            for (block: IBlockState? in valide) if (world.getBlockState(pos.below()) === block) is_forriden = false
 
             if (is_forriden) {
                 world.destroyBlock(pos, false)
-                if (placer is EntityPlayer && !placer.capabilities.isCreativeMode) world.spawnEntity(
+                if (placer is EntityPlayer && !placer.capabilities.isCreativeMode) world.addFreshEntity(
                     EntityItem(
                         world,
                         pos.getX().toDouble(),
                         pos.getY().toDouble(),
                         pos.getZ().toDouble(),
-                        ItemStack(this.getDefaultState().getBlock(), 1, this.getMetaFromState(state))
+                        ItemStack(this.defaultBlockState().getBlock(), 1, this.getMetaFromState(state))
                     )
                 )
             }
@@ -258,88 +262,88 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
     ) {
         canPlaceAt(
             state, world, pos, placer, EnumBlockCorals.FIRE_CORAL_FAN,
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.GRASS
             ),
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.DIRT
             )
         )
         canPlaceAt(
             state, world, pos, placer, EnumBlockCorals.BUBBLE_CORAL,
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.GRASS
             ),
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.DIRT
             )
         )
         canPlaceAt(
             state, world, pos, placer, EnumBlockCorals.FIRE_CORAL_FAN,
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.GRASS
             ),
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.DIRT
             )
         )
         canPlaceAt(
             state, world, pos, placer, EnumBlockCorals.HORN_CORAL,
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.GRASS
             ),
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.DIRT
             )
         )
         canPlaceAt(
             state, world, pos, placer, EnumBlockCorals.BRAIN_CORAL,
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.GRASS
             ),
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.DIRT
             )
         )
         canPlaceAt(
             state, world, pos, placer, EnumBlockCorals.SPONGE_CORAL,
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.GRASS
             ),
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.DIRT
             )
         )
         canPlaceAt(
             state, world, pos, placer, EnumBlockCorals.BUBBLE_CORAL_FAN,
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.GRASS
             ),
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.DIRT
             )
         )
         canPlaceAt(
             state, world, pos, placer, EnumBlockCorals.HORN_CORAL_FAN,
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.GRASS
             ),
-            TCBlocks.TAUCETI_F_BLOCKS.getDefaultState().withProperty(
+            TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState().setValue(
                 TauCeti_F_Blocks.Companion.BASIC_TYPE,
                 EnumBlockTauCetiF.DIRT
             )
@@ -347,33 +351,33 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
     }
 
     override fun breakBlock(world: World, pos: BlockPos, state: IBlockState) {
-        /*if(state == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.DESERT_UP))
+        /*if(state == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.DESERT_UP))
 		{
 			world.destroyBlock(pos.down(), true);
 		}
 		
-		if(state == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.DESERT_DOWN))
+		if(state == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.DESERT_DOWN))
 		{
-			if(world.getBlockState(pos.up()) == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.DESERT_UP))
+			if(world.getBlockState(pos.up()) == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.DESERT_UP))
 				world.destroyBlock(pos.up(), true);
 		}
 		
-		if(state == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.YELLOW_GRASS_UP))
+		if(state == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.YELLOW_GRASS_UP))
 		{
-			if(world.getBlockState(pos.down()) == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.YELLOW_GRASS_DOWN))
+			if(world.getBlockState(pos.down()) == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.YELLOW_GRASS_DOWN))
 				world.destroyBlock(pos.down(), true);
 		}
 		
-		if(state == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.YELLOW_GRASS_DOWN))
+		if(state == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.YELLOW_GRASS_DOWN))
 		{
-			if(world.getBlockState(pos.up()) == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.YELLOW_GRASS_UP))
+			if(world.getBlockState(pos.up()) == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.YELLOW_GRASS_UP))
 				world.destroyBlock(pos.up(), true);
 		}*/
         super.breakBlock(world, pos, state)
     }
 
     override fun isReplaceable(world: IBlockAccess, pos: BlockPos): Boolean {
-        //if(world.getBlockState(pos) == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS))
+        //if(world.getBlockState(pos) == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.REEDS))
         //return false;
         return false
     }
@@ -395,14 +399,14 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
     }
 
     override fun canGrow(worldIn: World, pos: BlockPos, state: IBlockState, isClient: Boolean): Boolean {
-        /*if(state == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.VIOLET_TREE_SAPLING))		
+        /*if(state == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.VIOLET_TREE_SAPLING))
 			return true;*/
 
         return false
     }
 
     override fun canUseBonemeal(worldIn: World, rand: Random, pos: BlockPos, state: IBlockState): Boolean {
-        /*if(state == this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.VIOLET_TREE_SAPLING))		
+        /*if(state == this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.VIOLET_TREE_SAPLING))
 			return true;*/
 
         return false
@@ -427,7 +431,7 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
 		boolean check = true;
 		for(BlockPos poscheck : BlockPos.getAllInBox(pos.add(-5, 2, -5), pos.add(5, 10, 5)))
 		{
-			if(!world.isAirBlock(poscheck))
+			if(!world.isEmptyBlock(poscheck))
 				check = false;
 		}
 		
@@ -460,7 +464,7 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
         return false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT
     }
@@ -481,7 +485,7 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
         state: IBlockState,
         fortune: Int
     ) {
-        val rand: Random = if (world is World) world.rand else RANDOM
+        val rand: Random = if (world is World) world.random else RANDOM
 
         val count: Int = quantityDropped(state, fortune, rand)
         for (i: Int in 0..<count) {
@@ -518,7 +522,9 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -531,8 +537,8 @@ open class TauCeti_F_Corals constructor() : BlockBush(Material.WATER), IGrowable
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(BASIC_TYPE, (EnumBlockCorals.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(BASIC_TYPE, (EnumBlockCorals.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {

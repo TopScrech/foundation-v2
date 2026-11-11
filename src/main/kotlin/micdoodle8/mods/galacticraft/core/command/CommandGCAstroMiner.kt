@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.command
 
+import net.minecraft.network.chat.Component
+
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
@@ -7,10 +9,9 @@ import net.minecraft.command.CommandBase
 import net.minecraft.command.CommandException
 import net.minecraft.command.ICommandSender
 import net.minecraft.command.WrongUsageException
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
+import net.minecraft.core.BlockPos
 
 open class CommandGCAstroMiner : CommandBase() {
     override fun getName(): String {
@@ -94,7 +95,7 @@ open class CommandGCAstroMiner : CommandBase() {
                     val stats: GCPlayerStats = (GCPlayerStats.get(playerBase))!!
                     when (type) {
                         1 -> sender.sendMessage(
-                            TextComponentString(
+                            Component.literal(
                                 GCCoreUtil.translateWithFormat(
                                     "command.gcastrominer.count",
                                     PlayerUtil.getName(playerBase),
@@ -106,7 +107,7 @@ open class CommandGCAstroMiner : CommandBase() {
                         2 -> {
                             stats.setAstroMinerCount(0)
                             sender.sendMessage(
-                                TextComponentString(
+                                Component.literal(
                                     GCCoreUtil.translateWithFormat(
                                         "command.gcastrominer.count",
                                         PlayerUtil.getName(playerBase),
@@ -119,7 +120,7 @@ open class CommandGCAstroMiner : CommandBase() {
                         3 -> {
                             stats.setAstroMinerCount(newvalue)
                             sender.sendMessage(
-                                TextComponentString(
+                                Component.literal(
                                     GCCoreUtil.translateWithFormat(
                                         "command.gcastrominer.count",
                                         PlayerUtil.getName(playerBase),

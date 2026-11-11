@@ -1,18 +1,20 @@
 package micdoodle8.mods.galacticraft.planets.mars.client.gui
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.core.util.ColorUtil
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.mars.entities.EntitySlimeling
 import micdoodle8.mods.galacticraft.planets.mars.inventory.ContainerSlimeling
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
-import net.minecraft.client.audio.PositionedSoundRecord
+import net.minecraft.client.resources.sounds.SimpleSoundInstance as PositionedSoundRecord
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 import java.io.IOException
 import kotlin.math.floor
@@ -53,8 +55,7 @@ open class GuiSlimelingInventory constructor(player: EntityPlayer, private val s
     @Throws(IOException::class)
     override fun mouseClicked(px: Int, py: Int, par3: Int) {
         if (px >= this.invX && px < this.invX + this.invWidth && py >= this.invY && py < this.invY + this.invHeight) {
-            this.mc.getSoundHandler()
-                .playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+            this.mc.getSoundManager().play(PositionedSoundRecord.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f))
             this.mc.displayGuiScreen(GuiSlimeling(this.slimeling))
         }
 
@@ -123,9 +124,9 @@ open class GuiSlimelingInventory constructor(player: EntityPlayer, private val s
         this.drawTexturedModalRect(var5 + 8, var6 + 8, 176, 9, 18, 18)
         this.drawTexturedModalRect(var5 + 8, var6 + 29, 176, 9, 18, 18)
 
-        val stack: ItemStack = this.slimeling.slimelingInventory.getStackInSlot(1)
+        val stack: ItemStack = this.slimeling.slimelingInventory.getItem(1)
 
-        if (stack != null && stack.getItem() === MarsItems.marsItemBasic && stack.getItemDamage() == 4) {
+        if (stack != null && stack.getItem() === MarsItems.marsItemBasic && stack.legacyItemValue == 4) {
             val offsetX: Int = 7
             val offsetY: Int = 53
 
@@ -141,6 +142,6 @@ open class GuiSlimelingInventory constructor(player: EntityPlayer, private val s
 
     companion object {
         private val slimelingPanelGui =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/slimeling_panel2.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/slimeling_panel2.png")
     }
 }

@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.gui
 
+import foundation.persistence.containsTag
+
 import java.util.ArrayList
 import java.util.Comparator
 import java.util.List
@@ -22,10 +24,10 @@ import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.RenderHelper
-import net.minecraft.entity.player.InventoryPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
 import net.minecraft.item.ItemArmor
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 import java.io.IOException
@@ -149,7 +151,7 @@ open class GuiModificationTable constructor(
         	for(int i = 0; i < actual_list.size(); i++)
  	        {
  	        	//texture button
- 		        if(stack.hasTagCompound() && (!stack.getTagCompound().hasKey(this.actual_list.get(i).getName()) || !stack.getTagCompound().getBoolean(this.actual_list.get(i).getName())))
+ 		        if(stack.hasTagCompound() && (!stack.getTagCompound().containsTag(this.actual_list.get(i).getName()) || !stack.getTagCompound().getBoolean(this.actual_list.get(i).getName())))
  		        	this.drawTexturedModalRect(containerWidth + 30 + xOffsetModule, containerHeight + 20 + (22 * i), 192, 196, 20, 20);
  		        else
  		        	this.drawTexturedModalRect(containerWidth + 30 + xOffsetModule, containerHeight + 20 + (22 * i), 213, 196, 20, 20);
@@ -167,7 +169,7 @@ open class GuiModificationTable constructor(
                 //GL11.glEnable(GL11.GL_ALPHA_TEST);
                 //GL11.glEnable(GL11.GL_BLEND);
                 if (stack.hasTagCompound() && (!stack.getTagCompound()!!
-                        .hasKey(this.actual_list.get(i)!!.getName()) || !stack.getTagCompound()!!
+                        .containsTag(this.actual_list.get(i)!!.getName()) || !stack.getTagCompound()!!
                         .getBoolean(this.actual_list.get(i)!!.getName()))
                 ) this.drawTexturedModalRect(
                     containerWidth + 30 + xOffsetModule + (22 * k),
@@ -202,8 +204,8 @@ open class GuiModificationTable constructor(
             }
 
             val mod_count: Int = if (stack.hasTagCompound() && stack.getTagCompound()!!
-                    .hasKey("modification_count")
-            ) stack.getTagCompound()!!.getInteger("modification_count") else 1
+                    .containsTag("modification_count")
+            ) stack.getTagCompound()!!.getIntOr("modification_count", 0) else 1
             this.fontRenderer.drawString(
                 "Mod. count: " + mod_count,
                 containerWidth + 58,
@@ -469,6 +471,6 @@ open class GuiModificationTable constructor(
     }
 
     companion object {
-        private val guiTexture = ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/modification_table.png")
+        private val guiTexture = ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/modification_table.png")
     }
 }

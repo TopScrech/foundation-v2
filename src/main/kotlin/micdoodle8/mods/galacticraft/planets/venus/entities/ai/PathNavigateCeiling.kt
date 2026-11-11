@@ -1,17 +1,17 @@
 package micdoodle8.mods.galacticraft.planets.venus.entities.ai
 
 import micdoodle8.mods.galacticraft.planets.venus.entities.EntityJuicer
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.entity.monster.EntityZombie
 import net.minecraft.entity.passive.EntityChicken
 import net.minecraft.pathfinding.PathFinder
 import net.minecraft.pathfinding.PathNavigate
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.Level as World
 import kotlin.math.abs
 import kotlin.math.sqrt
 

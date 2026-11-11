@@ -19,16 +19,16 @@ import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.tick.KeyHandlerClient
 import micdoodle8.mods.galacticraft.core.util.*
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.client.settings.GameSettings
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.ChatAllowedCharacters
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraft.world.WorldProvider
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.client.FMLClientHandler
@@ -719,7 +719,7 @@ open class GuiCelestialSelection constructor(
 
         // Need unscaled mouse coords
         val mouseX: Int = Mouse.getX()
-        val mouseY: Int = Mouse.getY() * -1 + Minecraft.getMinecraft().displayHeight - 1
+        val mouseY: Int = Mouse.getY() * -1 + Minecraft.getInstance().displayHeight - 1
 
         if (this.selectedBody is Satellite) {
             if (this.renamingSpaceStation) {
@@ -1112,9 +1112,9 @@ open class GuiCelestialSelection constructor(
         for (e in matrixMap.entries) {
             val planetMatrix: Matrix4f? = e.value
             val matrix0: Matrix4f = Matrix4f.mul(viewMatrix, planetMatrix, planetMatrix)
-            val x: Int = floor((matrix0.m30 * 0.5 + 0.5) * Minecraft.getMinecraft().displayWidth).toInt()
+            val x: Int = floor((matrix0.m30 * 0.5 + 0.5) * Minecraft.getInstance().displayWidth).toInt()
             val y: Int =
-                floor(Minecraft.getMinecraft().displayHeight - (matrix0.m31 * 0.5 + 0.5) * Minecraft.getMinecraft().displayHeight).toInt()
+                floor(Minecraft.getInstance().displayHeight - (matrix0.m31 * 0.5 + 0.5) * Minecraft.getInstance().displayHeight).toInt()
             val vec: Vector2f = Vector2f(x.toFloat(), y.toFloat())
 
             val scaleVec: Matrix4f = Matrix4f()
@@ -1123,7 +1123,7 @@ open class GuiCelestialSelection constructor(
             scaleVec.m22 = matrix0.m22
             val newVec: Vector4f = Matrix4f.transform(scaleVec, Vector4f(2f, -2f, 0f, 0f), null)
             val iconSize: kotlin.Float =
-                (newVec.y * (Minecraft.getMinecraft().displayHeight / 2.0f)) * (if (e.key is Star) 2 else 1) * (if (e.key === this.selectedBody) 1.5f else 1.0f)
+                (newVec.y * (Minecraft.getInstance().displayHeight / 2.0f)) * (if (e.key is Star) 2 else 1) * (if (e.key === this.selectedBody) 1.5f else 1.0f)
 
             this.planetPosMap.put(e.key, Vector3f(vec.x, vec.y, iconSize)) // Store size on-screen in Z-value for ease
         }
@@ -2565,11 +2565,11 @@ open class GuiCelestialSelection constructor(
 
         @JvmField
         public var guiMain0: ResourceLocation =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialselection.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialselection.png")
 
         @JvmField
         public var guiMain1: ResourceLocation =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialselection1.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialselection1.png")
 
         @JvmField
         public var BORDER_SIZE: Int = 0

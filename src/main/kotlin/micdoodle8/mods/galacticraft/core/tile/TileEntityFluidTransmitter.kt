@@ -14,16 +14,16 @@ import micdoodle8.mods.galacticraft.core.tick.TickHandlerServer
 import micdoodle8.mods.galacticraft.core.util.OxygenUtil
 import micdoodle8.mods.galacticraft.core.wrappers.FluidHandlerWrapper
 import micdoodle8.mods.galacticraft.core.wrappers.IFluidHandlerWrapper
-import net.minecraft.block.Block
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.phys.AABB as AxisAlignedBB
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
 import net.minecraftforge.fluids.capability.IFluidHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 abstract class TileEntityFluidTransmitter(private val pullAmount: Int) : TileEntityAdvanced(),
     IBufferTransmitter<FluidStack?>, IFluidHandlerWrapper {
@@ -87,7 +87,7 @@ abstract class TileEntityFluidTransmitter(private val pullAmount: Int) : TileEnt
             if (blockType is BlockFluidPipe && blockType.getMode() == BlockFluidPipe.EnumPipeMode.PULL) {
                 val tiles: Array<TileEntity?> = OxygenUtil.getAdjacentFluidConnections(this)
 
-                for (side: EnumFacing in EnumFacing.VALUES) {
+                for (side: EnumFacing in EnumFacing.values()) {
                     val sideTile: TileEntity? = tiles[side.ordinal]
 
                     if (sideTile != null && sideTile !is IBufferTransmitter<*>) {
@@ -144,7 +144,7 @@ abstract class TileEntityFluidTransmitter(private val pullAmount: Int) : TileEnt
             this.adjacentConnections = null
 
             val thisVec: BlockVec3 = BlockVec3(this)
-            for (side: EnumFacing in EnumFacing.VALUES) {
+            for (side: EnumFacing in EnumFacing.values()) {
                 val tileEntity: TileEntity? = thisVec.getTileEntityOnSide(this.world, side)
 
                 if (tileEntity != null) {
@@ -188,7 +188,7 @@ abstract class TileEntityFluidTransmitter(private val pullAmount: Int) : TileEnt
         return type == NetworkType.FLUID
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         return AxisAlignedBB(
             this.getPos().getX().toDouble(),

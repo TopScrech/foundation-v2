@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.api.tile
 
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.EnumFacing
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.Direction as EnumFacing
 
 /**
  * Used for colored pipes to set/get colors

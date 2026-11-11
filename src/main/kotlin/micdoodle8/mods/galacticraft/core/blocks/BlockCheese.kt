@@ -1,38 +1,40 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.IProperty
-import net.minecraft.block.properties.PropertyInteger
+import net.minecraft.world.level.block.state.properties.Property as IProperty
+import net.minecraft.world.level.block.state.properties.IntegerProperty as PropertyInteger
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
-open class BlockCheese constructor(assetName: String?) : Block(Material.CAKE), IShiftDescription, ISortableBlock {
+open class BlockCheese constructor(assetName: String?) : Block(Material.CAKE), IShiftDescription, ISortableBlock, LegacyBlockMetadata {
     init {
         this.setTickRandomly(true)
         this.disableStats()
         this.setHardness(0.5f)
-        this.setDefaultState(this.blockState.getBaseState().withProperty(BITES, 0))
+        this.setDefaultState(this.blockState.getBaseState().setValue(BITES, 0))
         this.setSoundType(SoundType.CLOTH)
         this.setTranslationKey(assetName)
     }
@@ -87,9 +89,9 @@ open class BlockCheese constructor(assetName: String?) : Block(Material.CAKE), I
             val i: Int = (state.getValue(BITES) as Int)
 
             if (i < 6) {
-                worldIn.setBlockState(pos, state.withProperty(BITES, i + 1), 3)
+                worldIn.setBlock(pos, state.setValue(BITES, i + 1), 3)
             } else {
-                worldIn.setBlockToAir(pos)
+                worldIn.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
             }
         }
     }
@@ -100,12 +102,12 @@ open class BlockCheese constructor(assetName: String?) : Block(Material.CAKE), I
 
     override fun neighborChanged(state: IBlockState, worldIn: World, pos: BlockPos, blockIn: Block, fromPos: BlockPos) {
         if (!this.canBlockStay(worldIn, pos)) {
-            worldIn.setBlockToAir(pos)
+            worldIn.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
         }
     }
 
     private fun canBlockStay(worldIn: World, pos: BlockPos): Boolean {
-        return worldIn.getBlockState(pos.down()).getMaterial().isSolid()
+        return worldIn.getBlockState(pos.below()).getMaterial().isSolid()
     }
 
     override fun quantityDropped(par1Random: Random): Int {
@@ -125,14 +127,14 @@ open class BlockCheese constructor(assetName: String?) : Block(Material.CAKE), I
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(BITES, meta)
+        return this.defaultBlockState().setValue(BITES, meta)
     }
 
     override fun getItem(worldIn: World, pos: BlockPos, state: IBlockState): ItemStack {
         return ItemStack(Items.CAKE, 1, 0)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT
     }

@@ -3,7 +3,7 @@ package galaxyspace.core.client.models
 import java.util.ArrayList
 
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Logs
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.block.model.BakedQuad
 import net.minecraft.client.renderer.block.model.IBakedModel
@@ -11,8 +11,8 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.client.renderer.vertex.VertexFormat
 import net.minecraft.client.renderer.vertex.VertexFormatElement
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.Vec3d
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad
 import net.minecraftforge.common.ForgeModContainer
 import net.minecraftforge.fml.client.FMLClientHandler
@@ -29,8 +29,8 @@ open class BakedModelBrightFour constructor(
     private val cache: MutableList<BakedQuad?>? = null
 
     init {
-        sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(texture_side.toString())
-        sprite1 = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(texture_top.toString())
+        sprite = Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(texture_side.toString())
+        sprite1 = Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(texture_top.toString())
     }
 
     private fun putVertex(

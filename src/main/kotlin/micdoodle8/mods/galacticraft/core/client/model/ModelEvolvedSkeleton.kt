@@ -2,7 +2,7 @@ package micdoodle8.mods.galacticraft.core.client.model
 
 import net.minecraft.client.model.ModelBiped
 import net.minecraft.client.model.ModelRenderer
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 
 open class ModelEvolvedSkeleton @JvmOverloads constructor(par1: Float = 0.0f) : ModelBiped() {
     @JvmField

@@ -8,16 +8,16 @@ import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemPreLaunchChecklist constructor(assetName: String?) : Item(), ISortableItem {
     init {
@@ -34,12 +34,12 @@ open class ItemPreLaunchChecklist constructor(assetName: String?) : Item(), ISor
         return GalacticraftCore.galacticraftItemsTab
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(
         par1ItemStack: ItemStack,
         worldIn: World?,
@@ -52,16 +52,16 @@ open class ItemPreLaunchChecklist constructor(assetName: String?) : Item(), ISor
     }
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, hand: EnumHand): ActionResult<ItemStack?> {
-        val itemStack: ItemStack = playerIn.getHeldItem(hand)
+        val itemStack: ItemStack = playerIn.getItemInHand(hand)
 
-        if (worldIn.isRemote) {
+        if (worldIn.isClientSide) {
             playerIn.openGui(
                 GalacticraftCore.instance,
                 GuiIdsCore.PRE_LAUNCH_CHECKLIST,
-                playerIn.world,
-                playerIn.posX.toInt(),
-                playerIn.posY.toInt(),
-                playerIn.posZ.toInt()
+                playerIn.level(),
+                playerIn.x.toInt(),
+                playerIn.y.toInt(),
+                playerIn.z.toInt()
             )
             return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, itemStack)
         }

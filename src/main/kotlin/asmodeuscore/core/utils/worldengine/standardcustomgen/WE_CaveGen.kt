@@ -1,5 +1,12 @@
 package asmodeuscore.core.utils.worldengine.standardcustomgen
 
+import foundation.block.LegacyVanillaBlockStates
+import foundation.block.LegacyVanillaBlockIds
+
+import foundation.block.getStateFromMeta
+
+import foundation.math.LegacyTerrainMath
+
 import java.util.ArrayList
 import java.util.Random
 
@@ -7,9 +14,9 @@ import asmodeuscore.core.utils.worldengine.additions.WE_CreateChunkGen
 import asmodeuscore.core.utils.worldengine.additions.WE_GeneratorData
 import net.minecraft.block.BlockFalling
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.util.Mth as MathHelper
 import java.util.*
 
 open class WE_CaveGen constructor() : WE_CreateChunkGen() {
@@ -17,10 +24,10 @@ open class WE_CaveGen constructor() : WE_CreateChunkGen() {
     var replaceBlocksList: MutableList<IBlockState?> = ArrayList<IBlockState?>()
 
     @JvmField
-    var caveBlock: IBlockState = Blocks.AIR.getDefaultState()
+    var caveBlock: IBlockState = Blocks.AIR.defaultBlockState()
 
     @JvmField
-    var lavaBlock: IBlockState = Blocks.LAVA.getDefaultState()
+    var lavaBlock: IBlockState = Blocks.LAVA.defaultBlockState()
 
     @JvmField
     var ignoreLiquid: Boolean = false
@@ -44,9 +51,9 @@ open class WE_CaveGen constructor() : WE_CreateChunkGen() {
     var rand: Random = Random()
 
     init {
-        this.replaceBlocksList.add(Blocks.STONE.getDefaultState())
-        this.replaceBlocksList.add(Blocks.STONE.getStateFromMeta(3))
-        this.replaceBlocksList.add(Blocks.STONE.getStateFromMeta(5))
+        this.replaceBlocksList.add(Blocks.STONE.defaultBlockState())
+        this.replaceBlocksList.add(LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.STONE, 3))
+        this.replaceBlocksList.add(LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.STONE, 5))
     }
 
     override fun gen(data: WE_GeneratorData?) {
@@ -141,14 +148,14 @@ open class WE_CaveGen constructor() : WE_CreateChunkGen() {
 
         val flag: Boolean = r.nextInt(6) == 0
         while (in1 < in2) {
-            val d6: Double = this.d6_range + MathHelper.sin(in1.toFloat() * Math.PI.toFloat() / in2.toFloat())
+            val d6: Double = this.d6_range + LegacyTerrainMath.sin(in1.toFloat() * Math.PI.toFloat() / in2.toFloat())
                 .toDouble() * fn1.toDouble()
             val d7: Double = d6 * dn
-            val f5: Float = MathHelper.cos(fn3)
-            val f6: Float = MathHelper.sin(fn3)
-            gx += MathHelper.cos(fn2).toDouble() * f5.toDouble()
+            val f5: Float = LegacyTerrainMath.cos(fn3)
+            val f6: Float = LegacyTerrainMath.sin(fn3)
+            gx += LegacyTerrainMath.cos(fn2).toDouble() * f5.toDouble()
             gy += f6.toDouble()
-            gz += MathHelper.sin(fn2).toDouble() * f5.toDouble()
+            gz += LegacyTerrainMath.sin(fn2).toDouble() * f5.toDouble()
             if (flag) {
                 fn3 *= 0.92f
             } else {

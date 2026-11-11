@@ -6,14 +6,14 @@ import com.mojang.authlib.GameProfile
 import java.util.UUID
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.network.PacketSimple
-import net.minecraft.client.entity.AbstractClientPlayer
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.client.player.AbstractClientPlayer
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.server.MinecraftServer
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.HashMap
 
 object PlayerUtil {
@@ -75,7 +75,7 @@ object PlayerUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getPlayerBaseClientFromPlayer(player: EntityPlayer?, ignoreCase: Boolean): EntityPlayerSP? {
         val clientPlayer: EntityPlayerSP? = FMLClientHandler.instance().getClientPlayerEntity()
 
@@ -87,13 +87,13 @@ object PlayerUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getOtherPlayerProfile(name: String?): GameProfile {
         return knownSkins.get(name)!!
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun makeOtherPlayerProfile(strName: String?, strUUID: String): GameProfile {
         var profile: GameProfile? = null
         for (e: Any? in FMLClientHandler.instance().getWorldClient().getLoadedEntityList()) {
@@ -115,7 +115,7 @@ object PlayerUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getSkinForName(strName: String, strUUID: String, dimID: Int): GameProfile {
         var profile: GameProfile? = FMLClientHandler.instance().getClientPlayerEntity().getGameProfile()
         if (strName != profile!!.getName()) {
@@ -143,7 +143,7 @@ object PlayerUtil {
         for (i: Int in players.indices.reversed()) {
             entityplayermp = players.get(i) as EntityPlayerMP
 
-            if (entityplayermp.getUniqueID() == theUUID) {
+            if (entityplayermp.getUUID() == theUUID) {
                 return entityplayermp
             }
         }

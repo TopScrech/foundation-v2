@@ -1,17 +1,20 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.items.ItemUniversalWrench
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 
 /**
  * An advanced block class that is to be extended for wrenching capabilities.
@@ -38,13 +41,13 @@ abstract class BlockAdvanced(material: Material) : Block(material) {
             return false
         }
 
-        val heldItem: ItemStack = playerIn.getHeldItem(hand)
+        val heldItem: ItemStack = playerIn.getItemInHand(hand)
 
         if (this.useWrench(worldIn, pos, playerIn, hand, heldItem, side, hitX, hitY, hitZ)) {
             return true
         }
 
-        if (playerIn.isSneaking()) {
+        if (playerIn.isShiftKeyDown()) {
             if (this.onSneakMachineActivated(worldIn, pos, playerIn, hand, heldItem, side, hitX, hitY, hitZ)) {
                 return true
             }
@@ -71,7 +74,7 @@ abstract class BlockAdvanced(material: Material) : Block(material) {
         if (this.isUsableWrench(playerIn, heldItem, pos)) {
             this.damageWrench(playerIn, heldItem, pos)
 
-            if (playerIn.isSneaking()) {
+            if (playerIn.isShiftKeyDown()) {
                 if (this.onSneakUseWrench(worldIn, pos, playerIn, hand, heldItem, side, hitX, hitY, hitZ)) {
                     playerIn.swingArm(hand)
                     return true
@@ -192,7 +195,7 @@ abstract class BlockAdvanced(material: Material) : Block(material) {
             metaDir = 0
         }
 
-        world.setBlockState(pos, this.getStateFromMeta(metaDir), 3)
+        world.setBlock(pos, this.getStateFromMeta(metaDir), 3)
     }
 
     override fun isSideSolid(base_state: IBlockState, world: IBlockAccess, pos: BlockPos, side: EnumFacing): Boolean {

@@ -4,13 +4,13 @@ import galaxyspace.core.util.GSCreativeTabs
 import com.google.common.collect.Sets
 import micdoodle8.mods.galacticraft.core.items.ISortableItem
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.init.Blocks
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.item.ItemAxe
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 open class ItemAxeGS constructor(assetName: String, material: ToolMaterial) :
     ItemAxe(material, material.getAttackDamage(), -3.0f), ISortableItem {

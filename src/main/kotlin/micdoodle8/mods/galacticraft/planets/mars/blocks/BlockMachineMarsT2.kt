@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.planets.mars.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
@@ -14,30 +17,32 @@ import micdoodle8.mods.galacticraft.planets.GuiIdsPlanets
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityElectrolyzer
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityGasLiquefier
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityMethaneSynthesizer
-import net.minecraft.block.SoundType
-import net.minecraft.block.properties.PropertyDirection
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class BlockMachineMarsT2 constructor(assetName: String?) : BlockTileGC(GCBlocks.machine), IShiftDescription,
-    ISortableBlock {
+    ISortableBlock, LegacyBlockMetadata {
     enum class EnumMachineType(private val meta: Int, private val serializedName: String) : IStringSerializable {
         GAS_LIQUEFIER(GAS_LIQUEFIER_META, "gas_liquefier"),
         METHANE_SYNTHESIZER(METHANE_SYNTHESIZER_META, "methane_synthesizer"),
@@ -47,7 +52,9 @@ open class BlockMachineMarsT2 constructor(assetName: String?) : BlockTileGC(GCBl
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
     }
@@ -80,7 +87,7 @@ open class BlockMachineMarsT2 constructor(assetName: String?) : BlockTileGC(GCBl
         this.iconMethaneSynthesizer = par1IconRegister.registerIcon("galacticraftasteroids:methaneSynthesizer");
         this.iconElectrolyzer = par1IconRegister.registerIcon("galacticraftasteroids:electrolyzer");
     }*/
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
@@ -167,10 +174,10 @@ open class BlockMachineMarsT2 constructor(assetName: String?) : BlockTileGC(GCBl
     ) {
         val metadata: Int = state.getBlock().getMetaFromState(state)
 
-        val angle: Int = MathHelper.floor(placer.rotationYaw * 4.0f / 360.0f + 0.5) and 3
+        val angle: Int = MathHelper.floor(placer.yRot * 4.0f / 360.0f + 0.5) and 3
         val change: Int = EnumFacing.byHorizontalIndex(angle).getOpposite().getHorizontalIndex()
 
-        worldIn.setBlockState(pos, getStateFromMeta((metadata and 12) + change), 3)
+        worldIn.setBlock(pos, getStateFromMeta((metadata and 12) + change), 3)
     }
 
     override fun onUseWrench(
@@ -251,9 +258,9 @@ open class BlockMachineMarsT2 constructor(assetName: String?) : BlockTileGC(GCBl
         return ItemStack(this, 1, metadata)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun randomDisplayTick(stateIn: IBlockState, worldIn: World, pos: BlockPos, rand: Random) {
-        val te: TileEntity? = worldIn.getTileEntity(pos)
+        val te: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (te is TileEntityGasLiquefier) {
             val tileEntity: TileEntityGasLiquefier = te
@@ -319,8 +326,8 @@ open class BlockMachineMarsT2 constructor(assetName: String?) : BlockTileGC(GCBl
     override fun getStateFromMeta(meta: Int): IBlockState {
         val enumfacing: EnumFacing = EnumFacing.byHorizontalIndex(meta % 4)
         val type: EnumMachineType = EnumMachineType.entries[meta / 4]
-        return this.getDefaultState().withProperty(FACING, enumfacing)
-            .withProperty(TYPE, type)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
+            .setValue(TYPE, type)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -345,7 +352,7 @@ open class BlockMachineMarsT2 constructor(assetName: String?) : BlockTileGC(GCBl
         const val ELECTROLYZER_META: Int = 8
 
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL)
+        val FACING: EnumProperty<Direction> = BlockStateProperties.HORIZONTAL_FACING
 
         @JvmField
         val TYPE: PropertyEnum<EnumMachineType> =

@@ -1,12 +1,14 @@
 package micdoodle8.mods.galacticraft.api.recipe
 
+import foundation.item.legacyItemValue
+
 import java.util.ArrayList
 import java.util.HashMap
 
-import net.minecraft.block.Block
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.oredict.OreDictionary
 import kotlin.math.min
 
@@ -56,8 +58,8 @@ constructor(objMap: HashMap<Any?,Int>) {
             val amountRequired: Int = required.get(next)!!
             var amountInInv: Int = 0
 
-            for (x: Int in 0..<player.inventory.getSizeInventory()) {
-                val slot: ItemStack = player.inventory.getStackInSlot(x)
+            for (x: Int in 0..<player.inventory.getContainerSize()) {
+                val slot: ItemStack = player.inventory.getItem(x)
 
                 if (slot != null && slot.getCount() > 0)  //Intentional ItemStack null check
                 {
@@ -98,8 +100,8 @@ constructor(objMap: HashMap<Any?,Int>) {
             val amountRequired: Int = required.get(next)!!
             var amountRemoved: Int = 0
 
-            InventoryLoop@ for (x: Int in 0..<player.inventory.getSizeInventory()) {
-                val slot: ItemStack = player.inventory.getStackInSlot(x)
+            InventoryLoop@ for (x: Int in 0..<player.inventory.getContainerSize()) {
+                val slot: ItemStack = player.inventory.getItem(x)
 
                 if (slot != null && slot.getCount() > 0)  //Intentional ItemStack null check
                 {
@@ -115,7 +117,7 @@ constructor(objMap: HashMap<Any?,Int>) {
                                 newStack = ItemStack.EMPTY
                             }
 
-                            player.inventory.setInventorySlotContents(x, newStack)
+                            player.inventory.setItem(x, newStack)
                             amountRemoved += amountToRemove
                             if (amountRemoved == amountRequired) break
                         }
@@ -130,7 +132,7 @@ constructor(objMap: HashMap<Any?,Int>) {
                                     newStack = ItemStack.EMPTY
                                 }
 
-                                player.inventory.setInventorySlotContents(x, newStack)
+                                player.inventory.setItem(x, newStack)
                                 amountRemoved += amountToRemove
                                 if (amountRemoved == amountRequired) break@InventoryLoop
                             }
@@ -155,7 +157,7 @@ constructor(objMap: HashMap<Any?,Int>) {
     companion object {
         @JvmStatic
         fun checkItemEquals(target: ItemStack, input: ItemStack): Boolean {
-            return target.getItem() === input.getItem() && (target.getItemDamage() == OreDictionary.WILDCARD_VALUE || target.getItemDamage() == input.getItemDamage())
+            return target.getItem() === input.getItem() && (target.legacyItemValue == OreDictionary.WILDCARD_VALUE || target.legacyItemValue == input.legacyItemValue)
         }
     }
 }

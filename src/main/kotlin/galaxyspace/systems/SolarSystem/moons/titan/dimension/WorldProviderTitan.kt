@@ -15,24 +15,24 @@ import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.api.world.IWeatherProvider
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.client.Minecraft
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.particle.Particle
-import net.minecraft.init.SoundEvents
+import net.minecraft.sounds.SoundEvents
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.DimensionType
-import net.minecraft.world.World
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.dimension.DimensionType
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.biome.BiomeProvider
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 
@@ -99,7 +99,7 @@ open class WorldProviderTitan : WorldProviderAdvancedSpace(), IProviderFreeze, I
         return !ConfigManagerCore.forceOverworldRespawn
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val var2: Float = this.world.getCelestialAngle(par1)
         var var3: Float = 1.0f - (MathHelper.cos(var2 * Math.PI.toFloat() * 2.0f) * 2.0f + 0.25f)
@@ -115,12 +115,12 @@ open class WorldProviderTitan : WorldProviderAdvancedSpace(), IProviderFreeze, I
         return var3 * var3 * 0.5f + 0.3f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCloudRenderer(): IRenderHandler? {
         return super.getCloudRenderer()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCloudColor(partialTicks: Float): Vec3d {
         val f: Float = this.world.getCelestialAngle(partialTicks)
         var f1: Float = MathHelper.cos(f * (Math.PI.toFloat() * 2f)) * 2.0f + 0.5f
@@ -154,17 +154,17 @@ open class WorldProviderTitan : WorldProviderAdvancedSpace(), IProviderFreeze, I
         return Vec3d(r.toDouble(), g.toDouble(), b.toDouble())
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCloudHeight(): Float {
         return 180.0f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getWeatherRenderer(): IRenderHandler? {
         return WeatherProviderTitan()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyRenderer(): IRenderHandler? {
         if (super.getSkyRenderer() == null) {
             this.setSkyRenderer(SkyProviderTitan())
@@ -173,7 +173,7 @@ open class WorldProviderTitan : WorldProviderAdvancedSpace(), IProviderFreeze, I
         return super.getSkyRenderer()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getParticle(world: WorldClient?, x: Double, y: Double, z: Double): Particle {
         return ParticleRainCustom(
             (world)!!,

@@ -13,7 +13,7 @@ import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.client.jei.RecipeCategories
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class Tier1RocketRecipeCategory constructor(guiHelper: IGuiHelper) : IRecipeCategory<IRecipeWrapper> {
     @Nonnull
@@ -72,6 +72,6 @@ open class Tier1RocketRecipeCategory constructor(guiHelper: IGuiHelper) : IRecip
     }
 
     companion object {
-        private val rocketGuiTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/rocketbench.png")
+        private val rocketGuiTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/rocketbench.png")
     }
 }

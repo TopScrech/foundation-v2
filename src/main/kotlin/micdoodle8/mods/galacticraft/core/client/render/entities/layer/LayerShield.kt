@@ -10,8 +10,8 @@ import net.minecraft.client.model.ModelBiped
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.RenderPlayer
 import net.minecraft.client.renderer.entity.layers.LayerRenderer
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import org.lwjgl.opengl.GL11
 import kotlin.math.sin
 
@@ -55,15 +55,15 @@ open class LayerShield constructor(private val renderer: RenderPlayer) : LayerRe
                     GlStateManager.matrixMode(5890)
                     GlStateManager.loadIdentity()
                     val f: Float =
-                        sin(((entitylivingbaseIn.ticksExisted + partialTicks) / 20.0f).toDouble()).toFloat() * 5.0f
+                        sin(((entitylivingbaseIn.tickCount + partialTicks) / 20.0f).toDouble()).toFloat() * 5.0f
                     GlStateManager.translate(0.0f, f * 0.01f, 0.0f)
                     GlStateManager.matrixMode(5888)
 
                     GL11.glDisable(GL11.GL_LIGHTING)
-                    Minecraft.getMinecraft().renderEngine.bindTexture(RenderPlayerGC.heatShieldTexture)
+                    Minecraft.getInstance().renderEngine.bindTexture(RenderPlayerGC.heatShieldTexture)
                     GL11.glEnable(GL11.GL_BLEND)
                     val sTime: Float =
-                        ((1.0f - sin(((entitylivingbaseIn.ticksExisted + partialTicks) / 10.0f).toDouble())) * 0.1f + 0.0f).toFloat()
+                        ((1.0f - sin(((entitylivingbaseIn.tickCount + partialTicks) / 10.0f).toDouble())) * 0.1f + 0.0f).toFloat()
 
                     val r: Float = 0.9f * sTime
                     val g: Float = 0.2f * sTime

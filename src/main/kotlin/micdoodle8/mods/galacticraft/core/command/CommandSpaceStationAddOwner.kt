@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.command
 
+import net.minecraft.network.chat.Component
+
 import micdoodle8.mods.galacticraft.core.dimension.SpaceStationWorldData
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
@@ -8,10 +10,9 @@ import net.minecraft.command.CommandBase
 import net.minecraft.command.CommandException
 import net.minecraft.command.ICommandSender
 import net.minecraft.command.WrongUsageException
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
+import net.minecraft.core.BlockPos
 
 open class CommandSpaceStationAddOwner : CommandBase() {
     override fun getUsage(var1: ICommandSender): String {
@@ -52,20 +53,20 @@ open class CommandSpaceStationAddOwner : CommandBase() {
                     } else {
                         for (ownedStations: MutableMap.MutableEntry<Int,Int> in (stats.getSpaceStationDimensionData())!!.entries) {
                             val data: SpaceStationWorldData = (SpaceStationWorldData.getStationData(
-                                playerBase.world,
+                                playerBase.level(),
                                 ownedStations.value!!,
                                 playerBase
                             ))!!
 
                             if (var3.equals("+all", ignoreCase = true)) {
                                 data.setAllowedAll(true)
-                                playerBase.sendMessage(TextComponentString(GCCoreUtil.translateWithFormat("gui.spacestation.allow_all_true")))
+                                playerBase.sendSystemMessage(Component.literal(GCCoreUtil.translateWithFormat("gui.spacestation.allow_all_true")))
                                 return
                             }
                             if (var3.equals("-all", ignoreCase = true)) {
                                 data.setAllowedAll(false)
-                                playerBase.sendMessage(
-                                    TextComponentString(
+                                playerBase.sendSystemMessage(
+                                    Component.literal(
                                         GCCoreUtil.translateWithFormat(
                                             "gui.spacestation.allow_all_false",
                                             var3
@@ -85,8 +86,8 @@ open class CommandSpaceStationAddOwner : CommandBase() {
                     val playerToAdd: EntityPlayerMP? = PlayerUtil.getPlayerBaseServerFromPlayerUsername((var3)!!, true)
 
                     if (playerToAdd != null) {
-                        playerToAdd.sendMessage(
-                            TextComponentString(
+                        playerToAdd.sendSystemMessage(
+                            Component.literal(
                                 GCCoreUtil.translateWithFormat(
                                     "gui.spacestation.added",
                                     PlayerUtil.getName(playerBase)
@@ -108,8 +109,8 @@ open class CommandSpaceStationAddOwner : CommandBase() {
         }
 
         if (playerBase != null) {
-            playerBase.sendMessage(
-                TextComponentString(
+            playerBase.sendSystemMessage(
+                Component.literal(
                     GCCoreUtil.translateWithFormat(
                         "gui.spacestation.addsuccess",
                         var3

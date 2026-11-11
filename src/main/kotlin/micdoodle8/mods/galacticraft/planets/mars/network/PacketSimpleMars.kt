@@ -17,16 +17,17 @@ import micdoodle8.mods.galacticraft.planets.mars.entities.EntitySlimeling
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityCryogenicChamber
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityLaunchController
 import micdoodle8.mods.galacticraft.planets.mars.util.MarsUtil
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Arrays
 import kotlin.math.min
 
@@ -100,7 +101,7 @@ open class PacketSimpleMars : PacketBase {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun handleClientSide(player: EntityPlayer?) {
         var playerBaseClient: EntityPlayerSP? = null
 
@@ -118,7 +119,7 @@ open class PacketSimpleMars : PacketBase {
                 when (this.data!!.get(1) as Int?) {
                     0 -> {
                         entityID = ((this.data)!!.get(2) as kotlin.Int?)!!
-                        entity = (player)!!.world.getEntityByID(entityID)
+                        entity = (player)!!.level().getEntityByID(entityID)
 
                         if (entity != null && entity is EntitySlimeling) {
                             FMLClientHandler.instance().getClient()
@@ -130,7 +131,7 @@ open class PacketSimpleMars : PacketBase {
 
                     1 -> {
                         entityID = ((this.data)!!.get(2) as kotlin.Int?)!!
-                        entity = (player)!!.world.getEntityByID(entityID)
+                        entity = (player)!!.level().getEntityByID(entityID)
 
                         if (entity != null && entity is EntityCargoRocket) {
                             FMLClientHandler.instance().getClient()
@@ -147,7 +148,7 @@ open class PacketSimpleMars : PacketBase {
                 when (this.data!!.get(1) as Int?) {
                     0 -> {
                         pos = this.data!!.get(2) as BlockPos
-                        tile = (player)!!.world.getTileEntity(pos)
+                        tile = (player)!!.level().getBlockEntity(pos)
 
                         if (tile != null && tile is TileEntityLaunchController) {
                             FMLClientHandler.instance().getClient()
@@ -161,7 +162,7 @@ open class PacketSimpleMars : PacketBase {
 
             EnumSimplePacketMars.C_BEGIN_CRYOGENIC_SLEEP -> {
                 pos = this.data!!.get(0) as BlockPos
-                tile = (player)!!.world.getTileEntity(pos)
+                tile = (player)!!.level().getBlockEntity(pos)
 
                 if (tile is TileEntityCryogenicChamber) {
                     (tile as TileEntityCryogenicChamber).sleepInBedAt((player)!!, pos.getX(), pos.getY(), pos.getZ())
@@ -177,7 +178,7 @@ open class PacketSimpleMars : PacketBase {
 
         when (this.type) {
             EnumSimplePacketMars.S_UPDATE_SLIMELING_DATA -> {
-                var entity: Entity? = player!!.world.getEntityByID((this.data!!.get(0) as kotlin.Int?)!!)
+                var entity: Entity? = player!!.level().getEntityByID((this.data!!.get(0) as kotlin.Int?)!!)
 
                 if (entity is EntitySlimeling) {
                     val slimeling: EntitySlimeling = entity
@@ -231,7 +232,7 @@ open class PacketSimpleMars : PacketBase {
             }
 
             EnumSimplePacketMars.S_UPDATE_ADVANCED_GUI -> {
-                val tile: TileEntity? = player!!.world.getTileEntity(this.data!!.get(1) as BlockPos?)
+                val tile: TileEntity? = player!!.level().getBlockEntity(this.data!!.get(1) as BlockPos?)
 
                 when (this.data!!.get(0) as Int?) {
                     0 -> if (tile is TileEntityLaunchController) {
@@ -269,7 +270,7 @@ open class PacketSimpleMars : PacketBase {
             }
 
             EnumSimplePacketMars.S_UPDATE_CARGO_ROCKET_STATUS -> {
-                val entity2: Entity? = player!!.world.getEntityByID((this.data!!.get(0) as kotlin.Int?)!!)
+                val entity2: Entity? = player!!.level().getEntityByID((this.data!!.get(0) as kotlin.Int?)!!)
 
                 if (entity2 is EntityCargoRocket) {
                     val rocket: EntityCargoRocket = entity2
@@ -284,7 +285,7 @@ open class PacketSimpleMars : PacketBase {
 
             EnumSimplePacketMars.S_SWITCH_LAUNCH_CONTROLLER_GUI -> {
                 val pos: BlockPos = this.data!!.get(0) as BlockPos
-                val tile1: TileEntity? = player!!.world.getTileEntity(pos)
+                val tile1: TileEntity? = player!!.level().getBlockEntity(pos)
                 if (tile1 is TileEntityLaunchController) {
                     val launchController: TileEntityLaunchController = tile1
                     when (this.data!!.get(1) as Int?) {
@@ -292,7 +293,7 @@ open class PacketSimpleMars : PacketBase {
                         1 -> player.openGui(
                             GalacticraftPlanets.instance,
                             GuiIdsPlanets.MACHINE_MARS,
-                            player.world,
+                            player.level(),
                             pos.getX(),
                             pos.getY(),
                             pos.getZ()

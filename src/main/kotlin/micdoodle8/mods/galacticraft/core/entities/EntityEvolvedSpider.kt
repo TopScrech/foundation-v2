@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.entities
 
+import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
+
 import micdoodle8.mods.galacticraft.api.entity.IEntityBreathable
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.GCItems
@@ -8,16 +10,16 @@ import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import net.minecraft.entity.IEntityLivingData
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.monster.EntitySpider
-import net.minecraft.init.Items
-import net.minecraft.init.MobEffects
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.ItemStack
 import net.minecraft.potion.Potion
-import net.minecraft.potion.PotionEffect
-import net.minecraft.util.DamageSource
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.world.DifficultyInstance
-import net.minecraft.world.EnumDifficulty
-import net.minecraft.world.World
+import net.minecraft.world.Difficulty as EnumDifficulty
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.ForgeHooks
 
 open class EntityEvolvedSpider constructor(par1World: World) : EntitySpider(par1World), IEntityBreathable {
@@ -66,7 +68,7 @@ open class EntityEvolvedSpider constructor(par1World: World) : EntitySpider(par1
             val potion: Potion? = livingdata.effect
 
             if (potion != null) {
-                this.addPotionEffect(PotionEffect(potion, Int.MAX_VALUE))
+                this.addEffect(PotionEffect(potion, Int.MAX_VALUE))
             }
         }
 
@@ -80,8 +82,8 @@ open class EntityEvolvedSpider constructor(par1World: World) : EntitySpider(par1
             this.motionY = 0.26
         }
 
-        if (this.isPotionActive(MobEffects.JUMP_BOOST)) {
-            this.motionY += ((this.getActivePotionEffect(MobEffects.JUMP_BOOST)!!.getAmplifier() + 1) * 0.1f).toDouble()
+        if (this.hasEffect(MobEffects.JUMP_BOOST)) {
+            this.motionY += ((this.getEffect(MobEffects.JUMP_BOOST)!!.getAmplifier() + 1) * 0.1f).toDouble()
         }
 
         if (this.isSprinting()) {
@@ -99,7 +101,7 @@ open class EntityEvolvedSpider constructor(par1World: World) : EntitySpider(par1
             0, 1, 2 -> this.dropItem(GCItems.cheeseCurd, 1)
             3, 4, 5 -> this.dropItem(Items.FERMENTED_SPIDER_EYE, 1)
             6, 7 ->             //Oxygen tank half empty or less
-                this.entityDropItem(ItemStack(GCItems.oxTankMedium, 1, 901 + this.rand.nextInt(900)), 0.0f)
+                this.entityDropItem(ItemOxygenTank.stack(requireNotNull(GCItems.oxTankMedium), 1, 901 + this.rand.nextInt(900)), 0.0f)
 
             8 -> this.dropItem(GCItems.oxygenGear, 1)
             9 -> this.dropItem(GCItems.oxygenConcentrator, 1)

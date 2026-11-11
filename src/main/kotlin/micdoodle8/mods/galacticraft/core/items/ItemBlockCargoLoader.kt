@@ -1,7 +1,9 @@
 package micdoodle8.mods.galacticraft.core.items
 
-import net.minecraft.block.Block
-import net.minecraft.item.ItemStack
+import foundation.item.legacyItemValue
+
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.ItemStack
 
 open class ItemBlockCargoLoader constructor(block: Block?) : ItemBlockDesc(block) {
     init {
@@ -12,7 +14,7 @@ open class ItemBlockCargoLoader constructor(block: Block?) : ItemBlockDesc(block
     public override fun getTranslationKey(par1ItemStack: ItemStack): String {
         var name: String = ""
 
-        if (par1ItemStack.getItemDamage() < 4) {
+        if (par1ItemStack.legacyItemValue < 4) {
             name = "loader"
         } else {
             name = "unloader"

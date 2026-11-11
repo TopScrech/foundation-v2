@@ -26,7 +26,7 @@
 package asmodeuscore.core.utils.worldengine2.world.gen.custom.abstracts
 
 import asmodeuscore.core.utils.worldengine2.world.biome.WE_Biome
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 
 /**
  * Первая стадия генерации чанков: абстрактный класс пользовательского генератора на каждый 256-блоковый слой [X, Z].

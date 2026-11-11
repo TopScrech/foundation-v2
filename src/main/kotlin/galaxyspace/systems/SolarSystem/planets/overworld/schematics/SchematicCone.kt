@@ -6,13 +6,13 @@ import galaxyspace.systems.SolarSystem.planets.overworld.gui.schematics.GuiSchem
 import galaxyspace.systems.SolarSystem.planets.overworld.inventory.schematics.ContainerSchematicCone
 import micdoodle8.mods.galacticraft.api.recipe.SchematicPage
 import micdoodle8.mods.galacticraft.core.Constants
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.client.gui.screens.Screen as GuiScreen
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class SchematicCone : SchematicPage() {
     override fun getPageID(): Int {
@@ -24,10 +24,10 @@ open class SchematicCone : SchematicPage() {
     }
 
     override fun getRequiredItem(): ItemStack {
-        return ItemStack(GSItems.SCHEMATICS, 1, 0)
+        return foundation.item.FoundationItemVariants.stack(requireNotNull(GSItems.SCHEMATICS), 1, 0)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getResultScreen(player: EntityPlayer?, pos: BlockPos?): GuiScreen {
         return GuiSchematicCone((player)!!.inventory, pos)
     }

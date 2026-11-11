@@ -7,11 +7,11 @@ import micdoodle8.mods.galacticraft.planets.venus.entities.EntityJuicer
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderJuicer constructor(renderManager: RenderManager) :
     RenderLiving<EntityJuicer>(renderManager, ModelJuicer(), 0.5f) {
     private var texSwitch = false
@@ -46,6 +46,6 @@ open class RenderJuicer constructor(renderManager: RenderManager) :
     }
 
     companion object {
-        private val juicerTexture = ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/model/juicer.png")
+        private val juicerTexture = ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/model/juicer.png")
     }
 }

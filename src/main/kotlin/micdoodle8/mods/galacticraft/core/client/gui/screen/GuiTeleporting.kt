@@ -3,7 +3,7 @@ package micdoodle8.mods.galacticraft.core.client.gui.screen
 import micdoodle8.mods.galacticraft.api.world.IZeroGDimension
 import micdoodle8.mods.galacticraft.core.tick.TickHandlerClient
 import micdoodle8.mods.galacticraft.core.util.ColorUtil
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 
 open class GuiTeleporting constructor(private val targetDimensionID: Int) : GuiScreen() {
     private val message: String

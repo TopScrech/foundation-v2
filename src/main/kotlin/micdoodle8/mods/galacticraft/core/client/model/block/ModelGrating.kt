@@ -11,15 +11,15 @@ import com.google.common.collect.ImmutableList
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.TransformerHooks
 import micdoodle8.mods.galacticraft.core.blocks.BlockGrating
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.block.model.*
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
 import net.minecraftforge.client.MinecraftForgeClient
 import net.minecraftforge.common.property.IExtendedBlockState
 
@@ -39,7 +39,7 @@ open class ModelGrating constructor(blockLoc: ModelResourceLocation, modelManage
                 val buffer: BufferBuilder? = TransformerHooks.renderBuilder.get()
                 if (buffer != null) {
                     if (baseState.getBlock().canRenderInLayer(baseState, MinecraftForgeClient.getRenderLayer())) try {
-                        Minecraft.getMinecraft().getBlockRendererDispatcher()
+                        Minecraft.getInstance().getBlockRendererDispatcher()
                             .renderBlock(baseState, pos, blockAccess, buffer)
                     } catch (ignore: Exception) {
                         ignore.printStackTrace()
@@ -67,7 +67,7 @@ open class ModelGrating constructor(blockLoc: ModelResourceLocation, modelManage
     }
 
     override fun getParticleTexture(): TextureAtlasSprite {
-        return Minecraft.getMinecraft().getTextureMapBlocks()
+        return Minecraft.getInstance().getTextureMapBlocks()
             .getAtlasSprite(Constants.ASSET_PREFIX + ":blocks/screen_side")
     }
 

@@ -1,10 +1,10 @@
 package galaxyspace.core.prefab.world.gen.we
 
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.IChunkProvider
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.fml.common.IWorldGenerator
@@ -12,10 +12,10 @@ import java.util.Random
 
 open class WE_LakesGen : IWorldGenerator {
     @JvmField
-var lakeBlock: IBlockState = Blocks.WATER.getDefaultState()
+var lakeBlock: IBlockState = Blocks.WATER.defaultBlockState()
 
     @JvmField
-var lakeBlock_ice: IBlockState = Blocks.ICE.getDefaultState()
+var lakeBlock_ice: IBlockState = Blocks.ICE.defaultBlockState()
 
     @JvmField
 var chunksForLake: Int = 12
@@ -72,7 +72,7 @@ var update: Boolean = true
         var z: Int = z
         x -= 8
         z -= 8
-        while (y > 5 && world.isAirBlock(BlockPos(x, y, z))) --y
+        while (y > 5 && world.isEmptyBlock(BlockPos(x, y, z))) --y
 
         if (y <= 4) return
         else {
@@ -112,13 +112,13 @@ var update: Boolean = true
                         ) return
                     }
                     //-//
-                    if (aboolean[(bx * 16 + bz) * 8 + by]) world.setBlockState(
+                    if (aboolean[(bx * 16 + bz) * 8 + by]) world.setBlock(
                         BlockPos(x + bx, y + by, z + bz),
-                        if (by >= 4) Blocks.AIR.getDefaultState() else lakeBlock,
+                        if (by >= 4) Blocks.AIR.defaultBlockState() else lakeBlock,
                         if (update) 3 else 2
                     )
                 }
-                if (y + 4 >= iceY + random.nextInt(random_iceY + 1)) world.setBlockState(
+                if (y + 4 >= iceY + random.nextInt(random_iceY + 1)) world.setBlock(
                     BlockPos(
                         x + bx,
                         y + 4,

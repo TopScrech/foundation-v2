@@ -14,9 +14,9 @@ import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.tile.TileEntityOxygenDistributor
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 import kotlin.math.floor
 import kotlin.math.min
@@ -222,6 +222,6 @@ open class GuiOxygenDistributor constructor(
     }
 
     companion object {
-        private val distributorTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/oxygen_distributor.png")
+        private val distributorTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/oxygen_distributor.png")
     }
 }

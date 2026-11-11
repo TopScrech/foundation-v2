@@ -1,12 +1,12 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.entities
 
-import net.minecraft.entity.Entity
-import net.minecraft.entity.MoverType
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.MoverType
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import kotlin.math.abs
 
 open class EntitySmallAsteroid constructor(world: World) : Entity(world) {
@@ -68,15 +68,15 @@ open class EntitySmallAsteroid constructor(world: World) : Entity(world) {
     }
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
-        this.spinPitch = nbt.getFloat("spinPitch")
-        this.spinYaw = nbt.getFloat("spinYaw")
-        this.ticksExisted = nbt.getInteger("ageTicks")
+        this.spinPitch = nbt.getFloatOr("spinPitch", 0f)
+        this.spinYaw = nbt.getFloatOr("spinYaw", 0f)
+        this.ticksExisted = nbt.getIntOr("ageTicks", 0)
     }
 
     override fun writeEntityToNBT(nbt: NBTTagCompound) {
-        nbt.setFloat("spinPitch", this.spinPitch)
-        nbt.setFloat("spinYaw", this.spinYaw)
-        nbt.setInteger("ageTicks", this.ticksExisted)
+        nbt.putFloat("spinPitch", this.spinPitch)
+        nbt.putFloat("spinYaw", this.spinYaw)
+        nbt.putInt("ageTicks", this.ticksExisted)
     }
 
     open fun getSpinPitch(): Float {

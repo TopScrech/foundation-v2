@@ -2,7 +2,7 @@ package micdoodle8.mods.galacticraft.core.client.model
 
 import net.minecraft.client.model.ModelRenderer
 import net.minecraft.client.model.ModelWitch
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 
 open class ModelEvolvedWitch constructor() : ModelWitch(0.0f) {
     @JvmField

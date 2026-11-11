@@ -1,11 +1,11 @@
 package micdoodle8.mods.galacticraft.planets.venus
 
+
 import micdoodle8.mods.galacticraft.core.Constants
-import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.mars.ConfigManagerMars
-import net.minecraftforge.common.config.Configuration
-import net.minecraftforge.common.config.Property
-import net.minecraftforge.fml.common.FMLLog
+import foundation.config.FoundationConfiguration as Configuration
+import foundation.config.FoundationConfigProperty as Property
+import foundation.logging.FoundationLog as FMLLog
 import org.apache.logging.log4j.Level
 import java.io.File
 import java.lang.Exception
@@ -17,8 +17,11 @@ constructor(file: File) {
             if (file.exists()) {
                 config = Configuration(file)
                 syncConfig(true, true)
+                // Persist imported values before removing the old file
+                requireNotNull(ConfigManagerMars.config).save()
                 file.delete()
                 config = ConfigManagerMars.config
+                syncConfig(false, false)
             } else {
                 config = ConfigManagerMars.config
                 syncConfig(true, false)
@@ -87,7 +90,7 @@ constructor(file: File) {
                     propCopy.setRequiresMcRestart(prop.requiresMcRestart())
                 }
                 dimensionIDVenus = prop.getInt()
-                GalacticraftPlanets.finishProp(prop, Constants.CONFIG_CATEGORY_DIMENSIONS)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_DIMENSIONS)
 
                 var oldLightning: Boolean = false
                 if (config!!.hasKey(Constants.CONFIG_CATEGORY_SCHEMATIC, "disableAmbientLightning")) {
@@ -98,51 +101,52 @@ constructor(file: File) {
                 prop.setComment("Disables background thunder and lightning.")
                 prop.setLanguageKey("gc.configgui.disable_ambient_lightning")
                 disableAmbientLightning = prop.getBoolean(oldLightning)
-                GalacticraftPlanets.finishProp(prop, Constants.CONFIG_CATEGORY_GENERAL)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_GENERAL)
 
                 prop = config!!.get(Constants.CONFIG_CATEGORY_WORLDGEN, "Disable Aluminum Ore Gen on Venus", false)
                 prop.setComment("Disable Aluminum Ore Gen on Venus.")
                 prop.setLanguageKey("gc.configgui.disable_venus_aluminum_gen")
                 disableAluminumGen = prop.getBoolean(false)
-                GalacticraftPlanets.finishProp(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
 
                 prop = config!!.get(Constants.CONFIG_CATEGORY_WORLDGEN, "Disable Copper Ore Gen on Venus", false)
                 prop.setComment("Disable Copper Ore Gen on Venus.")
                 prop.setLanguageKey("gc.configgui.disable_venus_copper_gen")
                 disableCopperGen = prop.getBoolean(false)
-                GalacticraftPlanets.finishProp(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
 
                 prop = config!!.get(Constants.CONFIG_CATEGORY_WORLDGEN, "Disable Galena Ore Gen on Venus", false)
                 prop.setComment("Disable Galena Ore Gen on Venus.")
                 prop.setLanguageKey("gc.configgui.disable_venus_galena_gen")
                 disableGalenaGen = prop.getBoolean(false)
-                GalacticraftPlanets.finishProp(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
 
                 prop = config!!.get(Constants.CONFIG_CATEGORY_WORLDGEN, "Disable Quartz Ore Gen on Venus", false)
                 prop.setComment("Disable Quartz Ore Gen on Venus.")
                 prop.setLanguageKey("gc.configgui.disable_venus_quartz_gen")
                 disableQuartzGen = prop.getBoolean(false)
-                GalacticraftPlanets.finishProp(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
 
                 prop = config!!.get(Constants.CONFIG_CATEGORY_WORLDGEN, "Disable Silicon Ore Gen on Venus", false)
                 prop.setComment("Disable Silicon Ore Gen on Venus.")
                 prop.setLanguageKey("gc.configgui.disable_venus_silicon_gen")
                 disableSiliconGen = prop.getBoolean(false)
-                GalacticraftPlanets.finishProp(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
 
                 prop = config!!.get(Constants.CONFIG_CATEGORY_WORLDGEN, "Disable Tin Ore Gen on Venus", false)
                 prop.setComment("Disable Tin Ore Gen on Venus.")
                 prop.setLanguageKey("gc.configgui.disable_venus_tin_gen")
                 disableTinGen = prop.getBoolean(false)
-                GalacticraftPlanets.finishProp(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
 
                 prop = config!!.get(Constants.CONFIG_CATEGORY_WORLDGEN, "Disable Solar Ore Gen on Venus", false)
                 prop.setComment("Disable Solar Ore Gen on Venus.")
                 prop.setLanguageKey("gc.configgui.disable_venus_solar_gen")
                 disableSolarGen = prop.getBoolean(false)
-                GalacticraftPlanets.finishProp(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
             } catch (e: Exception) {
                 FMLLog.log(Level.ERROR, e, "Galacticraft Venus (Planets) has a problem loading its config")
+                throw IllegalStateException("Could not apply planet configuration", e)
             }
         }
     }

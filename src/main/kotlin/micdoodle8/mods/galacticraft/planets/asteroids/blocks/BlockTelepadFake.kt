@@ -1,35 +1,37 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.blocks.BlockAdvancedTile
 import micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityTelepadFake
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockDirectional
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
-import net.minecraft.block.properties.PropertyBool
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.properties.BooleanProperty as PropertyBool
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.particle.ParticleManager
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.Explosion
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.Explosion
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class BlockTelepadFake constructor(assetName: String?) : BlockAdvancedTile(GCBlocks.machine),
-    ITileEntityProvider {
+    ITileEntityProvider, LegacyBlockMetadata {
     init {
         this.setSoundType(SoundType.METAL)
         //        this.setBlockTextureName(Constants.TEXTURE_PREFIX + assetName);
@@ -97,12 +99,12 @@ open class BlockTelepadFake constructor(assetName: String?) : BlockAdvancedTile(
     }
 
     open fun makeFakeBlock(worldObj: World, pos: BlockPos, mainBlock: BlockPos?, state: IBlockState) {
-        worldObj.setBlockState(pos, state, 3)
-        (worldObj.getTileEntity(pos) as TileEntityTelepadFake).setMainBlock(mainBlock)
+        worldObj.setBlock(pos, state, 3)
+        (worldObj.getBlockEntity(pos) as TileEntityTelepadFake).setMainBlock(mainBlock)
     }
 
     override fun getBlockHardness(blockState: IBlockState, worldIn: World, pos: BlockPos): Float {
-        val tileEntity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileEntity: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tileEntity is TileEntityTelepadFake) {
             val mainBlockPosition: BlockPos? = tileEntity.mainBlockPosition
@@ -117,7 +119,7 @@ open class BlockTelepadFake constructor(assetName: String?) : BlockAdvancedTile(
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val tileEntity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileEntity: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tileEntity is TileEntityTelepadFake) {
             tileEntity.onBlockRemoval()
@@ -137,7 +139,7 @@ open class BlockTelepadFake constructor(assetName: String?) : BlockAdvancedTile(
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val tileEntity: TileEntityTelepadFake? = worldIn.getTileEntity(pos) as TileEntityTelepadFake?
+        val tileEntity: TileEntityTelepadFake? = worldIn.getBlockEntity(pos) as TileEntityTelepadFake?
         return tileEntity!!.onActivated(playerIn)
     }
 
@@ -176,7 +178,7 @@ open class BlockTelepadFake constructor(assetName: String?) : BlockAdvancedTile(
         pos: BlockPos,
         player: EntityPlayer
     ): ItemStack {
-        val tileEntity: TileEntity? = world.getTileEntity(pos)
+        val tileEntity: TileEntity? = world.getBlockEntity(pos)
         val mainBlockPosition: BlockPos? = (tileEntity as TileEntityTelepadFake).mainBlockPosition
 
         if (mainBlockPosition != null) {
@@ -197,7 +199,7 @@ open class BlockTelepadFake constructor(assetName: String?) : BlockAdvancedTile(
     }
 
     override fun getBedDirection(state: IBlockState, world: IBlockAccess, pos: BlockPos): EnumFacing {
-        val tileEntity: TileEntity? = world.getTileEntity(pos)
+        val tileEntity: TileEntity? = world.getBlockEntity(pos)
         val mainBlockPosition: BlockPos? = (tileEntity as TileEntityTelepadFake).mainBlockPosition
 
         if (mainBlockPosition != null) {
@@ -209,7 +211,7 @@ open class BlockTelepadFake constructor(assetName: String?) : BlockAdvancedTile(
     }
 
     override fun isBed(state: IBlockState, world: IBlockAccess, pos: BlockPos, player: Entity?): Boolean {
-        val tileEntity: TileEntity? = world.getTileEntity(pos)
+        val tileEntity: TileEntity? = world.getBlockEntity(pos)
         val mainBlockPosition: BlockPos? = (tileEntity as TileEntityTelepadFake).mainBlockPosition
 
         if (mainBlockPosition != null) {
@@ -221,7 +223,7 @@ open class BlockTelepadFake constructor(assetName: String?) : BlockAdvancedTile(
     }
 
     override fun setBedOccupied(world: IBlockAccess, pos: BlockPos, player: EntityPlayer, occupied: Boolean) {
-        val tileEntity: TileEntity? = world.getTileEntity(pos)
+        val tileEntity: TileEntity? = world.getBlockEntity(pos)
         val mainBlockPosition: BlockPos? = (tileEntity as TileEntityTelepadFake).mainBlockPosition
 
         if (mainBlockPosition != null) {
@@ -237,7 +239,7 @@ open class BlockTelepadFake constructor(assetName: String?) : BlockAdvancedTile(
         target: RayTraceResult,
         manager: ParticleManager
     ): Boolean {
-        val tileEntity: TileEntity? = worldObj.getTileEntity(target.getBlockPos())
+        val tileEntity: TileEntity? = worldObj.getBlockEntity(target.getBlockPos())
 
         if (tileEntity is TileEntityTelepadFake) {
             val mainBlockPosition: BlockPos? = tileEntity.mainBlockPosition
@@ -255,8 +257,8 @@ open class BlockTelepadFake constructor(assetName: String?) : BlockAdvancedTile(
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(TOP, meta % 2 == 1)
-            .withProperty(CONNECTABLE, meta > 1)
+        return this.defaultBlockState().setValue(TOP, meta % 2 == 1)
+            .setValue(CONNECTABLE, meta > 1)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {

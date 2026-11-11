@@ -15,14 +15,13 @@ import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.renderer.*
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 import java.util.*
 import kotlin.math.atan2
@@ -169,7 +168,7 @@ open class SkyProviderMoon constructor() : IRenderHandler() {
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE)
         GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
         var12 = 20.0f
-        FMLClientHandler.instance().getClient().renderEngine.bindTexture(sunTexture)
+        Minecraft.getInstance().renderEngine.bindTexture(sunTexture)
         worldRenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX)
         worldRenderer.pos(-var12.toDouble(), 100.0, -var12.toDouble()).tex(0.0, 0.0).endVertex()
         worldRenderer.pos(var12.toDouble(), 100.0, -var12.toDouble()).tex(1.0, 0.0).endVertex()
@@ -185,7 +184,7 @@ open class SkyProviderMoon constructor() : IRenderHandler() {
 
         // HOME:
         var12 = 10.0f
-        val earthRotation: Float = (world.getSpawnPoint().getZ() - mc.player.posZ).toFloat() * 0.01f
+        val earthRotation: Float = (world.getSpawnPoint().getZ() - mc.player.z).toFloat() * 0.01f
         GL11.glScalef(0.6f, 0.6f, 0.6f)
         GL11.glRotatef(earthRotation, 1.0f, 0.0f, 0.0f)
         GL11.glRotatef(200f, 1.0f, 0.0f, 0.0f)
@@ -195,7 +194,7 @@ open class SkyProviderMoon constructor() : IRenderHandler() {
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, (ClientProxyCore.overworldTextureClient)!!.getGlTextureId())
         } else {
             // Overworld texture is 48x48 in a 64x64 .png file
-            FMLClientHandler.instance().getClient().renderEngine.bindTexture(overworldTexture)
+            Minecraft.getInstance().renderEngine.bindTexture(overworldTexture)
         }
 
         world.getMoonPhase()
@@ -323,7 +322,7 @@ open class SkyProviderMoon constructor() : IRenderHandler() {
     }
 
     open fun getSkyBrightness(par1: Float): Float {
-        val var2: Float = FMLClientHandler.instance().getClient().world.getCelestialAngle(par1)
+        val var2: Float = Minecraft.getInstance().level.getCelestialAngle(par1)
         var var3: Float = 1.0f - (MathHelper.sin(var2 * Constants.twoPI) * 2.0f + 0.25f)
 
         if (var3 < 0.0f) {
@@ -339,7 +338,7 @@ open class SkyProviderMoon constructor() : IRenderHandler() {
 
     companion object {
         private val overworldTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png")
-        private val sunTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/planets/orbitalsun.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png")
+        private val sunTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/planets/orbitalsun.png")
     }
 }

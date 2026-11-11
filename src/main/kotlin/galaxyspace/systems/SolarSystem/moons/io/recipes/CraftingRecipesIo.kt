@@ -1,11 +1,12 @@
 package galaxyspace.systems.SolarSystem.moons.io.recipes
 
+import foundation.item.FoundationItemVariants
 import galaxyspace.core.GSBlocks
 import galaxyspace.systems.SolarSystem.moons.io.recipes.CraftingRecipesIo
 import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.util.RecipeUtil
-import net.minecraft.init.Items
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.fml.common.registry.GameRegistry
 
 object CraftingRecipesIo {
@@ -25,6 +26,6 @@ object CraftingRecipesIo {
 
     @JvmStatic
     private fun addBlockSmelting() {
-        GameRegistry.addSmelting(ItemStack(GSBlocks.IO_BLOCKS, 1, 3), ItemStack(GCItems.basicItem, 1, 3), 1.0f)
+        GameRegistry.addSmelting(ItemStack(GSBlocks.IO_BLOCKS, 1, 3), FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 3), 1.0f)
     }
 }

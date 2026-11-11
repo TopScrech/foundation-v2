@@ -1,11 +1,16 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
-import net.minecraft.init.Blocks
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import foundation.block.LegacyVanillaBlockStates
+import foundation.block.LegacyVanillaBlockIds
+
+import foundation.block.getStateFromMeta
+
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.StructureComponent
 import net.minecraft.world.gen.structure.template.TemplateManager
 import java.util.Random
@@ -19,7 +24,7 @@ open class StructureComponentVillageField : StructureComponentVillage {
         par1ComponentVillageStartPiece: StructureComponentVillageStartPiece?,
         par2: Int,
         par3Random: Random?,
-        par4StructureBoundingBox: StructureBoundingBox?,
+        par4StructureBoundingBox: BoundingBox?,
         par5: EnumFacing?
     ) : super(par1ComponentVillageStartPiece, par2) {
         this.setCoordBaseMode(par5)
@@ -29,19 +34,19 @@ open class StructureComponentVillageField : StructureComponentVillage {
     override fun writeStructureToNBT(nbt: NBTTagCompound) {
         super.writeStructureToNBT(nbt)
 
-        nbt.setInteger("AvgGroundLevel", this.averageGroundLevel)
+        nbt.putInt("AvgGroundLevel", this.averageGroundLevel)
     }
 
     override fun readStructureFromNBT(nbt: NBTTagCompound, manager: TemplateManager) {
         super.readStructureFromNBT(nbt, manager)
 
-        this.averageGroundLevel = nbt.getInteger("AvgGroundLevel")
+        this.averageGroundLevel = nbt.getIntOr("AvgGroundLevel", 0)
     }
 
     override fun addComponentParts(
         par1World: World,
         par2Random: Random,
-        par3StructureBoundingBox: StructureBoundingBox
+        par3StructureBoundingBox: BoundingBox
     ): Boolean {
         if (this.averageGroundLevel < 0) {
             this.averageGroundLevel = this.getAverageGroundLevel(par1World, par3StructureBoundingBox)
@@ -50,7 +55,7 @@ open class StructureComponentVillageField : StructureComponentVillage {
                 return true
             }
 
-            this.boundingBox.offset(0, this.averageGroundLevel - this.boundingBox.maxY + 7 - 1, 0)
+            this.boundingBox.move(0, this.averageGroundLevel - this.boundingBox.maxY() + 7 - 1, 0)
         }
 
         this.fillWithBlocks(
@@ -62,8 +67,8 @@ open class StructureComponentVillageField : StructureComponentVillage {
             12,
             4,
             8,
-            Blocks.AIR.getDefaultState(),
-            Blocks.AIR.getDefaultState(),
+            Blocks.AIR.defaultBlockState(),
+            Blocks.AIR.defaultBlockState(),
             false
         )
         this.fillWithBlocks(
@@ -75,8 +80,8 @@ open class StructureComponentVillageField : StructureComponentVillage {
             2,
             0,
             7,
-            Blocks.DIRT.getDefaultState(),
-            Blocks.DIRT.getDefaultState(),
+            Blocks.DIRT.defaultBlockState(),
+            Blocks.DIRT.defaultBlockState(),
             false
         )
         this.fillWithBlocks(
@@ -88,8 +93,8 @@ open class StructureComponentVillageField : StructureComponentVillage {
             5,
             0,
             7,
-            Blocks.DIRT.getDefaultState(),
-            Blocks.DIRT.getDefaultState(),
+            Blocks.DIRT.defaultBlockState(),
+            Blocks.DIRT.defaultBlockState(),
             false
         )
         this.fillWithBlocks(
@@ -101,8 +106,8 @@ open class StructureComponentVillageField : StructureComponentVillage {
             8,
             0,
             7,
-            Blocks.DIRT.getDefaultState(),
-            Blocks.DIRT.getDefaultState(),
+            Blocks.DIRT.defaultBlockState(),
+            Blocks.DIRT.defaultBlockState(),
             false
         )
         this.fillWithBlocks(
@@ -114,8 +119,8 @@ open class StructureComponentVillageField : StructureComponentVillage {
             11,
             0,
             7,
-            Blocks.DIRT.getDefaultState(),
-            Blocks.DIRT.getDefaultState(),
+            Blocks.DIRT.defaultBlockState(),
+            Blocks.DIRT.defaultBlockState(),
             false
         )
         this.fillWithBlocks(
@@ -127,8 +132,8 @@ open class StructureComponentVillageField : StructureComponentVillage {
             0,
             0,
             8,
-            Blocks.LOG.getDefaultState(),
-            Blocks.LOG.getDefaultState(),
+            Blocks.LOG.defaultBlockState(),
+            Blocks.LOG.defaultBlockState(),
             false
         )
         this.fillWithBlocks(
@@ -140,8 +145,8 @@ open class StructureComponentVillageField : StructureComponentVillage {
             6,
             0,
             8,
-            Blocks.LOG.getDefaultState(),
-            Blocks.LOG.getDefaultState(),
+            Blocks.LOG.defaultBlockState(),
+            Blocks.LOG.defaultBlockState(),
             false
         )
         this.fillWithBlocks(
@@ -153,8 +158,8 @@ open class StructureComponentVillageField : StructureComponentVillage {
             12,
             0,
             8,
-            Blocks.LOG.getDefaultState(),
-            Blocks.LOG.getDefaultState(),
+            Blocks.LOG.defaultBlockState(),
+            Blocks.LOG.defaultBlockState(),
             false
         )
         this.fillWithBlocks(
@@ -166,8 +171,8 @@ open class StructureComponentVillageField : StructureComponentVillage {
             11,
             0,
             0,
-            Blocks.LOG.getDefaultState(),
-            Blocks.LOG.getDefaultState(),
+            Blocks.LOG.defaultBlockState(),
+            Blocks.LOG.defaultBlockState(),
             false
         )
         this.fillWithBlocks(
@@ -179,8 +184,8 @@ open class StructureComponentVillageField : StructureComponentVillage {
             11,
             0,
             8,
-            Blocks.LOG.getDefaultState(),
-            Blocks.LOG.getDefaultState(),
+            Blocks.LOG.defaultBlockState(),
+            Blocks.LOG.defaultBlockState(),
             false
         )
         this.fillWithBlocks(
@@ -192,8 +197,8 @@ open class StructureComponentVillageField : StructureComponentVillage {
             3,
             0,
             7,
-            Blocks.FLOWING_WATER.getDefaultState(),
-            Blocks.FLOWING_WATER.getDefaultState(),
+            Blocks.FLOWING_WATER.defaultBlockState(),
+            Blocks.FLOWING_WATER.defaultBlockState(),
             false
         )
         this.fillWithBlocks(
@@ -205,8 +210,8 @@ open class StructureComponentVillageField : StructureComponentVillage {
             9,
             0,
             7,
-            Blocks.FLOWING_WATER.getDefaultState(),
-            Blocks.FLOWING_WATER.getDefaultState(),
+            Blocks.FLOWING_WATER.defaultBlockState(),
+            Blocks.FLOWING_WATER.defaultBlockState(),
             false
         )
         var var4: Int
@@ -218,7 +223,7 @@ open class StructureComponentVillageField : StructureComponentVillage {
                     if (par2Random.nextInt(3) == 0) {
                         this.setBlockState(
                             par1World,
-                            Blocks.SAPLING.getStateFromMeta(MathHelper.getInt(par2Random, 0, 2)),
+                            LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.SAPLING, MathHelper.getInt(par2Random, 0, 2)),
                             i,
                             1,
                             var4,
@@ -236,7 +241,7 @@ open class StructureComponentVillageField : StructureComponentVillage {
                 this.clearCurrentPositionBlocksUpwards(par1World, var5, 4, var4, par3StructureBoundingBox)
                 this.replaceAirAndLiquidDownwards(
                     par1World,
-                    Blocks.DIRT.getDefaultState(),
+                    Blocks.DIRT.defaultBlockState(),
                     var5,
                     -1,
                     var4,
@@ -261,8 +266,8 @@ open class StructureComponentVillageField : StructureComponentVillage {
             par6: EnumFacing,
             par7: Int
         ): StructureComponentVillageField? {
-            val var8: StructureBoundingBox =
-                StructureBoundingBox.getComponentToAddBoundingBox(par3, par4, par5, 0, 0, 0, 13, 4, 9, par6)
+            val var8: BoundingBox =
+                BoundingBox.orientBox(par3, par4, par5, 0, 0, 0, 13, 4, 9, par6)
             return if (findIntersecting(par1List, var8) == null) StructureComponentVillageField(
                 par0ComponentVillageStartPiece,
                 par7,

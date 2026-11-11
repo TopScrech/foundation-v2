@@ -1,66 +1,23 @@
 package micdoodle8.mods.galacticraft.core.items
 
-import micdoodle8.mods.galacticraft.core.GalacticraftCore
-import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
-import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
+import foundation.item.FoundationEquipmentItem
+import foundation.item.FoundationItemProperties
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
-import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.Rarity
+import net.minecraft.world.level.Level
 
-open class ItemOxygenMask constructor(assetName: String?) : Item(), ISortableItem, IClickableItem {
-    init {
-        this.setTranslationKey(assetName)
-        //this.setTextureName(Constants.TEXTURE_PREFIX + assetName);
-    }
+open class ItemOxygenMask(properties: Item.Properties) : Item(properties), ISortableItem, FoundationEquipmentItem {
+    constructor(assetName: String?) : this(
+        FoundationItemProperties.named("galacticraftcore", requireNotNull(assetName))
+            .rarity(Rarity.RARE).overrideDescription("item.$assetName.name")
+    )
 
-    override fun getCreativeTab(): CreativeTabs? {
-        return GalacticraftCore.galacticraftItemsTab
-    }
-
-    @SideOnly(Side.CLIENT)
-    override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
-        return (ClientProxyCore.galacticraftItem)!!
-    }
-
-    override fun getCategory(meta: Int): EnumSortCategoryItem {
-        return EnumSortCategoryItem.GEAR
-    }
-
-    override fun onItemRightClick(worldIn: World, player: EntityPlayer, hand: EnumHand): ActionResult<ItemStack?> {
-        var itemStack: ItemStack = player.getHeldItem(hand)
-
-        if (player is EntityPlayerMP) {
-            if (itemStack.getItem() is IClickableItem) {
-                itemStack = ((itemStack.getItem() as IClickableItem).onItemRightClick(itemStack, worldIn, player))!!
-            }
-
-            if (itemStack.isEmpty()) {
-                return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, itemStack)
-            }
-        }
-        return ActionResult<ItemStack?>(EnumActionResult.PASS, itemStack)
-    }
-
-    override fun onItemRightClick(itemStack: ItemStack?, worldIn: World?, player: EntityPlayer?): ItemStack? {
-        var itemStack: ItemStack = (itemStack)!!
-        val stats: GCPlayerStats = (GCPlayerStats.get((player)!!))!!
-        val gear: ItemStack = (stats.getExtendedInventory())!!.getStackInSlot(0)
-
-        if (gear.isEmpty()) {
-            (stats.getExtendedInventory())!!.setInventorySlotContents(0, itemStack.copy())
-            itemStack = ItemStack.EMPTY
-        }
-
-        return itemStack
-    }
+    override val equipmentSlots: List<Int> = listOf(0)
+    override fun getCategory(meta: Int): EnumSortCategoryItem = EnumSortCategoryItem.GEAR
+    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResult = useEquipment(player, hand)
 }

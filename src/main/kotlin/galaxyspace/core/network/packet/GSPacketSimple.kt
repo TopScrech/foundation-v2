@@ -1,5 +1,10 @@
 package galaxyspace.core.network.packet
 
+import foundation.item.legacyItemValue
+
+import foundation.inventory.armorItems
+import foundation.persistence.containsTag
+
 import net.minecraft.util.math.RayTraceResult.Type
 
 import galaxyspace.core.prefab.entities.EntityAstroWolf
@@ -36,32 +41,33 @@ import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityList
 import net.minecraft.entity.passive.EntityAnimal
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.INetHandler
-import net.minecraft.network.Packet
+import net.minecraft.network.protocol.Packet
 import net.minecraft.network.PacketBuffer
 import net.minecraft.server.MinecraftServer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.oredict.OreDictionary
 import java.lang.Exception
 import java.lang.RuntimeException
@@ -180,7 +186,7 @@ open class GSPacketSimple : PacketBase, Packet<INetHandler> {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun handleClientSide(player: EntityPlayer?) {
         var playerBaseClient: EntityPlayerSP? = null
         var stats: GCPlayerStatsClient? = null
@@ -205,15 +211,15 @@ open class GSPacketSimple : PacketBase, Packet<INetHandler> {
 do {
 when (this.type) {
             GSEnumSimplePacket.C_GET_CAGE_ENTITY -> {
-                val result: RayTraceResult? = Minecraft.getMinecraft().objectMouseOver
+                val result: RayTraceResult? = Minecraft.getInstance().objectMouseOver
                 if (result != null && result.typeOfHit != null) {
                     if (result.typeOfHit == RayTraceResult.Type.ENTITY) {
                         val entity: Entity? = result.entityHit
                         if (entity is EntityAnimal) (GalaxySpace.packetPipeline)!!.sendToServer(
                             GSPacketSimple(
                                 GSEnumSimplePacket.S_GET_CAGE_ENTITY,
-                                GCCoreUtil.getDimensionID((player)!!.world),
-                                entity.getEntityId()
+                                GCCoreUtil.getDimensionID((player)!!.level()),
+                                entity.getId()
                             )
                         )
                         //Main.network.sendToServer(new SGetEntity(entity.getEntityId()));
@@ -225,7 +231,7 @@ when (this.type) {
                 val wolfID: Int = this.data!!.get(0) as Int
                 val wolfInvTag: NBTTagCompound = this.data!!.get(1) as NBTTagCompound
 
-                val wolf: EntityAstroWolf? = playerBaseClient!!.world.getEntityByID(wolfID) as EntityAstroWolf?
+                val wolf: EntityAstroWolf? = playerBaseClient!!.level().getEntityByID(wolfID) as EntityAstroWolf?
 
 
                 // set client inventory
@@ -247,7 +253,7 @@ when (this.type) {
                 val block: BlockVec3 = this.data!!.get(0) as BlockVec3
                 val level: Int = this.data!!.get(1) as Int
                 GlStateManager.pushMatrix()
-                FMLClientHandler.instance().getClient().renderEngine.bindTexture(
+                Minecraft.getInstance().renderEngine.bindTexture(
                     ResourceLocation(
                         GalacticraftPlanets.ASSET_PREFIX,
                         "textures/misc/gradient.png"
@@ -313,8 +319,8 @@ when (this.type) {
 
                 val world: World = server.getWorld(this.getDimensionID())
 
-                if (world != null && playerBaseClient.world != null && playerBaseClient.world.provider is WE_WorldProvider && world.provider != null && world.provider is WE_WorldProvider) {
-                    (playerBaseClient.world.provider as WE_WorldProvider).chunk_provider =
+                if (world != null && playerBaseClient.level() != null && playerBaseClient.level().provider is WE_WorldProvider && world.provider != null && world.provider is WE_WorldProvider) {
+                    (playerBaseClient.level().provider as WE_WorldProvider).chunk_provider =
                         (world.provider as WE_WorldProvider).chunk_provider
                 }
             }
@@ -335,13 +341,13 @@ when (this.type) {
             GSEnumSimplePacket.C_OPEN_WAITFORDRIVER_GUI -> {
                 val waitforGUI: GuiTeleporting = GuiTeleporting(Int.MAX_VALUE)
 
-                if (Minecraft.getMinecraft().currentScreen !== waitforGUI) {
-                    Minecraft.getMinecraft().displayGuiScreen(waitforGUI)
+                if (Minecraft.getInstance().gui.screen() !== waitforGUI) {
+                    Minecraft.getInstance().gui.setScreen(waitforGUI)
                 }
             }
 
             GSEnumSimplePacket.C_CLOSE_WAITFORDRIVER_GUI -> {
-                Minecraft.getMinecraft().displayGuiScreen(null)
+                Minecraft.getInstance().gui.setScreen(null)
 
                 if (TickHandlerClient.teleportingGui != null) {
                     TickHandlerClient.teleportingGui = null
@@ -383,7 +389,7 @@ when (this.type) {
                             (GalaxySpace.packetPipeline)!!.sendTo(
                                 GSPacketSimple(
                                     GSEnumSimplePacket.C_UPDATE_RESEARCH,
-                                    GCCoreUtil.getDimensionID(playerBase.world),
+                                    GCCoreUtil.getDimensionID(playerBase.level()),
                                     *arrayOf<Any>(i, 0)
                                 ), playerBase
                             )
@@ -423,7 +429,7 @@ when (this.type) {
                         (GalaxySpace.packetPipeline)!!.sendTo(
                             GSPacketSimple(
                                 GSEnumSimplePacket.C_UPDATE_RESEARCH,
-                                GCCoreUtil.getDimensionID(playerBase.world),
+                                GCCoreUtil.getDimensionID(playerBase.level()),
                                 *arrayOf<Any>(id, count)
                             ), playerBase
                         )
@@ -434,21 +440,21 @@ when (this.type) {
             GSEnumSimplePacket.S_GET_CAGE_ENTITY -> {
                 val entityID: Int = this.data!!.get(0) as Int
 
-                val entity: Entity? = player!!.world.getEntityByID(entityID)
-                val copyEntity: Entity? = EntityList.createEntityFromNBT(entity!!.serializeNBT(), player.world)
+                val entity: Entity? = player!!.level().getEntityByID(entityID)
+                val copyEntity: Entity? = EntityList.createEntityFromNBT(entity!!.serializeNBT(), player.level())
 
-                if (!entity.isDead) entity.setDead()
+                if (!entity.isRemoved()) entity.setDead()
 
-                val stackM: ItemStack = player.getHeldItemMainhand()
-                val stackO: ItemStack = player.getHeldItemOffhand()
+                val stackM: ItemStack = player.getMainHandItem()
+                val stackO: ItemStack = player.getOffhandItem()
 
-                stackM.getTagCompound()!!.setBoolean("hasMob", true)
-                stackM.getTagCompound()!!.setTag("entityData", entity.serializeNBT())
+                stackM.getTagCompound()!!.putBoolean("hasMob", true)
+                stackM.getTagCompound()!!.put("entityData", entity.serializeNBT())
             }
 
             GSEnumSimplePacket.S_UPDATE_WOLF_INV -> {
                 val wolfID: Int = this.data!!.get(0) as Int
-                val wolf: EntityAstroWolf? = playerBase.world.getEntityByID(wolfID) as EntityAstroWolf?
+                val wolf: EntityAstroWolf? = playerBase.level().getEntityByID(wolfID) as EntityAstroWolf?
 
 
                 // get server wolf inventory and send to client
@@ -460,7 +466,7 @@ when (this.type) {
                     (GalaxySpace.packetPipeline)!!.sendTo(
                         GSPacketSimple(
                             GSEnumSimplePacket.C_UPDATE_WOLF_INV,
-                            GCCoreUtil.getDimensionID(playerBase.world),
+                            GCCoreUtil.getDimensionID(playerBase.level()),
                             *arrayOf<Any>(wolfID, wolfInvTag)
                         ), playerBase
                     )
@@ -477,7 +483,7 @@ when (this.type) {
                 val radius: Int = this.data!!.get(1) as Int
                 val strength: Float = this.data!!.get(2) as Float
 
-                tileEntity = pos.getTileEntity(playerBase.world)
+                tileEntity = pos.getTileEntity(playerBase.level())
                 if (tileEntity is TileEntityGravitationModule) {
                     tileEntity.setGravityRadius(radius)
                     tileEntity.setGravityStrength(strength)
@@ -487,7 +493,7 @@ when (this.type) {
             }
 
             GSEnumSimplePacket.S_ON_ADVANCED_GUI_CLICKED_INT -> {
-                val tile1: TileEntity? = player!!.world.getTileEntity(
+                val tile1: TileEntity? = player!!.level().getBlockEntity(
                     BlockPos(
                         (this.data!!.get(1) as kotlin.Int?)!!,
                         (this.data!!.get(2) as kotlin.Int?)!!,
@@ -506,14 +512,14 @@ when (this.type) {
             GSEnumSimplePacket.S_REVERSE_SEPATATOR -> {
                 val posSep: BlockVec3 = this.data!!.get(0) as BlockVec3
 
-                tileEntity = posSep.getTileEntity(playerBase.world)
+                tileEntity = posSep.getTileEntity(playerBase.level())
                 if (tileEntity is TileEntityLiquidSeparator) {
                     tileEntity.setReverse(!tileEntity.getReverse())
                     tileEntity.markDirty()
-                    playerBase.world.notifyBlockUpdate(
+                    playerBase.level().sendBlockUpdated(
                         tileEntity.getPos(),
-                        tileEntity.getBlockType().getDefaultState(),
-                        tileEntity.getBlockType().getDefaultState(),
+                        tileEntity.getBlockType().defaultBlockState(),
+                        tileEntity.getBlockType().defaultBlockState(),
                         0
                     )
                 }
@@ -525,9 +531,9 @@ when (this.type) {
                 var turn: Boolean = false
                 consumed = false
 
-                tileEntity = position.getTileEntity(playerBase.world)
+                tileEntity = position.getTileEntity(playerBase.level())
                 if (tileEntity is TileEntityModificationTable) {
-                    val stack: ItemStack = tileEntity.getStackInSlot(0)
+                    val stack: ItemStack = tileEntity.getItem(0)
                     var check: Boolean = true
                     var get_module: ItemModule? = null
 
@@ -535,7 +541,7 @@ when (this.type) {
                         for (module in ((stack.getItem() as IModificationItem).getAvailableModules())!!) {
                             if ((module)!!.getName() == tag) {
                                 /*for(ItemModule forb_module : module.getForrbidenModules()) {
-	        					if(stack.getTagCompound().hasKey(forb_module.getName())) check = false;
+	        					if(stack.getTagCompound().containsTag(forb_module.getName())) check = false;
 	        				}*/
                                 get_module = module
                                 break
@@ -545,37 +551,37 @@ when (this.type) {
 
                     if (get_module != null) {
                         if (get_module.getForrbidenModules() != null) for (forb_module in (get_module.getForrbidenModules())!!) {
-                            if (stack.getTagCompound()!!.hasKey((forb_module)!!.getName())) {
+                            if (stack.getTagCompound()!!.containsTag((forb_module)!!.getName())) {
                                 check = false
                                 break
                             }
                         }
 
-                        if (!stack.getTagCompound()!!.hasKey(tag) || !stack.getTagCompound()!!.getBoolean(tag)) turn =
+                        if (!stack.getTagCompound()!!.containsTag(tag) || !stack.getTagCompound()!!.getBoolean(tag)) turn =
                             true
-                        else if (stack.getTagCompound()!!.hasKey(tag)) turn = false
+                        else if (stack.getTagCompound()!!.containsTag(tag)) turn = false
 
                         if (turn) {
-                            if (check && stack.getTagCompound()!!.getInteger(ItemSpaceSuit.mod_count) > 0) {
+                            if (check && stack.getTagCompound()!!.getIntOr(ItemSpaceSuit.mod_count, 0) > 0) {
                                 for (con: ItemStack? in (get_module.getItemsForModule())!!) {
                                     consumed = GSEventHandler.consumeItemStack(playerBase.inventory, (con)!!)
                                 }
                                 if (consumed || playerBase.capabilities.isCreativeMode) {
                                     val copied: ItemStack = stack
 
-                                    copied.getTagCompound()!!.setBoolean(tag, true)
-                                    copied.getTagCompound()!!.setInteger(
+                                    copied.getTagCompound()!!.putBoolean(tag, true)
+                                    copied.getTagCompound()!!.putInt(
                                         ItemSpaceSuit.mod_count,
-                                        copied.getTagCompound()!!.getInteger(ItemSpaceSuit.mod_count) - 1
+                                        copied.getTagCompound()!!.getIntOr(ItemSpaceSuit.mod_count, 0) - 1
                                     )
-                                    tileEntity.setInventorySlotContents(0, copied)
+                                    tileEntity.setItem(0, copied)
                                     tileEntity.markDirty()
-                                    playerBase.world.scheduleUpdate(tileEntity.getPos(), tileEntity.getBlockType(), 0)
+                                    playerBase.level().scheduleUpdate(tileEntity.getPos(), tileEntity.getBlockType(), 0)
                                 }
                             }
                         } else {
                             if (!playerBase.capabilities.isCreativeMode) for (con in (get_module.getItemsForModule())!!) {
-                                if ((con)!!.getItemDamage() == OreDictionary.WILDCARD_VALUE) playerBase.addItemStackToInventory(
+                                if ((con)!!.legacyItemValue == OreDictionary.WILDCARD_VALUE) playerBase.addItemStackToInventory(
                                     ItemStack((con)!!.getItem(), 1, (con)!!.getMaxDamage())
                                 )
                                 else playerBase.addItemStackToInventory(con)
@@ -583,13 +589,13 @@ when (this.type) {
 
                             val copied: ItemStack = stack
                             copied.getTagCompound()!!.removeTag(tag)
-                            copied.getTagCompound()!!.setInteger(
+                            copied.getTagCompound()!!.putInt(
                                 ItemSpaceSuit.mod_count,
-                                copied.getTagCompound()!!.getInteger(ItemSpaceSuit.mod_count) + 1
+                                copied.getTagCompound()!!.getIntOr(ItemSpaceSuit.mod_count, 0) + 1
                             )
-                            tileEntity.setInventorySlotContents(0, copied)
+                            tileEntity.setItem(0, copied)
                             tileEntity.markDirty()
-                            playerBase.world.scheduleUpdate(tileEntity.getPos(), tileEntity.getBlockType(), 0)
+                            playerBase.level().scheduleUpdate(tileEntity.getPos(), tileEntity.getBlockType(), 0)
                         }
                     }
                 }
@@ -599,11 +605,11 @@ when (this.type) {
                 val armor_slot: Int = this.data!!.get(0) as Int
                 tag = this.data!!.get(1) as String
 
-                val armor: ItemStack = playerBase.inventory.armorInventory.get(armor_slot)
+                val armor: ItemStack = playerBase.inventory.armorItems.get(armor_slot)
                 if (armor != ItemStack.EMPTY && armor.getItem() is ItemSpaceSuit) {
                     val copied: ItemStack = armor
-                    copied.getTagCompound()!!.setBoolean(tag, !copied.getTagCompound()!!.getBoolean(tag))
-                    playerBase.inventory.armorInventory.set(armor_slot, copied)
+                    copied.getTagCompound()!!.putBoolean(tag, !copied.getTagCompound()!!.getBoolean(tag))
+                    playerBase.inventory.armorItems.set(armor_slot, copied)
 
                     //GalaxySpace.debug(copied.getTagCompound().toString());
                 }
@@ -629,7 +635,7 @@ when (this.type) {
         this.encodeInto(var1)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun processPacket(var1: INetHandler) {
         if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
             this.handleClientSide(FMLClientHandler.instance().getClientPlayerEntity())

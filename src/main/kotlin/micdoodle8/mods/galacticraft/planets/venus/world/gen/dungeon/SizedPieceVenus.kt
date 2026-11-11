@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.planets.venus.world.gen.dungeon
 
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraft.world.gen.structure.template.TemplateManager
 
 abstract class SizedPieceVenus : DirectionalPieceVenus {
@@ -31,17 +31,17 @@ abstract class SizedPieceVenus : DirectionalPieceVenus {
     override fun writeStructureToNBT(tagCompound: NBTTagCompound) {
         super.writeStructureToNBT(tagCompound)
 
-        tagCompound.setInteger("sizeX", this.sizeX)
-        tagCompound.setInteger("sizeY", this.sizeY)
-        tagCompound.setInteger("sizeZ", this.sizeZ)
+        tagCompound.putInt("sizeX", this.sizeX)
+        tagCompound.putInt("sizeY", this.sizeY)
+        tagCompound.putInt("sizeZ", this.sizeZ)
     }
 
     override fun readStructureFromNBT(tagCompound: NBTTagCompound, manager: TemplateManager) {
         super.readStructureFromNBT(tagCompound, manager)
 
-        this.sizeX = tagCompound.getInteger("sizeX")
-        this.sizeY = tagCompound.getInteger("sizeY")
-        this.sizeZ = tagCompound.getInteger("sizeZ")
+        this.sizeX = tagCompound.getIntOr("sizeX", 0)
+        this.sizeY = tagCompound.getIntOr("sizeY", 0)
+        this.sizeZ = tagCompound.getIntOr("sizeZ", 0)
     }
 
     fun getSizeX(): Int {

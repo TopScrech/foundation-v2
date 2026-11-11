@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.moons.io.dimension
 
+import foundation.block.getStateFromMeta
+
 import asmodeuscore.core.astronomy.dimension.world.gen.ChunkProviderSpaceLakes
 import galaxyspace.core.GSBlocks
 import galaxyspace.systems.SolarSystem.moons.io.blocks.IoBlocks.EnumIoBlocks
@@ -22,11 +24,11 @@ import asmodeuscore.core.astronomy.dimension.world.gen.MapGenCaves
 import asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart.DungeonConfiguration
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 
 
@@ -37,12 +39,12 @@ open class ChunkProviderIo constructor(par1World: World?, seed: Long, mapFeature
     private val caveGenerator =
         MapGenCaves(GSBlocks.IO_BLOCKS.getStateFromMeta(0), GSBlocks.IO_BLOCKS.getStateFromMeta(1))
 
-    private val top: IBlockState = GSBlocks.IO_BLOCKS.getDefaultState()
-        .withProperty(IoBlocks.BASIC_TYPE, EnumIoBlocks.IO_DUNGEON_TOP)
-    private val floor: IBlockState = GSBlocks.IO_BLOCKS.getDefaultState()
-        .withProperty(IoBlocks.BASIC_TYPE, EnumIoBlocks.IO_DUNGEON_FLOOR)
-    private val bricks: IBlockState = GSBlocks.IO_BLOCKS.getDefaultState()
-        .withProperty(IoBlocks.BASIC_TYPE, EnumIoBlocks.IO_DUNGEON_BRICKS)
+    private val top: IBlockState = GSBlocks.IO_BLOCKS.defaultBlockState()
+        .setValue(IoBlocks.BASIC_TYPE, EnumIoBlocks.IO_DUNGEON_TOP)
+    private val floor: IBlockState = GSBlocks.IO_BLOCKS.defaultBlockState()
+        .setValue(IoBlocks.BASIC_TYPE, EnumIoBlocks.IO_DUNGEON_FLOOR)
+    private val bricks: IBlockState = GSBlocks.IO_BLOCKS.defaultBlockState()
+        .setValue(IoBlocks.BASIC_TYPE, EnumIoBlocks.IO_DUNGEON_BRICKS)
 
     private val dungeonGenerator = MapGenDungeonIo(
         DungeonConfiguration(

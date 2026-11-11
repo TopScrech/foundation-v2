@@ -8,9 +8,9 @@ import micdoodle8.mods.galacticraft.core.util.GCLog
 import net.minecraft.client.gui.GuiChat
 import net.minecraft.client.settings.KeyBinding
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import org.lwjgl.input.Keyboard
 import org.lwjgl.input.Mouse
 

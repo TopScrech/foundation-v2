@@ -5,7 +5,7 @@ import galaxyspace.core.client.render.entity.RenderAstroWolf
 import galaxyspace.core.prefab.entities.EntityAstroWolf
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.layers.LayerRenderer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class LayerAstroWolfCollar constructor(private val wolfRenderer: RenderAstroWolf) :
     LayerRenderer<EntityAstroWolf> {
@@ -33,6 +33,6 @@ open class LayerAstroWolfCollar constructor(private val wolfRenderer: RenderAstr
     }
 
     companion object {
-        private val WOLF_COLLAR = ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/model/astro_wolf_collar.png")
+        private val WOLF_COLLAR = ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/model/astro_wolf_collar.png")
     }
 }

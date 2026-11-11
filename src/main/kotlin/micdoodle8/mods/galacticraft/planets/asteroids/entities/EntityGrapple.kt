@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.entities
 
+import foundation.block.getMetaFromState
+
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.api.world.IZeroGDimension
 import micdoodle8.mods.galacticraft.core.Constants
@@ -7,30 +11,30 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStatsClient
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.asteroids.network.PacketSimpleAsteroids
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.IProjectile
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Items
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.Items
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.atan2
 
 open class EntityGrapple : Entity, IProjectile {
@@ -72,11 +76,11 @@ open class EntityGrapple : Entity, IProjectile {
         if (shootingEntity != null) {
             this.canBePickedUp = 1
             this.setLocationAndAngles(
-                shootingEntity.posX,
-                shootingEntity.posY + shootingEntity.getEyeHeight(),
-                shootingEntity.posZ,
-                shootingEntity.rotationYaw,
-                shootingEntity.rotationPitch
+                shootingEntity.x,
+                shootingEntity.y + shootingEntity.getEyeHeight(),
+                shootingEntity.z,
+                shootingEntity.yRot,
+                shootingEntity.xRot
             )
         }
 
@@ -138,7 +142,7 @@ open class EntityGrapple : Entity, IProjectile {
         this.ticksInGround = 0
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setPositionAndRotationDirect(
         x: kotlin.Double,
         y: kotlin.Double,
@@ -156,7 +160,7 @@ open class EntityGrapple : Entity, IProjectile {
         super.setPosition(x, y, z)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setVelocity(par1: kotlin.Double, par3: kotlin.Double, par5: kotlin.Double) {
         this.motionX = par1
         this.motionY = par3
@@ -188,7 +192,7 @@ open class EntityGrapple : Entity, IProjectile {
                 if (shootingEntity != null) {
                     val deltaPosition: kotlin.Double = this.getDistanceSq(shootingEntity)
 
-                    val mot: Vector3 = Vector3(shootingEntity.motionX, shootingEntity.motionY, shootingEntity.motionZ)
+                    val mot: Vector3 = Vector3(shootingEntity.deltaMovement.x, shootingEntity.deltaMovement.y, shootingEntity.deltaMovement.z)
 
                     if (mot.getMagnitudeSquared() < 0.01 && this.pullingPlayer) {
                         if (deltaPosition < 10) {
@@ -206,11 +210,11 @@ open class EntityGrapple : Entity, IProjectile {
                 val shootingEntity: EntityPlayer? = this.getShootingEntity()
                 if (shootingEntity != null) {
                     shootingEntity.setVelocity(
-                        (this.posX - shootingEntity.posX) / 12.0f,
-                        (this.posY - shootingEntity.posY) / 12.0f,
-                        (this.posZ - shootingEntity.posZ) / 12.0f
+                        (this.posX - shootingEntity.x) / 12.0f,
+                        (this.posY - shootingEntity.y) / 12.0f,
+                        (this.posZ - shootingEntity.z) / 12.0f
                     )
-                    if (shootingEntity.world.isRemote && shootingEntity.world.provider is IZeroGDimension) {
+                    if (shootingEntity.level().isRemote && shootingEntity.level().provider is IZeroGDimension) {
                         val stats: GCPlayerStatsClient? = GCPlayerStatsClient.get(shootingEntity)
                         if (stats != null) {
                             (stats.getFreefallHandler())!!.updateFreefall(shootingEntity)
@@ -253,9 +257,9 @@ open class EntityGrapple : Entity, IProjectile {
 
                 if (block === this.hitBlock && j == this.inData) {
                     if (this.shootingEntity != null) {
-                        this.shootingEntity!!.motionX = (this.posX - this.shootingEntity!!.posX) / 16.0f
-                        this.shootingEntity!!.motionY = (this.posY - this.shootingEntity!!.posY) / 16.0f
-                        this.shootingEntity!!.motionZ = (this.posZ - this.shootingEntity!!.posZ) / 16.0f
+                        this.shootingEntity!!.motionX = (this.posX - this.shootingEntity!!.x) / 16.0f
+                        this.shootingEntity!!.motionY = (this.posY - this.shootingEntity!!.y) / 16.0f
+                        this.shootingEntity!!.motionZ = (this.posZ - this.shootingEntity!!.z) / 16.0f
                         if (this.shootingEntity is EntityPlayerMP) (GalacticraftCore.handler)!!.preventFlyingKicks(this.shootingEntity as EntityPlayerMP)
                     }
 
@@ -314,7 +318,7 @@ open class EntityGrapple : Entity, IProjectile {
                 val entity1: Entity = list.get(i) as Entity
 
                 if (entity1.canBeCollidedWith() && (entity1 !== this.shootingEntity || this.ticksInAir >= 5)) {
-                    val axisalignedbb1: AxisAlignedBB = entity1.getEntityBoundingBox().grow(border, border, border)
+                    val axisalignedbb1: AxisAlignedBB = entity1.getBoundingBox().grow(border, border, border)
                     val movingobjectposition1: RayTraceResult? = axisalignedbb1.calculateIntercept(vec31, vec3)
 
                     if (movingobjectposition1 != null) {
@@ -443,37 +447,37 @@ open class EntityGrapple : Entity, IProjectile {
 
     public override fun writeEntityToNBT(par1NBTTagCompound: NBTTagCompound) {
         if (this.hitVec != null) {
-            par1NBTTagCompound.setShort("xTile", this.hitVec!!.getX().toShort())
-            par1NBTTagCompound.setShort("yTile", this.hitVec!!.getY().toShort())
-            par1NBTTagCompound.setShort("zTile", this.hitVec!!.getZ().toShort())
+            par1NBTTagCompound.putShort("xTile", this.hitVec!!.getX().toShort())
+            par1NBTTagCompound.putShort("yTile", this.hitVec!!.getY().toShort())
+            par1NBTTagCompound.putShort("zTile", this.hitVec!!.getZ().toShort())
         }
-        par1NBTTagCompound.setShort("life", this.ticksInGround.toShort())
-        par1NBTTagCompound.setByte("inTile", Block.getIdFromBlock(this.hitBlock).toByte())
-        par1NBTTagCompound.setByte("inData", this.inData.toByte())
-        par1NBTTagCompound.setByte("shake", this.arrowShake.toByte())
-        par1NBTTagCompound.setByte("inGround", (if (this.inGround) 1 else 0).toByte())
-        par1NBTTagCompound.setByte("pickup", this.canBePickedUp.toByte())
+        par1NBTTagCompound.putShort("life", this.ticksInGround.toShort())
+        par1NBTTagCompound.putByte("inTile", Block.getIdFromBlock(this.hitBlock).toByte())
+        par1NBTTagCompound.putByte("inData", this.inData.toByte())
+        par1NBTTagCompound.putByte("shake", this.arrowShake.toByte())
+        par1NBTTagCompound.putByte("inGround", (if (this.inGround) 1 else 0).toByte())
+        par1NBTTagCompound.putByte("pickup", this.canBePickedUp.toByte())
     }
 
     public override fun readEntityFromNBT(par1NBTTagCompound: NBTTagCompound) {
-        if (par1NBTTagCompound.hasKey("xTile")) {
+        if (par1NBTTagCompound.containsTag("xTile")) {
             this.hitVec = BlockPos(
-                par1NBTTagCompound.getShort("xTile").toInt(),
-                par1NBTTagCompound.getShort("yTile").toInt(),
-                par1NBTTagCompound.getShort("zTile").toInt()
+                par1NBTTagCompound.getShortOr("xTile", 0).toInt(),
+                par1NBTTagCompound.getShortOr("yTile", 0).toInt(),
+                par1NBTTagCompound.getShortOr("zTile", 0).toInt()
             )
         }
 
-        this.ticksInGround = par1NBTTagCompound.getShort("life").toInt()
-        this.hitBlock = Block.getBlockById(par1NBTTagCompound.getByte("inTile").toInt() and 255)
-        this.inData = par1NBTTagCompound.getByte("inData").toInt() and 255
-        this.arrowShake = par1NBTTagCompound.getByte("shake").toInt() and 255
-        this.inGround = par1NBTTagCompound.getByte("inGround").toInt() == 1
+        this.ticksInGround = par1NBTTagCompound.getShortOr("life", 0).toInt()
+        this.hitBlock = Block.getBlockById(par1NBTTagCompound.getByteOr("inTile", 0).toInt() and 255)
+        this.inData = par1NBTTagCompound.getByteOr("inData", 0).toInt() and 255
+        this.arrowShake = par1NBTTagCompound.getByteOr("shake", 0).toInt() and 255
+        this.inGround = par1NBTTagCompound.getByteOr("inGround", 0).toInt() == 1
 
-        if (par1NBTTagCompound.hasKey("pickup", 99)) {
-            this.canBePickedUp = par1NBTTagCompound.getByte("pickup").toInt()
-        } else if (par1NBTTagCompound.hasKey("player", 99)) {
-            this.canBePickedUp = if (par1NBTTagCompound.getBoolean("player")) 1 else 0
+        if (par1NBTTagCompound.containsTag("pickup", 99)) {
+            this.canBePickedUp = par1NBTTagCompound.getByteOr("pickup", 0).toInt()
+        } else if (par1NBTTagCompound.containsTag("player", 99)) {
+            this.canBePickedUp = if (par1NBTTagCompound.getBooleanOr("player", false)) 1 else 0
         }
     }
 
@@ -482,7 +486,7 @@ open class EntityGrapple : Entity, IProjectile {
             var flag: Boolean =
                 this.canBePickedUp == 1 || this.canBePickedUp == 2 && par1EntityPlayer.capabilities.isCreativeMode
 
-            if (this.canBePickedUp == 1 && !par1EntityPlayer.inventory.addItemStackToInventory(
+            if (this.canBePickedUp == 1 && !par1EntityPlayer.inventory.add(
                     ItemStack(
                         Items.STRING,
                         1
@@ -510,7 +514,7 @@ open class EntityGrapple : Entity, IProjectile {
 
 
     //    @Override
-    //    @SideOnly(Side.CLIENT)
+    //    @OnlyIn(Dist.CLIENT)
     //    public float getShadowSize()
     //    {
     //        return 0.0F;
@@ -521,7 +525,7 @@ open class EntityGrapple : Entity, IProjectile {
 
     private fun updateShootingEntity() {
         if (this.shootingEntity != null) {
-            this.dataManager.set<Int>(PULLING_ENTITY_ID, this.shootingEntity!!.getEntityId())
+            this.dataManager.set<Int>(PULLING_ENTITY_ID, this.shootingEntity!!.getId())
         }
     }
 

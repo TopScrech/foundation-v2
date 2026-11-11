@@ -6,24 +6,24 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import net.minecraft.block.BlockAir
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityLiving
-import net.minecraft.entity.MoverType
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.MoverType
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
-import net.minecraft.util.DamageSource
+import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.util.EntityDamageSourceIndirect
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraft.util.text.translation.I18n
-import net.minecraft.world.Explosion
-import net.minecraft.world.World
+import net.minecraft.world.level.Explosion
+import net.minecraft.world.level.Level as World
 
 open class EntityMeteor constructor(world: World) : Entity(world) {
     @JvmField
@@ -91,7 +91,7 @@ open class EntityMeteor constructor(world: World) : Entity(world) {
             val var9: Entity = var8.next() as Entity
 
             if (var9.canBeCollidedWith() && !var9.isEntityEqual(this.shootingEntity)) {
-                val var11: AxisAlignedBB = var9.getEntityBoundingBox().grow(var10, var10, var10)
+                val var11: AxisAlignedBB = var9.getBoundingBox().grow(var10, var10, var10)
                 val var12: RayTraceResult? = var11.calculateIntercept(var15, var2)
 
                 if (var12 != null) {
@@ -162,9 +162,9 @@ open class EntityMeteor constructor(world: World) : Entity(world) {
                         pos = this.world.getTopSolidOrLiquidBlock(this.getPosition())
                     }
                 }
-                val above: BlockPos = pos.up()
+                val above: BlockPos = pos.above()
                 if (this.world.getBlockState(above).getBlock() is BlockAir) {
-                    this.world.setBlockState(above, (GCBlocks.fallenMeteor)!!.getDefaultState(), 3)
+                    this.world.setBlock(above, (GCBlocks.fallenMeteor)!!.defaultBlockState(), 3)
                 }
 
                 if (movingObjPos.entityHit != null) {

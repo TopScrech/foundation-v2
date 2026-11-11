@@ -1,17 +1,20 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import foundation.persistence.containsTag
+import foundation.persistence.listOfType
+
 import micdoodle8.mods.galacticraft.core.tile.IMachineSidesProperties.MachineSidesModel
 
 import micdoodle8.mods.galacticraft.api.tile.ITileClientUpdates
-import net.minecraft.block.properties.PropertyEnum
-import net.minecraft.block.state.IBlockState
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Arrays
 
 /**
@@ -338,8 +341,8 @@ interface IMachineSides : ITileClientUpdates {
             else -> {}
         }
 
-        if (te.getWorld().isRemote) {
-            te.getWorld().markBlockRangeForRenderUpdate(te.getPos(), te.getPos())
+        if (te.getLevel().isClientSide) {
+            te.getLevel().markBlockRangeForRenderUpdate(te.getBlockPos(), te.getBlockPos())
         } else {
             this.updateAllInDimension()
         }
@@ -410,18 +413,18 @@ interface IMachineSides : ITileClientUpdates {
         for (msp: MachineSidePack in this.getAllMachineSides()!!) {
             val tag: NBTTagCompound = NBTTagCompound()
             msp.writeToNBT(tag)
-            tagList.appendTag(tag)
+            tagList.add(tag)
         }
-        par1nbtTagCompound.setTag("macsides", tagList)
+        par1nbtTagCompound.put("macsides", tagList)
     }
 
 
     fun readMachineSidesFromNBT(par1nbtTagCompound: NBTTagCompound) {
-        val tagList: NBTTagList = par1nbtTagCompound.getTagList("macsides", 10)
+        val tagList: NBTTagList = par1nbtTagCompound.listOfType("macsides", 10)
         val msps: Array<MachineSidePack> = this.getAllMachineSides()!!
-        if (tagList.tagCount() == msps.size) {
-            for (i: Int in 0..<tagList.tagCount()) {
-                msps[i].readFromNBT(tagList.getCompoundTagAt(i))
+        if (tagList.size == msps.size) {
+            for (i: Int in 0..<tagList.size) {
+                msps[i].readFromNBT(tagList.getCompoundOrEmpty(i))
             }
         }
     }
@@ -433,14 +436,14 @@ interface IMachineSides : ITileClientUpdates {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun updateClient(data: MutableList<Any?>?) {
         val msps: Array<MachineSidePack> = this.getAllMachineSides()!!
         for (i: Int in msps.indices) {
             msps[i].set(((data)!!.get(i + 1) as kotlin.Int?)!!)
         }
-        val pos: BlockPos = (this as TileEntity).getPos()
-        (this as TileEntity).getWorld().markBlockRangeForRenderUpdate(pos, pos)
+        val pos: BlockPos = (this as TileEntity).getBlockPos()
+        (this as TileEntity).getLevel().markBlockRangeForRenderUpdate(pos, pos)
     }
 
     /**
@@ -460,18 +463,18 @@ interface IMachineSides : ITileClientUpdates {
         }
 
         open fun writeToNBT(tag: NBTTagCompound) {
-            tag.setInteger("ts", this.theSide.ordinal)
-            tag.setInteger("cf", this.currentFace!!.ordinal)
+            tag.putInt("ts", this.theSide.ordinal)
+            tag.putInt("cf", this.currentFace!!.ordinal)
         }
 
         open fun readFromNBT(tag: NBTTagCompound) {
             var ts: Int = -1
             var cf: Int = -1
-            if (tag.hasKey("ts")) {
-                ts = tag.getInteger("ts")
+            if (tag.containsTag("ts")) {
+                ts = tag.getIntOr("ts", 0)
             }
-            if (tag.hasKey("cf")) {
-                cf = tag.getInteger("cf")
+            if (tag.containsTag("cf")) {
+                cf = tag.getIntOr("cf", 0)
             }
             if (ts == theSide.ordinal && cf >= 0 && cf < Face.entries.size) {
                 this.currentFace = Face.entries[cf]
@@ -519,11 +522,11 @@ interface IMachineSides : ITileClientUpdates {
         ): IBlockState {
             if (tile is IMachineSides) {
                 val tileSides: IMachineSides = tile as IMachineSides
-                return state.withProperty(
+                return state.setValue(
                     key,
                     (tileSides.buildBlockStateProperty())!!
                 )
-            } else return state.withProperty(
+            } else return state.setValue(
                 key,
                 renderType.getDefault()
             )

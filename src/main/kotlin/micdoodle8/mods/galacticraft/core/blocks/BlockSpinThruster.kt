@@ -1,43 +1,49 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.dimension.WorldProviderSpaceStation
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.tile.TileEntityThruster
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyDirection
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class BlockSpinThruster constructor(assetName: String?) : BlockAdvanced(Material.CIRCUITS), IShiftDescription,
-    ITileEntityProvider, ISortableBlock {
+    ITileEntityProvider, ISortableBlock, LegacyBlockMetadata {
     init {
         this.setHardness(0.1f)
         this.setSoundType(SoundType.METAL)
         this.setTranslationKey(assetName)
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH)
+            this.blockState.getBaseState().setValue(FACING, EnumFacing.NORTH)
         )
     }
 
@@ -92,14 +98,14 @@ open class BlockSpinThruster constructor(assetName: String?) : BlockAdvanced(Mat
         hand: EnumHand
     ): IBlockState {
         if (facing.getAxis().isHorizontal() && this.canBlockStay(world, pos, facing)) {
-            return this.getDefaultState().withProperty(FACING, facing)
+            return this.defaultBlockState().setValue(FACING, facing)
         } else {
             for (enumfacing: EnumFacing in EnumFacing.Plane.HORIZONTAL) {
                 if (this.canBlockStay(world, pos, enumfacing)) {
-                    return this.getDefaultState().withProperty(FACING, enumfacing)
+                    return this.defaultBlockState().setValue(FACING, enumfacing)
                 }
             }
-            return this.getDefaultState()
+            return this.defaultBlockState()
         }
     }
 
@@ -121,7 +127,7 @@ open class BlockSpinThruster constructor(assetName: String?) : BlockAdvanced(Mat
             else -> return
         }
 
-        if (!worldIn.isRemote) {
+        if (!worldIn.isClientSide) {
             if (worldIn.provider is WorldProviderSpaceStation) {
                 (worldIn.provider as WorldProviderSpaceStation).getSpinManager().refresh(baseBlock, true)
             }
@@ -133,9 +139,9 @@ open class BlockSpinThruster constructor(assetName: String?) : BlockAdvanced(Mat
 
         if (!this.canBlockStay(worldIn, pos, enumfacing)) {
             this.dropBlockAsItem(worldIn, pos, state, 0)
-            worldIn.setBlockToAir(pos)
+            worldIn.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
         }
-        if (!worldIn.isRemote) {
+        if (!worldIn.isClientSide) {
             if (worldIn.provider is WorldProviderSpaceStation) {
                 (worldIn.provider as WorldProviderSpaceStation).getSpinManager().refresh(pos, true)
             }
@@ -171,7 +177,7 @@ open class BlockSpinThruster constructor(assetName: String?) : BlockAdvanced(Mat
     //
     //        return super.collisionRayTrace(worldIn, pos, start, end);
     //    }
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun randomDisplayTick(stateIn: IBlockState, worldIn: World, pos: BlockPos, rand: Random) {
         //TODO this is torch code as a placeholder, still need to adjust positioning and particle type
         //Also make small thrust sounds
@@ -244,7 +250,7 @@ open class BlockSpinThruster constructor(assetName: String?) : BlockAdvanced(Mat
         var nextFacing: EnumFacing = currentFacing.rotateY()
         while (true) {
             if (this.canBlockStay((world)!!, (pos)!!.offset(nextFacing.getOpposite()), nextFacing)) {
-                (world)!!.setBlockState(pos, this.getStateFromMeta(nextFacing.getHorizontalIndex()), 2)
+                (world)!!.setBlock(pos, this.getStateFromMeta(nextFacing.getHorizontalIndex()), 2)
                 break
             }
 
@@ -254,7 +260,7 @@ open class BlockSpinThruster constructor(assetName: String?) : BlockAdvanced(Mat
             nextFacing = nextFacing.rotateY()
         }
 
-        if ((world)!!.provider is WorldProviderSpaceStation && !(world)!!.isRemote) {
+        if ((world)!!.provider is WorldProviderSpaceStation && !(world)!!.isClientSide) {
             val worldOrbital: WorldProviderSpaceStation = (world)!!.provider as WorldProviderSpaceStation
             worldOrbital.getSpinManager().refresh(pos, true)
         }
@@ -266,7 +272,7 @@ open class BlockSpinThruster constructor(assetName: String?) : BlockAdvanced(Mat
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        if (!worldIn.isRemote) {
+        if (!worldIn.isClientSide) {
             val facing: Int = this.getMetaFromState(state) and 8
             if (worldIn.provider is WorldProviderSpaceStation) {
                 val worldOrbital: WorldProviderSpaceStation = worldIn.provider as WorldProviderSpaceStation
@@ -290,7 +296,7 @@ open class BlockSpinThruster constructor(assetName: String?) : BlockAdvanced(Mat
 
     override fun getStateFromMeta(meta: Int): IBlockState {
         val enumfacing: EnumFacing = EnumFacing.byHorizontalIndex(meta)
-        return this.getDefaultState().withProperty(FACING, enumfacing)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -307,7 +313,7 @@ open class BlockSpinThruster constructor(assetName: String?) : BlockAdvanced(Mat
 
     companion object {
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL)
+        val FACING: EnumProperty<Direction> = BlockStateProperties.HORIZONTAL_FACING
 
         @JvmField
         protected val NORTH_AABB: AxisAlignedBB = AxisAlignedBB(0.2, 0.2, 0.4, 0.8, 0.8, 1.0)

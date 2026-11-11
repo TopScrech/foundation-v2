@@ -12,15 +12,14 @@ import net.minecraft.client.renderer.culling.ICamera
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.renderer.texture.TextureMap
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.MathHelper
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.util.Mth as MathHelper
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderTier2Rocket constructor(manager: RenderManager) : Render<EntityTier2Rocket>(manager) {
     private var rocketModel: ItemModelRocketT2? = null
 
@@ -33,7 +32,7 @@ open class RenderTier2Rocket constructor(manager: RenderManager) : Render<Entity
             val modelResourceLocation: ModelResourceLocation =
                 ModelResourceLocation(GalacticraftPlanets.TEXTURE_PREFIX + "rocket_t2", "inventory")
             this.rocketModel =
-                FMLClientHandler.instance().getClient().getRenderItem().getItemModelMesher().getModelManager()
+                Minecraft.getInstance().getRenderItem().getItemModelMesher().getModelManager()
                     .getModel(modelResourceLocation) as ItemModelRocketT2
         }
     }

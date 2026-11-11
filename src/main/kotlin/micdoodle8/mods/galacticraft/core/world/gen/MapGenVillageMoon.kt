@@ -2,9 +2,9 @@ package micdoodle8.mods.galacticraft.core.world.gen
 
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeAdaptive
 import micdoodle8.mods.galacticraft.core.util.GCLog
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.gen.structure.MapGenStructure
 import net.minecraft.world.gen.structure.MapGenStructureIO
 import net.minecraft.world.gen.structure.StructureStart

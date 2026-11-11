@@ -1,18 +1,26 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.world.gen.base
 
+import foundation.block.LegacyVanillaBlockStates
+import foundation.block.LegacyVanillaBlockIds
+
+import foundation.block.getStateFromMeta
+
+import foundation.persistence.containsTag
+import foundation.persistence.listOfType
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.planets.asteroids.blocks.AsteroidBlocks
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.template.TemplateManager
 import java.lang.Exception
 import java.util.ArrayList
@@ -77,7 +85,7 @@ open class BaseDeck : SizedPiece {
         var xMin: Int = blockPosX - this.sizeX / 2
         var zMin: Int = blockPosZ - this.sizeZ / 2
         this.boundingBox =
-            StructureBoundingBox(xMin, blockPosY, zMin, xMin + this.sizeX, blockPosY + this.sizeY, zMin + this.sizeZ)
+            BoundingBox(xMin, blockPosY, zMin, xMin + this.sizeX, blockPosY + this.sizeY, zMin + this.sizeZ)
         if (this.roomsOnSide <= 1) {
             largeRoomPosA = 0
             largeRoomPosB = 2
@@ -120,7 +128,7 @@ open class BaseDeck : SizedPiece {
                     this.sizeX++
                 }
             }
-            this.boundingBox = StructureBoundingBox(
+            this.boundingBox = BoundingBox(
                 xMin,
                 blockPosY,
                 zMin,
@@ -181,22 +189,22 @@ open class BaseDeck : SizedPiece {
         super.writeStructureToNBT(tagCompound)
 
         val details: Int = this.deckTier + (this.largeRoomPosA shl 4) + (this.largeRoomPosB shl 8)
-        tagCompound.setInteger("dD", details)
+        tagCompound.putInt("dD", details)
         if (this.otherDecks != null) {
             val tagList: NBTTagList = NBTTagList()
             for (deck: BaseDeck in (this.otherDecks)!!) {
                 val tag1: NBTTagCompound = NBTTagCompound()
                 deck.writeStructureToNBT(tag1)
-                tagList.appendTag(tag1)
+                tagList.add(tag1)
             }
-            tagCompound.setTag("oD", tagList)
+            tagCompound.put("oD", tagList)
         }
     }
 
     override fun readStructureFromNBT(tagCompound: NBTTagCompound, manager: TemplateManager) {
         super.readStructureFromNBT(tagCompound, manager)
         try {
-            val details: Int = tagCompound.getInteger("dD")
+            val details: Int = tagCompound.getIntOr("dD", 0)
             this.deckTier = details and 15
             this.largeRoomPosB = details shr 8
             this.largeRoomPosA = (details shr 4) and 15
@@ -204,11 +212,11 @@ open class BaseDeck : SizedPiece {
             this.roomDepth =
                 (configuration)!!.getRoomDepth() + (if (this.deckTier == 0) 1 else 0) - (if ((this.deckTier and 4) == 4) 3 else 0)
 
-            if (tagCompound.hasKey("oD")) {
-                val tagList: NBTTagList = tagCompound.getTagList("oD", 10)
+            if (tagCompound.containsTag("oD")) {
+                val tagList: NBTTagList = tagCompound.listOfType("oD", 10)
                 this.otherDecks = ArrayList<BaseDeck>()
-                for (i: Int in 0..<tagList.tagCount()) {
-                    val tagAt: NBTTagCompound = tagList.getCompoundTagAt(i)
+                for (i: Int in 0..<tagList.size) {
+                    val tagAt: NBTTagCompound = tagList.getCompoundOrEmpty(i)
                     val deck: BaseDeck = BaseDeck()
                     deck.readStructureFromNBT(tagAt, manager)
                     this.otherDecks!!.add(deck)
@@ -220,12 +228,12 @@ open class BaseDeck : SizedPiece {
         }
     }
 
-    override fun addComponentParts(worldIn: World, randomIn: Random, chunkBounds: StructureBoundingBox): Boolean {
+    override fun addComponentParts(worldIn: World, randomIn: Random, chunkBounds: BoundingBox): Boolean {
         var block1: IBlockState?
         val blockWall: IBlockState = ((this.configuration)!!.getWallBlock())!!
-        val blockGrid: IBlockState = (AsteroidBlocks.blockWalkway)!!.getDefaultState()
+        val blockGrid: IBlockState = (AsteroidBlocks.blockWalkway)!!.defaultBlockState()
         val blockStair: Block = (GCBlocks.moonStoneStairs)!!
-        val blockAir: IBlockState = Blocks.AIR.getDefaultState()
+        val blockAir: IBlockState = Blocks.AIR.defaultBlockState()
         val directionNS: Boolean = (this.getDirection())!!.getAxis() == EnumFacing.Axis.Z
         val ceilingSpacer: Int = (if (directionNS) this.sizeZ else this.sizeX) / this.roomsOnSide + 1
         var ceilingDeco: Int = ceilingSpacer
@@ -245,7 +253,7 @@ open class BaseDeck : SizedPiece {
                         var skipCap: Boolean = false
                         if ((this.configuration)!!.isHangarDeck() && this.deckTier == 1 && (this.getDirection() == EnumFacing.NORTH && z == endZ || this.getDirection() == EnumFacing.SOUTH && z == startZ || this.getDirection() == EnumFacing.WEST && x == endX || this.getDirection() == EnumFacing.EAST && x == startX)) {
                             //Make airlock at the hangar end, if it's a hangar deck
-                            val blockLintel: IBlockState = (GCBlocks.airLockFrame)!!.getDefaultState()
+                            val blockLintel: IBlockState = (GCBlocks.airLockFrame)!!.defaultBlockState()
                             val blockAirlock: IBlockState = (GCBlocks.airLockFrame)!!.getStateFromMeta(1)
                             if ((!directionNS && (z == startZ + 1 || z == endZ - 1) || directionNS && (x == startX + 1 || x == endX - 1)) && y < sizeY - 1) {
                                 this.setBlockState(worldIn, blockLintel, x, y, z, chunkBounds)
@@ -274,10 +282,10 @@ open class BaseDeck : SizedPiece {
                                 var windowOrWall: IBlockState = blockWall
                                 val blockGlass: IBlockState
                                 when ((this.configuration)!!.getDeckType()) {
-                                    EnumBaseType.AVIAN -> blockGlass = (GCBlocks.spaceGlassTinVanilla)!!.getDefaultState()
-                                    EnumBaseType.TUNNELER -> blockGlass = (GCBlocks.spaceGlassTinStrong)!!.getDefaultState()
-                                    EnumBaseType.HUMANOID -> blockGlass = (GCBlocks.spaceGlassTinClear)!!.getDefaultState()
-                                    else -> blockGlass = (GCBlocks.spaceGlassTinClear)!!.getDefaultState()
+                                    EnumBaseType.AVIAN -> blockGlass = (GCBlocks.spaceGlassTinVanilla)!!.defaultBlockState()
+                                    EnumBaseType.TUNNELER -> blockGlass = (GCBlocks.spaceGlassTinStrong)!!.defaultBlockState()
+                                    EnumBaseType.HUMANOID -> blockGlass = (GCBlocks.spaceGlassTinClear)!!.defaultBlockState()
+                                    else -> blockGlass = (GCBlocks.spaceGlassTinClear)!!.defaultBlockState()
                                 }
 
                                 val w: Int
@@ -468,10 +476,10 @@ open class BaseDeck : SizedPiece {
         if ((this.deckTier and 4) == 4) {
             val blockGlass: IBlockState
             when ((this.configuration)!!.getDeckType()) {
-                EnumBaseType.AVIAN -> blockGlass = (GCBlocks.spaceGlassTinVanilla)!!.getDefaultState()
-                EnumBaseType.TUNNELER -> blockGlass = (GCBlocks.spaceGlassTinStrong)!!.getDefaultState()
-                EnumBaseType.HUMANOID -> blockGlass = (GCBlocks.spaceGlassTinClear)!!.getDefaultState()
-                else -> blockGlass = (GCBlocks.spaceGlassTinClear)!!.getDefaultState()
+                EnumBaseType.AVIAN -> blockGlass = (GCBlocks.spaceGlassTinVanilla)!!.defaultBlockState()
+                EnumBaseType.TUNNELER -> blockGlass = (GCBlocks.spaceGlassTinStrong)!!.defaultBlockState()
+                EnumBaseType.HUMANOID -> blockGlass = (GCBlocks.spaceGlassTinClear)!!.defaultBlockState()
+                else -> blockGlass = (GCBlocks.spaceGlassTinClear)!!.defaultBlockState()
             }
             if (!directionNS) {
                 val w: Int = endX
@@ -500,7 +508,7 @@ else -> {}
                 (GCBlocks.concealedDetector)!!.getStateFromMeta(8 + facing + (if ((this.configuration)!!.getDeckType() == EnumBaseType.HUMANOID) 0 else 4))
             this.setBlockState(worldIn, lever, endX / 2 - 2, this.sizeY - 1, endZ, chunkBounds)
             this.setBlockState(worldIn, lever, endX / 2 + 2, this.sizeY - 1, endZ, chunkBounds)
-            lever = Blocks.LEVER.getStateFromMeta(if ((this.direction)!!.getAxis() == EnumFacing.Axis.Z) 4 else 3)
+            lever = LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.LEVER, if ((this.direction)!!.getAxis() == EnumFacing.Axis.Z) 4 else 3)
             this.setBlockState(worldIn, lever, endX / 2 - 2, this.sizeY - 1, endZ - 1, chunkBounds)
             this.setBlockState(worldIn, lever, endX / 2 + 2, this.sizeY - 1, endZ - 1, chunkBounds)
 
@@ -541,10 +549,10 @@ else -> {}
         val directionNS: Boolean = (this.getDirection())!!.getAxis() == EnumFacing.Axis.Z
         val left: EnumFacing = if (directionNS) EnumFacing.WEST else EnumFacing.SOUTH
         val right: EnumFacing = if (directionNS) EnumFacing.EAST else EnumFacing.NORTH
-        var leftX: Int = if (directionNS) this.boundingBox.maxX + 1 else this.boundingBox.minX
-        var leftZ: Int = if (directionNS) this.boundingBox.minZ else this.boundingBox.maxZ + 1
-        var rightX: Int = if (directionNS) this.boundingBox.minX - this.roomDepth - 1 else this.boundingBox.minX
-        var rightZ: Int = if (directionNS) this.boundingBox.minZ else this.boundingBox.minZ - this.roomDepth - 1
+        var leftX: Int = if (directionNS) this.boundingBox.maxX() + 1 else this.boundingBox.minX()
+        var leftZ: Int = if (directionNS) this.boundingBox.minZ() else this.boundingBox.maxZ() + 1
+        var rightX: Int = if (directionNS) this.boundingBox.minX() - this.roomDepth - 1 else this.boundingBox.minX()
+        var rightZ: Int = if (directionNS) this.boundingBox.minZ() else this.boundingBox.minZ() - this.roomDepth - 1
         //now offset effect of moving control room 1 position North or West, in two cases
         if ((this.deckTier and 4) == 4 && this.direction == EnumFacing.SOUTH) {
             rightZ++
@@ -574,28 +582,28 @@ else -> {}
             var blockZ: Int = 0
             when (this.direction) {
                 EnumFacing.NORTH -> {
-                    blockX = this.boundingBox.minX + (this.sizeX - BaseHangar.Companion.HANGARWIDTH) / 2
-                    blockZ = this.boundingBox.maxZ + 1
+                    blockX = this.boundingBox.minX() + (this.sizeX - BaseHangar.Companion.HANGARWIDTH) / 2
+                    blockZ = this.boundingBox.maxZ() + 1
                 }
 
                 EnumFacing.SOUTH -> {
-                    blockX = this.boundingBox.minX + (this.sizeX - BaseHangar.Companion.HANGARWIDTH) / 2
-                    blockZ = this.boundingBox.minZ - 1 - BaseHangar.Companion.HANGARLENGTH
+                    blockX = this.boundingBox.minX() + (this.sizeX - BaseHangar.Companion.HANGARWIDTH) / 2
+                    blockZ = this.boundingBox.minZ() - 1 - BaseHangar.Companion.HANGARLENGTH
                 }
 
                 EnumFacing.WEST -> {
-                    blockX = this.boundingBox.maxX + 1
-                    blockZ = this.boundingBox.minZ + (this.sizeZ - BaseHangar.Companion.HANGARWIDTH) / 2
+                    blockX = this.boundingBox.maxX() + 1
+                    blockZ = this.boundingBox.minZ() + (this.sizeZ - BaseHangar.Companion.HANGARWIDTH) / 2
                 }
 
                 EnumFacing.EAST -> {
-                    blockX = this.boundingBox.minX - 1 - BaseHangar.Companion.HANGARLENGTH
-                    blockZ = this.boundingBox.minZ + (this.sizeZ - BaseHangar.Companion.HANGARWIDTH) / 2
+                    blockX = this.boundingBox.minX() - 1 - BaseHangar.Companion.HANGARLENGTH
+                    blockZ = this.boundingBox.minZ() + (this.sizeZ - BaseHangar.Companion.HANGARWIDTH) / 2
                 }
 
                 else -> {
-                    blockX = this.boundingBox.minX - 1 - BaseHangar.Companion.HANGARLENGTH
-                    blockZ = this.boundingBox.minZ + (this.sizeZ - BaseHangar.Companion.HANGARWIDTH) / 2
+                    blockX = this.boundingBox.minX() - 1 - BaseHangar.Companion.HANGARLENGTH
+                    blockZ = this.boundingBox.minZ() + (this.sizeZ - BaseHangar.Companion.HANGARWIDTH) / 2
                 }
             }
 
@@ -603,8 +611,8 @@ else -> {}
         }
 
         if (((this.configuration)!!.isHangarDeck() || (this.configuration)!!.getDeckType() == EnumBaseType.HUMANOID) && (this.deckTier and 1) == 1) {
-            var blockX: Int = this.boundingBox.minX
-            var blockZ: Int = this.boundingBox.minZ
+            var blockX: Int = this.boundingBox.minX()
+            var blockZ: Int = this.boundingBox.minZ()
             var sX: Int = this.sizeX
             var sZ: Int = this.sizeZ
             when (this.direction) {
@@ -644,7 +652,7 @@ else -> {}
                     }
                 }
             }
-            rooms.add(BasePlate(this.configuration, blockX, this.boundingBox.minY - 1, blockZ, sX, sZ, this.direction))
+            rooms.add(BasePlate(this.configuration, blockX, this.boundingBox.minY() - 1, blockZ, sX, sZ, this.direction))
         }
 
         if (this.otherDecks != null) {
@@ -664,15 +672,15 @@ else -> {}
         x: Int,
         z: Int,
         directionNS: Boolean,
-        chunkBounds: StructureBoundingBox
+        chunkBounds: BoundingBox
     ) {
 //        System.out.println("Making doorway at " + x + "," + z + " NS:" + directionNS + " Tier " + this.deckTier);
         var x: Int = x
         var z: Int = z
-        val blockLintel: IBlockState = (GCBlocks.airLockFrame)!!.getDefaultState()
+        val blockLintel: IBlockState = (GCBlocks.airLockFrame)!!.defaultBlockState()
         val blockAirlock: IBlockState = (GCBlocks.airLockFrame)!!.getStateFromMeta(1)
         val blockStair: Block = (GCBlocks.moonStoneStairs)!!
-        val blockAir: IBlockState = Blocks.AIR.getDefaultState()
+        val blockAir: IBlockState = Blocks.AIR.defaultBlockState()
         val meta: Int = if (directionNS) 2 else 0
 
         when ((this.configuration)!!.getDeckType()) {
@@ -739,7 +747,7 @@ else -> {}
             this.configuration,
             rand,
             blockX,
-            this.boundingBox.minY,
+            this.boundingBox.minY(),
             blockZ,
             sX,
             sY,

@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.moons.europa.world.gen.we
 
+import foundation.level.offset
+
 import galaxyspace.core.GSBlocks
 import galaxyspace.core.prefab.entities.EntityEvolvedColdBlaze
 import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_BiomeLayer
@@ -10,9 +12,9 @@ import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_OreGen.BlockPred
 import asmodeuscore.core.utils.worldengine.WE_Biome
 import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_TerrainGenerator
 import micdoodle8.mods.galacticraft.core.world.gen.WorldGenMinableMeta
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenMinable
 import java.util.Random
 
@@ -37,12 +39,12 @@ open class Europa_Ravine constructor(tg: WE_TerrainGenerator) :
         spawnableMonsterList.add(SpawnListEntry(EntityEvolvedColdBlaze::class.java, 10, 1, 4))
 
         val layer: WE_BiomeLayer = WE_BiomeLayer()
-        layer.add(Blocks.PACKED_ICE.getDefaultState(), tg.worldStoneBlock, -256, 0, -15, -3, true)
-        layer.add(Blocks.WATER.getDefaultState(), tg.worldStoneBlock, -256, 0, -63, 0, true)
+        layer.add(Blocks.PACKED_ICE.defaultBlockState(), tg.worldStoneBlock, -256, 0, -15, -3, true)
+        layer.add(Blocks.WATER.defaultBlockState(), tg.worldStoneBlock, -256, 0, -63, 0, true)
 
 
-        //layer.add(Blocks.PACKED_ICE.getDefaultState(), Blocks.PACKED_ICE.getDefaultState(), -256, 0,   -2, -1,  true);
-        layer.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        //layer.add(Blocks.PACKED_ICE.defaultBlockState(), Blocks.PACKED_ICE.defaultBlockState(), -256, 0,   -2, -1,  true);
+        layer.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
 
 
         createChunkGen_InXZ_List.add(layer)
@@ -58,13 +60,13 @@ open class Europa_Ravine constructor(tg: WE_TerrainGenerator) :
             //randPosY = rand.nextInt(120);
             randPosZ = z + (rand)!!.nextInt(16)
             val pos: BlockPos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
-            if ((world)!!.isAreaLoaded(pos, 13, false) && (world)!!.isAirBlock(pos.up())) {
+            if ((world)!!.isAreaLoaded(pos, 13, false) && (world)!!.isEmptyBlock(pos.above())) {
                 WorldGenMinable(
-                    GSBlocks.SURFACE_ICE.getDefaultState()
-                        .withProperty(BlockSurfaceIce.BASIC_TYPE, EnumBlockIce.DRY_ICE),
+                    GSBlocks.SURFACE_ICE.defaultBlockState()
+                        .setValue(BlockSurfaceIce.BASIC_TYPE, EnumBlockIce.DRY_ICE),
                     25,
                     BlockPredicate(
-                        Blocks.PACKED_ICE.getDefaultState()
+                        Blocks.PACKED_ICE.defaultBlockState()
                     )
                 ).generate(world, rand, pos)
             }
@@ -79,7 +81,7 @@ open class Europa_Ravine constructor(tg: WE_TerrainGenerator) :
             WorldGenMinableMeta(GSBlocks.EUROPA_BLOCKS, 30, 2, true, Blocks.PACKED_ICE, 0).generate((world)!!, rand, pos)
         }
 
-        if ((world)!!.rand.nextInt(3) == 0) {
+        if ((world)!!.random.nextInt(3) == 0) {
             randPosX = x + (rand)!!.nextInt(16) + 8
             //randPosY = rand.nextInt(120);
             randPosZ = z + (rand)!!.nextInt(16) + 8
@@ -87,11 +89,11 @@ open class Europa_Ravine constructor(tg: WE_TerrainGenerator) :
 
 
 
-            if ((world)!!.getBlockState(pos.down()) === Blocks.PACKED_ICE.getDefaultState() && (world)!!.isAirBlock(pos)) {
+            if ((world)!!.getBlockState(pos.below()) === Blocks.PACKED_ICE.defaultBlockState() && (world)!!.isEmptyBlock(pos)) {
                 var check: Boolean = true
-                pos = pos.down()
+                pos = pos.below()
 
-                for (pos1: BlockPos in BlockPos.getAllInBox(pos.add(-1, 0, -1), pos.add(1, 0, 1))) if ((world)!!.isAirBlock(
+                for (pos1: BlockPos in BlockPos.getAllInBox(pos.offset(-1, 0, -1), pos.offset(1, 0, 1))) if ((world)!!.isEmptyBlock(
                         pos1
                     )
                 ) {
@@ -100,13 +102,13 @@ open class Europa_Ravine constructor(tg: WE_TerrainGenerator) :
                 }
 
                 if (check) {
-                    (world)!!.setBlockState(pos, GSBlocks.EUROPA_UWGEYSER.getDefaultState())
+                    (world)!!.setBlockAndUpdate(pos, GSBlocks.EUROPA_UWGEYSER.defaultBlockState())
 
-                    for (i: Int in 1..14) (world)!!.setBlockState(pos.down(i), Blocks.WATER.getDefaultState())
+                    for (i: Int in 1..14) (world)!!.setBlockAndUpdate(pos.below(i), Blocks.WATER.defaultBlockState())
                 }
 
 
-                //world.setBlockState(pos.down(), GSBlocks.EUROPA_UWGEYSER.getDefaultState(), 2);	  
+                //world.setBlock(pos.down(), GSBlocks.EUROPA_UWGEYSER.defaultBlockState(), 2);
             }
         }
     }

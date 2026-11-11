@@ -8,7 +8,7 @@ import net.minecraft.client.model.ModelRenderer
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import org.lwjgl.opengl.GL11
 import kotlin.math.sin
 

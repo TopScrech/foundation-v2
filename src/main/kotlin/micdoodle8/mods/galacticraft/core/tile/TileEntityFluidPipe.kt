@@ -1,4 +1,9 @@
 package micdoodle8.mods.galacticraft.core.tile
+
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
+import foundation.persistence.containsTag
 import micdoodle8.mods.galacticraft.api.transmission.grid.splitUntyped
 
 import micdoodle8.mods.galacticraft.api.tile.IColorable
@@ -12,22 +17,22 @@ import micdoodle8.mods.galacticraft.core.fluid.FluidNetwork
 import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.wrappers.FluidHandlerWrapper
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.item.EnumDyeColor
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.item.DyeColor as EnumDyeColor
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class TileEntityFluidPipe constructor() : TileEntityFluidTransmitter(100), IColorable {
     @JvmField
@@ -113,7 +118,7 @@ open class TileEntityFluidPipe constructor() : TileEntityFluidTransmitter(100), 
 
     override fun onAdjacentColorChanged(direction: EnumFacing?) {
         val state: IBlockState = this.world.getBlockState(this.getPos())
-        this.world.notifyBlockUpdate(this.getPos(), state, state, 3)
+        this.world.sendBlockUpdated(this.getPos(), state, state, 3)
 
         if (!this.world.isRemote) {
             this.refresh()
@@ -123,7 +128,7 @@ open class TileEntityFluidPipe constructor() : TileEntityFluidTransmitter(100), 
     override fun writeToNBT(tagCompound: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(tagCompound)
         if (this.buffer.getFluid() != null) {
-            tagCompound.setTag("buff", this.buffer.writeToNBT(NBTTagCompound()))
+            tagCompound.put("buff", this.buffer.writeToNBT(NBTTagCompound()))
         }
         return tagCompound
     }
@@ -135,19 +140,19 @@ open class TileEntityFluidPipe constructor() : TileEntityFluidTransmitter(100), 
     override fun readFromNBT(tagCompound: NBTTagCompound) {
         super.readFromNBT(tagCompound)
 
-        if (tagCompound.hasKey("pipeColor")) {
+        if (tagCompound.containsTag("pipeColor")) {
             // Backwards compatibility
-            this.world.setBlockState(
+            this.world.setBlockAndUpdate(
                 getPos(),
-                this.world.getBlockState(getPos()).withProperty(
+                this.world.getBlockState(getPos()).setValue(
                     BlockFluidPipe.COLOR,
-                    EnumDyeColor.byDyeDamage(tagCompound.getByte("pipeColor").toInt())
+                    EnumDyeColor.byDyeDamage(tagCompound.getByteOr("pipeColor", 0).toInt())
                 )
             )
         }
 
-        if (tagCompound.hasKey("buff")) {
-            this.buffer.readFromNBT(tagCompound.getCompoundTag("buff"))
+        if (tagCompound.containsTag("buff")) {
+            this.buffer.readFromNBT(tagCompound.getCompoundOrEmpty("buff"))
         }
     }
 
@@ -207,7 +212,7 @@ open class TileEntityFluidPipe constructor() : TileEntityFluidTransmitter(100), 
         }
 
         BlockFluidPipe.ignoreDrop = true
-        this.world.setBlockState(
+        this.world.setBlockAndUpdate(
             pos,
             block.getStateFromMeta(currentType.getMetaFromState(this.world.getBlockState(pos)))
         )
@@ -231,7 +236,7 @@ open class TileEntityFluidPipe constructor() : TileEntityFluidTransmitter(100), 
         return currentType.getMode() != BlockFluidPipe.EnumPipeMode.PULL
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         if (this.renderAABB == null) {
             this.renderAABB = AxisAlignedBB(pos, pos.add(1, 1, 1))
@@ -239,7 +244,7 @@ open class TileEntityFluidPipe constructor() : TileEntityFluidTransmitter(100), 
         return this.renderAABB!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return 16384.0 //128 squared
     }

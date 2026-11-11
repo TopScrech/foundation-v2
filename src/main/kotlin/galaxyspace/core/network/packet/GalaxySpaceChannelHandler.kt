@@ -9,13 +9,13 @@ import galaxyspace.core.network.packet.GalaxySpaceChannelHandler
 import galaxyspace.core.network.packet.GalaxySpacePacketHandler
 import micdoodle8.mods.galacticraft.core.network.IPacket
 import micdoodle8.mods.galacticraft.core.util.GCLog
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.network.FMLEmbeddedChannel
 import net.minecraftforge.fml.common.network.FMLIndexedMessageToMessageCodec
 import net.minecraftforge.fml.common.network.FMLOutboundHandler
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.lang.Exception
 
 open class GalaxySpaceChannelHandler private constructor() : FMLIndexedMessageToMessageCodec<IPacket>() {

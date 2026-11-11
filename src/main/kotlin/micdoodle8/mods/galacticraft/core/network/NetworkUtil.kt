@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.network
 
+import foundation.item.legacyItemValue
+
 import io.netty.buffer.ByteBuf
 import java.io.IOException
 import java.util.UUID
@@ -12,16 +14,16 @@ import micdoodle8.mods.galacticraft.core.tile.FluidTankGC
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.wrappers.FlagData
 import micdoodle8.mods.galacticraft.core.wrappers.Footprint
-import net.minecraft.entity.Entity
-import net.minecraft.item.EnumDyeColor
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.item.DyeColor as EnumDyeColor
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompressedStreamTools
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
 import net.minecraftforge.fluids.FluidStack
@@ -73,7 +75,7 @@ object NetworkUtil {
             } else if (dataValue is FluidTank) {
                 writeFluidTank(dataValue, buffer)
             } else if (dataValue is Entity) {
-                buffer.writeInt(dataValue.getEntityId())
+                buffer.writeInt(dataValue.getId())
             } else if (dataValue is Vector3) {
                 buffer.writeDouble(dataValue.x)
                 buffer.writeDouble(dataValue.y)
@@ -245,7 +247,7 @@ object NetworkUtil {
                     )
                 }
             } else if (clazz == EnumFacing::class.java) {
-                objList.add(EnumFacing.byIndex(buffer.readInt()))
+                objList.add(EnumFacing.from3DDataValue(buffer.readInt()))
             } else if (clazz == BlockPos::class.java) {
                 objList.add(BlockPos(buffer.readInt(), buffer.readInt(), buffer.readInt()))
             } else if (clazz == EnumDyeColor::class.java) {
@@ -303,7 +305,7 @@ object NetworkUtil {
             storage.setEnergyStored(buffer.readFloat())
             return storage
         } else if (dataValue == EnumFacing::class.java) {
-            return EnumFacing.byIndex(buffer.readInt())
+            return EnumFacing.from3DDataValue(buffer.readInt())
         } else if (dataValue == BlockPos::class.java) {
             return BlockPos(buffer.readInt(), buffer.readInt(), buffer.readInt())
         } else if (dataValue == EnumDyeColor::class.java) {
@@ -313,7 +315,7 @@ object NetworkUtil {
 
             while (c != null) {
                 if (c == Entity::class.java) {
-                    return world.getEntityByID(buffer.readInt())
+                    return world.getEntity(buffer.readInt())
                 }
 
                 c = c.getSuperclass()
@@ -349,7 +351,7 @@ object NetworkUtil {
         } else {
             buffer.writeShort(Item.getIdFromItem(itemStack.getItem()))
             buffer.writeByte(itemStack.getCount())
-            buffer.writeShort(itemStack.getItemDamage())
+            buffer.writeShort(itemStack.legacyItemValue)
             var nbttagcompound: NBTTagCompound? = null
 
             if (itemStack.getItem().isDamageable() || itemStack.getItem().getShareTag()) {
@@ -413,7 +415,7 @@ object NetworkUtil {
     @Throws(IOException::class)
     fun readFluidTankGC(buffer: ByteBuf, world: World): FluidTankGC {
         val pos: BlockPos = BlockPos(buffer.readInt(), buffer.readInt(), buffer.readInt())
-        val tile: TileEntity? = world.getTileEntity(pos)
+        val tile: TileEntity? = world.getBlockEntity(pos)
         val capacity: Int = buffer.readInt()
         val fluidName: String = ByteBufUtils.readUTF8String(buffer)
         val fluidTank: FluidTankGC = FluidTankGC(capacity, tile)
@@ -462,7 +464,7 @@ object NetworkUtil {
         } else if (a is Entity && b is Entity) {
             val a2: Entity = a
             val b2: Entity = b
-            return fuzzyEquals(a2.getEntityId(), b2.getEntityId())
+            return fuzzyEquals(a2.getId(), b2.getId())
         } else if (a is Vector3 && b is Vector3) {
             val a2: Vector3 = a
             val b2: Vector3 = b

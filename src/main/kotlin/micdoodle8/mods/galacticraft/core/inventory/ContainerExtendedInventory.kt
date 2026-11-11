@@ -2,11 +2,11 @@ package micdoodle8.mods.galacticraft.core.inventory
 
 import micdoodle8.mods.galacticraft.core.items.ItemCanisterOxygenInfinite
 import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
 
 open class ContainerExtendedInventory constructor(
     thePlayer: EntityPlayer,
@@ -25,7 +25,7 @@ open class ContainerExtendedInventory constructor(
         while (i < 3) {
             j = 0
             while (j < 9) {
-                this.addSlotToContainer(Slot(thePlayer.inventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18))
+                this.addSlot(Slot(thePlayer.inventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18))
                 ++j
             }
             ++i
@@ -33,52 +33,52 @@ open class ContainerExtendedInventory constructor(
 
         i = 0
         while (i < 9) {
-            this.addSlotToContainer(Slot(thePlayer.inventory, i, 8 + i * 18, 142))
+            this.addSlot(Slot(thePlayer.inventory, i, 8 + i * 18, 142))
             ++i
         }
 
         i = 0
         while (i < 4) {
-            this.addSlotToContainer(SlotArmorGC(thePlayer, thePlayer.inventory, 39 - i, 61, 8 + i * 18, i))
+            this.addSlot(SlotArmorGC(thePlayer, thePlayer.inventory, 39 - i, 61, 8 + i * 18, i))
             ++i
         }
 
-        this.addSlotToContainer(SlotExtendedInventory((extendedInventory)!!, 0, 125, 26))
-        this.addSlotToContainer(SlotExtendedInventory((extendedInventory)!!, 1, 125, 44))
-        this.addSlotToContainer(SlotExtendedInventory((extendedInventory)!!, 2, 116, 62))
-        this.addSlotToContainer(SlotExtendedInventory((extendedInventory)!!, 3, 134, 62))
-        this.addSlotToContainer(SlotExtendedInventory((extendedInventory)!!, 4, 143, 26))
-        this.addSlotToContainer(SlotExtendedInventory((extendedInventory)!!, 5, 107, 26))
+        this.addSlot(SlotExtendedInventory((extendedInventory)!!, 0, 125, 26))
+        this.addSlot(SlotExtendedInventory((extendedInventory)!!, 1, 125, 44))
+        this.addSlot(SlotExtendedInventory((extendedInventory)!!, 2, 116, 62))
+        this.addSlot(SlotExtendedInventory((extendedInventory)!!, 3, 134, 62))
+        this.addSlot(SlotExtendedInventory((extendedInventory)!!, 4, 143, 26))
+        this.addSlot(SlotExtendedInventory((extendedInventory)!!, 5, 107, 26))
 
         i = 0
         while (i < 4) {
-            this.addSlotToContainer(SlotExtendedInventory((extendedInventory)!!, 6 + i, 79, 8 + i * 18))
+            this.addSlot(SlotExtendedInventory((extendedInventory)!!, 6 + i, 79, 8 + i * 18))
             ++i
         }
 
-        this.addSlotToContainer(SlotExtendedInventory((extendedInventory)!!, 10, 125, 8))
+        this.addSlot(SlotExtendedInventory((extendedInventory)!!, 10, 125, 8))
     }
 
-    override fun canInteractWith(var1: EntityPlayer): Boolean {
+    override fun stillValid(var1: EntityPlayer): Boolean {
         return true
     }
 
-    override fun transferStackInSlot(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
+    override fun quickMoveStack(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
         var var2: ItemStack = ItemStack.EMPTY
         val slot: Slot? = this.inventorySlots.get(par1)
 
-        if (slot != null && slot.getHasStack()) {
-            val stack: ItemStack = slot.getStack()
+        if (slot != null && slot.hasItem()) {
+            val stack: ItemStack = slot.getItem()
             var2 = stack.copy()
 
             if (par1 >= 36) {
-                if (!this.mergeItemStack(stack, 0, 36, true)) {
+                if (!this.moveItemStackTo(stack, 0, 36, true)) {
                     return ItemStack.EMPTY
                 }
             } else {
                 var flag: Boolean = false
                 for (j: Int in 36..39) {
-                    if ((this.inventorySlots.get(j) as SlotArmorGC).isItemValid(stack)) {
+                    if ((this.inventorySlots.get(j) as SlotArmorGC).mayPlace(stack)) {
                         if (!this.mergeOneItem(stack, j, j + 1, false)) {
                             return ItemStack.EMPTY
                         }
@@ -95,7 +95,7 @@ open class ContainerExtendedInventory constructor(
                         flag = true
                     } else {
                         for (j: Int in 40..50) {
-                            if ((this.inventorySlots.get(j) as SlotExtendedInventory).isItemValid(stack)) {
+                            if ((this.inventorySlots.get(j) as SlotExtendedInventory).mayPlace(stack)) {
                                 if (!this.mergeOneItem(stack, j, j + 1, false)) {
                                     return ItemStack.EMPTY
                                 }
@@ -108,19 +108,19 @@ open class ContainerExtendedInventory constructor(
 
                 if (!flag) {
                     if (par1 < 27) {
-                        if (!this.mergeItemStack(stack, 27, 36, false)) {
+                        if (!this.moveItemStackTo(stack, 27, 36, false)) {
                             return ItemStack.EMPTY
                         }
-                    } else if (!this.mergeItemStack(stack, 0, 27, false)) {
+                    } else if (!this.moveItemStackTo(stack, 0, 27, false)) {
                         return ItemStack.EMPTY
                     }
                 }
             }
 
             if (stack.getCount() == 0) {
-                slot.putStack(ItemStack.EMPTY)
+                slot.set(ItemStack.EMPTY)
             } else {
-                slot.onSlotChanged()
+                slot.setChanged()
             }
 
             if (stack.getCount() == var2.getCount()) {
@@ -141,14 +141,14 @@ open class ContainerExtendedInventory constructor(
 
             for (k: Int in par2..<par3) {
                 slot = this.inventorySlots.get(k)
-                slotStack = slot.getStack()
+                slotStack = slot.getItem()
 
                 if (slotStack.isEmpty()) {
                     val stackOneItem: ItemStack = par1ItemStack.copy()
                     stackOneItem.setCount(1)
                     par1ItemStack.shrink(1)
-                    slot.putStack(stackOneItem)
-                    slot.onSlotChanged()
+                    slot.set(stackOneItem)
+                    slot.setChanged()
                     flag1 = true
                     break
                 }

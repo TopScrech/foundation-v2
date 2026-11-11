@@ -8,7 +8,7 @@ import mezz.jei.api.ingredients.IIngredients
 import mezz.jei.api.recipe.BlankRecipeWrapper
 import mezz.jei.api.recipe.wrapper.IShapedCraftingRecipeWrapper
 import micdoodle8.mods.galacticraft.core.recipe.ShapedRecipeNBT
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import java.util.*
 
 open class NBTSensitiveShapedRecipeWrapper constructor(@field:Nonnull @param:Nonnull private val recipe: ShapedRecipeNBT) :

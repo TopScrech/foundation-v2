@@ -14,12 +14,12 @@ import micdoodle8.mods.galacticraft.planets.asteroids.dimension.ShortRangeTelepa
 import micdoodle8.mods.galacticraft.planets.asteroids.entities.EntityAstroMiner
 import micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityMinerBase
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.world.World
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.WorldServer
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import java.lang.Exception
 import java.lang.reflect.Field

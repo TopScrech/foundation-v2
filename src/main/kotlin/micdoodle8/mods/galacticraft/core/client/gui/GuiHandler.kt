@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.client.gui
 
+import net.minecraft.network.chat.Component
+
 import micdoodle8.mods.galacticraft.api.prefab.entity.EntityTieredRocket
 import micdoodle8.mods.galacticraft.api.recipe.ISchematicPage
 import micdoodle8.mods.galacticraft.api.recipe.ISchematicResultPage
@@ -17,36 +19,37 @@ import micdoodle8.mods.galacticraft.core.tile.*
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.client.gui.screens.Screen as GuiScreen
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.common.network.IGuiHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class GuiHandler : IGuiHandler {
     override fun getServerGuiElement(ID: Int, player: EntityPlayer?, world: World, x: Int, y: Int, z: Int): Any? {
         val playerBase: EntityPlayerMP? = PlayerUtil.getPlayerBaseServerFromPlayer(player, false)
 
         if (playerBase == null) {
-            player!!.sendMessage(TextComponentString("Galacticraft player instance null server-side. This is a bug."))
+            player!!.sendSystemMessage(Component.literal("Galacticraft player instance null server-side. This is a bug."))
             return null
         }
 
         val stats: GCPlayerStats = (GCPlayerStats.get(playerBase))!!
 
-        if (ID == GuiIdsCore.ROCKET_INVENTORY && player!!.getRidingEntity() is EntityTieredRocket) {
+        if (ID == GuiIdsCore.ROCKET_INVENTORY && player!!.getVehicle() is EntityTieredRocket) {
             return ContainerRocketInventory(
                 player.inventory,
-                (player.getRidingEntity() as EntityTieredRocket?)!!,
-                ((player.getRidingEntity() as EntityTieredRocket).getType())!!,
+                (player.getVehicle() as EntityTieredRocket?)!!,
+                ((player.getVehicle() as EntityTieredRocket).getType())!!,
                 player
             )
         } else if (ID == GuiIdsCore.EXTENDED_INVENTORY) {
@@ -54,7 +57,7 @@ open class GuiHandler : IGuiHandler {
         }
 
         val pos: BlockPos = BlockPos(x, y, z)
-        val tile: TileEntity? = world.getTileEntity(pos)
+        val tile: TileEntity? = world.getBlockEntity(pos)
 
         if (tile != null) {
             if (tile is TileEntityCrafting) {
@@ -119,17 +122,17 @@ open class GuiHandler : IGuiHandler {
         return null
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private fun getClientGuiElement(ID: Int, player: EntityPlayer, world: World, position: BlockPos): Any? {
         val playerClient: EntityPlayerSP? = PlayerUtil.getPlayerBaseClientFromPlayer(player, false)
 
         if (ID == GuiIdsCore.GALAXY_MAP) {
             return GuiCelestialSelection(true, null, true)
-        } else if (ID == GuiIdsCore.ROCKET_INVENTORY && player.getRidingEntity() is EntityTieredRocket) {
+        } else if (ID == GuiIdsCore.ROCKET_INVENTORY && player.getVehicle() is EntityTieredRocket) {
             return GuiRocketInventory(
                 player.inventory,
-                (player.getRidingEntity() as EntityTieredRocket?)!!,
-                ((player.getRidingEntity() as EntityTieredRocket).getType())!!
+                (player.getVehicle() as EntityTieredRocket?)!!,
+                ((player.getVehicle() as EntityTieredRocket).getType())!!
             )
         } else if (ID == GuiIdsCore.EXTENDED_INVENTORY) {
             return GuiExtendedInventory(player, ClientProxyCore.dummyInventory)
@@ -146,13 +149,13 @@ open class GuiHandler : IGuiHandler {
             )
         }
 
-        val tile: TileEntity? = world.getTileEntity(position)
+        val tile: TileEntity? = world.getBlockEntity(position)
 
         if (tile != null) {
             if (tile is TileEntityCrafting) {
                 return GuiCrafting(player.inventory, tile)
             } else if (tile is TileEntityRefinery) {
-                return GuiRefinery(player.inventory, (world.getTileEntity(position) as TileEntityRefinery?)!!)
+                return GuiRefinery(player.inventory, (world.getBlockEntity(position) as TileEntityRefinery?)!!)
             } else if (tile is TileEntityOxygenCollector) {
                 return GuiOxygenCollector(player.inventory, tile)
             } else if (tile is TileEntityOxygenDistributor) {

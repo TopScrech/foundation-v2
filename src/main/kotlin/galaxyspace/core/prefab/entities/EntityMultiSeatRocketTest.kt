@@ -4,11 +4,11 @@ import galaxyspace.core.GSItems
 import galaxyspace.core.prefab.entities.EntityMultiSeatRocket
 import galaxyspace.core.prefab.entities.EntityMultiSeatRocketTest
 import micdoodle8.mods.galacticraft.api.entity.IRocketType
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.NonNullList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.NonNullList
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 
 /**
  * RUS: Класс многоместной ракеты
@@ -28,7 +28,7 @@ open class EntityMultiSeatRocketTest : EntityMultiSeatRocket {
         rocketType: IRocketType.EnumRocketType?
     ) : super(par1World, par2, par4, par6) {
         this.rocketType = rocketType
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
     }
 
     constructor(
@@ -63,7 +63,7 @@ open class EntityMultiSeatRocketTest : EntityMultiSeatRocket {
         super.getItemsDropped(droppedItems)
         val rocket: ItemStack = ItemStack(GSItems.ROCKET_MULTI_SEAT, 1, (this.rocketType)!!.getIndex())
         rocket.setTagCompound(NBTTagCompound())
-        rocket.getTagCompound()!!.setInteger("RocketFuel", this.fuelTank.getFluidAmount())
+        rocket.getTagCompound()!!.putInt("RocketFuel", this.fuelTank.getFluidAmount())
         (droppedItems)!!.add(rocket)
         return ((droppedItems as MutableList<ItemStack>?))!!
     }

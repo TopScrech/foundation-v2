@@ -3,8 +3,8 @@ package micdoodle8.mods.galacticraft.planets.mars.world.gen
 import micdoodle8.mods.galacticraft.api.prefab.core.BlockMetaPair
 import micdoodle8.mods.galacticraft.api.world.BiomeGenBaseGC
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.chunk.ChunkPrimer
 import java.util.Random
 

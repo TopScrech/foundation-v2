@@ -1,5 +1,6 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.gui
 
+import foundation.item.FoundationItemVariants
 import java.util.ArrayList
 
 import galaxyspace.GalaxySpace
@@ -12,18 +13,18 @@ import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.client.gui.element.GuiElementInfoRegion
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiAdvCircuitFabricator constructor(
     par1InventoryPlayer: InventoryPlayer,
     private val tileEntity: TileEntityAdvCircuitFabricator
@@ -142,14 +143,14 @@ open class GuiAdvCircuitFabricator constructor(
         )
         GSUtils.renderItemIntoSlot(
             this.mc.getRenderItem(),
-            ItemStack(GCItems.basicItem, 1, 2),
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 2),
             containerWidth + this.inventorySlots.getSlot(2).xPos,
             containerHeight + this.inventorySlots.getSlot(2).yPos,
             Vec3d(0.4, 0.4, 0.4)
         )
         GSUtils.renderItemIntoSlot(
             this.mc.getRenderItem(),
-            ItemStack(GCItems.basicItem, 1, 2),
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 2),
             containerWidth + this.inventorySlots.getSlot(3).xPos,
             containerHeight + this.inventorySlots.getSlot(3).yPos,
             Vec3d(0.4, 0.4, 0.4)
@@ -186,6 +187,6 @@ open class GuiAdvCircuitFabricator constructor(
 
     companion object {
         private val circuitFabricatorTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/circuit_fabricator.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/circuit_fabricator.png")
     }
 }

@@ -17,9 +17,9 @@ import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.mars.inventory.ContainerTerraformer
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityTerraformer
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 import kotlin.math.min
@@ -269,6 +269,6 @@ open class GuiTerraformer constructor(par1InventoryPlayer: InventoryPlayer?, ter
     }
 
     companion object {
-        private val terraformerGui = ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/terraformer.png")
+        private val terraformerGui = ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/terraformer.png")
     }
 }

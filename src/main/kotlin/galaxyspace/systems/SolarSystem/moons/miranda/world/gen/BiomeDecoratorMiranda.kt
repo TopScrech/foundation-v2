@@ -1,15 +1,17 @@
 package galaxyspace.systems.SolarSystem.moons.miranda.world.gen
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import galaxyspace.core.configs.GSConfigWorld
 import asmodeuscore.core.astronomy.dimension.world.gen.WorldGenLakes
 import galaxyspace.systems.SolarSystem.moons.miranda.world.gen.BiomeDecoratorMiranda
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
 import micdoodle8.mods.galacticraft.core.world.gen.WorldGenMinableMeta
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 
 open class BiomeDecoratorMiranda constructor() : BiomeDecoratorSpace() {
@@ -61,7 +63,7 @@ open class BiomeDecoratorMiranda constructor() : BiomeDecoratorSpace() {
 
         if ((rand)!!.nextInt(10) == 0) {
             val y: Int = 10 + (rand)!!.nextInt(30)
-            val state: IBlockState = this.getCurrentWorld()!!.getBlockState(BlockPos(x, y, z).down())
+            val state: IBlockState = this.getCurrentWorld()!!.getBlockState(BlockPos(x, y, z).below())
             if (state === GSBlocks.MIRANDA_BLOCKS.getStateFromMeta(2)) {
                 this.lavalakesGen.generate(this.getCurrentWorld(), this.rand, BlockPos(x, y, z))
             }

@@ -58,16 +58,16 @@ import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.client.settings.GameSettings
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraft.world.WorldProvider
 import net.minecraft.world.WorldProviderSurface
 import net.minecraftforge.common.MinecraftForge
@@ -246,7 +246,7 @@ open class NewGuiCelestialSelection constructor(
     }
 
     private fun refreshBodies() {
-        val player: EntityPlayerSP? = Minecraft.getMinecraft().player
+        val player: EntityPlayerSP? = Minecraft.getInstance().player
         this.bodiesToRender.clear()
         this.galaxylist.clear()
         this.starlist.clear()
@@ -2225,7 +2225,7 @@ open class NewGuiCelestialSelection constructor(
             }
 
             val mouseX: Int = Mouse.getX()
-            val mouseY: Int = Mouse.getY() * -1 + Minecraft.getMinecraft().displayHeight - 1
+            val mouseY: Int = Mouse.getY() * -1 + Minecraft.getInstance().displayHeight - 1
             if (this.selectedBody is Satellite) {
                 if (this.renamingSpaceStation) {
                     if (x >= this.width / 2 - 90 && x <= this.width / 2 + 90 && y >= this.height / 2 - 38 && y <= this.height / 2 + 38) {
@@ -2668,9 +2668,9 @@ open class NewGuiCelestialSelection constructor(
             val planetMatrix: Matrix4f = (e.value)!!
             val matrix0: Matrix4f = Matrix4f.mul(viewMatrix, planetMatrix, planetMatrix)
             val x: Int =
-                floor((matrix0.m30.toDouble() * 0.5 + 0.5) * Minecraft.getMinecraft().displayWidth.toDouble()).toInt()
+                floor((matrix0.m30.toDouble() * 0.5 + 0.5) * Minecraft.getInstance().displayWidth.toDouble()).toInt()
             val y: Int = floor(
-                Minecraft.getMinecraft().displayHeight.toDouble() - (matrix0.m31.toDouble() * 0.5 + 0.5) * Minecraft.getMinecraft().displayHeight.toDouble()
+                Minecraft.getInstance().displayHeight.toDouble() - (matrix0.m31.toDouble() * 0.5 + 0.5) * Minecraft.getInstance().displayHeight.toDouble()
             ).toInt()
             val vec: Vector2f = Vector2f(x.toFloat(), y.toFloat())
             val scaleVec: Matrix4f = Matrix4f()
@@ -2679,7 +2679,7 @@ open class NewGuiCelestialSelection constructor(
             scaleVec.m22 = matrix0.m22
             val newVec: Vector4f = Matrix4f.transform(scaleVec, Vector4f(2.0f, -2.0f, 0.0f, 0.0f), null)
             val iconSize: Float = (newVec.y
-                    * (Minecraft.getMinecraft().displayHeight.toFloat() / 2.0f)
+                    * (Minecraft.getInstance().displayHeight.toFloat() / 2.0f)
                     * (if (e.key is Star) 2 else 1).toFloat() * (if (e.key === this.selectedBody) 1.5f else 1.0f))
             this.planetPosMap.put(e.key, Vector3f(vec.x, vec.y, iconSize))
         }
@@ -3057,7 +3057,7 @@ else -> {}
             1024.0f
         )
         val guiImg_2: ResourceLocation =
-            ResourceLocation("asmodeuscore", "textures/gui/galaxymap_nebula_" + this.nebula_img + ".png")
+            ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/galaxymap_nebula_" + this.nebula_img + ".png")
         this.mc.renderEngine.bindTexture(guiImg_2)
         GL11.glTranslated(this.xImgOffset * 1.5, this.yImgOffset * 1.5, 0.0)
         GL11.glColor4f(0.5f, 0.4f, this.nebula_color.z.toFloat(), 0.5f)
@@ -3643,13 +3643,13 @@ else -> {}
         protected val YELLOW: Int = ColorUtil.to32BitColor(255, 255, 255, 0)
 
         @JvmField
-        var guiMain2: ResourceLocation = ResourceLocation("asmodeuscore", "textures/gui/celestialselection2.png")
+        var guiMain2: ResourceLocation = ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/celestialselection2.png")
 
         @JvmField
-        var guiImg: ResourceLocation = ResourceLocation("asmodeuscore", "textures/gui/galaxymap_1.png")
+        var guiImg: ResourceLocation = ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/galaxymap_1.png")
 
         @JvmField
         var vortexTexture: ResourceLocation =
-            ResourceLocation("asmodeuscore", "textures/gui/celestialbodies/vortex.png")
+            ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/celestialbodies/vortex.png")
     }
 }

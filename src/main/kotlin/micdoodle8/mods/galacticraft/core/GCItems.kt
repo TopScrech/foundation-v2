@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.core
 
+import foundation.item.legacyItemValue
+
+import foundation.item.FoundationItemVariants
+
 import net.minecraft.item.Item.ToolMaterial
 import net.minecraft.item.ItemArmor.ArmorMaterial
 
@@ -51,13 +55,13 @@ import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.StackSorted
 import micdoodle8.mods.galacticraft.core.wrappers.PartialCanister
-import net.minecraft.block.Block
-import net.minecraft.init.SoundEvents
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.Item
+import net.minecraft.world.level.block.Block
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemArmor
-import net.minecraft.item.ItemStack
-import net.minecraft.util.NonNullList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.NonNullList
 import net.minecraftforge.common.util.EnumHelper
 import net.minecraftforge.oredict.OreDictionary
 import net.minecraftforge.registries.IForgeRegistry
@@ -239,7 +243,7 @@ object GCItems {
         EnumHelper.addArmorMaterial("steel", "", 30, intArrayOf(3, 6, 8, 3), 9, SoundEvents.ITEM_ARMOR_EQUIP_IRON, 1.0f)
 
     @JvmField
-    var TOOL_STEEL: Item.ToolMaterial? = EnumHelper.addToolMaterial("steel", 3, 768, 5.0f, 2f, 8)
+    var TOOL_STEEL: net.minecraft.world.item.ToolMaterial = foundation.item.FoundationSteelTools.MATERIAL
 
     @JvmField
     var hiddenItems: ArrayList<Item> = ArrayList<Item>()
@@ -307,13 +311,12 @@ object GCItems {
         ic2compat = ItemIC2Compat("ic2compat")
         emergencyKit = ItemEmergencyKit("emergency_kit")
 
-        registerHarvestLevels()
 
         registerItems()
-        itemChanges.put(ItemStack(basicItem, 1, 15), ItemStack(foodItem, 1, 0))
-        itemChanges.put(ItemStack(basicItem, 1, 16), ItemStack(foodItem, 1, 1))
-        itemChanges.put(ItemStack(basicItem, 1, 17), ItemStack(foodItem, 1, 2))
-        itemChanges.put(ItemStack(basicItem, 1, 18), ItemStack(foodItem, 1, 3))
+        itemChanges.put(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 15), ItemStack(foodItem, 1, 0))
+        itemChanges.put(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 16), ItemStack(foodItem, 1, 1))
+        itemChanges.put(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 17), ItemStack(foodItem, 1, 2))
+        itemChanges.put(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 18), ItemStack(foodItem, 1, 3))
 
         (GalacticraftCore.Companion.proxy)!!.registerCanister(
             PartialCanister(
@@ -346,13 +349,13 @@ object GCItems {
                     name = name.substring(0, loc) + name.substring(loc + 1, loc + 2)
                         .uppercase(Locale.getDefault()) + name.substring(loc + 2, name.length)
                 }
-                OreDictionary.registerOre(name, ItemStack(basicItem, 1, i))
+                OreDictionary.registerOre(name, FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, i))
             }
         }
 
         OreDictionary.registerOre("foodCheese", ItemStack(cheeseCurd, 1, 0))
-        OreDictionary.registerOre("compressedMeteoricIron", ItemStack(itemBasicMoon, 1, 1))
-        OreDictionary.registerOre("ingotMeteoricIron", ItemStack(itemBasicMoon, 1, 0))
+        OreDictionary.registerOre("compressedMeteoricIron", FoundationItemVariants.stack(requireNotNull(itemBasicMoon), 1, 1))
+        OreDictionary.registerOre("ingotMeteoricIron", FoundationItemVariants.stack(requireNotNull(itemBasicMoon), 1, 0))
         if (CompatibilityManager.useAluDust()) {
             OreDictionary.registerOre("dustAluminum", ItemStack(ic2compat, 1, 0))
             OreDictionary.registerOre("dustAluminium", ItemStack(ic2compat, 1, 0))
@@ -374,7 +377,7 @@ object GCItems {
                 7
             )
         )
-        OreDictionary.registerOre(ConfigManagerCore.otherModsSilicon, ItemStack(basicItem, 1, 2))
+        OreDictionary.registerOre(ConfigManagerCore.otherModsSilicon, FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 2))
     }
 
 
@@ -422,18 +425,11 @@ object GCItems {
             .onResultOf<ItemStack?>(Function { input: ItemStack? ->
                 StackSorted(
                     input!!.getItem(),
-                    input.getItemDamage()
+                    input.legacyItemValue
                 )
             })
 
         (GalacticraftCore.Companion.galacticraftItemsTab)!!.setTabSorter(tabSorterItems)
-    }
-
-    @JvmStatic
-    fun registerHarvestLevels() {
-        steelPickaxe!!.setHarvestLevel("pickaxe", 4)
-        steelAxe!!.setHarvestLevel("axe", 4)
-        steelSpade!!.setHarvestLevel("shovel", 4)
     }
 
     @JvmStatic
@@ -443,11 +439,11 @@ object GCItems {
             val items: NonNullList<ItemStack> = NonNullList.create<ItemStack>()
             item.getSubItems(GalacticraftCore.Companion.galacticraftItemsTab, items)
             for (stack: ItemStack in items) {
-                val categoryItem: EnumSortCategoryItem? = sortableItem.getCategory(stack.getItemDamage())
+                val categoryItem: EnumSortCategoryItem? = sortableItem.getCategory(stack.legacyItemValue)
                 if (!sortMapItems.containsKey(categoryItem)) {
                     sortMapItems.put((categoryItem)!!, ArrayList<StackSorted?>())
                 }
-                sortMapItems.get(categoryItem)!!.add(StackSorted(stack.getItem(), stack.getItemDamage()))
+                sortMapItems.get(categoryItem)!!.add(StackSorted(stack.getItem(), stack.legacyItemValue))
             }
         } else if (item.getCreativeTab() === GalacticraftCore.Companion.galacticraftItemsTab) {
             throw RuntimeException(item.javaClass.toString() + " must inherit " + ISortableItem::class.java.getSimpleName() + "!")

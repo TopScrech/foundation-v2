@@ -10,11 +10,11 @@ import micdoodle8.mods.galacticraft.core.tile.IMultiBlock
 import micdoodle8.mods.galacticraft.core.world.gen.BiomeOrbit
 import net.minecraft.block.BlockFalling
 import net.minecraft.entity.EnumCreatureType
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import java.util.Random
 
@@ -52,9 +52,9 @@ open class ChunkProviderJupiterSS constructor(private val world: World, par2: Lo
         this.rand.setSeed(x * i1 + z * j1 xor this.world.getSeed())
         if (k == 0 && l == 0) {
             val pos: BlockPos = BlockPos(k, 64, l)
-            this.world.setBlockState(pos, (GCBlocks.spaceStationBase)!!.getDefaultState(), 2)
+            this.world.setBlock(pos, (GCBlocks.spaceStationBase)!!.defaultBlockState(), 2)
 
-            val var8: TileEntity? = this.world.getTileEntity(pos)
+            val var8: TileEntity? = this.world.getBlockEntity(pos)
 
             if (var8 is IMultiBlock) {
                 (var8 as IMultiBlock).onCreate(this.world, pos)

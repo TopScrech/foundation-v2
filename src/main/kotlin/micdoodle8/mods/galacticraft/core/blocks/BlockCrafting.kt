@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.tile.TileEntityCrafting
@@ -7,22 +9,24 @@ import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.block.ITileEntityProvider
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyDirection
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 
 open class BlockCrafting constructor(assetName: String?) : BlockAdvancedTile(Material.IRON), ITileEntityProvider,
-    ISortableBlock, IShiftDescription {
+    ISortableBlock, IShiftDescription, LegacyBlockMetadata {
     init {
         this.setTranslationKey(assetName)
     }
@@ -42,19 +46,19 @@ open class BlockCrafting constructor(assetName: String?) : BlockAdvancedTile(Mat
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val heldItem: ItemStack = playerIn.getHeldItem(hand)
+        val heldItem: ItemStack = playerIn.getItemInHand(hand)
 
         if (this.useWrench(worldIn, pos, playerIn, hand, heldItem, side, hitX, hitY, hitZ)) {
             return true
         }
 
-        if (playerIn.isSneaking()) {
+        if (playerIn.isShiftKeyDown()) {
             if (this.onSneakMachineActivated(worldIn, pos, playerIn, hand, heldItem, side, hitX, hitY, hitZ)) {
                 return true
             }
         }
 
-        if (!worldIn.isRemote) {
+        if (!worldIn.isClientSide) {
             playerIn.openGui(GalacticraftCore.Companion.instance, -1, worldIn, pos.getX(), pos.getY(), pos.getZ())
         }
         return true
@@ -86,9 +90,9 @@ open class BlockCrafting constructor(assetName: String?) : BlockAdvancedTile(Mat
         placer: EntityLivingBase,
         stack: ItemStack
     ) {
-        worldIn.setBlockState(
+        worldIn.setBlock(
             pos,
-            state.withProperty(FACING, getFacingFromEntity(worldIn, pos, placer)),
+            state.setValue(FACING, getFacingFromEntity(worldIn, pos, placer)),
             2
         )
     }
@@ -106,7 +110,7 @@ open class BlockCrafting constructor(assetName: String?) : BlockAdvancedTile(Mat
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(FACING, EnumFacing.byIndex(meta))
+        return this.defaultBlockState().setValue(FACING, EnumFacing.from3DDataValue(meta))
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -119,15 +123,15 @@ open class BlockCrafting constructor(assetName: String?) : BlockAdvancedTile(Mat
 
     companion object {
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing")
+        val FACING: EnumProperty<Direction> = BlockStateProperties.FACING
 
         @JvmStatic
         fun getFacingFromEntity(worldIn: World?, clickedBlock: BlockPos, entityIn: EntityLivingBase): EnumFacing {
-            if (MathHelper.abs(entityIn.posX.toFloat() - clickedBlock.getX().toFloat()) < 3.0f && MathHelper.abs(
-                    entityIn.posZ.toFloat() - clickedBlock.getZ().toFloat()
+            if (MathHelper.abs(entityIn.x.toFloat() - clickedBlock.getX().toFloat()) < 3.0f && MathHelper.abs(
+                    entityIn.z.toFloat() - clickedBlock.getZ().toFloat()
                 ) < 3.0f
             ) {
-                val d0: Double = entityIn.posY + entityIn.getEyeHeight().toDouble()
+                val d0: Double = entityIn.y + entityIn.getEyeHeight().toDouble()
 
                 if (d0 - clickedBlock.getY().toDouble() > 2.0) {
                     return EnumFacing.UP

@@ -1,17 +1,16 @@
 package micdoodle8.mods.galacticraft.planets
 
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.world.World
-import net.minecraftforge.common.config.Configuration
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.common.event.FMLServerStartedEvent
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.Level as World
+import foundation.config.FoundationConfiguration as Configuration
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
+import net.minecraftforge.event.server.ServerStartedEvent as FMLServerStartedEvent
+import net.minecraftforge.event.server.ServerStartingEvent as FMLServerStartingEvent
+import net.minecraftforge.fml.LogicalSide as Side
 
 interface IPlanetsModule {
-    fun preInit(event: FMLPreInitializationEvent?)
+    fun preInit()
 
     fun init(event: FMLInitializationEvent?)
 

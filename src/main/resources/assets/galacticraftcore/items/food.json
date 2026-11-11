@@ -1,0 +1,83 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:component",
+    "component": "foundation:legacy_metadata",
+    "cases": [
+      {
+        "when": 0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/food"
+        }
+      },
+      {
+        "when": 1,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/dehydrated_carrot"
+        }
+      },
+      {
+        "when": 2,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/dehydrated_melon"
+        }
+      },
+      {
+        "when": 3,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/dehydrated_potato"
+        }
+      },
+      {
+        "when": 4,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/cheese_slice"
+        }
+      },
+      {
+        "when": 5,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/burger_bun"
+        }
+      },
+      {
+        "when": 6,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/beef_patty_raw"
+        }
+      },
+      {
+        "when": 7,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/beef_patty_cooked"
+        }
+      },
+      {
+        "when": 8,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/cheeseburger"
+        }
+      },
+      {
+        "when": 9,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/canned_beef"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "galacticraftcore:item/food"
+    }
+  }
+}

@@ -3,7 +3,7 @@ package galaxyspace.systems.SolarSystem.moons.miranda.world.gen
 import galaxyspace.systems.SolarSystem.SolarSystemBodies
 import galaxyspace.systems.SolarSystem.moons.miranda.world.gen.BiomeProviderMiranda
 import galaxyspace.systems.SolarSystem.moons.miranda.world.gen.layer.GenLayerMirandaBiomes
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldType
 import net.minecraft.world.biome.BiomeProvider
 import net.minecraft.world.gen.layer.GenLayer

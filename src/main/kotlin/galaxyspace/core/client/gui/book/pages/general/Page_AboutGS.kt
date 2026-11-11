@@ -8,12 +8,12 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 
 @IPage
 open class Page_AboutGS : IBookPage {
-    private val mc: Minecraft = Minecraft.getMinecraft()
+    private val mc: Minecraft = Minecraft.getInstance()
     override fun titlePage(): String {
         return "about_addon"
     }
@@ -108,6 +108,6 @@ open class Page_AboutGS : IBookPage {
 	}*/
 
     companion object {
-        private val mainmenu1 = ResourceLocation(GalaxySpace.ASSET_PREFIX + ":" + "textures/gui/guimenu.png")
+        private val mainmenu1 = ResourceLocation.parse(GalaxySpace.ASSET_PREFIX + ":" + "textures/gui/guimenu.png")
     }
 }

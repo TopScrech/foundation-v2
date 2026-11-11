@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.item.legacyItemValue
+
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseUniversalElectrical
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
@@ -7,28 +11,30 @@ import micdoodle8.mods.galacticraft.core.tile.TileEntityOxygenCompressor
 import micdoodle8.mods.galacticraft.core.tile.TileEntityOxygenDecompressor
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyDirection
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import kotlin.math.floor
 
 open class BlockOxygenCompressor constructor(isActive: Boolean, assetName: String?) :
-    BlockAdvancedTile(Material.ROCK), IShiftDescription, ISortableBlock {
+    BlockAdvancedTile(Material.ROCK), IShiftDescription, ISortableBlock, LegacyBlockMetadata {
     enum class EnumCompressorType(private val meta: Int, private val serializedName: String) : IStringSerializable {
         COMPRESSOR(0, "compressor"),
         DECOMPRESSOR(1, "decompressor");
@@ -37,7 +43,9 @@ open class BlockOxygenCompressor constructor(isActive: Boolean, assetName: Strin
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -111,16 +119,16 @@ open class BlockOxygenCompressor constructor(isActive: Boolean, assetName: Strin
         placer: EntityLivingBase,
         stack: ItemStack
     ) {
-        val angle: Int = MathHelper.floor(placer.rotationYaw * 4.0f / 360.0f + 0.5) and 3
+        val angle: Int = MathHelper.floor(placer.yRot * 4.0f / 360.0f + 0.5) and 3
         var change: Int = EnumFacing.byHorizontalIndex(angle).getOpposite().getHorizontalIndex()
 
-        if (stack.getItemDamage() >= OXYGEN_DECOMPRESSOR_METADATA) {
+        if (stack.legacyItemValue >= OXYGEN_DECOMPRESSOR_METADATA) {
             change += OXYGEN_DECOMPRESSOR_METADATA
-        } else if (stack.getItemDamage() >= OXYGEN_COMPRESSOR_METADATA) {
+        } else if (stack.legacyItemValue >= OXYGEN_COMPRESSOR_METADATA) {
             change += OXYGEN_COMPRESSOR_METADATA
         }
 
-        worldIn.setBlockState(pos, getStateFromMeta(change), 3)
+        worldIn.setBlock(pos, getStateFromMeta(change), 3)
     }
 
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
@@ -154,8 +162,8 @@ open class BlockOxygenCompressor constructor(isActive: Boolean, assetName: Strin
     override fun getStateFromMeta(meta: Int): IBlockState {
         val enumfacing: EnumFacing = EnumFacing.byHorizontalIndex(meta % 4)
         val type: EnumCompressorType = EnumCompressorType.Companion.byMetadata(floor(meta / 4.0).toInt())
-        return this.getDefaultState().withProperty(FACING, enumfacing)
-            .withProperty(TYPE, type)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
+            .setValue(TYPE, type)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -178,7 +186,7 @@ open class BlockOxygenCompressor constructor(isActive: Boolean, assetName: Strin
         const val OXYGEN_DECOMPRESSOR_METADATA: Int = 4
 
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL)
+        val FACING: EnumProperty<Direction> = BlockStateProperties.HORIZONTAL_FACING
 
         @JvmField
         val TYPE: PropertyEnum<EnumCompressorType> =

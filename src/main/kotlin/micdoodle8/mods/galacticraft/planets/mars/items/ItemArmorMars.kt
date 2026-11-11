@@ -1,18 +1,20 @@
 package micdoodle8.mods.galacticraft.planets.mars.items
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.items.ISortableItem
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.inventory.EntityEquipmentSlot
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
 import net.minecraft.item.EnumRarity
 import net.minecraft.item.ItemArmor
-import net.minecraft.item.ItemStack
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemArmorMars constructor(private val material: ArmorMaterial, par3: Int, par4: EntityEquipmentSlot) :
     ItemArmor(material, par3, par4), ISortableItem {
@@ -37,12 +39,12 @@ open class ItemArmorMars constructor(private val material: ArmorMaterial, par3: 
         return null
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftItemsTab
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
@@ -52,6 +54,6 @@ open class ItemArmorMars constructor(private val material: ArmorMaterial, par3: 
     }
 
     override fun getIsRepairable(toRepair: ItemStack, repair: ItemStack): Boolean {
-        return repair.getItem() === MarsItems.marsItemBasic && repair.getItemDamage() == 2
+        return repair.getItem() === MarsItems.marsItemBasic && repair.legacyItemValue == 2
     }
 }

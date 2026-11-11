@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.moons.titan.dimension
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import asmodeuscore.core.astronomy.dimension.world.gen.ChunkProviderSpaceLakes
 import com.google.common.collect.Lists
@@ -10,10 +12,10 @@ import galaxyspace.systems.SolarSystem.moons.titan.world.gen.BiomeDecoratorTitan
 import galaxyspace.systems.SolarSystem.moons.titan.dimension.ChunkProviderTitan
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
-import net.minecraft.block.state.IBlockState
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 
 
@@ -98,7 +100,7 @@ open class ChunkProviderTitan constructor(par1World: World?, seed: Long, mapFeat
     }
 
     override fun getWaterBlock(): IBlockState {
-        return (GSFluids.BLOCK_LEMETHANE)!!.getDefaultState()
+        return (GSFluids.BLOCK_LEMETHANE)!!.defaultBlockState()
     }
 
     override fun getGenType(): GenType {

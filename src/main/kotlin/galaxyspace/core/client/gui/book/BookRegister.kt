@@ -13,17 +13,17 @@ import galaxyspace.systems.ACentauriSystem.core.configs.ACConfigCore
 import galaxyspace.systems.BarnardsSystem.core.configs.BRConfigCore
 import galaxyspace.systems.SolarSystem.SolarSystemBodies
 import galaxyspace.systems.TauCetiSystem.core.configs.TCConfigCore
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.common.util.EnumHelper
 
 object BookRegister {
     @JvmField
     var starTexture: ResourceLocation =
-        ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/book/star_bg.png")
+        ResourceLocation.fromNamespaceAndPath(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/book/star_bg.png")
 
     @JvmField
-    var guiTexture: ResourceLocation = ResourceLocation(AsmodeusCore.ASSET_PREFIX, "textures/gui/gui.png")
+    var guiTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(AsmodeusCore.ASSET_PREFIX, "textures/gui/gui.png")
 
 
     @JvmField
@@ -60,19 +60,19 @@ object BookRegister {
 
     @JvmStatic
     fun registerCatergories() {
-        BookUtils.addGuideBookCategory(Book_Cateroies.GENERAL.getName(), ResourceLocation("textures/items/apple.png"))
+        BookUtils.addGuideBookCategory(Book_Cateroies.GENERAL.getName(), ResourceLocation.parse("textures/items/apple.png"))
         BookUtils.addGuideBookCategory(Book_Cateroies.BODIES.getName(), (SolarSystemBodies.planetNeptune)!!.getBodyIcon())
         BookUtils.addGuideBookCategory(
             Book_Cateroies.BLOCKS.getName(),
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX, "textures/blocks/overworld/hydroponic_base.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.Companion.ASSET_PREFIX, "textures/blocks/overworld/hydroponic_base.png")
         )
         BookUtils.addGuideBookCategory(
             Book_Cateroies.ITEMS.getName(),
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX, "textures/items/basic/volcanic_stone.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.Companion.ASSET_PREFIX, "textures/items/basic/volcanic_stone.png")
         )
         BookUtils.addGuideBookCategory(
             Book_Cateroies.MECHANICS.getName(),
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX, "textures/items/basic/temp_shield_control.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.Companion.ASSET_PREFIX, "textures/items/basic/temp_shield_control.png")
         )
 
         if (ACConfigCore.enableACentauriSystems) BookUtils.addGuideBookPage(Page_ProximaSystem())

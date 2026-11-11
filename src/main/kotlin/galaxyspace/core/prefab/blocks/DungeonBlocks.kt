@@ -1,40 +1,43 @@
 package galaxyspace.core.prefab.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import galaxyspace.core.prefab.blocks.DungeonBlocks.EnumDungeonBlocks
 import galaxyspace.core.prefab.blocks.DungeonBlocks
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
-open class DungeonBlocks constructor() : Block(Material.ROCK), ISortableBlock {
+open class DungeonBlocks constructor() : Block(Material.ROCK), ISortableBlock, LegacyBlockMetadata {
     init {
         this.setTranslationKey("dungeon_blocks")
         this.setSoundType(SoundType.STONE)
         this.setHarvestLevel("pickaxe", 3)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (blockBasic: EnumDungeonBlocks in EnumDungeonBlocks.entries) {
             list.add(ItemStack(this, 1, blockBasic.getMeta()))
@@ -111,7 +114,9 @@ open class DungeonBlocks constructor() : Block(Material.ROCK), ISortableBlock {
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -126,8 +131,8 @@ open class DungeonBlocks constructor() : Block(Material.ROCK), ISortableBlock {
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(BASIC_TYPE, (EnumDungeonBlocks.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(BASIC_TYPE, (EnumDungeonBlocks.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {

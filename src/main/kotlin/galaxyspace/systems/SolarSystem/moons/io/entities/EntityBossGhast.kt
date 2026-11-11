@@ -13,29 +13,29 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.EntityAIBase
 import net.minecraft.entity.ai.EntityAIFindEntityNearestPlayer
 import net.minecraft.entity.ai.EntityMoveHelper
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.monster.IMob
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.entity.projectile.EntityLargeFireball
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.ItemStack
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.ItemStack
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
-import net.minecraft.util.DamageSource
+import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.SoundEvent
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraft.world.BossInfo
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.common.network.NetworkRegistry
 import java.util.Random
 
@@ -279,12 +279,12 @@ open class EntityBossGhast constructor(par1World: World?) : EntityFlyBossBase((p
 
         if (this.roomCoords != null)
         {
-            nbt.setDouble("roomCoordsX", this.roomCoords.x);
-            nbt.setDouble("roomCoordsY", this.roomCoords.y);
-            nbt.setDouble("roomCoordsZ", this.roomCoords.z);
-            nbt.setDouble("roomSizeX", this.roomSize.x);
-            nbt.setDouble("roomSizeY", this.roomSize.y);
-            nbt.setDouble("roomSizeZ", this.roomSize.z);
+            nbt.putDouble("roomCoordsX", this.roomCoords.x);
+            nbt.putDouble("roomCoordsY", this.roomCoords.y);
+            nbt.putDouble("roomCoordsZ", this.roomCoords.z);
+            nbt.putDouble("roomSizeX", this.roomSize.x);
+            nbt.putDouble("roomSizeY", this.roomSize.y);
+            nbt.putDouble("roomSizeZ", this.roomSize.z);
         }
     }
 
@@ -293,13 +293,13 @@ open class EntityBossGhast constructor(par1World: World?) : EntityFlyBossBase((p
     {
         super.readEntityFromNBT(nbt);
         this.roomCoords = new Vector3();
-        this.roomCoords.x = nbt.getDouble("roomCoordsX");
-        this.roomCoords.y = nbt.getDouble("roomCoordsY");
-        this.roomCoords.z = nbt.getDouble("roomCoordsZ");
+        this.roomCoords.x = nbt.getDoubleOr("roomCoordsX", 0.0);
+        this.roomCoords.y = nbt.getDoubleOr("roomCoordsY", 0.0);
+        this.roomCoords.z = nbt.getDoubleOr("roomCoordsZ", 0.0);
         this.roomSize = new Vector3();
-        this.roomSize.x = nbt.getDouble("roomSizeX");
-        this.roomSize.y = nbt.getDouble("roomSizeY");
-        this.roomSize.z = nbt.getDouble("roomSizeZ");
+        this.roomSize.x = nbt.getDoubleOr("roomSizeX", 0.0);
+        this.roomSize.y = nbt.getDoubleOr("roomSizeY", 0.0);
+        this.roomSize.z = nbt.getDoubleOr("roomSizeZ", 0.0);
     }
     */
     open class AIRandomFly constructor(private val parentEntity: EntityBossGhast) : EntityAIBase() {
@@ -369,8 +369,8 @@ open class EntityBossGhast constructor(par1World: World?) : EntityFlyBossBase((p
                 val d0: Double = 64.0
 
                 if (entitylivingbase!!.getDistanceSq(this.parentEntity) < 4096.0) {
-                    val d1: Double = entitylivingbase.posX - this.parentEntity.posX
-                    val d2: Double = entitylivingbase.posZ - this.parentEntity.posZ
+                    val d1: Double = entitylivingbase.x - this.parentEntity.posX
+                    val d2: Double = entitylivingbase.z - this.parentEntity.posZ
                     this.parentEntity.rotationYaw = -(MathHelper.atan2(d1, d2).toFloat()) * (180f / Math.PI.toFloat())
                     this.parentEntity.renderYawOffset = this.parentEntity.rotationYaw
                 }
@@ -504,7 +504,7 @@ open class EntityBossGhast constructor(par1World: World?) : EntityFlyBossBase((p
     }
 
     override fun dropKey() {
-        this.entityDropItem(ItemStack(GSItems.DUNGEON_KEYS, 1, 1), 0.5f)
+        this.entityDropItem(foundation.item.FoundationItemVariants.stack(GSItems.DUNGEON_KEYS, 1, 1), 0.5f)
     }
 
     override fun getHealthBarColor(): BossInfo.Color {

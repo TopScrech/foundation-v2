@@ -1,5 +1,13 @@
 package micdoodle8.mods.galacticraft.planets.mars.tile
 
+import foundation.item.legacyItemValue
+
+import foundation.block.getStateFromMeta
+
+import foundation.level.offset
+
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import io.netty.buffer.ByteBuf
@@ -18,19 +26,19 @@ import micdoodle8.mods.galacticraft.core.wrappers.IFluidHandlerWrapper
 import micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMars
 import micdoodle8.mods.galacticraft.planets.mars.inventory.ContainerTerraformer
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockBush
 import net.minecraft.block.BlockSapling
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.WorldlyContainer as ISidedInventory
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
@@ -38,8 +46,9 @@ import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import kotlin.math.ceil
 import kotlin.math.max
@@ -171,11 +180,11 @@ open class TileEntityTerraformer constructor() : TileBaseElectricBlockWithInvent
                                 ) {
                                     this.terraformableBlocksList.add(BlockPos(x, y, z))
                                 } else if (doTrees) {
-                                    val blockIDAbove: Block = this.world.getBlockState(pos.up()).getBlock()
+                                    val blockIDAbove: Block = this.world.getBlockState(pos.above()).getBlock()
                                     if (blockID === Blocks.GRASS && blockIDAbove.isAir(
-                                            this.world.getBlockState(pos.up()),
+                                            this.world.getBlockState(pos.above()),
                                             this.world,
-                                            pos.up()
+                                            pos.above()
                                         )
                                     ) {
                                         this.grassBlockList.add(BlockPos(x, y, z))
@@ -226,7 +235,7 @@ open class TileEntityTerraformer constructor() : TileBaseElectricBlockWithInvent
                     else -> id = Blocks.GRASS
                 }
 
-                this.world.setBlockState(vec, id.getDefaultState())
+                this.world.setBlockAndUpdate(vec, id.defaultBlockState())
 
                 if (id === Blocks.GRASS) {
                     this.useCount[0]++
@@ -245,7 +254,7 @@ open class TileEntityTerraformer constructor() : TileBaseElectricBlockWithInvent
             val vecGrass: BlockPos = grassBlockList.get(randomIndex)
 
             if (this.world.getBlockState(vecGrass).getBlock() === Blocks.GRASS) {
-                val vecSapling: BlockPos = vecGrass.add(0, 1, 0)
+                val vecSapling: BlockPos = vecGrass.offset(0, 1, 0)
                 val sapling: ItemStack? = this.getFirstSaplingStack()
                 var flag: Boolean = false
 
@@ -259,7 +268,7 @@ open class TileEntityTerraformer constructor() : TileBaseElectricBlockWithInvent
 
                 if (!flag && sapling != null) {
                     val b: Block = Block.getBlockFromItem(sapling.getItem())
-                    this.world.setBlockState(vecSapling, b.getStateFromMeta(sapling.getItemDamage()), 3)
+                    this.world.setBlock(vecSapling, b.getStateFromMeta(sapling.legacyItemValue), 3)
                     if (b is BlockSapling) {
                         if (this.world.getLightFromNeighbors(vecSapling) >= 9) {
                             b.grow(this.world, vecSapling, this.world.getBlockState(vecSapling), this.world.rand)
@@ -429,33 +438,33 @@ open class TileEntityTerraformer constructor() : TileBaseElectricBlockWithInvent
         super.readFromNBT(nbt)
         this.stacks = this.readStandardItemsFromNBT(nbt)
 
-        this.bubbleSize = nbt.getFloat("BubbleSize")
+        this.bubbleSize = nbt.getFloatOr("BubbleSize", 0f)
         this.useCount = nbt.getIntArray("UseCountArray")
 
         if (this.useCount.size == 0) {
             this.useCount = IntArray(2)
         }
 
-        if (nbt.hasKey("waterTank")) {
-            this.waterTank.readFromNBT(nbt.getCompoundTag("waterTank"))
+        if (nbt.containsTag("waterTank")) {
+            this.waterTank.readFromNBT(nbt.getCompoundOrEmpty("waterTank"))
         }
 
-        if (nbt.hasKey("bubbleVisible")) {
-            this.setBubbleVisible(nbt.getBoolean("bubbleVisible"))
+        if (nbt.containsTag("bubbleVisible")) {
+            this.setBubbleVisible(nbt.getBooleanOr("bubbleVisible", false))
         }
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
         this.writeStandardItemsToNBT(nbt, this.stacks)
-        nbt.setFloat("BubbleSize", this.bubbleSize)
-        nbt.setIntArray("UseCountArray", this.useCount)
+        nbt.putFloat("BubbleSize", this.bubbleSize)
+        nbt.putIntArray("UseCountArray", this.useCount)
 
         if (this.waterTank.getFluid() != null) {
-            nbt.setTag("waterTank", this.waterTank.writeToNBT(NBTTagCompound()))
+            nbt.put("waterTank", this.waterTank.writeToNBT(NBTTagCompound()))
         }
 
-        nbt.setBoolean("bubbleVisible", this.shouldRenderBubble)
+        nbt.putBoolean("bubbleVisible", this.shouldRenderBubble)
         return nbt
     }
 
@@ -463,8 +472,8 @@ open class TileEntityTerraformer constructor() : TileBaseElectricBlockWithInvent
         return this.stacks
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.tile_terraformer.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.tile_terraformer.name")
     }
 
     // ISidedInventory Implementation:
@@ -472,11 +481,11 @@ open class TileEntityTerraformer constructor() : TileBaseElectricBlockWithInvent
         return intArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
-        return this.isItemValidForSlot(slotID, itemstack)
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, itemstack)
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         if (slotID == 0) {
             return FluidUtil.isEmptyContainer(itemstack)
         }
@@ -491,7 +500,7 @@ open class TileEntityTerraformer constructor() : TileBaseElectricBlockWithInvent
         return true
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         when (slotID) {
             0 -> {
                 val stack: FluidStack? = net.minecraftforge.fluids.FluidUtil.getFluidContained(itemstack)
@@ -499,7 +508,7 @@ open class TileEntityTerraformer constructor() : TileBaseElectricBlockWithInvent
             }
 
             1 -> return ItemElectricBase.isElectricItem(itemstack.getItem())
-            2, 3, 4, 5 -> return itemstack.getItem() === Items.DYE && itemstack.getItemDamage() == 15
+            2, 3, 4, 5 -> return itemstack.getItem() === Items.DYE && itemstack.legacyItemValue == 15
             6, 7, 8, 9 -> return ContainerTerraformer.isOnSaplingList(itemstack)
             10, 11, 12, 13 -> return itemstack.getItem() === Items.WHEAT_SEEDS
         }
@@ -511,7 +520,7 @@ open class TileEntityTerraformer constructor() : TileBaseElectricBlockWithInvent
     }
 
     override fun getBatteryInSlot(): ItemStack {
-        return this.getStackInSlot(1)
+        return this.getItem(1)
     }
 
     override fun setDisabled(index: Int, disabled: Boolean) {
@@ -578,7 +587,7 @@ open class TileEntityTerraformer constructor() : TileBaseElectricBlockWithInvent
         return ((arrayOf<FluidTankInfo>(FluidTankInfo(this.waterTank)) as Array<FluidTankInfo?>?))!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         return AxisAlignedBB(
             (this.getPos().getX() - this.bubbleSize).toDouble(),

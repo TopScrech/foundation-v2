@@ -11,7 +11,7 @@ import net.minecraft.command.CommandBase
 import net.minecraft.command.CommandException
 import net.minecraft.command.ICommandSender
 import net.minecraft.command.WrongUsageException
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.server.MinecraftServer
 import java.util.*
 
@@ -56,7 +56,7 @@ open class CommandGCEnergyUnits : CommandBase() {
                     (GalacticraftCore.packetPipeline)!!.sendTo(
                         PacketSimple(
                             PacketSimple.EnumSimplePacket.C_UPDATE_ENERGYUNITS,
-                            GCCoreUtil.getDimensionID(playerBase.world),
+                            GCCoreUtil.getDimensionID(playerBase.level()),
                             arrayOf<Any>(paramvalue)
                         ), playerBase
                     )

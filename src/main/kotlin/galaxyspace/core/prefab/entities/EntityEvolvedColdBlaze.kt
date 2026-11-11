@@ -3,7 +3,7 @@ package galaxyspace.core.prefab.entities
 import galaxyspace.core.prefab.entities.EntityEvolvedColdBlaze
 import galaxyspace.core.prefab.entities.EntityIceSpike
 import micdoodle8.mods.galacticraft.api.entity.IEntityBreathable
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.EntityAIBase
 import net.minecraft.entity.ai.EntityAIHurtByTarget
@@ -14,14 +14,14 @@ import net.minecraft.entity.ai.EntityAIWanderAvoidWater
 import net.minecraft.entity.ai.EntityAIWatchClosest
 import net.minecraft.entity.ai.attributes.IAttributeInstance
 import net.minecraft.entity.monster.EntityMob
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.SoundEvents
-import net.minecraft.util.DamageSource
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.SoundEvent
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 
 open class EntityEvolvedColdBlaze constructor(world: World) : EntityMob(world), IEntityBreathable {
     private var heightOffset = 0.5f
@@ -101,7 +101,7 @@ open class EntityEvolvedColdBlaze constructor(world: World) : EntityMob(world), 
 
         val entitylivingbase: EntityLivingBase? = this.getAttackTarget()
 
-        if (entitylivingbase != null && entitylivingbase.posY + entitylivingbase.getEyeHeight()
+        if (entitylivingbase != null && entitylivingbase.y + entitylivingbase.getEyeHeight()
                 .toDouble() > this.posY + this.getEyeHeight().toDouble() + this.heightOffset.toDouble()
         ) {
             this.motionY += (0.30000001192092896 - this.motionY) * 0.30000001192092896
@@ -127,7 +127,7 @@ open class EntityEvolvedColdBlaze constructor(world: World) : EntityMob(world), 
          */
         override fun shouldExecute(): Boolean {
             val entitylivingbase: EntityLivingBase? = this.blaze.getAttackTarget()
-            return entitylivingbase != null && entitylivingbase.isEntityAlive()
+            return entitylivingbase != null && entitylivingbase.isAlive()
         }
 
         /**
@@ -152,12 +152,12 @@ open class EntityEvolvedColdBlaze constructor(world: World) : EntityMob(world), 
                 }
 
                 this.blaze.getMoveHelper()
-                    .setMoveTo(entitylivingbase!!.posX, entitylivingbase.posY, entitylivingbase.posZ, 1.0)
+                    .setMoveTo(entitylivingbase!!.x, entitylivingbase.y, entitylivingbase.z, 1.0)
             } else if (d0 < this.getFollowDistance() * this.getFollowDistance()) {
-                val d1: Double = entitylivingbase!!.posX - this.blaze.posX
+                val d1: Double = entitylivingbase!!.x - this.blaze.posX
                 val d2: Double =
-                    entitylivingbase.getEntityBoundingBox().minY + (entitylivingbase.height / 2.0f).toDouble() - (this.blaze.posY + (this.blaze.height / 2.0f).toDouble())
-                val d3: Double = entitylivingbase.posZ - this.blaze.posZ
+                    entitylivingbase.getBoundingBox().minY + (entitylivingbase.height / 2.0f).toDouble() - (this.blaze.posY + (this.blaze.height / 2.0f).toDouble())
+                val d3: Double = entitylivingbase.z - this.blaze.posZ
 
                 if (this.attackTime <= 0) {
                     ++this.attackStep
@@ -202,7 +202,7 @@ open class EntityEvolvedColdBlaze constructor(world: World) : EntityMob(world), 
             } else {
                 this.blaze.getNavigator().clearPath()
                 this.blaze.getMoveHelper()
-                    .setMoveTo(entitylivingbase!!.posX, entitylivingbase.posY, entitylivingbase.posZ, 1.0)
+                    .setMoveTo(entitylivingbase!!.x, entitylivingbase.y, entitylivingbase.z, 1.0)
             }
 
             super.updateTask()

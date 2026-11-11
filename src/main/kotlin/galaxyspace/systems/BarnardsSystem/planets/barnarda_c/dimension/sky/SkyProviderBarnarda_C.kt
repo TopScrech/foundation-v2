@@ -12,8 +12,8 @@ import micdoodle8.mods.galacticraft.api.prefab.world.gen.WorldProviderSpace
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.Vec3 as Vec3d
 
 open class SkyProviderBarnarda_C : SkyProviderBase() {
     override fun rendererSky(tessellator: Tessellator?, buffer: BufferBuilder?, size: Float, ticks: Float) {
@@ -78,8 +78,8 @@ open class SkyProviderBarnarda_C : SkyProviderBase() {
 
     companion object {
         private val barnarda_c1_Texture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/barnards/moons/barnarda_c1.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/barnards/moons/barnarda_c1.png")
         private val barnarda_c2_Texture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/barnards/moons/barnarda_c2.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/barnards/moons/barnarda_c2.png")
     }
 }

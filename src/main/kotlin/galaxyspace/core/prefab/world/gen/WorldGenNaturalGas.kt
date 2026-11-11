@@ -1,10 +1,10 @@
 package galaxyspace.core.prefab.world.gen
 
 import galaxyspace.core.GSFluids
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.IChunkProvider
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.fml.common.IWorldGenerator
@@ -72,9 +72,9 @@ open class WorldGenNaturalGas constructor(
                                 val state: IBlockState = par1World.getBlockState(pos)
 
                                 if (var39 * var39 + var42 * var42 + var45 * var45 < 1.0 && state === this.replaceBlock) {
-                                    par1World.setBlockState(
+                                    par1World.setBlock(
                                         BlockPos(var38, var41, var44),
-                                        (GSFluids.BLOCK_NATURE_GAS)!!.getDefaultState(),
+                                        (GSFluids.BLOCK_NATURE_GAS)!!.defaultBlockState(),
                                         2
                                     )
                                 }

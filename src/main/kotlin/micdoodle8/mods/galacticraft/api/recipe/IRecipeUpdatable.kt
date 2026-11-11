@@ -2,10 +2,11 @@ package micdoodle8.mods.galacticraft.api.recipe
 
 import java.util.List
 
-import net.minecraft.item.ItemStack
-import net.minecraft.item.crafting.IRecipe
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.crafting.Recipe
+import net.minecraft.world.item.crafting.CraftingInput
 
-interface IRecipeUpdatable : IRecipe {
+interface IRecipeUpdatable : Recipe<CraftingInput> {
     /**
      * Replace all inputs which match ItemStack inputA
      * with a List<ItemStack> (probably representing OreDict output).

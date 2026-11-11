@@ -10,8 +10,8 @@ import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 import java.util.ArrayList
@@ -23,11 +23,11 @@ import kotlin.math.sin
 object FootprintRenderer {
     @JvmField
     var footprints: MutableMap<Long, MutableList<Footprint?>> = ConcurrentHashMap<Long, MutableList<Footprint?>>()
-    private val footprintTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/misc/footprint.png")
+    private val footprintTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/misc/footprint.png")
 
     @JvmStatic
     fun renderFootprints(player: EntityPlayer, partialTicks: Float) {
-        val dimActive: Int = GCCoreUtil.getDimensionID(player.world)
+        val dimActive: Int = GCCoreUtil.getDimensionID(player.level())
         val footprintsToDraw: MutableList<Footprint> = LinkedList<Footprint>()
 
         for (footprintList in footprints.values) {
@@ -43,9 +43,9 @@ object FootprintRenderer {
         }
 
         GlStateManager.pushMatrix()
-        val interpPosX: Double = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks
-        val interpPosY: Double = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks
-        val interpPosZ: Double = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks
+        val interpPosX: Double = player.lastTickPosX + (player.x - player.lastTickPosX) * partialTicks
+        val interpPosY: Double = player.lastTickPosY + (player.y - player.lastTickPosY) * partialTicks
+        val interpPosZ: Double = player.lastTickPosZ + (player.z - player.lastTickPosZ) * partialTicks
         FMLClientHandler.instance().getClient().renderEngine.bindTexture(footprintTexture)
 
         GlStateManager.depthMask(true)

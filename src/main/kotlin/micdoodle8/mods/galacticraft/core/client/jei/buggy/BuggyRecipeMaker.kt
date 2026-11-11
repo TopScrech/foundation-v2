@@ -5,7 +5,7 @@ import java.util.ArrayList
 import micdoodle8.mods.galacticraft.api.GalacticraftRegistry
 import micdoodle8.mods.galacticraft.api.recipe.INasaWorkbenchRecipe
 import micdoodle8.mods.galacticraft.core.GCItems
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 object BuggyRecipeMaker {
     @JvmStatic

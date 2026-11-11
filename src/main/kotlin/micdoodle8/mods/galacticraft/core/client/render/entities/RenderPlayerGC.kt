@@ -11,9 +11,9 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMars
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.AbstractClientPlayer
+import net.minecraft.client.player.AbstractClientPlayer
 import net.minecraft.client.model.ModelPlayer
 import net.minecraft.client.renderer.entity.RenderLivingBase
 import net.minecraft.client.renderer.entity.RenderPlayer
@@ -21,15 +21,14 @@ import net.minecraft.client.renderer.entity.layers.LayerArmorBase
 import net.minecraft.client.renderer.entity.layers.LayerCustomHead
 import net.minecraft.client.renderer.entity.layers.LayerHeldItem
 import net.minecraft.client.renderer.entity.layers.LayerRenderer
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.entity.player.PlayerEvent
-import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 import java.lang.reflect.Field
 
@@ -46,7 +45,7 @@ import java.lang.reflect.Field
 open class RenderPlayerGC : RenderPlayer {
     @JvmOverloads
     constructor(smallArms: Boolean = false) : super(
-        FMLClientHandler.instance().getClient().getRenderManager(),
+        Minecraft.getInstance().getRenderManager(),
         smallArms
     ) {
         this.mainModel = ModelPlayerGC(0.0f, smallArms)
@@ -101,11 +100,11 @@ open class RenderPlayerGC : RenderPlayer {
         if (GalacticraftCore.isPlanetsLoaded) {
             this.addLayer<EntityLivingBase?, LayerThermalPadding?>(LayerThermalPadding(this))
 
-            thermalPaddingTexture0 = ResourceLocation("galacticraftplanets", "textures/misc/thermal_padding_0.png")
-            thermalPaddingTexture1 = ResourceLocation("galacticraftplanets", "textures/misc/thermal_padding_1.png")
+            thermalPaddingTexture0 = ResourceLocation.fromNamespaceAndPath("galacticraftplanets", "textures/misc/thermal_padding_0.png")
+            thermalPaddingTexture1 = ResourceLocation.fromNamespaceAndPath("galacticraftplanets", "textures/misc/thermal_padding_1.png")
             thermalPaddingTexture1_T2 =
-                ResourceLocation("galacticraftplanets", "textures/misc/thermal_padding_t2_1.png")
-            heatShieldTexture = ResourceLocation("galacticraftplanets", "textures/misc/shield.png")
+                ResourceLocation.fromNamespaceAndPath("galacticraftplanets", "textures/misc/thermal_padding_t2_1.png")
+            heatShieldTexture = ResourceLocation.fromNamespaceAndPath("galacticraftplanets", "textures/misc/shield.png")
 
             this.addLayer<EntityLivingBase?, LayerShield?>(LayerShield(this))
         }
@@ -116,7 +115,7 @@ open class RenderPlayerGC : RenderPlayer {
     }
 
     constructor(old: RenderPlayer, smallArms: Boolean) : super(
-        FMLClientHandler.instance().getClient().getRenderManager(), smallArms
+        Minecraft.getInstance().getRenderManager(), smallArms
     ) {
         this.mainModel = ModelPlayerGC(0.0f, smallArms)
 
@@ -177,22 +176,22 @@ open class RenderPlayerGC : RenderPlayer {
     override fun preRenderCallback(entitylivingbaseIn: AbstractClientPlayer, partialTickTime: Float) {
         super.preRenderCallback(entitylivingbaseIn, partialTickTime)
 
-        if (entitylivingbaseIn.isEntityAlive() && entitylivingbaseIn.isPlayerSleeping()) {
+        if (entitylivingbaseIn.isAlive() && entitylivingbaseIn.isPlayerSleeping()) {
             val event: RotatePlayerEvent = RotatePlayerEvent(entitylivingbaseIn)
             MinecraftForge.EVENT_BUS.post(event)
 
             if (!event.vanillaOverride) {
                 super.preRenderCallback(entitylivingbaseIn, partialTickTime)
             } else if (event.shouldRotate == null || (event.shouldRotate)!!) {
-                entitylivingbaseIn.rotationYawHead = 0f
-                entitylivingbaseIn.prevRotationYawHead = 0f
+                entitylivingbaseIn.yHeadRot = 0f
+                entitylivingbaseIn.yHeadRotO = 0f
                 GL11.glTranslatef(0.0f, 0.3f, 0.0f)
             }
         }
     }
 
     override fun applyRotations(abstractClientPlayer: AbstractClientPlayer, par2: Float, par3: Float, par4: Float) {
-        if (abstractClientPlayer.isEntityAlive() && abstractClientPlayer.isPlayerSleeping()) {
+        if (abstractClientPlayer.isAlive() && abstractClientPlayer.isPlayerSleeping()) {
             val event: RotatePlayerEvent = RotatePlayerEvent(abstractClientPlayer)
             MinecraftForge.EVENT_BUS.post(event)
 
@@ -204,11 +203,11 @@ open class RenderPlayerGC : RenderPlayer {
                 var rotation: Float = 0.0f
 
                 if (abstractClientPlayer.bedLocation != null) {
-                    var bed: IBlockState = abstractClientPlayer.world.getBlockState(abstractClientPlayer.bedLocation)
+                    var bed: IBlockState = abstractClientPlayer.level().getBlockState(abstractClientPlayer.bedLocation)
 
                     if (bed.getBlock().isBed(
                             bed,
-                            abstractClientPlayer.world,
+                            abstractClientPlayer.level(),
                             abstractClientPlayer.bedLocation,
                             abstractClientPlayer
                         )
@@ -218,7 +217,7 @@ open class RenderPlayerGC : RenderPlayer {
                             ) == BlockMulti.EnumBlockMultiType.CRYO_CHAMBER
                         ) {
                             val tile: TileEntity? =
-                                event.getEntityPlayer().world.getTileEntity(abstractClientPlayer.bedLocation)
+                                event.getEntityPlayer().world.getBlockEntity(abstractClientPlayer.bedLocation)
                             if (tile is TileEntityMulti) {
                                 bed = event.getEntityPlayer().world.getBlockState(tile.mainBlockPosition)
                             }
@@ -243,11 +242,11 @@ else -> {}
                 GL11.glRotatef(rotation, 0.0f, 1.0f, 0.0f)
             }
         } else {
-            if (Minecraft.getMinecraft().gameSettings.thirdPersonView != 0) {
+            if (Minecraft.getInstance().gameSettings.thirdPersonView != 0) {
                 val player: EntityPlayer = abstractClientPlayer as EntityPlayer
 
-                if (player.getRidingEntity() is ICameraZoomEntity) {
-                    val rocket: Entity? = player.getRidingEntity()
+                if (player.getVehicle() is ICameraZoomEntity) {
+                    val rocket: Entity? = player.getVehicle()
                     val rotateOffset: Float = (rocket as ICameraZoomEntity).getRotateOffset()
                     if (rotateOffset > -10f) {
                         GL11.glTranslatef(0f, -rotateOffset, 0f)

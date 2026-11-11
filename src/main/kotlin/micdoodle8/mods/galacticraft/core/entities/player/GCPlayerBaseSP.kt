@@ -7,11 +7,11 @@ import micdoodle8.mods.galacticraft.core.TransformerHooks
 import micdoodle8.mods.galacticraft.core.client.EventHandlerClient
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.CompatibilityManager
-import net.minecraft.entity.MoverType
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.MoverType
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class GCPlayerBaseSP constructor(playerAPI: ClientPlayerAPI) : ClientPlayerBase(playerAPI) {
     @JvmField
@@ -104,12 +104,12 @@ open class GCPlayerBaseSP constructor(playerAPI: ClientPlayerAPI) : ClientPlayer
     }
 
     //    @Override
-    //    @SideOnly(Side.CLIENT)
+    //    @OnlyIn(Dist.CLIENT)
     //    public float getBedOrientationInDegrees()
     //    {
     //        return this.getClientHandler().getBedOrientationInDegrees(this, super.getBedOrientationInDegrees());
     //    }
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getBrightnessForRender(): Int {
         var height: Double = this.player.posY + this.player.getEyeHeight().toDouble()
         if (height > 255.0) height = 255.0

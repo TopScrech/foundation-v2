@@ -6,11 +6,11 @@ import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.SimpleChannelInboundHandler
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.network.IPacket
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.network.INetHandler
 import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.lang.Exception
 
 @Sharable

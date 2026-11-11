@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.blocks
 
+import foundation.item.FoundationItemVariants
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.api.block.IDetectableResource
 import micdoodle8.mods.galacticraft.api.block.IPlantableBlock
 import micdoodle8.mods.galacticraft.api.block.ITerraformableBlock
@@ -7,31 +11,31 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.IPlantable
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.Random
 
 open class BlockBasicAsteroids constructor(assetName: String?) : Block(Material.ROCK), IDetectableResource,
-    IPlantableBlock, ITerraformableBlock, ISortableBlock {
+    IPlantableBlock, ITerraformableBlock, ISortableBlock, LegacyBlockMetadata {
     enum class EnumBlockBasic(private val meta: Int, private val serializedName: String) : IStringSerializable {
         ASTEROID_0(0, "asteroid_rock_0"),
         ASTEROID_1(1, "asteroid_rock_1"),
@@ -46,7 +50,9 @@ open class BlockBasicAsteroids constructor(assetName: String?) : Block(Material.
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -65,7 +71,7 @@ open class BlockBasicAsteroids constructor(assetName: String?) : Block(Material.
         this.setTranslationKey(assetName)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
@@ -79,13 +85,13 @@ open class BlockBasicAsteroids constructor(assetName: String?) : Block(Material.
         if (state.getValue(BASIC_TYPE) == EnumBlockBasic.ORE_ILMENITE && world is World) {
             val ret: ArrayList<ItemStack?> = ArrayList<ItemStack?>()
 
-            var count: Int = quantityDropped(state, fortune, world.rand)
+            var count: Int = quantityDropped(state, fortune, world.random)
             for (i: Int in 0..<count) {
-                ret.add(ItemStack(AsteroidsItems.basicItem, 1, 3))
+                ret.add(FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 3))
             }
-            count = quantityDropped(state, fortune, world.rand)
+            count = quantityDropped(state, fortune, world.random)
             for (i: Int in 0..<count) {
-                ret.add(ItemStack(AsteroidsItems.basicItem, 1, 4))
+                ret.add(FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 4))
             }
             return ret
         }
@@ -114,7 +120,7 @@ open class BlockBasicAsteroids constructor(assetName: String?) : Block(Material.
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         var var4: Int
 
@@ -169,8 +175,8 @@ open class BlockBasicAsteroids constructor(assetName: String?) : Block(Material.
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(BASIC_TYPE, (EnumBlockBasic.Companion.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(BASIC_TYPE, (EnumBlockBasic.Companion.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -195,7 +201,7 @@ open class BlockBasicAsteroids constructor(assetName: String?) : Block(Material.
 
         val meta: Int = this.getMetaFromState(state)
         if (meta == 4) {
-            val rand: Random = if (world is World) world.rand else Random()
+            val rand: Random = if (world is World) world.random else Random()
             return MathHelper.getInt(rand, 2, 3)
         }
         return 0

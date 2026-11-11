@@ -8,13 +8,13 @@ import micdoodle8.mods.galacticraft.core.client.sounds.GCSounds
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.miccore.Annotations
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraftforge.fml.LogicalSide as Side
 
 open class TileEntityAirLockController constructor() : TileEntityAirLock() {
     @JvmField
@@ -140,7 +140,7 @@ open class TileEntityAirLockController constructor() : TileEntityAirLock() {
 
                 if (this.active != this.lastActive) {
                     val state: IBlockState = this.world.getBlockState(this.getPos())
-                    this.world.notifyBlockUpdate(this.getPos(), state, state, 3)
+                    this.world.sendBlockUpdated(this.getPos(), state, state, 3)
                 }
 
                 this.lastActive = this.active
@@ -178,7 +178,7 @@ open class TileEntityAirLockController constructor() : TileEntityAirLock() {
                         if (this.world.getBlockState(pos).getBlock()
                                 .isAir(this.world.getBlockState(pos), this.world, pos)
                         ) {
-                            this.world.setBlockState(pos, (GCBlocks.airLockSeal)!!.getDefaultState(), 3)
+                            this.world.setBlock(pos, (GCBlocks.airLockSeal)!!.defaultBlockState(), 3)
                         }
                         z++
                     }
@@ -195,7 +195,7 @@ open class TileEntityAirLockController constructor() : TileEntityAirLock() {
                         if (this.world.getBlockState(pos).getBlock()
                                 .isAir(this.world.getBlockState(pos), this.world, pos)
                         ) {
-                            this.world.setBlockState(pos, (GCBlocks.airLockSeal)!!.getDefaultState(), 3)
+                            this.world.setBlock(pos, (GCBlocks.airLockSeal)!!.defaultBlockState(), 3)
                         }
                         y++
                     }
@@ -210,7 +210,7 @@ open class TileEntityAirLockController constructor() : TileEntityAirLock() {
                         if (this.world.getBlockState(pos).getBlock()
                                 .isAir(this.world.getBlockState(pos), this.world, pos)
                         ) {
-                            this.world.setBlockState(pos, (GCBlocks.airLockSeal)!!.getDefaultState(), 3)
+                            this.world.setBlock(pos, (GCBlocks.airLockSeal)!!.defaultBlockState(), 3)
                         }
                         y++
                     }
@@ -253,7 +253,7 @@ open class TileEntityAirLockController constructor() : TileEntityAirLock() {
                     while (z <= this.protocol!!.maxZ - 1) {
                         pos = BlockPos(x, y, z)
                         if (this.world.getBlockState(pos).getBlock() === GCBlocks.airLockSeal) {
-                            this.world.setBlockToAir(pos)
+                            this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                         }
                         z++
                     }
@@ -268,7 +268,7 @@ open class TileEntityAirLockController constructor() : TileEntityAirLock() {
                     while (y <= this.lastProtocol!!.maxY - 1) {
                         pos = BlockPos(x, y, z)
                         if (this.world.getBlockState(pos).getBlock() === GCBlocks.airLockSeal) {
-                            this.world.setBlockToAir(pos)
+                            this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                         }
                         y++
                     }
@@ -281,7 +281,7 @@ open class TileEntityAirLockController constructor() : TileEntityAirLock() {
                     while (y <= this.lastProtocol!!.maxY - 1) {
                         pos = BlockPos(x, y, z)
                         if (this.world.getBlockState(pos).getBlock() === GCBlocks.airLockSeal) {
-                            this.world.setBlockToAir(pos)
+                            this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                         }
                         y++
                     }
@@ -293,30 +293,30 @@ open class TileEntityAirLockController constructor() : TileEntityAirLock() {
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.ownerName = nbt.getString("OwnerName")
-        this.redstoneActivation = nbt.getBoolean("RedstoneActivation")
-        this.playerDistanceActivation = nbt.getBoolean("PlayerDistanceActivation")
-        this.playerDistanceSelection = nbt.getInteger("PlayerDistanceSelection")
-        this.playerNameMatches = nbt.getBoolean("PlayerNameMatches")
-        this.playerToOpenFor = nbt.getString("PlayerToOpenFor")
-        this.invertSelection = nbt.getBoolean("InvertSelection")
-        this.active = nbt.getBoolean("active")
-        this.lastActive = nbt.getBoolean("lastActive")
-        this.horizontalModeEnabled = nbt.getBoolean("HorizontalModeEnabled")
+        this.ownerName = nbt.getStringOr("OwnerName", "")
+        this.redstoneActivation = nbt.getBooleanOr("RedstoneActivation", false)
+        this.playerDistanceActivation = nbt.getBooleanOr("PlayerDistanceActivation", false)
+        this.playerDistanceSelection = nbt.getIntOr("PlayerDistanceSelection", 0)
+        this.playerNameMatches = nbt.getBooleanOr("PlayerNameMatches", false)
+        this.playerToOpenFor = nbt.getStringOr("PlayerToOpenFor", "")
+        this.invertSelection = nbt.getBooleanOr("InvertSelection", false)
+        this.active = nbt.getBooleanOr("active", false)
+        this.lastActive = nbt.getBooleanOr("lastActive", false)
+        this.horizontalModeEnabled = nbt.getBooleanOr("HorizontalModeEnabled", false)
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setString("OwnerName", this.ownerName)
-        nbt.setBoolean("RedstoneActivation", this.redstoneActivation)
-        nbt.setBoolean("PlayerDistanceActivation", this.playerDistanceActivation)
-        nbt.setInteger("PlayerDistanceSelection", this.playerDistanceSelection)
-        nbt.setBoolean("PlayerNameMatches", this.playerNameMatches)
-        nbt.setString("PlayerToOpenFor", this.playerToOpenFor)
-        nbt.setBoolean("InvertSelection", this.invertSelection)
-        nbt.setBoolean("active", this.active)
-        nbt.setBoolean("lastActive", this.lastActive)
-        nbt.setBoolean("HorizontalModeEnabled", this.horizontalModeEnabled)
+        nbt.putString("OwnerName", this.ownerName)
+        nbt.putBoolean("RedstoneActivation", this.redstoneActivation)
+        nbt.putBoolean("PlayerDistanceActivation", this.playerDistanceActivation)
+        nbt.putInt("PlayerDistanceSelection", this.playerDistanceSelection)
+        nbt.putBoolean("PlayerNameMatches", this.playerNameMatches)
+        nbt.putString("PlayerToOpenFor", this.playerToOpenFor)
+        nbt.putBoolean("InvertSelection", this.invertSelection)
+        nbt.putBoolean("active", this.active)
+        nbt.putBoolean("lastActive", this.lastActive)
+        nbt.putBoolean("HorizontalModeEnabled", this.horizontalModeEnabled)
         return nbt
     }
 

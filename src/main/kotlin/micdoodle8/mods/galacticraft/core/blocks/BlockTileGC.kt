@@ -2,12 +2,12 @@ package micdoodle8.mods.galacticraft.core.blocks
 
 import net.minecraft.block.ITileEntityProvider
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.inventory.IInventory
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.Container as IInventory
 import net.minecraft.inventory.InventoryHelper
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 
 /**
  * An advanced block class that is to be extended for wrenching capabilities.
@@ -26,8 +26,8 @@ abstract class BlockTileGC(material: Material?) : BlockAdvanced((material)!!), I
      * so: do NOT invalidate old tileEntities before breaking blocks
      */
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        if (worldIn.getTileEntity(pos) is IInventory) {
-            InventoryHelper.dropInventoryItems(worldIn, pos, worldIn.getTileEntity(pos) as IInventory?)
+        if (worldIn.getBlockEntity(pos) is IInventory) {
+            InventoryHelper.dropInventoryItems(worldIn, pos, worldIn.getBlockEntity(pos) as IInventory?)
         }
         super.breakBlock(worldIn, pos, state)
     }
@@ -46,7 +46,7 @@ abstract class BlockTileGC(material: Material?) : BlockAdvanced((material)!!), I
         eventParam: Int
     ): Boolean {
         super.eventReceived(state, worldIn, pos, eventID, eventParam)
-        val tileentity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileentity: TileEntity? = worldIn.getBlockEntity(pos)
         return tileentity != null && tileentity.receiveClientEvent(eventID, eventParam)
     }
 

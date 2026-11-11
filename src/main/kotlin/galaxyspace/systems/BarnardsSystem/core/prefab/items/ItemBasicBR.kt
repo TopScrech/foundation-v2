@@ -1,5 +1,11 @@
 package galaxyspace.systems.BarnardsSystem.core.prefab.items
 
+import foundation.item.legacyItemValue
+
+import foundation.block.getStateFromMeta
+
+import foundation.level.offset
+
 import galaxyspace.GalaxySpace
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Blocks.EnumBlockBarnardaC
@@ -13,26 +19,26 @@ import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.world.gen.WorldGenT
 import micdoodle8.mods.galacticraft.core.items.ISortableItem
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import net.minecraft.block.BlockLiquid
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidRegistry
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemBasicBR constructor() : Item(), ISortableItem {
     init {
@@ -52,13 +58,13 @@ open class ItemBasicBR constructor() : Item(), ISortableItem {
     }
 
     override fun onItemRightClick(world: World, player: EntityPlayer, hand: EnumHand): ActionResult<ItemStack?> {
-        val itemstack: ItemStack = player.getHeldItem(hand)
+        val itemstack: ItemStack = player.getItemInHand(hand)
         val raytraceresult: RayTraceResult = this.rayTrace(world, player, true)
-        if (raytraceresult == null) return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getHeldItem(hand))
+        if (raytraceresult == null) return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getItemInHand(hand))
 
         val pos: BlockPos = raytraceresult.getBlockPos()
 
-        if (itemstack.getItemDamage() == 0) {
+        if (itemstack.legacyItemValue == 0) {
             if (raytraceresult.typeOfHit == RayTraceResult.Type.BLOCK) {
                 if (!world.isBlockModifiable(player, pos) || !player.canPlayerEdit(
                         pos.offset(raytraceresult.sideHit),
@@ -70,30 +76,30 @@ open class ItemBasicBR constructor() : Item(), ISortableItem {
                 }
 
                 var hasWater: Boolean = false
-                for (water: BlockPos in BlockPos.getAllInBox(pos.add(-1, 0, -1), pos.add(1, 0, 1))) {
+                for (water: BlockPos in BlockPos.getAllInBox(pos.offset(-1, 0, -1), pos.offset(1, 0, 1))) {
                     if (world.getBlockState(water).getBlock() === FluidRegistry.WATER.getBlock()) {
                         hasWater = true
                         break
                     }
                 }
 
-                val blockpos1: BlockPos = pos.up()
+                val blockpos1: BlockPos = pos.above()
                 val iblockstate: IBlockState = world.getBlockState(pos)
 
-                if (hasWater && world.isAirBlock(blockpos1) && (iblockstate === BRBlocks.BARNARDA_C_GRASS.getDefaultState()
-                        .withProperty(
+                if (hasWater && world.isEmptyBlock(blockpos1) && (iblockstate === BRBlocks.BARNARDA_C_GRASS.defaultBlockState()
+                        .setValue(
                             Barnarda_C_Grass.Companion.BASIC_TYPE,
                             Barnarda_C_Grass.EnumBlockGrass.GRASS
-                        ) || iblockstate === BRBlocks.BARNARDA_C_BLOCKS.getDefaultState()
-                        .withProperty(
+                        ) || iblockstate === BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState()
+                        .setValue(
                             Barnarda_C_Blocks.Companion.BASIC_TYPE,
                             EnumBlockBarnardaC.DIRT
                         ))
                 ) {
-                    world.setBlockState(
+                    world.setBlockAndUpdate(
                         blockpos1,
-                        BRBlocks.BARNARDA_C_DANDELIONS.getDefaultState()
-                            .withProperty(
+                        BRBlocks.BARNARDA_C_DANDELIONS.defaultBlockState()
+                            .setValue(
                                 Barnarda_C_Dandelions.Companion.BASIC_TYPE,
                                 Barnarda_C_Dandelions.EnumBlockDandelions.REEDS
                             )
@@ -113,7 +119,7 @@ open class ItemBasicBR constructor() : Item(), ISortableItem {
                 }
             }
         }
-        if (itemstack.getItemDamage() == 2) {
+        if (itemstack.legacyItemValue == 2) {
             if (raytraceresult.typeOfHit == RayTraceResult.Type.BLOCK) {
                 if (!world.isBlockModifiable(player, pos) || !player.canPlayerEdit(
                         pos.offset(raytraceresult.sideHit),
@@ -124,42 +130,42 @@ open class ItemBasicBR constructor() : Item(), ISortableItem {
                     return ActionResult<ItemStack?>(EnumActionResult.FAIL, itemstack)
                 }
 
-                val blockpos1: BlockPos = pos.up()
+                val blockpos1: BlockPos = pos.above()
                 val iblockstate: IBlockState = world.getBlockState(pos)
 
-                if (iblockstate.getMaterial() === Material.WATER && (iblockstate.getValue(BlockLiquid.LEVEL) as Int) == 0 && world.isAirBlock(
+                if (iblockstate.getMaterial() === Material.WATER && (iblockstate.getValue(BlockLiquid.LEVEL) as Int) == 0 && world.isEmptyBlock(
                         blockpos1
                     )
                 ) {
-                    world.setBlockState(blockpos1, BRBlocks.BARNARDA_C_WATER_GRASS.getDefaultState())
+                    world.setBlockAndUpdate(blockpos1, BRBlocks.BARNARDA_C_WATER_GRASS.defaultBlockState())
 
                     world.playSound(player, pos, SoundEvents.BLOCK_WATERLILY_PLACE, SoundCategory.BLOCKS, 1.0f, 1.0f)
                     return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, itemstack)
                 }
             }
         }
-        if (itemstack.getItemDamage() == 3) {
+        if (itemstack.legacyItemValue == 3) {
             (GalaxySpace.instance)!!.debug(pos.toString() + "")
-            if (world.isAirBlock(pos.up())) {
+            if (world.isEmptyBlock(pos.above())) {
                 WorldGenTree_Swampland_2(
-                    BRBlocks.BARNARDA_C_VIOLET_LOG.getDefaultState()
-                        .withProperty(
+                    BRBlocks.BARNARDA_C_VIOLET_LOG.defaultBlockState()
+                        .setValue(
                             Barnarda_C_Logs.Companion.LOG_AXIS,
                             Barnarda_C_Logs.EnumAxis.NONE
-                        ), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0), world.rand.nextInt(3)
-                ).generate(world, world.rand, pos.up())
-                return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getHeldItem(hand))
+                        ), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0), world.random.nextInt(3)
+                ).generate(world, world.random, pos.above())
+                return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getItemInHand(hand))
             }
         }
-        return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getHeldItem(hand))
+        return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getItemInHand(hand))
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(stack: ItemStack, worldIn: World?, list: MutableList<String?>, flagIn: ITooltipFlag) {
     }
 
     override fun getTranslationKey(par1ItemStack: ItemStack): String {
-        return "item." + names[par1ItemStack.getItemDamage()]
+        return "item." + names[par1ItemStack.legacyItemValue]
     }
 
     override fun getMetadata(par1: Int): Int {

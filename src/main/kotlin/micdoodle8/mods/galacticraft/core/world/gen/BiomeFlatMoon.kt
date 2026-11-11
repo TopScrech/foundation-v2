@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 import net.minecraftforge.common.BiomeDictionary
 
 open class BiomeFlatMoon constructor(properties: BiomeProperties?) : BiomeMoon(properties) {

@@ -2,8 +2,8 @@ package micdoodle8.mods.galacticraft.core.wrappers
 
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerHandler
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class PlayerGearData
 @JvmOverloads constructor(

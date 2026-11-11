@@ -12,7 +12,7 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.client.jei.RecipeCategories
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class CircuitFabricatorRecipeCategory constructor(guiHelper: IGuiHelper) : IRecipeCategory<IRecipeWrapper> {
     @Nonnull
@@ -69,6 +69,6 @@ open class CircuitFabricatorRecipeCategory constructor(guiHelper: IGuiHelper) : 
     }
 
     companion object {
-        private val circuitFabTex = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/circuit_fabricator.png")
+        private val circuitFabTex = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/circuit_fabricator.png")
     }
 }

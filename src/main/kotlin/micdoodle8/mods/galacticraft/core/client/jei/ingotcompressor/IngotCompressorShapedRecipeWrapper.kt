@@ -11,7 +11,7 @@ import micdoodle8.mods.galacticraft.core.client.jei.GalacticraftJEI
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.FurnaceRecipes
 import java.awt.Color
 import java.util.*

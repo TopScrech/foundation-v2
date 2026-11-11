@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.moons.enceladus.dimension
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.systems.SolarSystem.SolarSystemBodies
 import galaxyspace.systems.SolarSystem.moons.enceladus.dimension.WorldProviderEnceladus_WE
 import galaxyspace.core.configs.GSConfigWorld
@@ -22,17 +24,17 @@ import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.client.CloudRenderer
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.block.Block
-import net.minecraft.init.Blocks
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class WorldProviderEnceladus_WE : WE_WorldProviderSpace(), IProviderFreeze {
     override fun getHorizon(): Double {
@@ -84,7 +86,7 @@ open class WorldProviderEnceladus_WE : WE_WorldProviderSpace(), IProviderFreeze 
         return !ConfigManagerCore.forceOverworldRespawn
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val var2: Float = this.world.getCelestialAngle(par1)
         var var3: Float = 1.0f - (MathHelper.cos(var2 * Math.PI.toFloat() * 2.0f) * 2.0f + 0.25f)
@@ -104,7 +106,7 @@ open class WorldProviderEnceladus_WE : WE_WorldProviderSpace(), IProviderFreeze 
         return CloudRenderer()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyRenderer(): IRenderHandler? {
         if (super.getSkyRenderer() == null) {
             this.setSkyRenderer(SkyProviderEnceladus())
@@ -157,8 +159,8 @@ open class WorldProviderEnceladus_WE : WE_WorldProviderSpace(), IProviderFreeze 
         rg.replaceBlocksList.clear()
         rg.addReplacingBlock(GSBlocks.EUROPA_BLOCKS.getStateFromMeta(0))
         rg.addReplacingBlock(GSBlocks.EUROPA_BLOCKS.getStateFromMeta(1))
-        rg.addReplacingBlock(Blocks.PACKED_ICE.getDefaultState())
-        rg.lavaBlock = Blocks.AIR.getDefaultState()
+        rg.addReplacingBlock(Blocks.PACKED_ICE.defaultBlockState())
+        rg.lavaBlock = Blocks.AIR.defaultBlockState()
         rg.lavaMaxY = 0
         (cp)!!.createChunkGen_List.add(rg)
 

@@ -6,19 +6,18 @@ import galaxyspace.systems.SolarSystem.planets.mars.dimension.sky.SkyProviderMar
 import micdoodle8.mods.galacticraft.core.client.CloudRenderer
 import micdoodle8.mods.galacticraft.planets.mars.dimension.WorldProviderMars
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.client.multiplayer.WorldClient
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class GSSkyProviderHandler {
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onSkyRendererTick(event: TickEvent.ClientTickEvent?) {
-        val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+        val minecraft: Minecraft = Minecraft.getInstance()
         val world: WorldClient? = minecraft.world
         val player: EntityPlayerSP? = minecraft.player
 

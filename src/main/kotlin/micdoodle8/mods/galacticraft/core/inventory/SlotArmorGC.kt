@@ -1,14 +1,14 @@
 package micdoodle8.mods.galacticraft.core.inventory
 
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.Slot
-import net.minecraft.item.Item
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemArmor
-import net.minecraft.item.ItemStack
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class SlotArmorGC constructor(
     @JvmField val thePlayer: EntityPlayer,
@@ -18,16 +18,16 @@ open class SlotArmorGC constructor(
     par5: Int,
     @JvmField val armorType: Int
 ) : Slot(par2IInventory, par3, par4, par5) {
-    override fun getSlotStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 1
     }
 
-    override fun isItemValid(par1ItemStack: ItemStack): Boolean {
+    override fun mayPlace(par1ItemStack: ItemStack): Boolean {
         val item: Item? = if (par1ItemStack.isEmpty()) null else par1ItemStack.getItem()
         return item != null && item.isValidArmor(par1ItemStack, VALID_EQUIPMENT_SLOTS[this.armorType], this.thePlayer)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSlotTexture(): String? {
         return ItemArmor.EMPTY_SLOT_NAMES[VALID_EQUIPMENT_SLOTS[this.armorType]!!.getIndex()]
     }

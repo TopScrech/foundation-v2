@@ -3,26 +3,26 @@ package galaxyspace.core.client.render.entity
 import galaxyspace.core.util.GSTrace
 import galaxyspace.systems.SolarSystem.planets.overworld.items.tools.ItemMatterManipulator
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraftforge.client.event.RenderWorldLastEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import kotlin.math.sin
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderLaserBeam<T : EntityLivingBase> {
     open fun onRenderWorldLast(event: RenderWorldLastEvent) {
         GlStateManager.disableLighting()
@@ -32,9 +32,9 @@ open class RenderLaserBeam<T : EntityLivingBase> {
 
         GlStateManager.pushMatrix()
         GlStateManager.translate(
-            -Minecraft.getMinecraft().player.posX,
-            -Minecraft.getMinecraft().player.posY,
-            -Minecraft.getMinecraft().player.posZ
+            -Minecraft.getInstance().player.x,
+            -Minecraft.getInstance().player.y,
+            -Minecraft.getInstance().player.z
         )
         renderClient(event.getPartialTicks())
         renderOthers(event.getPartialTicks())
@@ -46,9 +46,9 @@ open class RenderLaserBeam<T : EntityLivingBase> {
     }
 
     open fun renderOthers(ticks: Float) {
-        Minecraft.getMinecraft().world.getLoadedEntityList().stream()
+        Minecraft.getInstance().level.getLoadedEntityList().stream()
             .filter { o: Entity? -> o is EntityPlayer }
-            .filter { player: Entity? -> player != Minecraft.getMinecraft().player }
+            .filter { player: Entity? -> player != Minecraft.getInstance().player }
             .forEach { o: Entity? ->
                 val player: EntityPlayer = o as EntityPlayer
                 if (shouldRenderBeam(player)) {
@@ -65,7 +65,7 @@ open class RenderLaserBeam<T : EntityLivingBase> {
     }
 
     open fun renderClient(ticks: Float) {
-        val player: EntityPlayerSP = Minecraft.getMinecraft().player
+        val player: EntityPlayerSP = Minecraft.getInstance().player
 
         if (shouldRenderBeam(player)) {
             val pos: Vec3d = player.getPositionEyes(1f)
@@ -77,18 +77,18 @@ open class RenderLaserBeam<T : EntityLivingBase> {
     }
 
     protected open fun shouldRenderBeam(entity: EntityPlayer): Boolean {
-        return entity.isHandActive() && entity.getActiveItemStack() != null &&
-                (entity.getActiveItemStack().getItem() is ItemMatterManipulator)
+        return entity.isUsingItem() && entity.getUseItem() != null &&
+                (entity.getUseItem().getItem() is ItemMatterManipulator)
     }
 
     protected open fun onBeamRaycastHit(hit: RayTraceResult, caster: EntityPlayer) {
-        val weaponStack: ItemStack = caster.getActiveItemStack()
+        val weaponStack: ItemStack = caster.getUseItem()
         if (weaponStack != null && weaponStack.getItem() is ItemMatterManipulator) {
             //((EnergyWeapon)weaponStack.getItem()).onProjectileHit(hit, weaponStack, caster.worldObj, 1);
             if (weaponStack.getItem() is ItemMatterManipulator && hit.typeOfHit == RayTraceResult.Type.BLOCK) {
                 GlStateManager.pushMatrix()
                 //RenderUtils.applyColorWithMultipy(getBeamColor(caster), 0.5f + (float)(1 + Math.sin(caster.worldObj.getWorldTime() * 0.5f)) * 0.5f);
-                //Minecraft.getMinecraft().renderEngine.bindTexture(TileEntityRendererStation.glowTexture);
+                //Minecraft.getInstance().renderEngine.bindTexture(TileEntityRendererStation.glowTexture);
                 GlStateManager.translate(
                     hit.getBlockPos().getX() + 0.5,
                     hit.getBlockPos().getY() + 0.5,
@@ -110,7 +110,7 @@ open class RenderLaserBeam<T : EntityLivingBase> {
                 } else if (hit.sideHit == EnumFacing.DOWN) {
                     GlStateManager.rotate(180f, 1f, 0f, 0f)
                 }
-                GlStateManager.scale(1.0, 1.5 + sin(caster.world.getWorldTime() * 0.5) * 0.5, 1.0)
+                GlStateManager.scale(1.0, 1.5 + sin(caster.level().getWorldTime() * 0.5) * 0.5, 1.0)
                 GlStateManager.popMatrix()
             }
         }
@@ -141,7 +141,7 @@ open class RenderLaserBeam<T : EntityLivingBase> {
 
         val hit: RayTraceResult? = GSTrace.rayTrace(
             position,
-            caster.world,
+            caster.level(),
             maxDistance,
             0f,
             Vec3d(0.0, 0.0, 0.0),
@@ -178,7 +178,7 @@ open class RenderLaserBeam<T : EntityLivingBase> {
         viewer: EntityPlayer
     ) {
         if (texture != null) {
-            Minecraft.getMinecraft().renderEngine.bindTexture(texture)
+            Minecraft.getInstance().renderEngine.bindTexture(texture)
         }
 
         GlStateManager.color(0.0f, 1.0f, 1.0f)
@@ -187,12 +187,12 @@ open class RenderLaserBeam<T : EntityLivingBase> {
         //GlStateManager.blendFunc(GL_ONE, GL_ONE);
         //GlStateManager.disableLighting();
         val distance: Double = from.subtract(to).length()
-        val v: Double = -viewer.world.getWorldTime() * 0.2
+        val v: Double = -viewer.level().getWorldTime() * 0.2
 
         GlStateManager.pushMatrix()
         GlStateManager.translate(from.x, from.y, from.z)
         GlStateManager.rotate(-viewer.getRotationYawHead(), 0f, 1f, 0f)
-        GlStateManager.rotate(viewer.rotationPitch, 1f, 0f, 0f)
+        GlStateManager.rotate(viewer.xRot, 1f, 0f, 0f)
         GlStateManager.translate(offest.x, offest.y, offest.z)
         val tessellator: Tessellator = Tessellator.getInstance()
         val wr: BufferBuilder = tessellator.getBuffer()

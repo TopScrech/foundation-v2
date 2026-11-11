@@ -1,19 +1,21 @@
 package micdoodle8.mods.galacticraft.core.inventory
 
+import foundation.item.legacyItemValue
+
 import java.util.LinkedList
 
 import micdoodle8.mods.galacticraft.core.tile.TileEntityCrafting
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.RecipeUtil
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.Container as IInventory
 import net.minecraft.inventory.InventoryCraftResult
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.CraftingManager
-import net.minecraft.util.NonNullList
+import net.minecraft.core.NonNullList
 import java.util.*
 
 open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile: IInventory) : Container() {
@@ -31,7 +33,7 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
         this.tileEntity = tile as TileEntityCrafting
         this.craftMatrix = tileEntity.craftMatrix
         this.craftMatrix.craftingEventHandler = this
-        this.addSlotToContainer(
+        this.addSlot(
             SlotCraftingMemory(
                 playerInventory.player,
                 this.craftMatrix,
@@ -45,21 +47,21 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
 
         for (i: Int in 0..2) {
             for (j: Int in 0..2) {
-                this.addSlotToContainer(Slot(this.craftMatrix, j + i * 3, 30 + j * 18, 17 + i * 18))
+                this.addSlot(Slot(this.craftMatrix, j + i * 3, 30 + j * 18, 17 + i * 18))
             }
         }
 
         for (k: Int in 0..2) {
             for (i1: Int in 0..8) {
-                this.addSlotToContainer(Slot(playerInventory, i1 + k * 9 + 9, 8 + i1 * 18, 84 + k * 18))
+                this.addSlot(Slot(playerInventory, i1 + k * 9 + 9, 8 + i1 * 18, 84 + k * 18))
             }
         }
 
         for (l: Int in 0..8) {
-            this.addSlotToContainer(Slot(playerInventory, l, 8 + l * 18, 142))
+            this.addSlot(Slot(playerInventory, l, 8 + l * 18, 142))
         }
 
-        this.onCraftMatrixChanged(this.craftMatrix)
+        this.slotsChanged(this.craftMatrix)
     }
 
     override fun getInventory(): NonNullList<ItemStack> {
@@ -78,7 +80,7 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
 
     override fun setAll(list: MutableList<ItemStack?>) {
         for (i: Int in list.indices) {
-            if (i < 46) this.getSlot(i).putStack(list.get(i))
+            if (i < 46) this.getSlot(i).set(list.get(i))
             else if (i < 55)  //Read memory clientside from the end of the vanilla packet, see getInventory() 
                 this.tileEntity.memory.set(i - 46, list.get(i))
         }
@@ -87,8 +89,8 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
     /**
      * Callback for when the crafting matrix is changed.
      */
-    override fun onCraftMatrixChanged(inventoryIn: IInventory) {
-        this.craftResult.setInventorySlotContents(
+    override fun slotsChanged(inventoryIn: IInventory) {
+        this.craftResult.setItem(
             0,
             CraftingManager.findMatchingResult(this.craftMatrix, this.tileEntity.getWorld())
         )
@@ -97,36 +99,36 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
     /**
      * Called when the container is closed.
      */
-    override fun onContainerClosed(playerIn: EntityPlayer) {
-        super.onContainerClosed(playerIn)
-        if (!playerIn.world.isRemote) {
+    override fun removed(playerIn: EntityPlayer) {
+        super.removed(playerIn)
+        if (!playerIn.level().isRemote) {
             craftMatrix.craftingEventHandler = null
         }
     }
 
-    override fun canInteractWith(playerIn: EntityPlayer): Boolean {
-        return this.tileEntity.isUsableByPlayer(playerIn)
+    override fun stillValid(playerIn: EntityPlayer): Boolean {
+        return this.tileEntity.stillValid(playerIn)
     }
 
     /**
      * Take a stack from the specified inventory slot.
      */
-    override fun transferStackInSlot(playerIn: EntityPlayer, index: Int): ItemStack {
+    override fun quickMoveStack(playerIn: EntityPlayer, index: Int): ItemStack {
         var itemstack: ItemStack = ItemStack.EMPTY
         val slot: Slot? = this.inventorySlots.get(index)
 
-        if (slot != null && slot.getHasStack() && !slot.getStack().isEmpty()) {
-            val itemstack1: ItemStack = slot.getStack()
+        if (slot != null && slot.hasItem() && !slot.getItem().isEmpty()) {
+            val itemstack1: ItemStack = slot.getItem()
             itemstack = itemstack1.copy()
 
             if (index == 0) {
-                if (!this.mergeItemStack(itemstack1, 10, 46, true)) {
+                if (!this.moveItemStackTo(itemstack1, 10, 46, true)) {
                     return ItemStack.EMPTY
                 }
 
-                slot.onSlotChange(itemstack1, itemstack)
+                slot.onQuickCraft(itemstack1, itemstack)
             } else if (index < 10) {
-                if (!this.mergeItemStack(itemstack1, 10, 46, false)) {
+                if (!this.moveItemStackTo(itemstack1, 10, 46, false)) {
                     return ItemStack.EMPTY
                 }
             } else if (this.matchesCrafting(itemstack1)) {
@@ -134,19 +136,19 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
                     return ItemStack.EMPTY
                 }
             } else if (index >= 10 && index < 37) {
-                if (!this.mergeItemStack(itemstack1, 37, 46, false)) {
+                if (!this.moveItemStackTo(itemstack1, 37, 46, false)) {
                     return ItemStack.EMPTY
                 }
             } else if (index >= 37 && index < 46) {
-                if (!this.mergeItemStack(itemstack1, 10, 37, false)) {
+                if (!this.moveItemStackTo(itemstack1, 10, 37, false)) {
                     return ItemStack.EMPTY
                 }
             }
 
             if (itemstack1.isEmpty()) {
-                slot.putStack(ItemStack.EMPTY)
+                slot.set(ItemStack.EMPTY)
             } else {
-                slot.onSlotChanged()
+                slot.setChanged()
             }
 
             if (itemstack1.getCount() == itemstack.getCount()) {
@@ -171,7 +173,7 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
             val slot: Slot? = this.inventorySlots.get(i)
 
             if (slot != null) {
-                var target: ItemStack = slot.getStack()
+                var target: ItemStack = slot.getItem()
                 val target2: ItemStack = this.memory.get(i - 1)
                 if (target2.isEmpty()) continue
                 if (target.isEmpty()) {
@@ -190,10 +192,10 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
 
         //First fill any empty slots
         for (slot: Slot in acceptSlots) {
-            val target: ItemStack = slot.getStack()
+            val target: ItemStack = slot.getItem()
             if (target.isEmpty()) {
-                val target2: ItemStack = this.memory.get(slot.slotNumber - 1)
-                this.craftMatrix.setInventorySlotContents(slot.slotNumber - 1, target2.copy())
+                val target2: ItemStack = this.memory.get(slot.index - 1)
+                this.craftMatrix.setInventorySlotContents(slot.index - 1, target2.copy())
                 stack.shrink(1)
                 if (stack.isEmpty()) {
                     return false
@@ -207,10 +209,10 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
             if (acceptTotal == 0) return false
 
             for (slot: Slot in acceptSlots) {
-                val target: ItemStack = slot.getStack()
+                val target: ItemStack = slot.getItem()
                 stack.shrink(target.getMaxStackSize() - target.getCount())
                 target.setCount(target.getMaxStackSize())
-                slot.onSlotChanged()
+                slot.setChanged()
             }
             return true
         }
@@ -227,17 +229,17 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
                 var neediest: Slot? = null
                 var smallestStack: Int = 64
                 for (slot: Slot in acceptSlots) {
-                    val target: ItemStack = slot.getStack()
+                    val target: ItemStack = slot.getItem()
                     if (target.getCount() < smallestStack) {
                         smallestStack = target.getCount()
                         neediest = slot
                     }
                 }
-                neediest!!.getStack().grow(1)
+                neediest!!.getItem().grow(1)
                 stack.shrink(1)
             } while (!stack.isEmpty())
             for (slot: Slot in acceptSlots) {
-                slot.onSlotChanged()
+                slot.setChanged()
             }
             return true
         }
@@ -246,11 +248,11 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
         if (uneven > 0) {
             val targetSize: Int = stack.getMaxStackSize() - minQuantity
             for (slot: Slot in acceptSlots) {
-                val target: ItemStack = slot.getStack()
+                val target: ItemStack = slot.getItem()
                 stack.shrink(targetSize - target.getCount())
                 acceptTotal -= targetSize - target.getCount()
                 target.setCount(targetSize)
-                slot.onSlotChanged()
+                slot.setChanged()
             }
         }
 
@@ -260,7 +262,7 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
         var modulus: Int = stack.getCount() - average * acceptSlots.size
         for (slot: Slot? in acceptSlots) {
             if (slot != null) {
-                val target: ItemStack = slot.getStack()
+                val target: ItemStack = slot.getItem()
                 var transfer: Int = average
                 if (modulus > 0) {
                     transfer++
@@ -270,11 +272,11 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
                 stack.shrink(transfer)
                 target.grow(transfer)
                 if (target.getCount() > target.getMaxStackSize()) {
-                    GCLog.info("Shift clicking - slot " + slot.slotNumber + " wanted more than it could accept:" + target.getCount())
+                    GCLog.info("Shift clicking - slot " + slot.index + " wanted more than it could accept:" + target.getCount())
                     stack.grow(target.getCount() - target.getMaxStackSize())
                     target.setCount(target.getMaxStackSize())
                 }
-                slot.onSlotChanged()
+                slot.setChanged()
                 if (stack.isEmpty()) break
             }
         }
@@ -301,7 +303,7 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
     }
 
     private fun matchingStacks(stack: ItemStack, target: ItemStack): Boolean {
-        return !target.isEmpty() && target.getItem() === stack.getItem() && (!stack.getHasSubtypes() || stack.getMetadata() == target.getMetadata()) && RecipeUtil.areItemStackTagsEqual(
+        return !target.isEmpty() && target.getItem() === stack.getItem() && (!stack.getHasSubtypes() || stack.legacyItemValue == target.legacyItemValue) && RecipeUtil.areItemStackTagsEqual(
             stack,
             target
         ) && (!target.isStackable() || target.getCount() < target.getMaxStackSize())
@@ -311,7 +313,7 @@ open class ContainerCrafting constructor(playerInventory: InventoryPlayer, tile:
      * Called to determine if the current slot is valid for the stack merging (double-click) code. The stack passed in
      * is null for the initial slot that was double-clicked.
      */
-    override fun canMergeSlot(stack: ItemStack, p_94530_2_: Slot): Boolean {
-        return p_94530_2_.inventory !== this.craftResult && super.canMergeSlot(stack, p_94530_2_)
+    override fun canTakeItemForPickAll(stack: ItemStack, p_94530_2_: Slot): Boolean {
+        return p_94530_2_.container !== this.craftResult && super.canTakeItemForPickAll(stack, p_94530_2_)
     }
 }

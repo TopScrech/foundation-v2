@@ -1,5 +1,12 @@
 package galaxyspace.systems.SolarSystem.planets.mars.entities
 
+import net.minecraft.network.chat.Component
+
+import foundation.item.legacyItemValue
+
+import net.minecraft.world.ContainerHelper
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.galacticraft.core.network.PacketEntityUpdate.IEntityFullSync
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint
 
@@ -28,34 +35,34 @@ import micdoodle8.mods.galacticraft.core.util.FluidUtil
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.model.ModelBase
 import net.minecraft.client.settings.GameSettings
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.MoverType
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.MoverType
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.SoundEvents
-import net.minecraft.inventory.IInventory
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.Container as IInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
-import net.minecraft.util.DamageSource
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
+
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import kotlin.math.abs
 import kotlin.math.cos
@@ -138,7 +145,7 @@ open class EntityMarsRover constructor(var1: World) : Entity(var1), ICameraZoomE
         this.ignoreFrustumCheck = true
         this.isImmuneToFire = true
 
-        if (var1 != null && var1.isRemote) {
+        if (var1 != null && var1.isClientSide) {
             (GalacticraftCore.packetPipeline)!!.sendToServer(PacketDynamic(this))
         }
     }
@@ -303,7 +310,7 @@ open class EntityMarsRover constructor(var1: World) : Entity(var1), ICameraZoomE
 
         val buggy: ItemStack = ItemStack(GCItems.buggy, 1, this.buggyType)
         buggy.setTagCompound(NBTTagCompound())
-        buggy.getTagCompound()!!.setInteger("BuggyFuel", this.buggyFuelTank.getFluidAmount())
+        buggy.getTagCompound()!!.putInt("BuggyFuel", this.buggyFuelTank.getFluidAmount())
         items.add(buggy)
 
         for (item: ItemStack in this.stacks) {
@@ -315,7 +322,7 @@ open class EntityMarsRover constructor(var1: World) : Entity(var1), ICameraZoomE
         return items
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setPositionAndRotationDirect(
         x: Double,
         y: Double,
@@ -497,121 +504,110 @@ open class EntityMarsRover constructor(var1: World) : Entity(var1), ICameraZoomE
     }
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
-        this.buggyType = nbt.getInteger("buggyType")
+        this.buggyType = nbt.getIntOr("buggyType", 0)
         ItemStackHelper.loadAllItems(nbt, this.stacks)
 
-        if (nbt.hasKey("fuelTank")) {
-            this.buggyFuelTank.readFromNBT(nbt.getCompoundTag("fuelTank"))
+        if (nbt.containsTag("fuelTank")) {
+            this.buggyFuelTank.readFromNBT(nbt.getCompoundOrEmpty("fuelTank"))
         }
     }
 
     override fun writeEntityToNBT(nbt: NBTTagCompound) {
         if (world.isRemote) return
-        nbt.setInteger("buggyType", this.buggyType)
+        nbt.putInt("buggyType", this.buggyType)
         val var2: NBTTagList = NBTTagList()
 
         if (this.buggyFuelTank.getFluid() != null) {
-            nbt.setTag("fuelTank", this.buggyFuelTank.writeToNBT(NBTTagCompound()))
+            nbt.put("fuelTank", this.buggyFuelTank.writeToNBT(NBTTagCompound()))
         }
 
         ItemStackHelper.saveAllItems(nbt, stacks)
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.buggyType * 18
     }
 
-    override fun getStackInSlot(index: Int): ItemStack {
+    override fun getItem(index: Int): ItemStack {
         return this.stacks.get(index)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        return ItemStackHelper.getAndRemove(this.stacks, index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        return ContainerHelper.takeItem(this.stacks, index)
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.stacks.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
-    override fun getName(): String {
-        return "MarsRover"
+    override fun getName(): net.minecraft.network.chat.Component {
+        return Component.literal("MarsRover")
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun isUsableByPlayer(var1: EntityPlayer): Boolean {
+    override fun stillValid(var1: EntityPlayer): Boolean {
         return !this.isDead && var1.getDistanceSq(this) <= 64.0
     }
 
-    override fun markDirty() {
+    override fun setChanged() {
     }
 
     //We don't use these because we use forge containers
-    override fun openInventory(player: EntityPlayer) {
-    }
 
     //We don't use these because we use forge containers
-    override fun closeInventory(player: EntityPlayer) {
-    }
 
-    override fun getField(id: Int): Int {
-        return 0
-    }
 
-    override fun setField(id: Int, value: Int) {
-    }
 
-    override fun getFieldCount(): Int {
-        return 0
-    }
 
-    override fun clear() {
+    override fun clearContent() {
+        for (slot in 0 until containerSize) setItem(slot, ItemStack.EMPTY)
     }
 
     override fun processInitialInteract(player: EntityPlayer, hand: EnumHand): Boolean {
         if (this.world.isRemote) {
             if (this.getPassengers().isEmpty()) {
-                player.sendMessage(
-                    TextComponentString(
+                player.sendSystemMessage(
+                    Component.literal(
                         GameSettings.getKeyDisplayString((KeyHandlerClient.leftKey)!!.getKeyCode()) + " / " + GameSettings.getKeyDisplayString(
                             (KeyHandlerClient.rightKey)!!.getKeyCode()
                         ) + "  - " + GCCoreUtil.translate("gui.buggy.turn.name")
                     )
                 )
-                player.sendMessage(
-                    TextComponentString(
+                player.sendSystemMessage(
+                    Component.literal(
                         GameSettings.getKeyDisplayString((KeyHandlerClient.accelerateKey)!!.getKeyCode()) + "       - " + GCCoreUtil.translate(
                             "gui.buggy.accel.name"
                         )
                     )
                 )
-                player.sendMessage(
-                    TextComponentString(
+                player.sendSystemMessage(
+                    Component.literal(
                         GameSettings.getKeyDisplayString((KeyHandlerClient.decelerateKey)!!.getKeyCode()) + "       - " + GCCoreUtil.translate(
                             "gui.buggy.decel.name"
                         )
                     )
                 )
-                player.sendMessage(
-                    TextComponentString(
+                player.sendSystemMessage(
+                    Component.literal(
                         GameSettings.getKeyDisplayString(KeyHandlerClient.openFuelGui.getKeyCode()) + "       - " + GCCoreUtil.translate(
                             "gui.buggy.inv.name"
                         )
@@ -675,7 +671,7 @@ open class EntityMarsRover constructor(var1: World) : Entity(var1), ICameraZoomE
         return false
     }
 
-    override fun isItemValidForSlot(i: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(i: Int, itemstack: ItemStack): Boolean {
         return false
     }
 
@@ -702,11 +698,11 @@ open class EntityMarsRover constructor(var1: World) : Entity(var1), ICameraZoomE
         while (count < this.stacks.size) {
             val stackAt: ItemStack = this.stacks.get(count)
 
-            if (stackAt != null && stackAt.getItem() === (stack)!!.getItem() && stackAt.getItemDamage() == (stack)!!.getItemDamage() && stackAt.getCount() < stackAt.getMaxStackSize()) {
+            if (stackAt != null && stackAt.getItem() === (stack)!!.getItem() && stackAt.legacyItemValue == (stack)!!.legacyItemValue && stackAt.getCount() < stackAt.getMaxStackSize()) {
                 if (stackAt.getCount() + (stack)!!.getCount() <= stackAt.getMaxStackSize()) {
                     if (doAdd) {
                         stackAt.grow((stack)!!.getCount())
-                        this.markDirty()
+                        this.setChanged()
                     }
 
                     return ICargoEntity.EnumCargoLoadingState.SUCCESS
@@ -717,7 +713,7 @@ open class EntityMarsRover constructor(var1: World) : Entity(var1), ICameraZoomE
 
                     if (doAdd) {
                         stackAt.setCount(stackAt.getMaxStackSize())
-                        this.markDirty()
+                        this.setChanged()
                     }
 
                     (stack)!!.setCount(surplus)
@@ -739,7 +735,7 @@ open class EntityMarsRover constructor(var1: World) : Entity(var1), ICameraZoomE
             if (!stackAt.isEmpty()) {
                 if (doAdd) {
                     this.stacks.set(count, stack)
-                    this.markDirty()
+                    this.setChanged()
                 }
 
                 return ICargoEntity.EnumCargoLoadingState.SUCCESS
@@ -752,7 +748,7 @@ open class EntityMarsRover constructor(var1: World) : Entity(var1), ICameraZoomE
 
     override fun removeCargo(doRemove: Boolean): ICargoEntity.RemovalResult {
         for (i: Int in this.stacks.indices) {
-            val stackAt: ItemStack = this.getStackInSlot(i)
+            val stackAt: ItemStack = this.getItem(i)
 
             if (stackAt != null) {
                 val resultStack: ItemStack = stackAt.copy()
@@ -760,7 +756,7 @@ open class EntityMarsRover constructor(var1: World) : Entity(var1), ICameraZoomE
 
                 if (doRemove) {
                     stackAt.shrink(1)
-                    this.markDirty()
+                    this.setChanged()
                 }
 
                 return ICargoEntity.RemovalResult(ICargoEntity.EnumCargoLoadingState.SUCCESS, resultStack)

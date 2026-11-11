@@ -5,7 +5,7 @@ import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import net.minecraft.client.Minecraft
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GLAllocation
 import net.minecraft.client.renderer.GlStateManager
@@ -13,20 +13,19 @@ import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class SkyProviderVenus constructor(worldProvider: IGalacticraftWorldProvider) : IRenderHandler() {
     @JvmField
     var starList: Int
@@ -259,7 +258,7 @@ open class SkyProviderVenus constructor(worldProvider: IGalacticraftWorldProvide
         GL11.glRotatef(40.0f, 0.0f, 0.0f, 1.0f)
         GL11.glRotatef(200f, 1.0f, 0.0f, 0.0f)
         GL11.glColor4f(1.0f, 1.0f, 1.0f, 1f)
-        FMLClientHandler.instance().getClient().renderEngine.bindTexture(overworldTexture)
+        Minecraft.getInstance().renderEngine.bindTexture(overworldTexture)
         worldRenderer1.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX)
         worldRenderer1.pos(-f10.toDouble(), -100.0, f10.toDouble()).tex(0.0, 1.0).endVertex()
         worldRenderer1.pos(f10.toDouble(), -100.0, f10.toDouble()).tex(1.0, 1.0).endVertex()
@@ -386,7 +385,7 @@ open class SkyProviderVenus constructor(worldProvider: IGalacticraftWorldProvide
     }
 
     open fun getSkyBrightness(par1: Float): Float {
-        val var2: Float = FMLClientHandler.instance().getClient().world.getCelestialAngle(par1)
+        val var2: Float = Minecraft.getInstance().level.getCelestialAngle(par1)
         var var3: Float = 1.0f - (MathHelper.sin(var2 * Constants.twoPI) * 2.0f + 0.25f)
 
         if (var3 < 0.0f) {
@@ -402,7 +401,7 @@ open class SkyProviderVenus constructor(worldProvider: IGalacticraftWorldProvide
 
     companion object {
         private val overworldTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png")
-        private val sunTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/planets/atmosphericsun.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png")
+        private val sunTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/planets/atmosphericsun.png")
     }
 }

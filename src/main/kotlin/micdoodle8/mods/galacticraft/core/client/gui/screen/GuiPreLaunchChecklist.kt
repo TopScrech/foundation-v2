@@ -8,15 +8,15 @@ import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumHand
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class GuiPreLaunchChecklist constructor(
     private val checklistKeys: MutableMap<String?, MutableList<String?>?>,
@@ -134,7 +134,7 @@ open class GuiPreLaunchChecklist constructor(
     private fun onDataChange() {
         for (button: GuiButton? in this.buttonList) {
             if (button is GuiElementCheckboxPreLaunch) {
-                this.tagCompound.setBoolean(this.checkboxToKeyMap.get(button.id), (button.isSelected)!!)
+                this.tagCompound.putBoolean(this.checkboxToKeyMap.get(button.id), (button.isSelected)!!)
             }
         }
 
@@ -153,7 +153,7 @@ open class GuiPreLaunchChecklist constructor(
         if (tagCompound == null) {
             tagCompound = NBTTagCompound()
         }
-        tagCompound.setTag("checklistData", this.tagCompound)
+        tagCompound.put("checklistData", this.tagCompound)
         stack.setTagCompound(tagCompound)
     }
 
@@ -210,7 +210,7 @@ open class GuiPreLaunchChecklist constructor(
     override fun onIntruderInteraction() {
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open class NextPageButton constructor(id: Int, x: Int, y: Int, private val forward: Boolean) :
         GuiButton(id, x, y, 23, 13, "") {
         override fun drawButton(mc: Minecraft, mouseX: Int, mouseY: Int, partial: Float) {
@@ -236,6 +236,6 @@ open class GuiPreLaunchChecklist constructor(
     }
 
     companion object {
-        private val bookGuiTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/checklist_book.png")
+        private val bookGuiTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/checklist_book.png")
     }
 }

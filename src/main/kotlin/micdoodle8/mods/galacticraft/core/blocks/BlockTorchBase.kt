@@ -1,20 +1,24 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
-import com.google.common.base.Predicate
-import net.minecraft.block.Block
-import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyDirection
-import net.minecraft.block.state.BlockFaceShape
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import foundation.block.LegacyBlockMetadata
 
-open class BlockTorchBase constructor(materialIn: Material) : Block(materialIn) {
+import com.google.common.base.Predicate
+import net.minecraft.world.level.block.Block
+import net.minecraft.block.material.Material
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
+import net.minecraft.block.state.BlockFaceShape
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+
+open class BlockTorchBase constructor(materialIn: Material) : Block(materialIn), LegacyBlockMetadata {
     override fun getBoundingBox(state: IBlockState, source: IBlockAccess, pos: BlockPos): AxisAlignedBB {
         when (state.getValue(FACING)) {
             EnumFacing.EAST -> return TORCH_EAST_AABB
@@ -45,15 +49,15 @@ open class BlockTorchBase constructor(materialIn: Material) : Block(materialIn) 
         hand: EnumHand
     ): IBlockState {
         if (this.canPlaceAt(worldIn, pos, facing)) {
-            return this.getDefaultState().withProperty(FACING, facing)
+            return this.defaultBlockState().setValue(FACING, facing)
         } else {
             for (enumfacing: EnumFacing in EnumFacing.Plane.HORIZONTAL) {
                 if (worldIn.isSideSolid(pos.offset(enumfacing.getOpposite()), enumfacing, true)) {
-                    return this.getDefaultState().withProperty(FACING, enumfacing)
+                    return this.defaultBlockState().setValue(FACING, enumfacing)
                 }
             }
 
-            return this.getDefaultState()
+            return this.defaultBlockState()
         }
     }
 
@@ -88,7 +92,7 @@ open class BlockTorchBase constructor(materialIn: Material) : Block(materialIn) 
         } else {
             if (worldIn.getBlockState(pos).getBlock() === this) {
                 this.dropBlockAsItem(worldIn, pos, state, 0)
-                worldIn.setBlockToAir(pos)
+                worldIn.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
             }
 
             return false
@@ -96,15 +100,15 @@ open class BlockTorchBase constructor(materialIn: Material) : Block(materialIn) 
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        var iblockstate: IBlockState = this.getDefaultState()
+        var iblockstate: IBlockState = this.defaultBlockState()
 
         when (meta) {
-            1 -> iblockstate = iblockstate.withProperty(FACING, EnumFacing.EAST)
-            2 -> iblockstate = iblockstate.withProperty(FACING, EnumFacing.WEST)
-            3 -> iblockstate = iblockstate.withProperty(FACING, EnumFacing.SOUTH)
-            4 -> iblockstate = iblockstate.withProperty(FACING, EnumFacing.NORTH)
-            5 -> iblockstate = iblockstate.withProperty(FACING, EnumFacing.UP)
-            else -> iblockstate = iblockstate.withProperty(FACING, EnumFacing.UP)
+            1 -> iblockstate = iblockstate.setValue(FACING, EnumFacing.EAST)
+            2 -> iblockstate = iblockstate.setValue(FACING, EnumFacing.WEST)
+            3 -> iblockstate = iblockstate.setValue(FACING, EnumFacing.SOUTH)
+            4 -> iblockstate = iblockstate.setValue(FACING, EnumFacing.NORTH)
+            5 -> iblockstate = iblockstate.setValue(FACING, EnumFacing.UP)
+            else -> iblockstate = iblockstate.setValue(FACING, EnumFacing.UP)
         }
 
         return iblockstate
@@ -136,8 +140,8 @@ open class BlockTorchBase constructor(materialIn: Material) : Block(materialIn) 
 
     companion object {
         @JvmField
-        val FACING: PropertyDirection =
-            PropertyDirection.create("facing", Predicate { facing: EnumFacing? -> facing != EnumFacing.DOWN })
+        val FACING: EnumProperty<Direction> =
+            EnumProperty.create("facing", Direction::class.java) { it != Direction.DOWN }
 
         @JvmField
         protected val STANDING_AABB: AxisAlignedBB = AxisAlignedBB(

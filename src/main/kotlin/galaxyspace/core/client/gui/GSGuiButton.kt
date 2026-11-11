@@ -2,17 +2,17 @@ package galaxyspace.core.client.gui
 
 import galaxyspace.GalaxySpace
 import net.minecraft.client.Minecraft
-import net.minecraft.client.audio.PositionedSoundRecord
-import net.minecraft.client.audio.SoundHandler
+import net.minecraft.client.resources.sounds.SimpleSoundInstance as PositionedSoundRecord
+import net.minecraft.client.sounds.SoundManager as SoundHandler
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.init.SoundEvents
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GSGuiButton constructor(id: Int, x: Int, y: Int, width: Int, height: Int, buttonText: String) :
     GuiButton(id, x, y, width, height, buttonText) {
     constructor(id: Int, x: Int, y: Int, title: String) : this(id, x, y, 200, 20, title)
@@ -112,7 +112,7 @@ open class GSGuiButton constructor(id: Int, x: Int, y: Int, width: Int, height: 
     }
 
     override fun playPressSound(soundHandlerIn: SoundHandler) {
-        soundHandlerIn.playSound(PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+        soundHandlerIn.play(PositionedSoundRecord.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f))
     }
 
     override fun getButtonWidth(): Int {
@@ -126,6 +126,6 @@ open class GSGuiButton constructor(id: Int, x: Int, y: Int, width: Int, height: 
     companion object {
         @JvmField
         protected val BUTTON_TEXTURES: ResourceLocation =
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX + ":" + "textures/gui/widgets.png")
+            ResourceLocation.parse(GalaxySpace.Companion.ASSET_PREFIX + ":" + "textures/gui/widgets.png")
     }
 }

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "X",
+    "X"
+  ],
+  "key": {
+    "X": {
+      "type": "galacticraftcore:advanced_metal",
+      "metal": "desh_ingot"
+    }
+  },
+  "result": {
+    "id": "galacticraftplanets:item_basic_mars",
+    "components": {
+      "foundation:legacy_metadata": 1
+    }
+  }
+}

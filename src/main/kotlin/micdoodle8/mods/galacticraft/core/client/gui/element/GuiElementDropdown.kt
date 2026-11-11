@@ -5,9 +5,8 @@ import micdoodle8.mods.galacticraft.core.util.ColorUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.client.FMLClientHandler
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 import kotlin.math.max
 
@@ -32,7 +31,7 @@ open class GuiElementDropdown constructor(
     private val parentClass: IDropboxCallback
 
     init {
-        val mc: Minecraft = FMLClientHandler.instance().getClient()
+        val mc: Minecraft = Minecraft.getInstance()
         this.parentClass = parentClass
         this.font = mc.fontRenderer
         this.optionStrings = (text as Array<String>)
@@ -175,6 +174,6 @@ open class GuiElementDropdown constructor(
 
     companion object {
         @JvmField
-        protected val texture: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/gui.png")
+        protected val texture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/gui.png")
     }
 }

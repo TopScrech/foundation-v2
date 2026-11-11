@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.core
 
+import foundation.item.legacyItemValue
+
+import foundation.level.offset
+
 import org.lwjgl.opengl.GL11
 import micdoodle8.mods.galacticraft.api.entity.IAntiGrav
 import micdoodle8.mods.galacticraft.api.entity.ICameraZoomEntity
@@ -26,42 +30,41 @@ import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.OxygenUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import micdoodle8.mods.galacticraft.planets.venus.VenusItems
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.passive.EntityChicken
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.entity.projectile.EntityArrow
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.BlockRenderLayer
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.chunk.IChunkProvider
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.client.ForgeHooksClient
 import net.minecraftforge.client.MinecraftForgeClient
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fluids.Fluid
-import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.IWorldGenerator
 import net.minecraftforge.fml.common.registry.GameRegistry
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -91,16 +94,16 @@ object TransformerHooks {
 
     @JvmStatic
     fun getGravityForEntity(entity: Entity): Double {
-        if (entity.world.provider is IGalacticraftWorldProvider) {
+        if (entity.level().provider is IGalacticraftWorldProvider) {
             if (entity is EntityChicken && !OxygenUtil.isAABBInBreathableAirBlock(
-                    entity.world,
-                    entity.getEntityBoundingBox()
+                    entity.level(),
+                    entity.getBoundingBox()
                 )
             ) {
                 return 0.08
             }
 
-            val customProvider: IGalacticraftWorldProvider = entity.world.provider as IGalacticraftWorldProvider
+            val customProvider: IGalacticraftWorldProvider = entity.level().provider as IGalacticraftWorldProvider
             if (entity is EntityPlayer) {
                 val player: EntityPlayer = entity
                 if (player.inventory != null) {
@@ -163,7 +166,7 @@ object TransformerHooks {
 
     @JvmStatic
     fun getRainStrength(world: World, partialTicks: Float): Float {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             if (world.provider.getSkyRenderer() is SkyProviderOverworld) {
                 return 0.0f
             }
@@ -293,7 +296,7 @@ object TransformerHooks {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getWorldBrightness(world: World): Float {
         if (world.provider is WorldProviderMoon) {
             val f1: Float = world.getCelestialAngle(1.0f)
@@ -315,29 +318,29 @@ object TransformerHooks {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getColorRed(world: World?): Float {
         return WorldUtil.getWorldColor((world)!!).x.toFloat()
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getColorGreen(world: World?): Float {
         return WorldUtil.getWorldColor((world)!!).y.toFloat()
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getColorBlue(world: World?): Float {
         return WorldUtil.getWorldColor((world)!!).z.toFloat()
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getFogColorHook(world: World): Vec3d {
-        val player: EntityPlayerSP = FMLClientHandler.instance().getClient().player
+        val player: EntityPlayerSP = Minecraft.getInstance().player
         if (world.provider.getSkyRenderer() is SkyProviderOverworld) {
-            var var20: Float = ((player.posY).toFloat() - Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT) / 1000.0f
+            var var20: Float = ((player.y).toFloat() - Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT) / 1000.0f
             var20 = MathHelper.sqrt(var20)
             val var21: Float = max(1.0f - var20 * 40.0f, 0.0f)
 
@@ -354,10 +357,10 @@ object TransformerHooks {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getSkyColorHook(world: World): Vec3d {
-        val player: EntityPlayerSP? = FMLClientHandler.instance().getClient().player
-        if (world.provider.getSkyRenderer() is SkyProviderOverworld || (player != null && player.posY > Constants.OVERWORLD_CLOUD_HEIGHT && player.getRidingEntity() is EntitySpaceshipBase)) {
+        val player: EntityPlayerSP? = Minecraft.getInstance().player
+        if (world.provider.getSkyRenderer() is SkyProviderOverworld || (player != null && player.y > Constants.OVERWORLD_CLOUD_HEIGHT && player.getVehicle() is EntitySpaceshipBase)) {
             val f1: Float = world.getCelestialAngle(1.0f)
             var f2: Float = MathHelper.cos(f1 * Constants.twoPI) * 2.0f + 0.5f
 
@@ -369,9 +372,9 @@ object TransformerHooks {
                 f2 = 1.0f
             }
 
-            val i: Int = MathHelper.floor(player!!.posX)
-            val j: Int = MathHelper.floor(player.posY)
-            val k: Int = MathHelper.floor(player.posZ)
+            val i: Int = MathHelper.floor(player!!.x)
+            val j: Int = MathHelper.floor(player.y)
+            val k: Int = MathHelper.floor(player.z)
             val pos: BlockPos = BlockPos(i, j, k)
             val l: Int = ForgeHooksClient.getSkyBlendColour(world, pos)
             var f4: Float = (l shr 16 and 255).toFloat() / 255.0f
@@ -381,27 +384,27 @@ object TransformerHooks {
             f5 *= f2
             f6 *= f2
 
-            if (player.posY <= Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT) {
-                val vec: Vec3d = world.getSkyColor(FMLClientHandler.instance().getClient().getRenderViewEntity(), 1.0f)
+            if (player.y <= Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT) {
+                val vec: Vec3d = world.getSkyColor(Minecraft.getInstance().getRenderViewEntity(), 1.0f)
                 val blend: Double =
-                    (player.posY - Constants.OVERWORLD_CLOUD_HEIGHT) / (Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT - Constants.OVERWORLD_CLOUD_HEIGHT)
+                    (player.y - Constants.OVERWORLD_CLOUD_HEIGHT) / (Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT - Constants.OVERWORLD_CLOUD_HEIGHT)
                 val ablend: Double = 1 - blend
                 return Vec3d(f4 * blend + vec.x * ablend, f5 * blend + vec.y * ablend, f6 * blend + vec.z * ablend)
             } else {
-                var blend: Double = min(1.0, (player.posY - Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT) / 300.0)
+                var blend: Double = min(1.0, (player.y - Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT) / 300.0)
                 val ablend: Double = 1.0 - blend
                 blend /= 255.0
                 return Vec3d(f4 * ablend + blend * 31.0, f5 * ablend + blend * 8.0, f6 * ablend + blend * 99.0)
             }
         }
 
-        return world.getSkyColor(FMLClientHandler.instance().getClient().getRenderViewEntity(), 1.0f)
+        return world.getSkyColor(Minecraft.getInstance().getRenderViewEntity(), 1.0f)
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getRenderPosY(viewEntity: Entity, regular: Double): Double {
-        if (viewEntity.posY >= 256) {
+        if (viewEntity.y >= 256) {
             return 255.0
         } else {
             return regular + viewEntity.getEyeHeight()
@@ -409,9 +412,9 @@ object TransformerHooks {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun shouldRenderFire(entity: Entity): Boolean {
-        if (entity.world == null || entity.world.provider !is IGalacticraftWorldProvider) {
+        if (entity.level() == null || entity.level().provider !is IGalacticraftWorldProvider) {
             return entity.isBurning()
         }
 
@@ -420,8 +423,8 @@ object TransformerHooks {
         }
 
         if (entity.isBurning()) {
-            if (OxygenUtil.noAtmosphericCombustion(entity.world.provider)) {
-                return OxygenUtil.isAABBInBreathableAirBlock(entity.world, entity.getEntityBoundingBox())
+            if (OxygenUtil.noAtmosphericCombustion(entity.level().provider)) {
+                return OxygenUtil.isAABBInBreathableAirBlock(entity.level(), entity.getBoundingBox())
             } else {
                 return true
             }
@@ -432,15 +435,15 @@ object TransformerHooks {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun orientCamera(partialTicks: Float) {
         val player: EntityPlayerSP = ClientProxyCore.mc.player
         val stats: GCPlayerStatsClient = (GCPlayerStatsClient.get(player))!!
 
         val viewEntity: Entity? = ClientProxyCore.mc.getRenderViewEntity()
 
-        if (player.getRidingEntity() is ICameraZoomEntity && ClientProxyCore.mc.gameSettings.thirdPersonView == 0) {
-            val entity: Entity? = player.getRidingEntity()
+        if (player.getVehicle() is ICameraZoomEntity && ClientProxyCore.mc.gameSettings.thirdPersonView == 0) {
+            val entity: Entity? = player.getVehicle()
             var offset: Float = (entity as ICameraZoomEntity).getRotateOffset()
             if (offset > -10f) {
                 offset += ClientProxyCore.PLAYER_Y_OFFSET
@@ -456,11 +459,11 @@ object TransformerHooks {
             }
         }
 
-        if (viewEntity is EntityLivingBase && viewEntity.world.provider is IZeroGDimension && !viewEntity.isPlayerSleeping()) {
+        if (viewEntity is EntityLivingBase && viewEntity.level().provider is IZeroGDimension && !viewEntity.isPlayerSleeping()) {
             val pitch: Float =
-                viewEntity.prevRotationPitch + (viewEntity.rotationPitch - viewEntity.prevRotationPitch) * partialTicks
+                viewEntity.xRotO + (viewEntity.xRot - viewEntity.xRotO) * partialTicks
             val yaw: Float =
-                viewEntity.prevRotationYaw + (viewEntity.rotationYaw - viewEntity.prevRotationYaw) * partialTicks + 180.0f
+                viewEntity.yRotO + (viewEntity.yRot - viewEntity.yRotO) * partialTicks + 180.0f
             val eyeHeightChange: Float = viewEntity.width / 2.0f
 
             //            GL11.glTranslatef(0.0F, -f1, 0.0F);
@@ -502,7 +505,7 @@ object TransformerHooks {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun renderLiquidOverlays(partialTicks: Float) {
         var within: Boolean = false
         for (entry: MutableMap.MutableEntry<Fluid?, ResourceLocation?> in ClientProxyCore.submergedTextures.entries) {
@@ -529,8 +532,8 @@ object TransformerHooks {
         val f5: Float = -1.1f
         val f6: Float = 1.1f
         val f7: Float = -0.25f
-        val f8: Float = -ClientProxyCore.mc.player.rotationYaw / 64.0f
-        val f9: Float = ClientProxyCore.mc.player.rotationPitch / 64.0f
+        val f8: Float = -ClientProxyCore.mc.player.yRot / 64.0f
+        val f9: Float = ClientProxyCore.mc.player.xRot / 64.0f
         val worldRenderer: BufferBuilder = tessellator.getBuffer()
         worldRenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX)
         worldRenderer.pos(f3.toDouble(), f5.toDouble(), f7.toDouble()).tex((f2 + f8).toDouble(), (f2 + f9).toDouble())
@@ -548,7 +551,7 @@ object TransformerHooks {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun renderFootprints(partialTicks: Float) {
         FootprintRenderer.renderFootprints(ClientProxyCore.mc.player, partialTicks)
         MinecraftForge.EVENT_BUS.post(ClientProxyCore.EventSpecialRender(partialTicks))
@@ -556,15 +559,15 @@ object TransformerHooks {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getCameraZoom(previous: Double): Double {
         if (ConfigManagerCore.disableVehicleCameraChanges) {
             return previous
         }
 
-        val player: EntityPlayer = Minecraft.getMinecraft().player
-        if (player.getRidingEntity() != null && player.getRidingEntity() is ICameraZoomEntity) {
-            return (player.getRidingEntity() as ICameraZoomEntity).getCameraZoom().toDouble()
+        val player: EntityPlayer = Minecraft.getInstance().player
+        if (player.getVehicle() != null && player.getVehicle() is ICameraZoomEntity) {
+            return (player.getVehicle() as ICameraZoomEntity).getCameraZoom().toDouble()
         }
 
         return previous
@@ -576,7 +579,7 @@ object TransformerHooks {
             val stats: GCPlayerStats? = GCPlayerStats.get(entity)
             if (stats != null) {
                 val shield: ItemStack? = stats.getShieldControllerInSlot()
-                if (shield != null && !shield.isEmpty() && shield.getItem() === VenusItems.basicItem && shield.getItemDamage() == 0) {
+                if (shield != null && !shield.isEmpty() && shield.getItem() === VenusItems.basicItem && shield.legacyItemValue == 0) {
                     return 0.0
                 }
             }
@@ -600,9 +603,9 @@ object TransformerHooks {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun addRainParticles(result: Int, rendererUpdateCount: Int, f: Float): Int {
-        val mc: Minecraft = Minecraft.getMinecraft()
+        val mc: Minecraft = Minecraft.getInstance()
         val world: World = mc.world
         if (result == 0 || world.provider !is IWeatherProvider) {
             // Either no rain or it's a vanilla dimension
@@ -631,7 +634,7 @@ object TransformerHooks {
 
         for (l: Int in 0..<k) {
             val blockpos1: BlockPos = world.getPrecipitationHeight(
-                blockpos.add(
+                blockpos.offset(
                     random.nextInt(i) - random.nextInt(i),
                     0,
                     random.nextInt(i) - random.nextInt(i)
@@ -642,7 +645,7 @@ object TransformerHooks {
             if (blockpos1.getY() <= blockpos.getY() + i && blockpos1.getY() >= blockpos.getY() - i) {
                 val xd: Double = random.nextDouble()
                 val zd: Double = random.nextDouble()
-                val blockpos2: BlockPos = blockpos1.down()
+                val blockpos2: BlockPos = blockpos1.below()
                 val iblockstate: IBlockState = world.getBlockState(blockpos2)
                 val axisalignedbb: AxisAlignedBB = iblockstate.getBoundingBox(world, blockpos2)
 

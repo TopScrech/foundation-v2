@@ -1,37 +1,39 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.tile.TileEntityPlayerDetector
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.RedstoneUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.IProperty
-import net.minecraft.block.properties.PropertyBool
-import net.minecraft.block.properties.PropertyInteger
+import net.minecraft.world.level.block.state.properties.Property as IProperty
+import net.minecraft.world.level.block.state.properties.BooleanProperty as PropertyBool
+import net.minecraft.world.level.block.state.properties.IntegerProperty as PropertyInteger
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class BlockConcealedDetector constructor(assetName: String?) : Block(Material.IRON), ISortableBlock,
-    ITileEntityProvider {
+    ITileEntityProvider, LegacyBlockMetadata {
     init {
         this.setHardness(1.0f)
         this.setSoundType(SoundType.METAL)
         this.blockResistance = 15f
         this.setTranslationKey(assetName)
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(FACING, 0).withProperty(VARIANT, 0)
-                .withProperty(DETECTED, false)
+            this.blockState.getBaseState().setValue(FACING, 0).setValue(VARIANT, 0)
+                .setValue(DETECTED, false)
         )
     }
 
@@ -53,15 +55,15 @@ open class BlockConcealedDetector constructor(assetName: String?) : Block(Materi
         damage: Int,
         placer: EntityLivingBase
     ): IBlockState {
-        return this.getDefaultState()
-            .withProperty(FACING, placer.getHorizontalFacing().getHorizontalIndex())
+        return this.defaultBlockState()
+            .setValue(FACING, placer.getHorizontalFacing().getHorizontalIndex())
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
         val facing: Int = meta and 3
         val `var`: Int = (meta shr 2) and 1
-        return this.getDefaultState().withProperty(FACING, facing).withProperty(VARIANT, `var`)
-            .withProperty(DETECTED, meta >= 8)
+        return this.defaultBlockState().setValue(FACING, facing).setValue(VARIANT, `var`)
+            .setValue(DETECTED, meta >= 8)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -108,7 +110,7 @@ open class BlockConcealedDetector constructor(assetName: String?) : Block(Materi
     open fun updateState(worldObj: World, pos: BlockPos, result: Boolean) {
         val bs: IBlockState = worldObj.getBlockState(pos)
         if (result != bs.getValue(DETECTED) as Boolean) {
-            worldObj.setBlockState(pos, bs.withProperty(DETECTED, result), 3)
+            worldObj.setBlock(pos, bs.setValue(DETECTED, result), 3)
         }
     }
 

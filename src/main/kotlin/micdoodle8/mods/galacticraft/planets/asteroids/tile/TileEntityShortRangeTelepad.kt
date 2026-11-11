@@ -1,5 +1,10 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.tile
 
+import net.minecraft.network.chat.Component
+
+import net.minecraft.world.ContainerHelper
+import foundation.level.offset
+
 import micdoodle8.mods.galacticraft.core.blocks.BlockMulti.EnumBlockMultiType
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
@@ -25,23 +30,24 @@ import micdoodle8.mods.galacticraft.planets.asteroids.blocks.BlockTelepadFake
 import micdoodle8.mods.galacticraft.planets.asteroids.dimension.ShortRangeTelepadHandler
 import micdoodle8.mods.galacticraft.planets.asteroids.network.PacketSimpleAsteroids
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.LinkedList
 import java.util.Random
 import kotlin.math.max
@@ -49,7 +55,7 @@ import kotlin.math.min
 
 open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), IMultiBlock, IInventoryDefaults,
     ISidedInventory {
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent? = super<TileBaseElectricBlock>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = super<TileBaseElectricBlock>.getDisplayName()
 
     enum class EnumTelepadSearchResult {
         VALID,
@@ -181,15 +187,15 @@ open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), 
                                             finalPos.x.toDouble(),
                                             finalPos.y.toDouble(),
                                             finalPos.z.toDouble(),
-                                            e.rotationYaw,
-                                            e.rotationPitch
+                                            e.yRot,
+                                            e.xRot
                                         )
                                     }
                                     (GalacticraftCore.packetPipeline)!!.sendToDimension(
                                         PacketSimpleAsteroids(
                                             PacketSimpleAsteroids.EnumSimplePacketAsteroids.C_TELEPAD_SEND,
                                             GCCoreUtil.getDimensionID(this.world),
-                                            arrayOf<Any>(finalPos, e.getEntityId())
+                                            arrayOf<Any>(finalPos, e.getId())
                                         ), GCCoreUtil.getDimensionID(this.world)
                                     )
                                 }
@@ -202,19 +208,19 @@ open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), 
                                 when (teleportResult) {
                                     -1 -> for (e: EntityLivingBase? in containedEntities) {
                                         if (e is EntityPlayer) {
-                                            e.sendMessage(TextComponentString("Cannot Send client-side")) // No need for translation, since this should never happen
+                                            e.sendSystemMessage(Component.literal("Cannot Send client-side")) // No need for translation, since this should never happen
                                         }
                                     }
 
                                     1 -> for (e: EntityLivingBase? in containedEntities) {
                                         if (e is EntityPlayer) {
-                                            e.sendMessage(TextComponentString("Target address invalid")) // No need for translation, since this should never happen
+                                            e.sendSystemMessage(Component.literal("Target address invalid")) // No need for translation, since this should never happen
                                         }
                                     }
 
                                     2 -> for (e: EntityLivingBase? in containedEntities) {
                                         if (e is EntityPlayer) {
-                                            e.sendMessage(TextComponentString(GCCoreUtil.translate("gui.message.target_no_energy.name")))
+                                            e.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.message.target_no_energy.name")))
                                         }
                                     }
                                 }
@@ -236,23 +242,23 @@ open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
 
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, this.stacks)
 
         if (GCCoreUtil.getEffectiveSide() == Side.SERVER) {
-            this.setAddress(nbt.getInteger("Address"))
+            this.setAddress(nbt.getIntOr("Address", 0))
         }
-        this.targetAddress = nbt.getInteger("TargetAddress")
-        this.owner = nbt.getString("Owner")
+        this.targetAddress = nbt.getIntOr("TargetAddress", 0)
+        this.owner = nbt.getStringOr("Owner", "")
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
         ItemStackHelper.saveAllItems(nbt, this.stacks)
 
-        nbt.setInteger("TargetAddress", this.targetAddress)
-        nbt.setInteger("Address", this.address)
-        nbt.setString("Owner", this.owner)
+        nbt.putInt("TargetAddress", this.targetAddress)
+        nbt.putInt("Address", this.address)
+        nbt.putString("Owner", this.owner)
         return nbt
     }
 
@@ -289,8 +295,8 @@ open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), 
             (world)!!,
             vecToAdd,
             placedPosition,
-            ((AsteroidBlocks.fakeTelepad)!!.getDefaultState()
-                .withProperty(BlockTelepadFake.TOP, vecToAdd.getY() == (placedPosition)!!.getY() + 2))!!
+            ((AsteroidBlocks.fakeTelepad)!!.defaultBlockState()
+                .setValue(BlockTelepadFake.TOP, vecToAdd.getY() == (placedPosition)!!.getY() + 2))!!
         )
     }
 
@@ -309,7 +315,7 @@ open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), 
             for (x: Int in -1..1) {
                 for (z: Int in -1..1) {
                     if (x == 0 && y == 0 && z == 0) continue
-                    (positions)!!.add((placedPosition)!!.add(x, y, z))
+                    (positions)!!.add((placedPosition)!!.offset(x, y, z))
                 }
             }
             y += 2
@@ -331,7 +337,7 @@ open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), 
         this.world.destroyBlock(thisBlock, true)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         if (this.renderAABB == null) {
             this.renderAABB = AxisAlignedBB(
@@ -346,13 +352,13 @@ open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), 
         return this.renderAABB!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return Constants.RENDERDISTANCE_MEDIUM
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.short_range_telepad.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return Component.translatable("container.short_range_telepad.name")
     }
 
     override fun getSlotsForFace(side: EnumFacing): IntArray {
@@ -363,28 +369,28 @@ open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), 
         return true
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(getPos()) === this && par1EntityPlayer.getDistanceSq(
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(getPos()) === this && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5,
             this.getPos().getY() + 0.5,
             this.getPos().getZ() + 0.5
         ) <= 64.0
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemStack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemStack: ItemStack): Boolean {
         return slotID == 0 && ItemElectricBase.isElectricItem(itemStack.getItem())
     }
 
-    override fun canExtractItem(index: Int, stack: ItemStack, direction: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(index: Int, stack: ItemStack, direction: EnumFacing): Boolean {
         return index == 0
     }
 
-    override fun canInsertItem(index: Int, itemStackIn: ItemStack, direction: EnumFacing): Boolean {
-        return this.isItemValidForSlot(index, itemStackIn)
+    override fun canPlaceItemThroughFace(index: Int, itemStackIn: ItemStack, direction: EnumFacing?): Boolean {
+        return this.canPlaceItem(index, itemStackIn)
     }
 
     override fun getElectricalOutputDirections(): EnumSet<EnumFacing?> {
@@ -396,11 +402,11 @@ open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), 
     }
 
     override fun getElectricInputDirection(): EnumFacing? {
-        return EnumFacing.byIndex((this.getBlockMetadata() and 3) + 2)
+        return EnumFacing.from3DDataValue((this.getBlockMetadata() and 3) + 2)
     }
 
     override fun getBatteryInSlot(): ItemStack {
-        return this.getStackInSlot(0)
+        return this.getItem(0)
     }
 
     override fun setDisabled(index: Int, disabled: Boolean) {
@@ -496,40 +502,40 @@ open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), 
         this.updateTarget()
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.stacks.size
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack {
+    override fun getItem(var1: Int): ItemStack {
         return this.stacks.get(var1)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        val oldstack: ItemStack = ItemStackHelper.getAndRemove(this.stacks, index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        val oldstack: ItemStack = ContainerHelper.takeItem(this.stacks, index)
         if (!oldstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
         return oldstack
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.stacks.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
     override fun isEmpty(): Boolean {
@@ -550,7 +556,7 @@ open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), 
         return this.owner
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun getReceivingStatus(): String {
         if (!this.addressValid) {
             return EnumColor.RED.toString() + GCCoreUtil.translate("gui.message.invalid_address.name")
@@ -571,7 +577,7 @@ open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), 
         return EnumColor.BRIGHT_GREEN.toString() + GCCoreUtil.translate("gui.message.receiving_active.name")
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun getSendingStatus(): String {
         if (!this.addressValid) {
             return EnumColor.RED.toString() + GCCoreUtil.translate("gui.message.invalid_target_address.name")
@@ -611,7 +617,7 @@ open class TileEntityShortRangeTelepad constructor() : TileBaseElectricBlock(), 
         return EnumColor.BRIGHT_GREEN.toString() + GCCoreUtil.translate("gui.message.sending_active.name")
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun getParticleColor(rand: Random, sending: Boolean): Vector3 {
         val teleportTimeScaled: Float = min(1.0f, this.teleportTime / MAX_TELEPORT_TIME.toFloat())
         val f: Float

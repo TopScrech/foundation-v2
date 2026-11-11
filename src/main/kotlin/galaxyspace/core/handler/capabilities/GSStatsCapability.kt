@@ -3,8 +3,8 @@ package galaxyspace.core.handler.capabilities
 import galaxyspace.GalaxySpace
 import galaxyspace.core.handler.capabilities.GSStatsCapability
 import micdoodle8.mods.galacticraft.core.util.GCLog
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import java.lang.Exception
 import java.lang.ref.WeakReference
 
@@ -19,14 +19,14 @@ open class GSStatsCapability : StatsCapability() {
     private var isBarnardaSurvival = false
 
     override fun saveNBTData(nbt: NBTTagCompound?) {
-        (nbt)!!.setIntArray("gs_knowledge_research", know_res)
-        (nbt)!!.setBoolean("survival_barnarda", isBarnardaSurvival)
+        (nbt)!!.putIntArray("gs_knowledge_research", know_res)
+        (nbt)!!.putBoolean("survival_barnarda", isBarnardaSurvival)
     }
 
     override fun loadNBTData(nbt: NBTTagCompound?) {
         try {
             this.know_res = (nbt)!!.getIntArray("gs_knowledge_research")
-            this.isBarnardaSurvival = (nbt)!!.getBoolean("survival_barnarda")
+            this.isBarnardaSurvival = (nbt)!!.getBooleanOr("survival_barnarda", false)
         } catch (e: Exception) {
             GCLog.severe(
                 "Found error in saved Galaxy Space player data for " + player!!.get()!!.getGameProfile()

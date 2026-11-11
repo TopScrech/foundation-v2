@@ -6,18 +6,18 @@ import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStatsClient
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.texture.TextureUtil
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.reflect.Field
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class TextureDungeonFinder constructor(iconName: String) : TextureAtlasSprite(iconName) {
     /** Current compass heading in radians  */
     @JvmField
@@ -28,10 +28,10 @@ open class TextureDungeonFinder constructor(iconName: String) : TextureAtlasSpri
     var angleDelta: Double = 0.0
 
     override fun updateAnimation() {
-        val minecraft: Minecraft = Minecraft.getMinecraft()
+        val minecraft: Minecraft = Minecraft.getInstance()
 
         if (minecraft.world != null && minecraft.player != null) {
-            this.updateCompass(minecraft.world, minecraft.player, minecraft.player.rotationYaw.toDouble(), false, false)
+            this.updateCompass(minecraft.world, minecraft.player, minecraft.player.yRot.toDouble(), false, false)
         } else {
             this.updateCompass(null as World?, null, 0.0, true, false)
         }
@@ -46,7 +46,7 @@ open class TextureDungeonFinder constructor(iconName: String) : TextureAtlasSpri
             var d0: Double = 0.0
 
             if (worldIn != null && player != null && !flag1) {
-                if (worldIn.provider is IGalacticraftWorldProvider && player.inventory.hasItemStack(ItemStack(GCItems.dungeonFinder))) {
+                if (worldIn.provider is IGalacticraftWorldProvider && player.inventory.contains { !it.isEmpty && it.item === GCItems.dungeonFinder }) {
                     val direction: Double = (GCPlayerStatsClient.get(player))!!.getDungeonDirection().toDouble()
                     angle = (angle - direction) % 360.0
                     d0 = -angle / Constants.RADIANS_TO_DEGREES_D

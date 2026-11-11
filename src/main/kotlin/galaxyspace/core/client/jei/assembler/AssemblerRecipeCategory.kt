@@ -20,8 +20,8 @@ import mezz.jei.api.recipe.IRecipeCategory
 import mezz.jei.api.recipe.IRecipeWrapper
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import net.minecraft.client.Minecraft
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class AssemblerRecipeCategory constructor(guiHelper: IGuiHelper) : IRecipeCategory<IRecipeWrapper> {
     @Nonnull

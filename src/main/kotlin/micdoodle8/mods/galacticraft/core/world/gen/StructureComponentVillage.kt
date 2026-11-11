@@ -1,11 +1,11 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
 import micdoodle8.mods.galacticraft.core.entities.EntityAlienVillager
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.StructureComponent
 import net.minecraft.world.gen.structure.template.TemplateManager
 import java.util.Random
@@ -26,11 +26,11 @@ abstract class StructureComponentVillage : StructureComponent {
     }
 
     override fun writeStructureToNBT(nbttagcompound: NBTTagCompound) {
-        nbttagcompound.setInteger("VCount", this.villagersSpawned)
+        nbttagcompound.putInt("VCount", this.villagersSpawned)
     }
 
     override fun readStructureFromNBT(nbt: NBTTagCompound, manager: TemplateManager) {
-        this.villagersSpawned = nbt.getInteger("VCount")
+        this.villagersSpawned = nbt.getIntOr("VCount", 0)
     }
 
     protected fun getNextComponentNN(
@@ -45,9 +45,9 @@ abstract class StructureComponentVillage : StructureComponent {
                 (par1ComponentVillageStartPiece)!!,
                 (par2List)!!,
                 (par3Random)!!,
-                this.boundingBox.minX - 1,
-                this.boundingBox.minY + par4,
-                this.boundingBox.minZ + par5,
+                this.boundingBox.minX() - 1,
+                this.boundingBox.minY() + par4,
+                this.boundingBox.minZ() + par5,
                 EnumFacing.byHorizontalIndex(1),
                 this.getComponentType()
             )
@@ -56,9 +56,9 @@ abstract class StructureComponentVillage : StructureComponent {
                 (par1ComponentVillageStartPiece)!!,
                 (par2List)!!,
                 (par3Random)!!,
-                this.boundingBox.minX + par5,
-                this.boundingBox.minY + par4,
-                this.boundingBox.minZ - 1,
+                this.boundingBox.minX() + par5,
+                this.boundingBox.minY() + par4,
+                this.boundingBox.minZ() - 1,
                 EnumFacing.byHorizontalIndex(2),
                 this.getComponentType()
             )
@@ -67,9 +67,9 @@ abstract class StructureComponentVillage : StructureComponent {
                 (par1ComponentVillageStartPiece)!!,
                 (par2List)!!,
                 (par3Random)!!,
-                this.boundingBox.minX - 1,
-                this.boundingBox.minY + par4,
-                this.boundingBox.minZ + par5,
+                this.boundingBox.minX() - 1,
+                this.boundingBox.minY() + par4,
+                this.boundingBox.minZ() + par5,
                 EnumFacing.byHorizontalIndex(1),
                 this.getComponentType()
             )
@@ -78,9 +78,9 @@ abstract class StructureComponentVillage : StructureComponent {
                 (par1ComponentVillageStartPiece)!!,
                 (par2List)!!,
                 (par3Random)!!,
-                this.boundingBox.minX + par5,
-                this.boundingBox.minY + par4,
-                this.boundingBox.minZ - 1,
+                this.boundingBox.minX() + par5,
+                this.boundingBox.minY() + par4,
+                this.boundingBox.minZ() - 1,
                 EnumFacing.byHorizontalIndex(2),
                 this.getComponentType()
             )
@@ -101,9 +101,9 @@ abstract class StructureComponentVillage : StructureComponent {
                 (par1ComponentVillageStartPiece)!!,
                 (par2List)!!,
                 (par3Random)!!,
-                this.boundingBox.maxX + 1,
-                this.boundingBox.minY + par4,
-                this.boundingBox.minZ + par5,
+                this.boundingBox.maxX() + 1,
+                this.boundingBox.minY() + par4,
+                this.boundingBox.minZ() + par5,
                 EnumFacing.byHorizontalIndex(3),
                 this.getComponentType()
             )
@@ -112,9 +112,9 @@ abstract class StructureComponentVillage : StructureComponent {
                 (par1ComponentVillageStartPiece)!!,
                 (par2List)!!,
                 (par3Random)!!,
-                this.boundingBox.minX + par5,
-                this.boundingBox.minY + par4,
-                this.boundingBox.maxZ + 1,
+                this.boundingBox.minX() + par5,
+                this.boundingBox.minY() + par4,
+                this.boundingBox.maxZ() + 1,
                 EnumFacing.byHorizontalIndex(0),
                 this.getComponentType()
             )
@@ -123,9 +123,9 @@ abstract class StructureComponentVillage : StructureComponent {
                 (par1ComponentVillageStartPiece)!!,
                 (par2List)!!,
                 (par3Random)!!,
-                this.boundingBox.maxX + 1,
-                this.boundingBox.minY + par4,
-                this.boundingBox.minZ + par5,
+                this.boundingBox.maxX() + 1,
+                this.boundingBox.minY() + par4,
+                this.boundingBox.minZ() + par5,
                 EnumFacing.byHorizontalIndex(3),
                 this.getComponentType()
             )
@@ -134,9 +134,9 @@ abstract class StructureComponentVillage : StructureComponent {
                 (par1ComponentVillageStartPiece)!!,
                 (par2List)!!,
                 (par3Random)!!,
-                this.boundingBox.minX + par5,
-                this.boundingBox.minY + par4,
-                this.boundingBox.maxZ + 1,
+                this.boundingBox.minX() + par5,
+                this.boundingBox.minY() + par4,
+                this.boundingBox.maxZ() + 1,
                 EnumFacing.byHorizontalIndex(0),
                 this.getComponentType()
             )
@@ -145,16 +145,16 @@ abstract class StructureComponentVillage : StructureComponent {
         }
     }
 
-    protected fun getAverageGroundLevel(world: World, boundingBox: StructureBoundingBox): Int {
+    protected fun getAverageGroundLevel(world: World, boundingBox: BoundingBox): Int {
         var i: Int = 0
         var j: Int = 0
         val mutableBlockPos: BlockPos.MutableBlockPos = BlockPos.MutableBlockPos()
 
-        for (k: Int in this.boundingBox.minZ..this.boundingBox.maxZ) {
-            for (l: Int in this.boundingBox.minX..this.boundingBox.maxX) {
+        for (k: Int in this.boundingBox.minZ()..this.boundingBox.maxZ()) {
+            for (l: Int in this.boundingBox.minX()..this.boundingBox.maxX()) {
                 mutableBlockPos.setPos(l, 64, k)
 
-                if (boundingBox.isVecInside(mutableBlockPos)) {
+                if (boundingBox.isInside(mutableBlockPos)) {
                     i += world.getTopSolidOrLiquidBlock(mutableBlockPos).getY()
                     ++j
                 }
@@ -170,7 +170,7 @@ abstract class StructureComponentVillage : StructureComponent {
 
     protected fun spawnVillagers(
         par1World: World,
-        par2StructureBoundingBox: StructureBoundingBox,
+        par2StructureBoundingBox: BoundingBox,
         par3: Int,
         par4: Int,
         par5: Int,
@@ -182,17 +182,17 @@ abstract class StructureComponentVillage : StructureComponent {
                 val var9: Int = this.getYWithOffset(par4)
                 var var10: Int = this.getZWithOffset(par3 + var7, par5)
 
-                var8 += par1World.rand.nextInt(3) - 1
-                var10 += par1World.rand.nextInt(3) - 1
+                var8 += par1World.random.nextInt(3) - 1
+                var10 += par1World.random.nextInt(3) - 1
 
-                if (!par2StructureBoundingBox.isVecInside(BlockPos(var8, var9, var10))) {
+                if (!par2StructureBoundingBox.isInside(BlockPos(var8, var9, var10))) {
                     break
                 }
 
                 ++this.villagersSpawned
                 val var11: EntityAlienVillager = EntityAlienVillager(par1World)
                 var11.setLocationAndAngles(var8 + 0.5, var9.toDouble(), var10 + 0.5, 0.0f, 0.0f)
-                par1World.spawnEntity(var11)
+                par1World.addFreshEntity(var11)
             }
         }
     }
@@ -206,8 +206,8 @@ abstract class StructureComponentVillage : StructureComponent {
         }
 
         @JvmStatic
-        protected fun canVillageGoDeeper(par0StructureBoundingBox: StructureBoundingBox?): Boolean {
-            return par0StructureBoundingBox != null && par0StructureBoundingBox.minY > 10
+        protected fun canVillageGoDeeper(par0StructureBoundingBox: BoundingBox?): Boolean {
+            return par0StructureBoundingBox != null && par0StructureBoundingBox.minY() > 10
         }
     }
 }

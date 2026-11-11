@@ -1,14 +1,16 @@
 package asmodeuscore.core.utils.worldengine.standardcustomgen
 
+import foundation.math.LegacyTerrainMath
+
 import java.util.ArrayList
 import java.util.Random
 
 import asmodeuscore.core.utils.worldengine.additions.WE_CreateChunkGen
 import asmodeuscore.core.utils.worldengine.additions.WE_GeneratorData
 import net.minecraft.block.BlockFalling
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.util.Mth as MathHelper
 import java.util.*
 
 open class WE_RavineGen constructor() : WE_CreateChunkGen() {
@@ -16,10 +18,10 @@ open class WE_RavineGen constructor() : WE_CreateChunkGen() {
     var replaceBlocksList: MutableList<IBlockState?> = ArrayList<IBlockState?>()
 
     @JvmField
-    var caveBlock: IBlockState = Blocks.AIR.getDefaultState()
+    var caveBlock: IBlockState = Blocks.AIR.defaultBlockState()
 
     @JvmField
-    var lavaBlock: IBlockState = Blocks.LAVA.getDefaultState()
+    var lavaBlock: IBlockState = Blocks.LAVA.defaultBlockState()
 
     @JvmField
     var ignoreLiquid: Boolean = false
@@ -37,7 +39,7 @@ open class WE_RavineGen constructor() : WE_CreateChunkGen() {
     var rand: Random = Random()
 
     init {
-        this.replaceBlocksList.add(Blocks.STONE.getDefaultState())
+        this.replaceBlocksList.add(Blocks.STONE.defaultBlockState())
     }
 
     override fun gen(data: WE_GeneratorData?) {
@@ -115,15 +117,15 @@ open class WE_RavineGen constructor() : WE_CreateChunkGen() {
 
         while (in1 < in2) {
             var d12: Double =
-                1.5 + MathHelper.sin(in1.toFloat() * Math.PI.toFloat() / in2.toFloat()).toDouble() * fn1.toDouble()
+                1.5 + LegacyTerrainMath.sin(in1.toFloat() * Math.PI.toFloat() / in2.toFloat()).toDouble() * fn1.toDouble()
             var d6: Double = d12 * dn
             d12 *= r.nextFloat().toDouble() * 0.25 + 0.75
             d6 *= r.nextFloat().toDouble() * 0.25 + 0.75
-            val f6: Float = MathHelper.cos(fn3)
-            val f7: Float = MathHelper.sin(fn3)
-            gx += MathHelper.cos(fn2).toDouble() * f6.toDouble()
+            val f6: Float = LegacyTerrainMath.cos(fn3)
+            val f7: Float = LegacyTerrainMath.sin(fn3)
+            gx += LegacyTerrainMath.cos(fn2).toDouble() * f6.toDouble()
             gy += f7.toDouble()
-            gz += MathHelper.sin(fn2).toDouble() * f6.toDouble()
+            gz += LegacyTerrainMath.sin(fn2).toDouble() * f6.toDouble()
             fn3 *= 0.7f
             fn3 += f4 * 0.05f
             fn2 += f3 * 0.05f

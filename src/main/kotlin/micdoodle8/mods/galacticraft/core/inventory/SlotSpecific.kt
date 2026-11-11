@@ -6,9 +6,9 @@ import java.util.Arrays
 import cofh.redstoneflux.api.IEnergyContainerItem
 import micdoodle8.mods.galacticraft.api.item.IItemElectric
 import micdoodle8.mods.galacticraft.core.energy.EnergyConfigHandler
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
 import java.util.*
 
 /**
@@ -87,7 +87,7 @@ open class SlotSpecific : Slot {
      * Check if the stack is a valid item for this slot. Always true beside for
      * the armor slots.
      */
-    override fun isItemValid(compareStack: ItemStack): Boolean {
+    override fun mayPlace(compareStack: ItemStack): Boolean {
         var returnValue: Boolean = false
 
         for (itemStack: ItemStack in this.validItemStacks) {

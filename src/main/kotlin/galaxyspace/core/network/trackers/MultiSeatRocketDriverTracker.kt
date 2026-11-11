@@ -10,7 +10,7 @@ import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
 import micdoodle8.mods.galacticraft.core.tick.TickHandlerServer
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.wrappers.ScheduledDimensionChange
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import java.util.ArrayList
 
 /**
@@ -63,7 +63,7 @@ open class MultiSeatRocketDriverTracker {
                     TickHandlerServer.scheduleNewDimensionChange(
                         ScheduledDimensionChange(
                             passenger,
-                            trackedEntry.key!!.world.provider.getDimension()
+                            trackedEntry.key!!.level().provider.getDimension()
                         )
                     )
                     GalaxySpace.info("schedule dimension change for " + passenger.toString() + " (call by driver " + trackedEntry.key.toString() + ")")
@@ -73,7 +73,7 @@ open class MultiSeatRocketDriverTracker {
                     (GalaxySpace.packetPipeline)!!.sendTo(
                         GSPacketSimple(
                             GSEnumSimplePacket.C_CLOSE_WAITFORDRIVER_GUI,
-                            GCCoreUtil.getDimensionID((passenger)!!.world),
+                            GCCoreUtil.getDimensionID((passenger)!!.level()),
                             *arrayOf<Any?>()
                         ), passenger
                     )

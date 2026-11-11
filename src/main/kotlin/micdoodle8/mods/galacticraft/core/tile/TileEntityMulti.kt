@@ -3,15 +3,15 @@ package micdoodle8.mods.galacticraft.core.tile
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.blocks.BlockAdvanced
 import micdoodle8.mods.galacticraft.core.blocks.BlockMulti
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.ArrayList
 
 open class TileEntityMulti : TileEntity {
@@ -32,12 +32,12 @@ open class TileEntityMulti : TileEntity {
     //
     //        if (!this.world.isRemote)
     //        {
-    //            this.world.notifyBlockUpdate(this.getPos());
+    //            this.world.sendBlockUpdated(this.getPos());
     //        }
     //    }
     open fun onBlockRemoval() {
         if (this.mainBlockPosition != null) {
-            val tileEntity: TileEntity? = this.world.getTileEntity(this.mainBlockPosition)
+            val tileEntity: TileEntity? = this.world.getBlockEntity(this.mainBlockPosition)
 
             if (tileEntity is IMultiBlock) {
                 val mainBlock: IMultiBlock = tileEntity as IMultiBlock
@@ -48,7 +48,7 @@ open class TileEntityMulti : TileEntity {
 
     open fun onBlockActivated(worldIn: World?, pos: BlockPos?, player: EntityPlayer?): Boolean {
         if (this.mainBlockPosition != null) {
-            val tileEntity: TileEntity? = this.world.getTileEntity(this.mainBlockPosition)
+            val tileEntity: TileEntity? = this.world.getBlockEntity(this.mainBlockPosition)
 
             if (tileEntity is IMultiBlock) {
                 return (tileEntity as IMultiBlock).onActivated(player)
@@ -91,7 +91,7 @@ open class TileEntityMulti : TileEntity {
 
     open fun getMainBlockTile(): TileEntity? {
         if (this.mainBlockPosition != null) {
-            return this.world.getTileEntity(this.mainBlockPosition)
+            return this.world.getBlockEntity(this.mainBlockPosition)
         }
 
         return null
@@ -102,8 +102,8 @@ open class TileEntityMulti : TileEntity {
      */
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        val tag: NBTTagCompound = nbt.getCompoundTag("mainBlockPosition")
-        this.mainBlockPosition = BlockPos(tag.getInteger("x"), tag.getInteger("y"), tag.getInteger("z"))
+        val tag: NBTTagCompound = nbt.getCompoundOrEmpty("mainBlockPosition")
+        this.mainBlockPosition = BlockPos(tag.getIntOr("x", 0), tag.getIntOr("y", 0), tag.getIntOr("z", 0))
     }
 
     /**
@@ -114,10 +114,10 @@ open class TileEntityMulti : TileEntity {
 
         if (this.mainBlockPosition != null) {
             val tag: NBTTagCompound = NBTTagCompound()
-            tag.setInteger("x", this.mainBlockPosition!!.getX())
-            tag.setInteger("y", this.mainBlockPosition!!.getY())
-            tag.setInteger("z", this.mainBlockPosition!!.getZ())
-            nbt.setTag("mainBlockPosition", tag)
+            tag.putInt("x", this.mainBlockPosition!!.getX())
+            tag.putInt("y", this.mainBlockPosition!!.getY())
+            tag.putInt("z", this.mainBlockPosition!!.getZ())
+            nbt.put("mainBlockPosition", tag)
         }
 
         return nbt
@@ -128,7 +128,7 @@ open class TileEntityMulti : TileEntity {
 
 
         //Client can create its own fake blocks and tiles - no need for networking in 1.8+
-        if (world.isRemote) {
+        if (world.isClientSide) {
             thisTile.onCreate(world, pos)
         }
 
@@ -136,16 +136,16 @@ open class TileEntityMulti : TileEntity {
         thisTile.getPositions(pos, (positions as MutableList<BlockPos?>?))
         var result: Boolean = true
         for (vecToAdd: BlockPos in positions) {
-            val tile: TileEntity? = world.getTileEntity(vecToAdd)
+            val tile: TileEntity? = world.getBlockEntity(vecToAdd)
             if (tile is TileEntityMulti) {
                 tile.mainBlockPosition = pos
             } else if (tile == null) {
                 val b: Block = world.getBlockState(vecToAdd).getBlock()
                 if (b !is BlockMulti) {
-                    world.setBlockState(
+                    world.setBlock(
                         vecToAdd,
-                        (GCBlocks.fakeBlock)!!.getDefaultState()
-                            .withProperty(
+                        (GCBlocks.fakeBlock)!!.defaultBlockState()
+                            .setValue(
                                 BlockMulti.MULTI_TYPE,
                                 (thisTile.getMultiType())!!
                             ),
@@ -157,7 +157,7 @@ open class TileEntityMulti : TileEntity {
                 result = false
             }
         }
-        if (result == false && !world.isRemote) {
+        if (result == false && !world.isClientSide) {
 //            //Try again to create all the multiblocks - currently disabled because making new tiles here interferes with server->client tileEntity sync during worldgen (Abandoned Base)
 //            thisTile.onCreate(world, pos);
         }

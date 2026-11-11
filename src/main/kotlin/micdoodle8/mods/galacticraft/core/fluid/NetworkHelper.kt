@@ -8,8 +8,8 @@ import micdoodle8.mods.galacticraft.api.transmission.grid.IElectricityNetwork
 import micdoodle8.mods.galacticraft.api.transmission.tile.IConnector
 import micdoodle8.mods.galacticraft.api.transmission.tile.INetworkProvider
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
 import java.util.*
 
 /**
@@ -25,7 +25,7 @@ object NetworkHelper {
 
         if (tileEntity is IConnector) {
             for (i: Int in 0..5) {
-                val direction: EnumFacing? = EnumFacing.byIndex(i)
+                val direction: EnumFacing? = EnumFacing.from3DDataValue(i)
                 if ((tileEntity as IConnector).canConnect(direction, type)) {
                     possibleSides.add(direction)
                 }
@@ -49,9 +49,9 @@ object NetworkHelper {
         val connectedNetworks: MutableSet<IElectricityNetwork?> = HashSet<IElectricityNetwork?>()
 
         val tileVec: BlockVec3 = BlockVec3(tileEntity)
-        for (side: EnumFacing in EnumFacing.VALUES) {
+        for (side: EnumFacing in EnumFacing.values()) {
             if (approachingDirection.contains(side)) {
-                val outputConductor: TileEntity? = tileVec.getTileEntityOnSide(tileEntity.getWorld(), side)
+                val outputConductor: TileEntity? = tileVec.getTileEntityOnSide(tileEntity.getLevel(), side)
                 val electricityNetwork: IElectricityNetwork? = getElectricalNetworkFromTileEntity(outputConductor, side)
 
                 if (electricityNetwork != null) {

@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.moons.europa.dimension
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import galaxyspace.core.configs.GSConfigWorld
 import galaxyspace.systems.SolarSystem.SolarSystemBodies
@@ -19,15 +21,15 @@ import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.client.CloudRenderer
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class WorldProviderEuropa_WE : WE_WorldProviderSpace() {
     override fun getFuelUsageMultiplier(): Double {
@@ -74,12 +76,12 @@ open class WorldProviderEuropa_WE : WE_WorldProviderSpace() {
         return !ConfigManagerCore.forceOverworldRespawn
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCloudRenderer(): IRenderHandler? {
         return CloudRenderer()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyRenderer(): IRenderHandler? {
         if (super.getSkyRenderer() == null) {
             this.setSkyRenderer(SkyProviderEuropa())
@@ -106,7 +108,7 @@ open class WorldProviderEuropa_WE : WE_WorldProviderSpace() {
         return false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val var2: Float = this.world.getCelestialAngle(par1)
         var var3: Float = 1.0f - (MathHelper.cos(var2 * Math.PI.toFloat() * 2.0f) * 2.0f + 0.25f)

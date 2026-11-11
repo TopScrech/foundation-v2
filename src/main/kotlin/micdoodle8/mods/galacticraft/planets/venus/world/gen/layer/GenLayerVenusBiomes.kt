@@ -2,7 +2,7 @@ package micdoodle8.mods.galacticraft.planets.venus.world.gen.layer
 
 import micdoodle8.mods.galacticraft.planets.venus.VenusModule
 import micdoodle8.mods.miccore.IntCache
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.gen.layer.GenLayer
 
 open class GenLayerVenusBiomes : GenLayer {

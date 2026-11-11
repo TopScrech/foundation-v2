@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.planets.venus.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.blocks.BlockTileGC
@@ -11,27 +14,29 @@ import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.GuiIdsPlanets
 import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntityGeothermalGenerator
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyBool
-import net.minecraft.block.properties.PropertyDirection
+import net.minecraft.world.level.block.state.properties.BooleanProperty as PropertyBool
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 
 open class BlockGeothermalGenerator constructor(assetName: String?) : BlockTileGC(Material.IRON),
-    ITileEntityProvider, IShiftDescription, IPartialSealableBlock, ISortableBlock {
+    ITileEntityProvider, IShiftDescription, IPartialSealableBlock, ISortableBlock, LegacyBlockMetadata {
     init {
         this.setHardness(2.5f)
         this.setSoundType(SoundType.METAL)
@@ -76,9 +81,9 @@ open class BlockGeothermalGenerator constructor(assetName: String?) : BlockTileG
         placer: EntityLivingBase,
         stack: ItemStack
     ) {
-        val angle: Int = MathHelper.floor(placer.rotationYaw * 4.0f / 360.0f + 0.5) and 3
+        val angle: Int = MathHelper.floor(placer.yRot * 4.0f / 360.0f + 0.5) and 3
         val change: Int = EnumFacing.byHorizontalIndex(angle).getOpposite().getHorizontalIndex()
-        worldIn.setBlockState(pos, getStateFromMeta(change), 3)
+        worldIn.setBlock(pos, getStateFromMeta(change), 3)
     }
 
     override fun onUseWrench(
@@ -95,7 +100,7 @@ open class BlockGeothermalGenerator constructor(assetName: String?) : BlockTileG
         val change: Int = (world)!!.getBlockState(pos)
             .getValue(micdoodle8.mods.galacticraft.planets.venus.blocks.BlockGeothermalGenerator.Companion.FACING)
             .rotateY().getHorizontalIndex()
-        (world)!!.setBlockState(pos, this.getStateFromMeta(change), 3)
+        (world)!!.setBlock(pos, this.getStateFromMeta(change), 3)
         return true
     }
 
@@ -125,7 +130,7 @@ open class BlockGeothermalGenerator constructor(assetName: String?) : BlockTileG
 
     override fun getStateFromMeta(meta: Int): IBlockState {
         val enumfacing: EnumFacing = EnumFacing.byHorizontalIndex(meta % 4)
-        return this.getDefaultState().withProperty(FACING, enumfacing)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -137,17 +142,17 @@ open class BlockGeothermalGenerator constructor(assetName: String?) : BlockTileG
     }
 
     override fun getActualState(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState {
-        val tile: TileEntity? = worldIn.getTileEntity(pos)
+        val tile: TileEntity? = worldIn.getBlockEntity(pos)
         if (tile !is TileEntityGeothermalGenerator) {
             return state
         }
         val generator: TileEntityGeothermalGenerator = tile
-        return state.withProperty(ACTIVE, generator.hasValidSpout() && !generator.getDisabled(0))
+        return state.setValue(ACTIVE, generator.hasValidSpout() && !generator.getDisabled(0))
     }
 
     companion object {
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL)
+        val FACING: EnumProperty<Direction> = BlockStateProperties.HORIZONTAL_FACING
 
         @JvmField
         val ACTIVE: PropertyBool = PropertyBool.create("active")

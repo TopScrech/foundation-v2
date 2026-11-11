@@ -1,9 +1,11 @@
 package micdoodle8.mods.galacticraft.planets.venus.world.gen.dungeon
 
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.core.world.gen.dungeon.DungeonConfiguration
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 
 open class DungeonConfigurationVenus : DungeonConfiguration {
     private var brickBlockFloor: IBlockState? = null
@@ -34,7 +36,7 @@ open class DungeonConfigurationVenus : DungeonConfiguration {
     }
 
     override fun writeToNBT(tagCompound: NBTTagCompound): NBTTagCompound {
-        tagCompound.setString(
+        tagCompound.putString(
             "brickBlock",
             Block.REGISTRY.getNameForObject(this.brickBlockFloor!!.getBlock()).toString()
         )
@@ -44,8 +46,8 @@ open class DungeonConfigurationVenus : DungeonConfiguration {
 
     override fun readFromNBT(tagCompound: NBTTagCompound) {
         try {
-            this.brickBlockFloor = Block.getBlockFromName(tagCompound.getString("brickBlock"))!!
-                .getStateFromMeta(tagCompound.getInteger("brickBlockMeta"))
+            this.brickBlockFloor = Block.getBlockFromName(tagCompound.getStringOr("brickBlock", ""))!!
+                .getStateFromMeta(tagCompound.getIntOr("brickBlockMeta", 0))
         } catch (e: Exception) {
             System.err.println("Failed to read dungeon configuration from NBT")
             e.printStackTrace()

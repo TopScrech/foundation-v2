@@ -7,18 +7,18 @@ import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.item.EnumRarity
 import net.minecraft.item.ItemSpade
-import net.minecraft.item.ItemStack
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemSpadeMars constructor(par2EnumToolMaterial: ToolMaterial) : ItemSpade(par2EnumToolMaterial),
     ISortableItem {
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftItemsTab
     }

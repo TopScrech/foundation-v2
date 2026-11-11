@@ -11,18 +11,17 @@ import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.Entity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.world.World
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.Entity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import kotlin.math.floor
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 object OverlayRocket : Overlay() {
-    private val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+    private val minecraft: Minecraft = Minecraft.getInstance()
 
     /**
      * Render the GUI when player is in inventory
@@ -41,7 +40,7 @@ object OverlayRocket : Overlay() {
         GlStateManager.depthMask(true)
         GlStateManager.enableTexture2D()
         GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
-        FMLClientHandler.instance().getClient().renderEngine.bindTexture(guiTexture)
+        Minecraft.getInstance().renderEngine.bindTexture(guiTexture)
 
         var var1: Float = 0f
         var var2: Float = (height / 2 - 170 / 2).toFloat()
@@ -69,7 +68,7 @@ object OverlayRocket : Overlay() {
 
         GlStateManager.color(1.0f, 1.0f, 1.0f)
 
-        val rocket: Entity? = minecraft.player.getRidingEntity()
+        val rocket: Entity? = minecraft.player.getVehicle()
         var headOffset: Float = 0f
         if (rocket is EntityTier1Rocket) {
             headOffset = 5f
@@ -103,7 +102,7 @@ object OverlayRocket : Overlay() {
 
         try {
             (spaceshipRender as Render<net.minecraft.entity.Entity>).doRender(
-                rocket.javaClass.getConstructor(World::class.java).newInstance(minecraft.player.world),
+                rocket.javaClass.getConstructor(World::class.java).newInstance(minecraft.player.level()),
                 0.0,
                 0.0,
                 0.0,

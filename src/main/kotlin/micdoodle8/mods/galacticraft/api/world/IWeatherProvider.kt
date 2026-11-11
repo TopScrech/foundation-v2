@@ -1,16 +1,16 @@
 package micdoodle8.mods.galacticraft.api.world
 
 import net.minecraft.client.Minecraft
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.particle.Particle
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 interface IWeatherProvider {
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getParticle(world: WorldClient?, x: Double, y: Double, z: Double): Particle?
 
     fun weatherSounds(

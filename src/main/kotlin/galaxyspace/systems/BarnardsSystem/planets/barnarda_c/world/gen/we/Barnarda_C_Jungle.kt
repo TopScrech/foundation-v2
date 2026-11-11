@@ -1,5 +1,12 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.world.gen.we
 
+import foundation.block.LegacyVanillaBlockStates
+import foundation.block.LegacyVanillaBlockIds
+
+import foundation.block.getStateFromMeta
+
+import foundation.level.offset
+
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Dandelions
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Grass
@@ -17,9 +24,9 @@ import net.minecraft.entity.monster.EntityZombie
 import net.minecraft.entity.passive.EntityChicken
 import net.minecraft.entity.passive.EntityOcelot
 import net.minecraft.entity.passive.EntitySquid
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class Barnarda_C_Jungle constructor(min: Double, max: Double) :
@@ -78,18 +85,18 @@ open class Barnarda_C_Jungle constructor(min: Double, max: Double) :
             false
         )
 
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         createChunkGen_InXZ_List.add(standardBiomeLayers)
 
         /*	
 		WE_LakesGen lakes = new WE_LakesGen();
-		lakes.lakeBlock = Blocks.WATER.getDefaultState();
+		lakes.lakeBlock = Blocks.WATER.defaultBlockState();
 		lakes.iceGen = false;
 		lakes.chunksForLake = 20;
 		decorateChunkGen_List.add(lakes);
 		
 		lakes = new WE_LakesGen();
-		lakes.lakeBlock = Blocks.LAVA.getDefaultState();
+		lakes.lakeBlock = Blocks.LAVA.defaultBlockState();
 		lakes.iceGen = false;
 		lakes.chunksForLake = 100;
 		decorateChunkGen_List.add(lakes);	*/
@@ -110,7 +117,7 @@ open class Barnarda_C_Jungle constructor(min: Double, max: Double) :
             val range: Int = 5
             for (kx: Int in -range..<range) {
                 if (cangen) break
-                for (kz: Int in -range..<range) if ((world)!!.isAirBlock(pos.down()) || pos.getY() < 64) cangen = true
+                for (kz: Int in -range..<range) if ((world)!!.isEmptyBlock(pos.below()) || pos.getY() < 64) cangen = true
             }
 
             if (!cangen) {
@@ -135,35 +142,35 @@ open class Barnarda_C_Jungle constructor(min: Double, max: Double) :
             randPosZ = z + (rand)!!.nextInt(16) + 8
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-            if ((world)!!.getBlockState(pos.down()) === BRBlocks.BARNARDA_C_GRASS.getDefaultState()
-                    .withProperty(
+            if ((world)!!.getBlockState(pos.below()) === BRBlocks.BARNARDA_C_GRASS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Grass.BASIC_TYPE,
                         Barnarda_C_Grass.EnumBlockGrass.GRASS
                     )
             ) {
-                (world)!!.setBlockState(pos, BRBlocks.BARNARDA_C_VIOLET_LOG.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos, BRBlocks.BARNARDA_C_VIOLET_LOG.getStateFromMeta(0))
 
                 if ((rand)!!.nextInt(10) == 0) {
-                    (world)!!.setBlockState(pos.up(), BRBlocks.BARNARDA_C_VIOLET_LOG.getStateFromMeta(0))
-                    pos = pos.add(0, 1, 0)
+                    (world)!!.setBlockAndUpdate(pos.above(), BRBlocks.BARNARDA_C_VIOLET_LOG.getStateFromMeta(0))
+                    pos = pos.offset(0, 1, 0)
                 }
 
-                (world)!!.setBlockState(pos.east(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
-                (world)!!.setBlockState(pos.west(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
-                (world)!!.setBlockState(pos.north(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
-                (world)!!.setBlockState(pos.south(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos.east(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos.west(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos.north(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos.south(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
 
-                (world)!!.setBlockState(pos.east(2), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
-                (world)!!.setBlockState(pos.west(2), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
-                (world)!!.setBlockState(pos.north(2), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
-                (world)!!.setBlockState(pos.south(2), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos.east(2), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos.west(2), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos.north(2), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos.south(2), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
 
-                (world)!!.setBlockState(pos.east().north(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
-                (world)!!.setBlockState(pos.east().south(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
-                (world)!!.setBlockState(pos.west().north(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
-                (world)!!.setBlockState(pos.west().south(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos.east().north(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos.east().south(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos.west().north(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos.west().south(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
 
-                (world)!!.setBlockState(pos.up(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
+                (world)!!.setBlockAndUpdate(pos.above(), BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0))
             }
         }
 
@@ -172,13 +179,13 @@ open class Barnarda_C_Jungle constructor(min: Double, max: Double) :
             randPosZ = z + (rand)!!.nextInt(16) + 12
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-            if ((world)!!.getBlockState(pos.down()) === BRBlocks.BARNARDA_C_GRASS.getDefaultState()
-                    .withProperty(
+            if ((world)!!.getBlockState(pos.below()) === BRBlocks.BARNARDA_C_GRASS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Grass.BASIC_TYPE,
                         Barnarda_C_Grass.EnumBlockGrass.GRASS
                     )
             ) WorldGenTree_Small(
-                BRBlocks.BARNARDA_C_VIOLET_LOG.getDefaultState(),
+                BRBlocks.BARNARDA_C_VIOLET_LOG.defaultBlockState(),
                 BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0),
                 (rand)!!.nextInt(3)
             ).generate((world)!!, (rand)!!, pos)
@@ -189,15 +196,15 @@ open class Barnarda_C_Jungle constructor(min: Double, max: Double) :
             randPosZ = z + (rand)!!.nextInt(16) + 8
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-            if ((world)!!.getBlockState(pos.down()) === BRBlocks.BARNARDA_C_GRASS.getDefaultState()
-                    .withProperty(
+            if ((world)!!.getBlockState(pos.below()) === BRBlocks.BARNARDA_C_GRASS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Grass.BASIC_TYPE,
                         Barnarda_C_Grass.EnumBlockGrass.GRASS
                     )
-            ) (world)!!.setBlockState(
+            ) (world)!!.setBlockAndUpdate(
                 pos,
-                BRBlocks.BARNARDA_C_DANDELIONS.getDefaultState()
-                    .withProperty(
+                BRBlocks.BARNARDA_C_DANDELIONS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Dandelions.BASIC_TYPE,
                         Barnarda_C_Dandelions.EnumBlockDandelions.GRASS
                     )
@@ -209,12 +216,12 @@ open class Barnarda_C_Jungle constructor(min: Double, max: Double) :
             randPosZ = z + (rand)!!.nextInt(16) + 8
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-            if ((world)!!.getBlockState(pos.down()) === BRBlocks.BARNARDA_C_GRASS.getDefaultState()
-                    .withProperty(
+            if ((world)!!.getBlockState(pos.below()) === BRBlocks.BARNARDA_C_GRASS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Grass.BASIC_TYPE,
                         Barnarda_C_Grass.EnumBlockGrass.GRASS
                     )
-            ) (world)!!.setBlockState(pos, BRBlocks.BARNARDA_C_GLOW_DANDELIONS.getStateFromMeta((rand)!!.nextInt(4)))
+            ) (world)!!.setBlockAndUpdate(pos, BRBlocks.BARNARDA_C_GLOW_DANDELIONS.getStateFromMeta((rand)!!.nextInt(4)))
         }
 
         for (i: Int in 0..7) {
@@ -223,14 +230,14 @@ open class Barnarda_C_Jungle constructor(min: Double, max: Double) :
                 randPosZ = z + (rand)!!.nextInt(16) + 8
                 pos = BlockPos(randPosX, y, randPosZ)
 
-                if ((world)!!.isAirBlock(pos.down()) && (world)!!.getBlockState(pos.up()) === BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(
+                if ((world)!!.isEmptyBlock(pos.below()) && (world)!!.getBlockState(pos.above()) === BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(
                         0
                     )
                 ) {
-                    (world)!!.setBlockState(
+                    (world)!!.setBlockAndUpdate(
                         pos,
-                        BRBlocks.BARNARDA_C_DANDELIONS.getDefaultState()
-                            .withProperty(
+                        BRBlocks.BARNARDA_C_DANDELIONS.defaultBlockState()
+                            .setValue(
                                 Barnarda_C_Dandelions.BASIC_TYPE,
                                 Barnarda_C_Dandelions.EnumBlockDandelions.LEAVES_BALLS
                             )
@@ -244,7 +251,7 @@ open class Barnarda_C_Jungle constructor(min: Double, max: Double) :
             randPosZ = z + (rand)!!.nextInt(16) + 8
             pos = BlockPos(randPosX, 64 + (rand)!!.nextInt(50), randPosZ)
 
-            if ((world)!!.getBlockState(pos) === BRBlocks.BARNARDA_C_VIOLET_LOG.getStateFromMeta(0)) (world)!!.setBlockState(
+            if ((world)!!.getBlockState(pos) === BRBlocks.BARNARDA_C_VIOLET_LOG.getStateFromMeta(0)) (world)!!.setBlockAndUpdate(
                 pos,
                 BRBlocks.BARNARDA_C_VIOLET_GLOW_LOG.getStateFromMeta(0)
             )
@@ -259,36 +266,36 @@ open class Barnarda_C_Jungle constructor(min: Double, max: Double) :
                 if ((world)!!.getBlockState(pos.west()) === BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0) || (world)!!.getBlockState(
                         pos.west()
                     ) === BRBlocks.BARNARDA_C_VIOLET_LOG.getStateFromMeta(0)
-                ) for (size: Int in 0..<(rand)!!.nextInt(15) + 5) if ((world)!!.isAirBlock(pos.down(size))) (world)!!.setBlockState(
-                    pos.down(size),
-                    Blocks.VINE.getStateFromMeta(2)
+                ) for (size: Int in 0..<(rand)!!.nextInt(15) + 5) if ((world)!!.isEmptyBlock(pos.below(size))) (world)!!.setBlockAndUpdate(
+                    pos.below(size),
+                    LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.VINE, 2)
                 )
                 else break
 
                 if ((world)!!.getBlockState(pos.east()) === BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0) || (world)!!.getBlockState(
                         pos.east()
                     ) === BRBlocks.BARNARDA_C_VIOLET_LOG.getStateFromMeta(0)
-                ) for (size: Int in 0..<(rand)!!.nextInt(15) + 5) if ((world)!!.isAirBlock(pos.down(size))) (world)!!.setBlockState(
-                    pos.down(size),
-                    Blocks.VINE.getStateFromMeta(8)
+                ) for (size: Int in 0..<(rand)!!.nextInt(15) + 5) if ((world)!!.isEmptyBlock(pos.below(size))) (world)!!.setBlockAndUpdate(
+                    pos.below(size),
+                    LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.VINE, 8)
                 )
                 else break
 
                 if ((world)!!.getBlockState(pos.north()) === BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0) || (world)!!.getBlockState(
                         pos.north()
                     ) === BRBlocks.BARNARDA_C_VIOLET_LOG.getStateFromMeta(0)
-                ) for (size: Int in 0..<(rand)!!.nextInt(15) + 5) if ((world)!!.isAirBlock(pos.down(size))) (world)!!.setBlockState(
-                    pos.down(size),
-                    Blocks.VINE.getStateFromMeta(4)
+                ) for (size: Int in 0..<(rand)!!.nextInt(15) + 5) if ((world)!!.isEmptyBlock(pos.below(size))) (world)!!.setBlockAndUpdate(
+                    pos.below(size),
+                    LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.VINE, 4)
                 )
                 else break
 
                 if ((world)!!.getBlockState(pos.south()) === BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0) || (world)!!.getBlockState(
                         pos.south()
                     ) === BRBlocks.BARNARDA_C_VIOLET_LOG.getStateFromMeta(0)
-                ) for (size: Int in 0..<(rand)!!.nextInt(15) + 5) if ((world)!!.isAirBlock(pos.down(size))) (world)!!.setBlockState(
-                    pos.down(size),
-                    Blocks.VINE.getStateFromMeta(1)
+                ) for (size: Int in 0..<(rand)!!.nextInt(15) + 5) if ((world)!!.isEmptyBlock(pos.below(size))) (world)!!.setBlockAndUpdate(
+                    pos.below(size),
+                    LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.VINE, 1)
                 )
                 else break
             }

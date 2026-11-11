@@ -4,12 +4,12 @@ import micdoodle8.mods.galacticraft.api.event.wgen.GCCoreEventPopulate
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.blocks.BlockBasicMoon
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.block.state.pattern.BlockMatcher
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.biome.BiomeDecorator
 import net.minecraft.world.gen.feature.WorldGenerator
 import net.minecraftforge.common.MinecraftForge
@@ -70,8 +70,8 @@ open class BiomeDecoratorMoon constructor() : BiomeDecorator() {
         }
         if (!ConfigManagerCore.disableSapphireMoon) {
             val count: Int = 3 + this.randomGenerator!!.nextInt(6)
-            val sapphire: IBlockState = (GCBlocks.blockMoon)!!.getDefaultState()
-                .withProperty(
+            val sapphire: IBlockState = (GCBlocks.blockMoon)!!.defaultBlockState()
+                .setValue(
                     BlockBasicMoon.BASIC_TYPE_MOON,
                     BlockBasicMoon.EnumBlockBasicMoon.ORE_SAPPHIRE
                 )
@@ -87,7 +87,7 @@ open class BiomeDecoratorMoon constructor() : BiomeDecorator() {
                 if (toReplace.getBlock() === GCBlocks.blockMoon && toReplace.getBlock()
                         .isReplaceableOreGen(toReplace, this.world, blockpos, BlockMatcher.forBlock(Blocks.STONE))
                 ) {
-                    this.world!!.setBlockState(blockpos, sapphire, 2)
+                    this.world!!.setBlock(blockpos, sapphire, 2)
                 }
             }
         }

@@ -1,12 +1,17 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
+import foundation.block.LegacyVanillaBlockStates
+import foundation.block.LegacyVanillaBlockIds
+
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.blocks.BlockGlowstoneTorch
-import net.minecraft.init.Blocks
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.StructureComponent
 import net.minecraft.world.gen.structure.template.TemplateManager
 import java.util.Random
@@ -20,7 +25,7 @@ open class StructureComponentVillageTorch : StructureComponentVillage {
         par1ComponentVillageStartPiece: StructureComponentVillageStartPiece?,
         par2: Int,
         par3Random: Random?,
-        par4StructureBoundingBox: StructureBoundingBox?,
+        par4StructureBoundingBox: BoundingBox?,
         par5: EnumFacing?
     ) : super(par1ComponentVillageStartPiece, par2) {
         this.setCoordBaseMode(par5)
@@ -30,13 +35,13 @@ open class StructureComponentVillageTorch : StructureComponentVillage {
     override fun writeStructureToNBT(nbt: NBTTagCompound) {
         super.writeStructureToNBT(nbt)
 
-        nbt.setInteger("AvgGroundLevel", this.averageGroundLevel)
+        nbt.putInt("AvgGroundLevel", this.averageGroundLevel)
     }
 
     override fun readStructureFromNBT(nbt: NBTTagCompound, manager: TemplateManager) {
         super.readStructureFromNBT(nbt, manager)
 
-        this.averageGroundLevel = nbt.getInteger("AvgGroundLevel")
+        this.averageGroundLevel = nbt.getIntOr("AvgGroundLevel", 0)
     }
 
     /**
@@ -46,7 +51,7 @@ open class StructureComponentVillageTorch : StructureComponentVillage {
     override fun addComponentParts(
         par1World: World,
         par2Random: Random,
-        par3StructureBoundingBox: StructureBoundingBox
+        par3StructureBoundingBox: BoundingBox
     ): Boolean {
         if (this.averageGroundLevel < 0) {
             this.averageGroundLevel = this.getAverageGroundLevel(par1World, par3StructureBoundingBox)
@@ -55,7 +60,7 @@ open class StructureComponentVillageTorch : StructureComponentVillage {
                 return true
             }
 
-            this.boundingBox.offset(0, this.averageGroundLevel - this.boundingBox.maxY + 4 - 1, 0)
+            this.boundingBox.move(0, this.averageGroundLevel - this.boundingBox.maxY() + 4 - 1, 0)
         }
 
         this.fillWithBlocks(
@@ -67,18 +72,18 @@ open class StructureComponentVillageTorch : StructureComponentVillage {
             2,
             3,
             1,
-            Blocks.AIR.getDefaultState(),
-            Blocks.AIR.getDefaultState(),
+            Blocks.AIR.defaultBlockState(),
+            Blocks.AIR.defaultBlockState(),
             false
         )
-        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.getDefaultState(), 1, 0, 0, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.getDefaultState(), 1, 1, 0, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.getDefaultState(), 1, 2, 0, par3StructureBoundingBox)
-        this.setBlockState(par1World, Blocks.WOOL.getStateFromMeta(15), 1, 3, 0, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.defaultBlockState(), 1, 0, 0, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.defaultBlockState(), 1, 1, 0, par3StructureBoundingBox)
+        this.setBlockState(par1World, Blocks.DARK_OAK_FENCE.defaultBlockState(), 1, 2, 0, par3StructureBoundingBox)
+        this.setBlockState(par1World, LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.WOOL, 15), 1, 3, 0, par3StructureBoundingBox)
         val flag: Boolean = this.getCoordBaseMode() == EnumFacing.EAST || this.getCoordBaseMode() == EnumFacing.NORTH
         this.setBlockState(
             par1World,
-            (GCBlocks.glowstoneTorch)!!.getDefaultState().withProperty(
+            (GCBlocks.glowstoneTorch)!!.defaultBlockState().setValue(
                 micdoodle8.mods.galacticraft.core.blocks.BlockTorchBase.FACING,
                 this.getCoordBaseMode()!!.rotateY()
             ),
@@ -89,8 +94,8 @@ open class StructureComponentVillageTorch : StructureComponentVillage {
         )
         this.setBlockState(
             par1World,
-            (GCBlocks.glowstoneTorch)!!.getDefaultState()
-                .withProperty(micdoodle8.mods.galacticraft.core.blocks.BlockTorchBase.FACING, this.getCoordBaseMode()),
+            (GCBlocks.glowstoneTorch)!!.defaultBlockState()
+                .setValue(micdoodle8.mods.galacticraft.core.blocks.BlockTorchBase.FACING, this.getCoordBaseMode()),
             1,
             3,
             1,
@@ -98,7 +103,7 @@ open class StructureComponentVillageTorch : StructureComponentVillage {
         )
         this.setBlockState(
             par1World,
-            (GCBlocks.glowstoneTorch)!!.getDefaultState().withProperty(
+            (GCBlocks.glowstoneTorch)!!.defaultBlockState().setValue(
                 micdoodle8.mods.galacticraft.core.blocks.BlockTorchBase.FACING,
                 this.getCoordBaseMode()!!.rotateYCCW()
             ),
@@ -109,7 +114,7 @@ open class StructureComponentVillageTorch : StructureComponentVillage {
         )
         this.setBlockState(
             par1World,
-            (GCBlocks.glowstoneTorch)!!.getDefaultState().withProperty(
+            (GCBlocks.glowstoneTorch)!!.defaultBlockState().setValue(
                 micdoodle8.mods.galacticraft.core.blocks.BlockTorchBase.FACING,
                 this.getCoordBaseMode()!!.getOpposite()
             ),
@@ -131,9 +136,9 @@ open class StructureComponentVillageTorch : StructureComponentVillage {
             par4: Int,
             par5: Int,
             par6: EnumFacing
-        ): StructureBoundingBox? {
-            val var7: StructureBoundingBox =
-                StructureBoundingBox.getComponentToAddBoundingBox(par3, par4, par5, 0, 0, 0, 3, 4, 2, par6)
+        ): BoundingBox? {
+            val var7: BoundingBox =
+                BoundingBox.orientBox(par3, par4, par5, 0, 0, 0, 3, 4, 2, par6)
             return if (findIntersecting(par1List, var7) != null) null else var7
         }
     }

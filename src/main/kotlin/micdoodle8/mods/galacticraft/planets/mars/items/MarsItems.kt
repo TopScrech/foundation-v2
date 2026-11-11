@@ -6,9 +6,9 @@ import net.minecraft.item.ItemArmor.ArmorMaterial
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
-import net.minecraft.init.SoundEvents
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.Item
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemArmor
 import net.minecraftforge.common.util.EnumHelper
 
@@ -82,8 +82,8 @@ object MarsItems {
         deshLeggings = ItemArmorMars((ARMORDESH)!!, 7, EntityEquipmentSlot.LEGS).setTranslationKey("desh_leggings")
         deshBoots = ItemArmorMars((ARMORDESH)!!, 7, EntityEquipmentSlot.FEET).setTranslationKey("desh_boots")
         rocketMars = ItemTier2Rocket().setTranslationKey("rocket_t2")
-        key = ItemKeyMars().setTranslationKey("key")
-        schematic = ItemSchematicTier2().setTranslationKey("schematic")
+        key = ItemKeyMars()
+        schematic = ItemSchematicTier2()
         carbonFragments = ItemCarbonFragments().setTranslationKey("carbon_fragments")
 
         registerItems()

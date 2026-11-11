@@ -1,14 +1,16 @@
 package galaxyspace.systems.SolarSystem.moons.europa.world.gen
 
+import foundation.block.getMetaFromState
+
 import galaxyspace.core.GSBlocks
 import galaxyspace.core.configs.GSConfigWorld
 import galaxyspace.systems.SolarSystem.moons.europa.world.gen.BiomeDecoratorEuropa
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
 import micdoodle8.mods.galacticraft.core.world.gen.WorldGenMinableMeta
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 
 open class BiomeDecoratorEuropa constructor() : BiomeDecoratorSpace() {
@@ -51,12 +53,12 @@ open class BiomeDecoratorEuropa constructor() : BiomeDecoratorSpace() {
             val pos1: BlockPos = BlockPos(randPosX, randPosY, randPosZ)
             val pos2: BlockPos = BlockPos(randPosX, randPosY - 1, randPosZ)
 
-            if (this.getCurrentWorld()!!.isAirBlock(pos) || this.getCurrentWorld()!!.getBlockState(pos)
+            if (this.getCurrentWorld()!!.isEmptyBlock(pos) || this.getCurrentWorld()!!.getBlockState(pos)
                     .getBlock() === Blocks.WATER
             ) {
                 val state: IBlockState = this.getCurrentWorld()!!.getBlockState(pos1)
                 if (this.getCurrentWorld()!!.getBlockState(pos1).getBlock() === Blocks.PACKED_ICE) {
-                    this.getCurrentWorld()!!.setBlockState(pos1, GSBlocks.EUROPA_UWGEYSER.getDefaultState())
+                    this.getCurrentWorld()!!.setBlockAndUpdate(pos1, GSBlocks.EUROPA_UWGEYSER.defaultBlockState())
                 }
             }
         }
@@ -70,9 +72,9 @@ open class BiomeDecoratorEuropa constructor() : BiomeDecoratorSpace() {
             val pos1: BlockPos = BlockPos(randPosX, randPosY - 1, randPosZ)
             val pos2: BlockPos = BlockPos(randPosX, randPosY, randPosZ)
 
-            if (this.getCurrentWorld()!!.isAirBlock(pos)) {
+            if (this.getCurrentWorld()!!.isEmptyBlock(pos)) {
                 if (this.getCurrentWorld()!!.getBlockState(pos1).getBlock() === Blocks.PACKED_ICE) {
-                    this.getCurrentWorld()!!.setBlockState(pos1, GSBlocks.EUROPA_UWGEYSER.getDefaultState())
+                    this.getCurrentWorld()!!.setBlockAndUpdate(pos1, GSBlocks.EUROPA_UWGEYSER.defaultBlockState())
                 }
 
                 val state: IBlockState = this.getCurrentWorld()!!.getBlockState(pos1)
@@ -80,7 +82,7 @@ open class BiomeDecoratorEuropa constructor() : BiomeDecoratorSpace() {
                 if (state.getBlock() === GSBlocks.EUROPA_BLOCKS &&
                     this.getCurrentWorld()!!.getBlockState(pos1).getBlock().getMetaFromState(state) == 0
                 ) {
-                    this.getCurrentWorld()!!.setBlockState(pos2, GSBlocks.EUROPA_GEYSER.getDefaultState())
+                    this.getCurrentWorld()!!.setBlockAndUpdate(pos2, GSBlocks.EUROPA_GEYSER.defaultBlockState())
                 }
             }
         }

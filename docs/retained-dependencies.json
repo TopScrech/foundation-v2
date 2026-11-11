@@ -1,17 +1,56 @@
 [
   {
-    "file": "libs/appliedenergistics2-rv6-stable-6.jar",
-    "sha256": "48808b79fd66015d796784e70f357a4ad9c684d4b7882f8b1229e174083455e5",
-    "origin": "Dependency retained from the original Galacticraft Gradle build"
-  },
-  {
     "file": "libs/ActuallyAdditions-1.12.2-r144.jar",
     "sha256": "bb41ba617fbd40552949b1a85375888e0bdb8f9c0362d61a4c3911baeab93fb2",
-    "origin": "Dependency retained from the original Galacticraft Gradle build"
+    "status": "Removed from Forge 26.3 build",
+    "reason": "Minecraft 1.12 dependency, requires source port or compatible replacement"
+  },
+  {
+    "file": "libs/CodeChickenLib-1.12.2-3.2.3.358-universal.jar",
+    "sha256": "5f8499f7ee2590e45110bbf296b2bf101aec15897e28d5e9759cf8f2387d8a74",
+    "status": "Removed from Forge 26.3 build",
+    "reason": "Minecraft 1.12 dependency, requires source port or compatible replacement"
+  },
+  {
+    "file": "libs/CraftTweaker2-1.12-4.1.20.696.jar",
+    "sha256": "225f8d323aeda36a22bad540470b11a8caadae33ad9dc0289056e9ad3f7dcc84",
+    "status": "Removed from Forge 26.3 build",
+    "reason": "Minecraft 1.12 dependency, requires source port or compatible replacement"
+  },
+  {
+    "file": "libs/Galacticraft-1.12.2-4.0.2.283.jar",
+    "sha256": "671941dab133d8872265db797354168023c769f2a68404668a6f268f658f4ca2",
+    "status": "Removed from Forge 26.3 build",
+    "reason": "Minecraft 1.12 dependency, requires source port or compatible replacement"
+  },
+  {
+    "file": "libs/PlanetProgression-1.12.2-0.4.8-api.jar",
+    "sha256": "bb3ccb2b37afeb24044e62af6f441f335efb4a2b366264a21440cb930b1f730f",
+    "status": "Removed from Forge 26.3 build",
+    "reason": "Minecraft 1.12 dependency, requires source port or compatible replacement"
   },
   {
     "file": "libs/PlayerAPI-1.12.1-1.0.jar",
     "sha256": "d2c0d8edd78d2e1e0ae4174c3b8762313defa704e7773e629669d2d5b2082d29",
-    "origin": "Dependency retained from the original Galacticraft Gradle build"
+    "status": "Removed from Forge 26.3 build",
+    "reason": "Minecraft 1.12 dependency, requires source port or compatible replacement"
+  },
+  {
+    "file": "libs/RedstoneFlux-1.12-2.1.0.6-universal.jar",
+    "sha256": "7d8063471243e161f624abe4ba311d490bd7719aedbcfcf84e555358e19c3e89",
+    "status": "Removed from Forge 26.3 build",
+    "reason": "Minecraft 1.12 dependency, requires source port or compatible replacement"
+  },
+  {
+    "file": "libs/appliedenergistics2-rv6-stable-6.jar",
+    "sha256": "48808b79fd66015d796784e70f357a4ad9c684d4b7882f8b1229e174083455e5",
+    "status": "Removed from Forge 26.3 build",
+    "reason": "Minecraft 1.12 dependency, requires source port or compatible replacement"
+  },
+  {
+    "file": "libs/jei_1.12.2-4.13.1.220.jar",
+    "sha256": "6429f202a797ae9d6a86fa108397831d9f041301658a8ddbfda9afb352d15a0a",
+    "status": "Removed from Forge 26.3 build",
+    "reason": "Minecraft 1.12 dependency, requires source port or compatible replacement"
   }
 ]

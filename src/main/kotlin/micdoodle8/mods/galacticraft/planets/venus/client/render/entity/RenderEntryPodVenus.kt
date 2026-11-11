@@ -19,8 +19,8 @@ import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.AABB as AxisAlignedBB
 import net.minecraftforge.client.model.IModel
 import net.minecraftforge.client.model.obj.OBJModel
 import java.lang.Exception
@@ -40,10 +40,10 @@ open class RenderEntryPodVenus constructor(manager: RenderManager) : Render<Enti
         if (modelEntryPod == null) {
             try {
                 val model: IModel =
-                    OBJLoaderGC.instance.loadModel(ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "pod_flame.obj"))
+                    OBJLoaderGC.instance.loadModel(ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "pod_flame.obj"))
                 val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> =
                     Function { location: ResourceLocation? ->
-                        Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+                        Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
                     }
 
                 modelEntryPod = model.bake(
@@ -134,7 +134,7 @@ open class RenderEntryPodVenus constructor(manager: RenderManager) : Render<Enti
     }
 
     override fun getEntityTexture(entityEntryPod: EntityEntryPodVenus): ResourceLocation? {
-        return ResourceLocation("missing")
+        return ResourceLocation.parse("missing")
     }
 
     override fun shouldRender(

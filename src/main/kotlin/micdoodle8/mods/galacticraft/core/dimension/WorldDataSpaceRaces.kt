@@ -1,8 +1,8 @@
 package micdoodle8.mods.galacticraft.core.dimension
 
 import micdoodle8.mods.galacticraft.core.Constants
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.world.World
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.storage.WorldSavedData
 
 open class WorldDataSpaceRaces constructor(id: String) : WorldSavedData(id) {

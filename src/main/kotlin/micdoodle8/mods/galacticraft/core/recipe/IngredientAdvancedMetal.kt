@@ -1,80 +1,47 @@
 package micdoodle8.mods.galacticraft.core.recipe
 
-import javax.annotation.Nonnull
+import com.mojang.serialization.Codec
+import com.mojang.serialization.DataResult
+import com.mojang.serialization.MapCodec
+import foundation.item.FoundationItemVariants
+import foundation.recipe.FoundationStackIngredient
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.Identifier
+import net.minecraftforge.common.crafting.ingredients.IIngredientSerializer
 
-import com.google.gson.JsonObject
-import micdoodle8.mods.galacticraft.core.GCItems
-import micdoodle8.mods.galacticraft.core.GalacticraftCore
-import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
-import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
-import micdoodle8.mods.galacticraft.planets.venus.VenusItems
-import net.minecraft.item.ItemStack
-import net.minecraft.item.crafting.Ingredient
-import net.minecraft.util.JsonUtils
-import net.minecraftforge.common.crafting.IIngredientFactory
-import net.minecraftforge.common.crafting.JsonContext
+/** Read the retained metal selectors and emit canonical component-based stack ingredients */
+object IngredientAdvancedMetal {
+    @JvmField val ID: Identifier = Identifier.parse("galacticraftcore:advanced_metal")
+    private data class Metal(val item: Identifier, val metadata: Int)
+    private val metals = mapOf(
+        "meteoric_iron_ingot" to Metal(Identifier.parse("galacticraftcore:item_basic_moon"), 0),
+        "meteoric_iron_plate" to Metal(Identifier.parse("galacticraftcore:item_basic_moon"), 1),
+        "desh_ingot" to Metal(Identifier.parse("galacticraftplanets:item_basic_mars"), 2),
+        "desh_plate" to Metal(Identifier.parse("galacticraftplanets:item_basic_mars"), 5),
+        "titanium_ingot" to Metal(Identifier.parse("galacticraftplanets:item_basic_asteroids"), 0),
+        "titanium_plate" to Metal(Identifier.parse("galacticraftplanets:item_basic_asteroids"), 6),
+        "lead_ingot" to Metal(Identifier.parse("galacticraftplanets:basic_item_venus"), 1)
+    )
 
-open class IngredientAdvancedMetal : IIngredientFactory {
-    @Nonnull
-    override fun parse(context: JsonContext?, json: JsonObject): Ingredient {
-        val metal: String = JsonUtils.getString(json, "metal")
-        if (metal == "meteoric_iron_ingot") {
-            return Ingredient.fromStacks(
-                ItemStack(
-                    GCItems.itemBasicMoon,
-                    1,
-                    0
-                )
-            ) // : new OreIngredient("ingotMeteoricIron");
+    private fun decode(name: String): DataResult<FoundationStackIngredient> {
+        val metal = metals[name] ?: return DataResult.error { "Unknown advanced metal $name" }
+        if (!BuiltInRegistries.ITEM.containsKey(metal.item)) return DataResult.error { "Missing advanced metal item ${metal.item}" }
+        val item = BuiltInRegistries.ITEM.getValue(metal.item)
+        return try {
+            DataResult.success(FoundationStackIngredient.of(FoundationItemVariants.stack(item, 1, metal.metadata)))
+        } catch (cause: IllegalArgumentException) {
+            DataResult.error { cause.message ?: "Invalid advanced metal $name" }
         }
-        if (metal == "meteoric_iron_plate") {
-            return Ingredient.fromStacks(
-                ItemStack(
-                    GCItems.itemBasicMoon,
-                    1,
-                    1
-                )
-            ) // : new OreIngredient("compressedMeteoricIron");
-        }
-        if (metal == "desh_ingot") {
-            return if (GalacticraftCore.isPlanetsLoaded) Ingredient.fromStacks(
-                ItemStack(
-                    MarsItems.marsItemBasic,
-                    1,
-                    2
-                )
-            ) else Ingredient.fromItem(GCItems.heavyPlatingTier1)
-        }
-        if (metal == "desh_plate") {
-            return Ingredient.fromStacks(
-                ItemStack(
-                    MarsItems.marsItemBasic,
-                    1,
-                    5
-                )
-            ) // : new OreIngredient("compressedDesh");
-        }
-        if (metal == "titanium_ingot") {
-            return Ingredient.fromStacks(
-                ItemStack(
-                    AsteroidsItems.basicItem,
-                    1,
-                    0
-                )
-            ) // : new OreIngredient("ingotTitanium");
-        }
-        if (metal == "titanium_plate") {
-            return Ingredient.fromStacks(
-                ItemStack(
-                    AsteroidsItems.basicItem,
-                    1,
-                    6
-                )
-            ) // : new OreIngredient("compressedTitanium");
-        }
-        if (metal == "lead_ingot") {
-            return Ingredient.fromStacks(ItemStack(VenusItems.basicItem, 1, 1)) // : new OreIngredient("ingotLead");
-        }
-        return Ingredient.fromItem(GCItems.infiniteBatery)
     }
+
+    private fun encode(ingredient: FoundationStackIngredient): DataResult<String> {
+        val stack = ingredient.matchingStack()
+        val identity = Metal(BuiltInRegistries.ITEM.getKey(stack.item), FoundationItemVariants.metadata(stack))
+        val name = metals.entries.firstOrNull { it.value == identity }?.key
+        return if (name == null) DataResult.error { "Stack is not a declared advanced metal" } else DataResult.success(name)
+    }
+
+    @JvmField val CODEC: MapCodec<FoundationStackIngredient> = Codec.STRING.fieldOf("metal").flatXmap(::decode, ::encode)
+    @JvmField val SERIALIZER: IIngredientSerializer<FoundationStackIngredient> =
+        IIngredientSerializer.simple(CODEC, FoundationStackIngredient.STREAM_CODEC)
 }

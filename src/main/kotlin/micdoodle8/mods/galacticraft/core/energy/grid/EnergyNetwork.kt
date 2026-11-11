@@ -10,11 +10,11 @@ import micdoodle8.mods.galacticraft.core.energy.EnergyUtil
 import micdoodle8.mods.galacticraft.core.tick.TickHandlerServer
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.GCLog
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.energy.IEnergyStorage
-import net.minecraftforge.fml.common.FMLLog
+import foundation.logging.FoundationLog as FMLLog
 import java.util.*
 import kotlin.math.min
 
@@ -322,7 +322,7 @@ open class EnergyNetwork : IElectricityNetwork {
             } catch (e: Exception) {
                 GCLog.severe("DEBUG Energy network loop issue, please report this")
                 if (debugTE is TileEntity) {
-                    GCLog.severe("Problem was likely caused by tile in dim " + GCCoreUtil.getDimensionID(debugTE.getWorld()) + " at " + debugTE.getPos() + " Type:" + debugTE.javaClass.getSimpleName())
+                    GCLog.severe("Problem was likely caused by tile in dim " + GCCoreUtil.getDimensionID(debugTE.getLevel()) + " at " + debugTE.getBlockPos() + " Type:" + debugTE.javaClass.getSimpleName())
                 }
             }
         }
@@ -356,14 +356,14 @@ open class EnergyNetwork : IElectricityNetwork {
             }
 
             val tile: TileEntity = conductor as TileEntity
-            val world: World = tile.getWorld()
+            val world: World = tile.getLevel()
             //Remove any conductors in unloaded chunks
-            if (tile.isInvalid() || world == null || !world.isBlockLoaded(tile.getPos())) {
+            if (tile.isRemoved() || world == null || !world.isBlockLoaded(tile.getBlockPos())) {
                 it.remove()
                 continue
             }
 
-            if (conductor !== world.getTileEntity(tile.getPos())) {
+            if (conductor !== world.getBlockEntity(tile.getBlockPos())) {
                 it.remove()
                 continue
             }
@@ -397,9 +397,9 @@ open class EnergyNetwork : IElectricityNetwork {
             }
 
             val tile: TileEntity = conductor as TileEntity
-            val world: World = tile.getWorld()
+            val world: World = tile.getLevel()
             //Remove any conductors in unloaded chunks
-            if (tile.isInvalid() || world == null) {
+            if (tile.isRemoved() || world == null) {
                 it.remove()
                 continue
             }
@@ -492,25 +492,25 @@ open class EnergyNetwork : IElectricityNetwork {
 
             //If the size of the residual network is 1, it should simply be preserved 
             if (this.getTransmitters().size > 1) {
-                val world: World = (splitPoint as TileEntity).getWorld()
+                val world: World = (splitPoint as TileEntity).getLevel()
 
                 if (this.getTransmitters().size > 0) {
                     val nextToSplit: Array<TileEntity> = (arrayOfNulls<TileEntity>(6) as Array<TileEntity>)
                     val toDo: BooleanArray = booleanArrayOf(true, true, true, true, true, true)
                     var tileEntity: TileEntity?
 
-                    val xCoord: Int = (splitPoint as TileEntity).getPos().getX()
-                    val yCoord: Int = (splitPoint as TileEntity).getPos().getY()
-                    val zCoord: Int = (splitPoint as TileEntity).getPos().getZ()
+                    val xCoord: Int = (splitPoint as TileEntity).getBlockPos().getX()
+                    val yCoord: Int = (splitPoint as TileEntity).getBlockPos().getY()
+                    val zCoord: Int = (splitPoint as TileEntity).getBlockPos().getZ()
 
                     for (j: Int in 0..5) {
                         when (j) {
-                            0 -> tileEntity = world.getTileEntity((splitPoint as TileEntity).getPos().down())
-                            1 -> tileEntity = world.getTileEntity((splitPoint as TileEntity).getPos().up())
-                            2 -> tileEntity = world.getTileEntity((splitPoint as TileEntity).getPos().north())
-                            3 -> tileEntity = world.getTileEntity((splitPoint as TileEntity).getPos().south())
-                            4 -> tileEntity = world.getTileEntity((splitPoint as TileEntity).getPos().west())
-                            5 -> tileEntity = world.getTileEntity((splitPoint as TileEntity).getPos().east())
+                            0 -> tileEntity = world.getBlockEntity((splitPoint as TileEntity).getBlockPos().down())
+                            1 -> tileEntity = world.getBlockEntity((splitPoint as TileEntity).getBlockPos().up())
+                            2 -> tileEntity = world.getBlockEntity((splitPoint as TileEntity).getBlockPos().north())
+                            3 -> tileEntity = world.getBlockEntity((splitPoint as TileEntity).getBlockPos().south())
+                            4 -> tileEntity = world.getBlockEntity((splitPoint as TileEntity).getBlockPos().west())
+                            5 -> tileEntity = world.getBlockEntity((splitPoint as TileEntity).getBlockPos().east())
                             else ->                             //Not reachable, only to prevent uninitiated compile errors
                                 tileEntity = null
                         }

@@ -23,10 +23,10 @@ import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.AbstractClientPlayer
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.player.AbstractClientPlayer
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.renderer.ActiveRenderInfo
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GLAllocation
@@ -35,18 +35,17 @@ import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraft.world.WorldProviderSurface
 import net.minecraftforge.client.ForgeHooksClient
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Calendar
 import java.util.Random
 import kotlin.math.atan2
@@ -54,7 +53,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 abstract class SkyProviderBase : IRenderHandler() {
     protected enum class ModeLight {
         DEFAULT, ALWAYS_LIGHT, WITHOUT_SUN
@@ -83,7 +82,7 @@ protected var ticks: Float = 0f
     private val afloat = FloatArray(4)
 
     @JvmField
-    protected var mc: Minecraft = Minecraft.getMinecraft()
+    protected var mc: Minecraft = Minecraft.getInstance()
 
     @JvmField
     protected var current_galaxy: Galaxies? = Galaxies.MILKYWAY
@@ -230,7 +229,7 @@ protected var ticks: Float = 0f
             f3 = f6
         }
 
-        val temp: Float = (mc.player.posY / 400).toFloat()
+        val temp: Float = (mc.player.y / 400).toFloat()
         GL11.glColor3f(f1 - temp, f2 - temp, f3 - temp)
         val tessellator1: Tessellator = Tessellator.getInstance()
         val worldRenderer1: BufferBuilder = tessellator1.getBuffer()
@@ -271,8 +270,8 @@ protected var ticks: Float = 0f
             starBrightness = starBrightness - (1f - fog)
         }
         // TODO: Stars
-        if (this.mc.player.posY > 150f || starBrightness > 0.0f && !inWater(this.mc.player)) {
-            if (this.mc.player.posY > 150f) starBrightness = starBrightness + (this.mc.player.posY / 1000f).toFloat()
+        if (this.mc.player.y > 150f || starBrightness > 0.0f && !inWater(this.mc.player)) {
+            if (this.mc.player.y > 150f) starBrightness = starBrightness + (this.mc.player.y / 1000f).toFloat()
 
             GL11.glPushMatrix()
 
@@ -363,7 +362,7 @@ protected var ticks: Float = 0f
             GL11.glEnable(GL11.GL_ALPHA_TEST)
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.1f)
 
-            FMLClientHandler.instance().getClient().renderEngine
+            Minecraft.getInstance().renderEngine
                 .bindTexture(if (flag) pumpkinsunTexture else if (sunImage() != null) sunImage() else sunTexture)
             if (enableSmoothRender()) GL11.glDisable(GL11.GL_BLEND)
             worldRenderer1.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX)
@@ -422,7 +421,7 @@ protected var ticks: Float = 0f
         GL11.glDisable(GL11.GL_ALPHA_TEST)
 
         GL11.glPushMatrix()
-        if (mc.player.posY >= AsmodeusConfig.renderBodyPosY && enableRenderPlanet()
+        if (mc.player.y >= AsmodeusConfig.renderBodyPosY && enableRenderPlanet()
             && AsmodeusConfig.enableRenderBody
         ) {
             configureProjectionMatrix(mc, partialTicks)
@@ -440,11 +439,11 @@ protected var ticks: Float = 0f
             // else size = 100;
             size = 800f
             val color: Float = mc.world.getSunBrightness(ticks)
-            GL11.glColor4f(color, color, color, (mc.player.posY / 255f - 0.3f).toFloat())
+            GL11.glColor4f(color, color, color, (mc.player.y / 255f - 0.3f).toFloat())
             GL11.glRotatef(180.0f, 0.0f, 1.0f, 0.0f)
             GL11.glRotatef(-360f, 1.0f, 0.0f, 0.0f)
 
-            GL11.glTranslatef(0.0f, -mc.player.posY.toFloat() / 4, 0.0f)
+            GL11.glTranslatef(0.0f, -mc.player.y.toFloat() / 4, 0.0f)
 
             if (mc.world.provider !is WorldProviderSurface) mc.renderEngine
                 .bindTexture(((mc.world.provider as IGalacticraftWorldProvider).getCelestialBody())!!.getBodyIcon())
@@ -537,7 +536,7 @@ protected var ticks: Float = 0f
         y: Float,
         z: Float,
         size: Float,
-        alpha: Float = FMLClientHandler.instance().getClient().world.getStarBrightness(1.0f),
+        alpha: Float = Minecraft.getInstance().level.getStarBrightness(1.0f),
         shadow: Float = 0.0f
     ) {
         GL11.glPushMatrix()
@@ -548,7 +547,7 @@ protected var ticks: Float = 0f
         GL11.glRotatef(y, 1.0f, 0.0f, 0.0f) // ������������ �� Y
         GL11.glRotatef(z, 0.0f, 0.0f, 1.0f) // ������������ �� Z
         GL11.glColor4f(1.0f, 1.0f, 1.0f, alpha)
-        FMLClientHandler.instance().getClient().renderEngine.bindTexture(image)
+        Minecraft.getInstance().renderEngine.bindTexture(image)
 
         worldRenderer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX)
         worldRenderer.pos(-size.toDouble(), -100.0, size.toDouble()).tex(0.0, 1.0).endVertex()
@@ -667,7 +666,7 @@ protected var ticks: Float = 0f
             val planetOrbitalDistance: Double = 5.0
 
             val dist: Double = ((-64.0 - 4 * (planetOrbitalDistance) / 2.0)
-                    - (mc.player.posY.toFloat() / (mc.player.posY.toFloat())))
+                    - (mc.player.y.toFloat() / (mc.player.y.toFloat())))
             val scalingMult: Double = 1.0 - 0.9 * (planetOrbitalDistance)
 
             val Xoffset: Float = ((System.currentTimeMillis() / 1000000.0 % 1)).toFloat()
@@ -805,7 +804,7 @@ protected var ticks: Float = 0f
         var r: Float = f6 * f18
         var g: Float = f7 * f18
         var b: Float = f8 * f18
-        var a: Float = afloat[3] * 2 / f18 - Minecraft.getMinecraft().world.getRainStrength(this.ticks)
+        var a: Float = afloat[3] * 2 / f18 - Minecraft.getInstance().level.getRainStrength(this.ticks)
 
         if (this.modeLight() != ModeLight.WITHOUT_SUN) {
             worldRenderer.begin(GL11.GL_TRIANGLE_FAN, DefaultVertexFormats.POSITION_COLOR)
@@ -844,7 +843,7 @@ protected var ticks: Float = 0f
             g = f7 * f18
             b = f8 * f18
             a = if (enableSmoothRender())
-                afloat[3] * 2 / f18 - Minecraft.getMinecraft().world.getRainStrength(this.ticks)
+                afloat[3] * 2 / f18 - Minecraft.getInstance().level.getRainStrength(this.ticks)
             else
                 afloat[3] * f18
 
@@ -881,7 +880,7 @@ protected var ticks: Float = 0f
     protected fun inWater(player: EntityPlayer): Boolean {
         val pos: BlockPos = player.getPosition()
 
-        return mc.world.getBlockState(pos.up()).getMaterial() === Material.WATER
+        return mc.world.getBlockState(pos.above()).getMaterial() === Material.WATER
     }
 
     protected fun getCelestialAngle(daylength: Long): Float {
@@ -939,7 +938,7 @@ protected var ticks: Float = 0f
     }
 
     companion object {
-        private val sunTexture = ResourceLocation("textures/environment/sun.png")
+        private val sunTexture = ResourceLocation.parse("textures/environment/sun.png")
         private val pumpkinsunTexture = ResourceLocation(
             AsmodeusCore.ASSET_PREFIX,
             "textures/environment/pumkinsun.png"

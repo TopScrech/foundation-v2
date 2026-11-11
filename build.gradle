@@ -1,131 +1,265 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        maven { url = 'https://plugins.gradle.org/m2' }
-        maven { url = 'https://maven.minecraftforge.net/' }
-        maven { url = 'https://repo.spongepowered.org/maven' }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:4.0.23'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24'
-    }
+plugins {
+    id 'net.minecraftforge.gradle' version '7.0.17'
+    id 'org.jetbrains.kotlin.jvm' version '2.4.21'
 }
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'kotlin'
-apply plugin: 'kotlin-kapt'
 
-def foundationCacheRoot = System.getenv('FOUNDATION_CACHE_ROOT') ?: new File(System.getProperty('user.home'), '.cache/foundation-v2').absolutePath
-buildDir = new File(foundationCacheRoot, 'build')
+def foundationCacheRoot = System.getenv('FOUNDATION_CACHE_ROOT') ?: new File(System.getProperty('user.home'), '.cache/foundation-v2/forge-26.3').absolutePath
+def cacheRoot = new File(foundationCacheRoot).canonicalFile
+if (cacheRoot.toPath().startsWith(projectDir.canonicalFile.toPath())) {
+    throw new GradleException('Build cache must be outside the project folder')
+}
+layout.buildDirectory = new File(cacheRoot, 'build')
 group = 'foundation'
 version = '2.0.0'
-archivesBaseName = 'Foundation'
-sourceCompatibility = targetCompatibility = 1.8
-compileKotlin.kotlinOptions.jvmTarget = '1.8'
-compileKotlin.kotlinOptions.freeCompilerArgs += ['-Xjvm-default=all-compatibility']
-compileTestKotlin.kotlinOptions.jvmTarget = '1.8'
-tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
-
-repositories {
-    mavenCentral()
-    maven { url = 'https://repo.spongepowered.org/maven' }
-    maven { url = 'https://maven.covers1624.net/' }
-    maven { url = 'https://minecraft.curseforge.com/api/maven/' }
-    flatDir { dirs 'libs' }
-}
+base.archivesName = 'Foundation'
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+kotlin.jvmToolchain(25)
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 
 minecraft {
-    mappings channel: 'stable', version: '39-1.12'
-    accessTransformer = file('src/main/resources/META-INF/foundation_at.cfg')
     runs {
-        client {
-            workingDirectory new File(buildDir, 'run/client')
-            property 'fml.coreMods.load', 'foundation.FoundationLoadingPlugin'
+        configureEach {
+            workingDir = layout.buildDirectory.dir("run/${name}")
+            systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
         }
-        server {
-            workingDirectory new File(buildDir, 'run/server')
-            property 'fml.coreMods.load', 'foundation.FoundationLoadingPlugin'
-        }
+        register('client')
+        register('server') { args '--nogui' }
     }
+}
+
+repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    mavenCentral()
+    maven { url = 'https://repo.spongepowered.org/maven' }
 }
 
 configurations { embeddedRuntime }
-def micdoodleDependency = new File(buildDir, 'dependencies/MicdoodleCore-dev.jar')
-// The upstream archive is used only for the MicdoodleCore classes omitted from its source checkout
-tasks.register('prepareMicdoodleCore', Jar) {
-    archiveFileName = micdoodleDependency.name
-    destinationDirectory = micdoodleDependency.parentFile
-    from(zipTree(file('libs/Galacticraft-1.12.2-4.0.2.283.jar')).matching {
-        include 'micdoodle8/mods/miccore/**'
-    })
-}
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24'
-    embeddedRuntime 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24'
-    implementation 'org.spongepowered:mixin:0.8.5'
-    embeddedRuntime('org.spongepowered:mixin:0.8.5') { transitive = false }
-    kapt 'org.spongepowered:mixin:0.8.5:processor'
-    compileOnly files(micdoodleDependency)
-    compileOnly files('libs/CraftTweaker2-1.12-4.1.20.696.jar')
-    compileOnly files('libs/PlanetProgression-1.12.2-0.4.8-api.jar')
-    compileOnly files('libs/RedstoneFlux-1.12-2.1.0.6-universal.jar')
-    compileOnly files('libs/jei_1.12.2-4.13.1.220.jar')
-    compileOnly fg.deobf('libs:CodeChickenLib-1.12.2:3.2.3.358:universal')
-    compileOnly files('libs/appliedenergistics2-rv6-stable-6.jar')
-    compileOnly files('libs/ActuallyAdditions-1.12.2-r144.jar')
-    compileOnly files('libs/PlayerAPI-1.12.1-1.0.jar')
+    implementation minecraft.dependency('net.minecraftforge:forge:26.3-66.1.5')
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.4.21'
+    embeddedRuntime 'org.jetbrains.kotlin:kotlin-stdlib:2.4.21'
+    compileOnly 'org.spongepowered:mixin:0.8.7'
 }
 
-def mixinResources = new File(buildDir, 'generated/resources/mixin')
-kapt {
-    includeCompileClasspath = false
-    arguments {
-        arg 'mappingTypes', 'tsrg'
-        arg 'defaultObfuscationEnv', 'searge'
-        arg 'reobfTsrgFile', file('build/createMcpToSrg/output.tsrg').absolutePath
-        arg 'outRefMapFile', new File(mixinResources, 'mixins.galaxyspace.refmap.json').absolutePath
-        arg 'outTsrgFile', new File(buildDir, 'tmp/kapt3/mixin-mappings.tsrg').absolutePath
-    }
-}
-tasks.matching { it.name in ['kaptGenerateStubsKotlin', 'kaptKotlin', 'compileKotlin', 'compileJava'] }.all {
-    dependsOn 'prepareMicdoodleCore'
-}
-tasks.matching { it.name == 'kaptKotlin' }.all {
-    dependsOn 'createMcpToSrg'
-    doFirst { mixinResources.mkdirs() }
-}
-sourceSets.main.resources.srcDir mixinResources
-processResources.dependsOn 'kaptKotlin'
-tasks.matching { it.name == 'reobfJar' }.all {
-    dependsOn 'kaptKotlin'
-    extraMapping new File(buildDir, 'tmp/kapt3/mixin-mappings.tsrg')
-}
-
+// Keep every integrated source in compilation so unported code cannot disappear from a release
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from 'LICENSE.txt'
+    exclude 'mcmod.info', 'META-INF/*_at.cfg'
     from { configurations.embeddedRuntime.collect { zipTree(it) } }
-    from { zipTree(micdoodleDependency) }
     exclude 'META-INF/*.SF', 'META-INF/*.RSA', 'META-INF/*.DSA', 'module-info.class', 'META-INF/versions/**'
-    // Mixin's ModLauncher 9 bindings target Java 16 and are not used by Minecraft 1.12 LaunchWrapper
-    exclude 'org/spongepowered/asm/launch/MixinLaunchPlugin.class',
-            'org/spongepowered/asm/launch/MixinTransformationService.class',
-            'org/spongepowered/asm/launch/platform/container/ContainerHandleModLauncherEx*.class',
-            'META-INF/services/cpw.mods.modlauncher.*'
     manifest.attributes(
         'Implementation-Title': 'Foundation v2',
         'Implementation-Version': project.version,
-        'FMLCorePlugin': 'foundation.FoundationLoadingPlugin',
-        'FMLCorePluginContainsFMLMod': 'true',
-        'ForceLoadAsMod': 'true',
-        'MixinConfigs': 'mixins.asmodeuscore.json,mixins.galaxyspace.json',
-        'FMLAT': 'foundation_at.cfg'
+        'MixinConfigs': 'mixins.foundation.json'
     )
-    finalizedBy 'reobfJar'
 }
 
+// Validate modern loader metadata and reject legacy loader classes before a release is accepted
 tasks.register('verifyRelease', Exec) {
-    dependsOn 'reobfJar'
+    dependsOn tasks.jar
     commandLine 'python3', file('tools/verify_release.py').absolutePath, tasks.jar.archiveFile.get().asFile.absolutePath
 }
-build.dependsOn 'verifyRelease'
+tasks.named('check') { dependsOn 'verifyRelease' }
+
+// Verify migrated shared APIs without changing the complete release source set
+sourceSets {
+    portedApi {
+        java.setSrcDirs([])
+        resources.setSrcDirs([])
+        kotlin {
+            setSrcDirs(['src/main/kotlin', 'tools/port-check'])
+            include 'micdoodle8/mods/galacticraft/api/vector/Vector2.kt'
+            include 'micdoodle8/mods/galacticraft/api/vector/Vector3.kt'
+            include 'micdoodle8/mods/galacticraft/api/vector/BlockVec3.kt'
+            include 'micdoodle8/mods/galacticraft/api/vector/BlockVec3Dim.kt'
+            include 'foundation/level/**'
+            include 'asmodeuscore/api/dimension/IProviderFog.kt'
+            include 'asmodeuscore/api/dimension/IProviderFreeze.kt'
+            include 'asmodeuscore/api/dimension/IProviderWeather.kt'
+            include 'asmodeuscore/core/astronomy/WeatherData.kt'
+            include 'asmodeuscore/core/command/CommandDustStormToggle.kt'
+            include 'asmodeuscore/core/command/CommandFrozenStormToggle.kt'
+            include 'asmodeuscore/core/command/CommandMeteoricRainToggle.kt'
+            include 'micdoodle8/mods/galacticraft/api/world/AtmosphereInfo.kt'
+            include 'micdoodle8/mods/galacticraft/api/world/EnumAtmosphericGas.kt'
+            include 'foundation/biome/**'
+            include 'foundation/block/**'
+            include 'foundation/bootstrap/**'
+            include 'foundation/config/**'
+            include 'foundation/logging/**'
+            include 'foundation/input/**'
+            include 'foundation/item/**'
+            include 'micdoodle8/mods/galacticraft/core/energy/item/ItemElectricBase.kt'
+            include 'micdoodle8/mods/galacticraft/core/energy/EnergyConfigHandler.kt'
+            include 'micdoodle8/mods/galacticraft/core/energy/EnergyDisplayHelper.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemBattery.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemBatteryInfinite.kt'
+            include 'micdoodle8/mods/galacticraft/planets/venus/items/ItemBatteryAtomic.kt'
+            include 'galaxyspace/systems/SolarSystem/planets/overworld/items/ItemBattery.kt'
+            include 'galaxyspace/systems/SolarSystem/planets/overworld/items/ItemElectricBasicGS.kt'
+            include 'foundation/damage/**'
+            include 'foundation/effect/**'
+            include 'foundation/mixin/MilkEffectCuresMixin.kt'
+            include 'foundation/mixin/PlanetClockLayersMixin.kt'
+            include 'asmodeuscore/api/IBodies.kt'
+            include 'asmodeuscore/core/utils/ACDamageSource.kt'
+            include 'asmodeuscore/core/utils/ACAttributePlayer.kt'
+            include 'asmodeuscore/core/prefab/potions/**'
+            include 'asmodeuscore/core/registers/potions/ACPotions.kt'
+            include 'galaxyspace/core/prefab/potions/AntiRadiation.kt'
+            include 'galaxyspace/core/GSPotions.kt'
+            include 'galaxyspace/core/util/GSDamageSource.kt'
+            include 'micdoodle8/mods/galacticraft/core/util/DamageSourceGC.kt'
+            include 'foundation/schematic/**'
+            include 'foundation/client/FoundationSoundAttenuation.kt'
+            include 'micdoodle8/mods/galacticraft/api/entity/IEntityNoisy.kt'
+            include 'micdoodle8/mods/galacticraft/api/entity/IRocketType.kt'
+            include 'micdoodle8/mods/galacticraft/core/client/sounds/GCSounds.kt'
+            include 'micdoodle8/mods/galacticraft/core/entities/EntityHangingSchematic.kt'
+            include 'micdoodle8/mods/galacticraft/core/client/render/entities/RenderSchematic.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemSchematic.kt'
+            include 'micdoodle8/mods/galacticraft/planets/mars/items/ItemSchematicTier2.kt'
+            include 'galaxyspace/systems/SolarSystem/planets/overworld/items/ItemSchematics.kt'
+            include 'micdoodle8/mods/galacticraft/core/command/CommandGCHelp.kt'
+            include 'micdoodle8/mods/galacticraft/core/command/CommandGCKit.kt'
+            include 'micdoodle8/mods/galacticraft/core/command/CommandGCInv.kt'
+            include 'micdoodle8/mods/galacticraft/core/command/GCInvSaveData.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/IClickableItem.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemOxygenMask.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemOxygenGear.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemOxygenTank.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemParaChute.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemAxeGC.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemHoeGC.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemSpadeGC.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemSwordGC.kt'
+            include 'micdoodle8/mods/galacticraft/planets/asteroids/items/ItemAxeAsteroids.kt'
+            include 'micdoodle8/mods/galacticraft/planets/asteroids/items/ItemPickaxeAsteroids.kt'
+            include 'micdoodle8/mods/galacticraft/planets/asteroids/items/ItemSpadeAsteroids.kt'
+            include 'micdoodle8/mods/galacticraft/planets/asteroids/items/ItemHoeAsteroids.kt'
+            include 'micdoodle8/mods/galacticraft/planets/asteroids/items/ItemSwordAsteroids.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemPickaxeGC.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemEmergencyKit.kt'
+            include 'asmodeuscore/api/item/IItemSpaceFood.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemKey.kt'
+            include 'micdoodle8/mods/galacticraft/planets/mars/items/ItemKeyMars.kt'
+            include 'micdoodle8/mods/galacticraft/planets/venus/items/ItemKeyVenus.kt'
+            include 'galaxyspace/systems/SolarSystem/planets/overworld/items/ItemTierKeysChest.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemCheese.kt'
+            include 'galaxyspace/systems/BarnardsSystem/core/prefab/items/ItemFoodBR.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemCanister.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemFood.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemBasic.kt'
+            include 'micdoodle8/mods/galacticraft/planets/mars/items/ItemBasicMars.kt'
+            include 'micdoodle8/mods/galacticraft/planets/venus/items/ItemBasicVenus.kt'
+            include 'micdoodle8/mods/galacticraft/core/recipe/IngredientAdvancedMetal.kt'
+            include 'foundation/recipe/**'
+            include 'galaxyspace/systems/SolarSystem/planets/overworld/items/ItemIngots.kt'
+            include 'galaxyspace/systems/SolarSystem/planets/overworld/items/ItemNuggets.kt'
+            include 'galaxyspace/systems/SolarSystem/planets/overworld/items/ItemCompressedPlates.kt'
+            include 'galaxyspace/systems/SolarSystem/planets/overworld/items/ItemHeavyDutyPlates.kt'
+            include 'micdoodle8/mods/galacticraft/planets/asteroids/items/ItemBasicAsteroids.kt'
+            include 'galaxyspace/systems/SolarSystem/planets/overworld/items/ItemRocketParts.kt'
+            include 'galaxyspace/systems/SolarSystem/planets/overworld/items/ItemRocketModules.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemMoon.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ItemDesc.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/IShiftDescription.kt'
+            include 'micdoodle8/mods/galacticraft/core/items/ISortableItem.kt'
+            include 'micdoodle8/mods/galacticraft/core/util/EnumSortCategoryItem.kt'
+            include 'foundation/math/**'
+            include 'asmodeuscore/core/utils/worldengine/WE_PerlinNoise.kt'
+            include 'asmodeuscore/core/utils/worldengine/perlinnoise/**'
+            include 'asmodeuscore/core/utils/worldengine2/util/**'
+            include 'asmodeuscore/core/utils/worldengine2/world/gen/noise/**'
+            include 'micdoodle8/mods/galacticraft/core/perlin/**'
+            include 'foundation/persistence/**'
+            include 'foundation/inventory/**'
+            include 'micdoodle8/mods/galacticraft/core/inventory/SlotRocketBenchResult.kt'
+            include 'galaxyspace/core/prefab/tile/MachineInventoryDefaults.kt'
+            include 'micdoodle8/mods/galacticraft/core/inventory/IInventoryDefaults.kt'
+            include 'micdoodle8/mods/galacticraft/core/inventory/InventoryTreasureChest.kt'
+            include 'micdoodle8/mods/galacticraft/core/recipe/NasaWorkbenchRecipe.kt'
+            include 'micdoodle8/mods/galacticraft/api/recipe/CircuitFabricatorRecipes.kt'
+            include 'micdoodle8/mods/galacticraft/core/inventory/InventoryRocketBench.kt'
+            include 'micdoodle8/mods/galacticraft/core/inventory/InventoryBuggyBench.kt'
+            include 'micdoodle8/mods/galacticraft/planets/mars/inventory/InventorySchematicTier2Rocket.kt'
+            include 'micdoodle8/mods/galacticraft/planets/mars/inventory/InventorySchematicCargoRocket.kt'
+            include 'micdoodle8/mods/galacticraft/planets/asteroids/inventory/InventorySchematicTier3Rocket.kt'
+            include 'micdoodle8/mods/galacticraft/planets/asteroids/inventory/InventorySchematicAstroMiner.kt'
+            include 'micdoodle8/mods/galacticraft/core/inventory/InventorySchematic.kt'
+            include 'galaxyspace/systems/SolarSystem/planets/overworld/inventory/schematics/InventorySchematic*.kt'
+            include 'micdoodle8/mods/galacticraft/core/inventory/PersistantInventoryCrafting.kt'
+            include 'galaxyspace/core/prefab/inventory/GSPersistantInventoryCrafting.kt'
+            include 'galaxyspace/systems/SolarSystem/planets/overworld/inventory/RocketAssemblyInventory.kt'
+            include 'micdoodle8/mods/galacticraft/core/inventory/InventoryExtended.kt'
+            include 'micdoodle8/mods/galacticraft/core/dimension/OrbitSpinSaveData.kt'
+            include 'micdoodle8/mods/galacticraft/planets/asteroids/dimension/AsteroidSaveData.kt'
+            include 'galaxyspace/systems/SolarSystem/planets/kuiperbelt/dimension/KuiperBeltSaveData.kt'
+            include 'asmodeuscore/core/astronomy/dimension/world/data/DustStormSaveData.kt'
+            include 'asmodeuscore/core/astronomy/dimension/world/data/FrozenStormSaveData.kt'
+            include 'asmodeuscore/core/astronomy/dimension/world/data/MeteoricRainSaveData.kt'
+            include 'micdoodle8/mods/galacticraft/core/Constants.kt'
+            include 'micdoodle8/mods/galacticraft/core/blocks/BlockBrightAir.kt'
+            include 'micdoodle8/mods/galacticraft/core/blocks/BlockBreathableAir.kt'
+            include 'micdoodle8/mods/galacticraft/core/blocks/BlockBrightBreathableAir.kt'
+            include 'galaxyspace/core/util/GSConstants.kt'
+            include 'galaxyspace/core/configs/**'
+            include 'asmodeuscore/core/configs/AsmodeusConfig.kt'
+            include 'asmodeuscore/core/utils/ACCompatibilityManager.kt'
+            include 'micdoodle8/mods/galacticraft/planets/*/ConfigManager*.kt'
+            include 'galaxyspace/systems/*/core/configs/**'
+            include 'micdoodle8/mods/galacticraft/api/transmission/**'
+            include 'micdoodle8/mods/galacticraft/api/power/**'
+            include 'micdoodle8/mods/galacticraft/api/block/**'
+            include 'micdoodle8/mods/galacticraft/api/inventory/**'
+            include 'micdoodle8/mods/galacticraft/api/recipe/I*.kt'
+            include 'micdoodle8/mods/galacticraft/api/recipe/Schematic*.kt'
+            include 'micdoodle8/mods/galacticraft/api/item/**'
+            include 'micdoodle8/mods/galacticraft/core/energy/tile/EnergyStorage.kt'
+            include 'micdoodle8/mods/galacticraft/api/event/ZeroGravityEvent.kt'
+            include 'micdoodle8/mods/galacticraft/api/event/oxygen/**'
+            include 'micdoodle8/mods/galacticraft/api/event/wgen/**'
+            include 'foundation/verification/**'
+        }
+    }
+}
+configurations.portedApiImplementation.extendsFrom(configurations.implementation)
+configurations.portedApiCompileOnly.extendsFrom(configurations.compileOnly)
+tasks.register('portedApiAgent', Jar) {
+    dependsOn tasks.named('portedApiClasses')
+    archiveFileName = 'foundation-native-checks-agent.jar'
+    destinationDirectory = layout.buildDirectory.dir('ported-api/agent')
+    from(sourceSets.portedApi.output) { include 'foundation/verification/ForgeCapabilityTestAgent*' }
+    manifest.attributes('Premain-Class': 'foundation.verification.ForgeCapabilityTestAgent')
+}
+tasks.register('verifyPortedApi', JavaExec) {
+    dependsOn tasks.named('portedApiClasses')
+    classpath = sourceSets.portedApi.runtimeClasspath
+    mainClass = 'foundation.verification.SharedApiSmokeKt'
+    workingDir = layout.buildDirectory.dir('ported-api/api-run').get().asFile
+    doFirst { workingDir.mkdirs() }
+    systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.register('verifyGameBootstrap', JavaExec) {
+    dependsOn tasks.named('portedApiClasses'), tasks.named('portedApiAgent')
+    classpath = sourceSets.portedApi.runtimeClasspath
+    mainClass = 'foundation.verification.GameBootstrapSmokeKt'
+    systemProperty 'foundation.resourcesRoot', file('src/main/resources').absolutePath
+    if (System.getenv('FOUNDATION_REFERENCE_FORGE')) {
+        systemProperty 'foundation.legacyForgeJar', System.getenv('FOUNDATION_REFERENCE_FORGE')
+    }
+    systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
+    workingDir = layout.buildDirectory.dir('ported-api/bootstrap-run').get().asFile
+    doFirst {
+        workingDir.mkdirs()
+        jvmArgs "-javaagent:${tasks.named('portedApiAgent').get().archiveFile.get().asFile.absolutePath}"
+    }
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(25) }
+}
+
+tasks.named('check') { dependsOn 'verifyPortedApi', 'verifyGameBootstrap' }

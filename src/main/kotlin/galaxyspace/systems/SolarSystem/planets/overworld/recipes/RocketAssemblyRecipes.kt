@@ -1,14 +1,16 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.recipes
 
+import foundation.item.legacyItemValue
+
 import galaxyspace.systems.SolarSystem.planets.overworld.recipes.RocketAssemblyRecipes
 import micdoodle8.mods.galacticraft.api.recipe.ShapedRecipesGC
 import micdoodle8.mods.galacticraft.api.recipe.ShapelessOreRecipeGC
-import net.minecraft.block.Block
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.oredict.OreDictionary
 import java.lang.RuntimeException
 import java.util.ArrayList
@@ -112,8 +114,8 @@ object RocketAssemblyRecipes {
         var j: Int
 
         j = 0
-        while (j < inventory.getSizeInventory()) {
-            val itemstack2: ItemStack = inventory.getStackInSlot(j)
+        while (j < inventory.getContainerSize()) {
+            val itemstack2: ItemStack = inventory.getItem(j)
 
             if (itemstack2 != ItemStack.EMPTY) {
                 if (i == 0) {
@@ -132,8 +134,8 @@ object RocketAssemblyRecipes {
         if (i == 2 && itemstack.getItem() === itemstack1.getItem() && itemstack.getCount() == 1 && itemstack1.getCount() == 1 && itemstack.getItem()
                 .isRepairable()
         ) {
-            val k: Int = itemstack.getItem().getMaxDamage() - itemstack.getItemDamage()
-            val l: Int = itemstack.getItem().getMaxDamage() - itemstack1.getItemDamage()
+            val k: Int = itemstack.getItem().getMaxDamage() - itemstack.legacyItemValue
+            val l: Int = itemstack.getItem().getMaxDamage() - itemstack1.legacyItemValue
             val i1: Int = k + l + itemstack.getItem().getMaxDamage() * 5 / 100
             var j1: Int = itemstack.getItem().getMaxDamage() - i1
 
@@ -202,7 +204,7 @@ object RocketAssemblyRecipes {
 
                 if (k >= 0 && l < 3) {
                     val k2: Int = k + l * 3
-                    itemstack1 = inventory.getStackInSlot(k2)
+                    itemstack1 = inventory.getItem(k2)
                 }
 
                 if (itemstack1 != ItemStack.EMPTY || itemstack != ItemStack.EMPTY) {
@@ -214,7 +216,7 @@ object RocketAssemblyRecipes {
                         return false
                     }
 
-                    if (itemstack.getItemDamage() != 32767 && itemstack.getItemDamage() != itemstack1.getItemDamage()) {
+                    if (itemstack.legacyItemValue != 32767 && itemstack.legacyItemValue != itemstack1.legacyItemValue) {
                         return false
                     }
                 }
@@ -228,8 +230,8 @@ object RocketAssemblyRecipes {
     private fun matchesShapeless(recipe: ShapelessOreRecipeGC, var1: IInventory, par2World: World?): Boolean {
         val required: ArrayList<Any?> = ArrayList<Any?>(recipe.getInput())
 
-        for (x: Int in 0..<var1.getSizeInventory()) {
-            val slot: ItemStack = var1.getStackInSlot(x)
+        for (x: Int in 0..<var1.getContainerSize()) {
+            val slot: ItemStack = var1.getItem(x)
 
             if (slot != ItemStack.EMPTY) {
                 var inRecipe: Boolean = false

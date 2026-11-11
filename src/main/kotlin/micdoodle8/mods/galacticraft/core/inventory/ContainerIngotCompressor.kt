@@ -1,13 +1,13 @@
 package micdoodle8.mods.galacticraft.core.inventory
 
 import micdoodle8.mods.galacticraft.core.tile.TileEntityIngotCompressor
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.Slot
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.inventory.Slot
 import net.minecraft.inventory.SlotFurnaceOutput
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraft.tileentity.TileEntityFurnace
 
 open class ContainerIngotCompressor constructor(
@@ -19,45 +19,45 @@ open class ContainerIngotCompressor constructor(
 
         for (x: Int in 0..2) {
             for (y: Int in 0..2) {
-                this.addSlotToContainer(Slot(tileEntity.compressingCraftMatrix, y + x * 3, 19 + y * 18, 18 + x * 18))
+                this.addSlot(Slot(tileEntity.compressingCraftMatrix, y + x * 3, 19 + y * 18, 18 + x * 18))
             }
         }
 
         // Coal slot
-        this.addSlotToContainer(Slot(tileEntity, 0, 55, 75))
+        this.addSlot(Slot(tileEntity, 0, 55, 75))
 
         // Smelting result
-        this.addSlotToContainer(SlotFurnaceOutput(par1InventoryPlayer.player, tileEntity, 1, 138, 38))
+        this.addSlot(SlotFurnaceOutput(par1InventoryPlayer.player, tileEntity, 1, 138, 38))
         var var3: Int
 
         var3 = 0
         while (var3 < 3) {
             for (var4: Int in 0..8) {
-                this.addSlotToContainer(Slot(par1InventoryPlayer, var4 + var3 * 9 + 9, 8 + var4 * 18, 110 + var3 * 18))
+                this.addSlot(Slot(par1InventoryPlayer, var4 + var3 * 9 + 9, 8 + var4 * 18, 110 + var3 * 18))
             }
             ++var3
         }
 
         var3 = 0
         while (var3 < 9) {
-            this.addSlotToContainer(Slot(par1InventoryPlayer, var3, 8 + var3 * 18, 168))
+            this.addSlot(Slot(par1InventoryPlayer, var3, 8 + var3 * 18, 168))
             ++var3
         }
 
         tileEntity.playersUsing.add(par1InventoryPlayer.player)
     }
 
-    override fun onContainerClosed(entityplayer: EntityPlayer) {
-        super.onContainerClosed(entityplayer)
+    override fun removed(entityplayer: EntityPlayer) {
+        super.removed(entityplayer)
         this.tileEntity.playersUsing.remove(entityplayer)
     }
 
-    override fun canInteractWith(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.tileEntity.isUsableByPlayer(par1EntityPlayer)
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.tileEntity.stillValid(par1EntityPlayer)
     }
 
-    override fun onCraftMatrixChanged(par1IInventory: IInventory) {
-        super.onCraftMatrixChanged(par1IInventory)
+    override fun slotsChanged(par1IInventory: IInventory) {
+        super.slotsChanged(par1IInventory)
         this.tileEntity.updateInput()
     }
 
@@ -65,40 +65,40 @@ open class ContainerIngotCompressor constructor(
      * Called to transfer a stack from one inventory to the other eg. when shift
      * clicking.
      */
-    override fun transferStackInSlot(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
+    override fun quickMoveStack(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
         var var2: ItemStack = ItemStack.EMPTY
         val slot: Slot? = this.inventorySlots.get(par1)
 
-        if (slot != null && slot.getHasStack()) {
-            val var4: ItemStack = slot.getStack()
+        if (slot != null && slot.hasItem()) {
+            val var4: ItemStack = slot.getItem()
             var2 = var4.copy()
 
             if (par1 <= 10) {
-                if (!this.mergeItemStack(var4, 11, 47, true)) {
+                if (!this.moveItemStackTo(var4, 11, 47, true)) {
                     return ItemStack.EMPTY
                 }
 
                 if (par1 == 1) {
-                    slot.onSlotChange(var4, var2)
+                    slot.onQuickCraft(var4, var2)
                 }
             } else {
                 if (TileEntityFurnace.getItemBurnTime(var4) > 0) {
-                    if (!this.mergeItemStack(var4, 9, 10, false)) {
+                    if (!this.moveItemStackTo(var4, 9, 10, false)) {
                         return ItemStack.EMPTY
                     }
                 } else if (par1 < 38) {
-                    if (!this.mergeItemStack(var4, 0, 9, false) && !this.mergeItemStack(var4, 38, 47, false)) {
+                    if (!this.moveItemStackTo(var4, 0, 9, false) && !this.moveItemStackTo(var4, 38, 47, false)) {
                         return ItemStack.EMPTY
                     }
-                } else if (!this.mergeItemStack(var4, 0, 9, false) && !this.mergeItemStack(var4, 11, 38, false)) {
+                } else if (!this.moveItemStackTo(var4, 0, 9, false) && !this.moveItemStackTo(var4, 11, 38, false)) {
                     return ItemStack.EMPTY
                 }
             }
 
             if (var4.getCount() == 0) {
-                slot.putStack(ItemStack.EMPTY)
+                slot.set(ItemStack.EMPTY)
             } else {
-                slot.onSlotChanged()
+                slot.setChanged()
             }
 
             if (var4.getCount() == var2.getCount()) {
@@ -113,6 +113,6 @@ open class ContainerIngotCompressor constructor(
 
     //Can only split-drag into the crafting table slots
     override fun canDragIntoSlot(par1Slot: Slot): Boolean {
-        return par1Slot.slotNumber < 9
+        return par1Slot.index < 9
     }
 }

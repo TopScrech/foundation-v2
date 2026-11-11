@@ -13,22 +13,21 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import micdoodle8.mods.galacticraft.core.wrappers.PartialCanister
 import micdoodle8.mods.galacticraft.core.wrappers.PlayerGearData
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
 import net.minecraft.network.INetHandler
 import net.minecraft.network.NetHandlerPlayServer
-import net.minecraft.util.ResourceLocation
-import net.minecraft.world.World
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.Fluid
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
 
 open class CommonProxyCore {
     @JvmField
     var player: IPlayerServer = PlayerServer()
 
-    open fun preInit(event: FMLPreInitializationEvent?) {
+    open fun preInit() {
     }
 
     open fun registerVariants() {

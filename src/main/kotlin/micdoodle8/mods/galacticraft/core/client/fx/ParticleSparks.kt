@@ -2,8 +2,8 @@ package micdoodle8.mods.galacticraft.core.client.fx
 
 import net.minecraft.client.particle.Particle
 import net.minecraft.client.renderer.BufferBuilder
-import net.minecraft.entity.Entity
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.level.Level as World
 
 open class ParticleSparks constructor(
     par1World: World,

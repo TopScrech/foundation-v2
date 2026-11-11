@@ -1,97 +1,73 @@
 package micdoodle8.mods.galacticraft.core.items
 
-import micdoodle8.mods.galacticraft.core.GalacticraftCore
-import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
-import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
+import foundation.item.FoundationItemComponents
+import net.minecraft.util.Mth
+import foundation.item.FoundationEquipmentItem
+import foundation.item.FoundationItemProperties
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
-import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.component.DataComponents
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Rarity
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.world.item.component.TooltipDisplay
+import net.minecraft.world.level.Level
+import java.util.function.Consumer
 
-open class ItemOxygenTank constructor(tier: Int, assetName: String?) : Item(), ISortableItem, IClickableItem {
-    init {
-        this.setMaxStackSize(1)
-        this.setMaxDamage(tier * 900)
-        this.setTranslationKey(assetName)
-        //        this.setTextureName(Constants.TEXTURE_PREFIX + assetName);
-        this.setNoRepair()
+open class ItemOxygenTank(properties: Item.Properties, val capacity: Int) : Item(properties), ISortableItem, FoundationEquipmentItem {
+    constructor(tier: Int, assetName: String?) : this(
+        FoundationItemProperties.named("galacticraftcore", requireNotNull(assetName))
+            .stacksTo(1).rarity(Rarity.RARE)
+            .overrideDescription("item.$assetName.name"),
+        capacityForTier(tier)
+    )
+
+    init { require(capacity > 0) }
+
+    override val equipmentSlots: List<Int> = listOf(2, 3)
+    override fun getCategory(meta: Int): EnumSortCategoryItem = EnumSortCategoryItem.GEAR
+    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResult = useEquipment(player, hand)
+
+    override fun appendHoverText(stack: ItemStack, context: TooltipContext, display: TooltipDisplay, builder: Consumer<Component>, flag: TooltipFlag) {
+        builder.accept(Component.translatable("gui.tank.oxygen_remaining").append(": ").append(remainingOxygen(stack).toString()))
     }
 
-    override fun isEnchantable(stack: ItemStack): Boolean {
-        return false
-    }
+    fun remainingOxygen(stack: ItemStack): Int = (capacity - used(stack)).coerceIn(0, capacity)
+    override fun isBarVisible(stack: ItemStack): Boolean = used(stack) > 0
+    override fun getBarWidth(stack: ItemStack): Int = Math.round(13f * remainingOxygen(stack) / capacity).coerceIn(0, 13)
+    override fun getBarColor(stack: ItemStack): Int = Mth.hsvToRgb(remainingOxygen(stack).toFloat() / capacity / 3f, 1f, 1f)
 
-    @SideOnly(Side.CLIENT)
-    override fun getSubItems(tab: CreativeTabs, list: NonNullList<ItemStack>) {
-        if (tab === GalacticraftCore.galacticraftItemsTab || tab === CreativeTabs.SEARCH) {
-            list.add(ItemStack(this, 1, 0))
-            list.add(ItemStack(this, 1, this.getMaxDamage()))
-        }
-    }
+    open fun creativeStacks(): List<ItemStack> = listOf(stack(this, 1, 0), stack(this, 1, capacity))
 
-    override fun getCreativeTab(): CreativeTabs? {
-        return GalacticraftCore.galacticraftItemsTab
-    }
-
-    @SideOnly(Side.CLIENT)
-    override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
-        return (ClientProxyCore.galacticraftItem)!!
-    }
-
-    override fun addInformation(
-        par1ItemStack: ItemStack,
-        worldIn: World?,
-        tooltip: MutableList<String?>,
-        flagIn: ITooltipFlag
-    ) {
-        tooltip.add(GCCoreUtil.translate("gui.tank.oxygen_remaining") + ": " + (par1ItemStack.getMaxDamage() - par1ItemStack.getItemDamage()))
-    }
-
-    override fun getCategory(meta: Int): EnumSortCategoryItem {
-        return EnumSortCategoryItem.GEAR
-    }
-
-    override fun onItemRightClick(worldIn: World, player: EntityPlayer, hand: EnumHand): ActionResult<ItemStack?> {
-        var itemStack: ItemStack = player.getHeldItem(hand)
-
-        if (player is EntityPlayerMP) {
-            if (itemStack.getItem() is IClickableItem) {
-                itemStack = ((itemStack.getItem() as IClickableItem).onItemRightClick(itemStack, worldIn, player))!!
-            }
-
-            if (itemStack.isEmpty()) {
-                return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, itemStack)
-            }
-        }
-        return ActionResult<ItemStack?>(EnumActionResult.PASS, itemStack)
-    }
-
-    override fun onItemRightClick(itemStack: ItemStack?, worldIn: World?, player: EntityPlayer?): ItemStack? {
-        var itemStack: ItemStack = (itemStack)!!
-        val stats: GCPlayerStats = (GCPlayerStats.get((player)!!))!!
-        val gear: ItemStack = (stats.getExtendedInventory())!!.getStackInSlot(2)
-        val gear1: ItemStack = (stats.getExtendedInventory())!!.getStackInSlot(3)
-
-        if (gear.isEmpty()) {
-            (stats.getExtendedInventory())!!.setInventorySlotContents(2, itemStack.copy())
-            itemStack = ItemStack.EMPTY
-        } else if (gear1.isEmpty()) {
-            (stats.getExtendedInventory())!!.setInventorySlotContents(3, itemStack.copy())
-            itemStack = ItemStack.EMPTY
+    companion object {
+        private fun capacityForTier(tier: Int): Int {
+            require(tier in 1..3) { "Unknown oxygen tank tier $tier" }
+            return tier * 900
         }
 
-        return itemStack
+        @JvmStatic fun capacityOf(item: Item): Int {
+            require(item is ItemOxygenTank) { "Expected an oxygen tank" }
+            return item.capacity
+        }
+        @JvmStatic fun capacityOf(stack: ItemStack): Int = (stack.item as? ItemOxygenTank)?.capacity ?: stack.maxDamage
+        @JvmStatic fun used(stack: ItemStack): Int = if (stack.item is ItemOxygenTank) stack.getOrDefault(FoundationItemComponents.OXYGEN_USED, 0) else stack.damageValue
+        @JvmStatic fun setUsed(stack: ItemStack, amount: Int) {
+            val bounded = amount.coerceIn(0, capacityOf(stack))
+            if (stack.item is ItemOxygenTank) {
+                if (bounded == 0) stack.remove(FoundationItemComponents.OXYGEN_USED) else stack.set(FoundationItemComponents.OXYGEN_USED, bounded)
+            } else stack.damageValue = bounded
+        }
+
+        /** Resource usage never adds native tool damage or repair components */
+        @JvmStatic
+        fun stack(item: Item, count: Int, usedOxygen: Int): ItemStack {
+            require(item is ItemOxygenTank) { "Expected an oxygen tank" }
+            require(usedOxygen in 0..item.capacity) { "Invalid oxygen usage $usedOxygen" }
+            return if (count <= 0) ItemStack.EMPTY else ItemStack(item, count).also { setUsed(it, usedOxygen) }
+        }
     }
 }

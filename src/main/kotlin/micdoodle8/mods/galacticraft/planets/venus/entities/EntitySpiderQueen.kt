@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.planets.venus.entities
 
+import foundation.persistence.containsTag
+import foundation.persistence.listOfType
+
 import com.google.common.collect.Lists
 import java.util.UUID
 import micdoodle8.mods.galacticraft.api.GalacticraftRegistry
@@ -8,9 +11,9 @@ import micdoodle8.mods.galacticraft.core.entities.EntityBossBase
 import micdoodle8.mods.galacticraft.core.entities.IBoss
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.planets.venus.VenusItems
-import net.minecraft.block.Block
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.EnumCreatureAttribute
 import net.minecraft.entity.IRangedAttackMob
 import net.minecraft.entity.SharedMonsterAttributes
@@ -21,28 +24,28 @@ import net.minecraft.entity.ai.EntityAINearestAttackableTarget
 import net.minecraft.entity.ai.EntityAIWander
 import net.minecraft.entity.ai.EntityAIWatchClosest
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.init.MobEffects
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
 import net.minecraft.nbt.NBTTagLong
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
 import net.minecraft.pathfinding.PathNavigate
 import net.minecraft.pathfinding.PathNavigateGround
-import net.minecraft.potion.PotionEffect
-import net.minecraft.util.DamageSource
-import net.minecraft.util.SoundEvent
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.world.BossInfo
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import java.util.Random
 import kotlin.math.abs
 import kotlin.math.cos
@@ -110,16 +113,16 @@ open class EntitySpiderQueen constructor(worldIn: World?) : EntityBossBase((worl
                 val attackTarget: EntityLivingBase? = this.getAttackTarget()
 
                 if (attackTarget != null) {
-                    val dX: Double = attackTarget.posX - this.posX
+                    val dX: Double = attackTarget.x - this.posX
                     val dY: Double =
-                        attackTarget.getEntityBoundingBox().minY + (attackTarget.height / 3.0f).toDouble() - this.posY
-                    val dZ: Double = attackTarget.posZ - this.posZ
+                        attackTarget.getBoundingBox().minY + (attackTarget.height / 3.0f).toDouble() - this.posY
+                    val dZ: Double = attackTarget.z - this.posZ
 
                     val distance: Float = 5.0f
                     val d0: Double = this.getDistanceSq(
-                        attackTarget.posX,
-                        attackTarget.getEntityBoundingBox().minY,
-                        attackTarget.posZ
+                        attackTarget.x,
+                        attackTarget.getBoundingBox().minY,
+                        attackTarget.z
                     )
 
                     this.getLookHelper().setLookPositionWithEntity(attackTarget, 30.0f, 30.0f)
@@ -144,7 +147,7 @@ open class EntitySpiderQueen constructor(worldIn: World?) : EntityBossBase((worl
             for (id: UUID? in (this.spawnedPreload)!!) {
                 var entity: Entity? = null
                 for (e: Entity in this.world.getLoadedEntityList()) {
-                    if (e.getUniqueID() == id) {
+                    if (e.getUUID() == id) {
                         entity = e
                         break
                     }
@@ -279,8 +282,8 @@ open class EntitySpiderQueen constructor(worldIn: World?) : EntityBossBase((worl
         return EnumCreatureAttribute.ARTHROPOD
     }
 
-    override fun isPotionApplicable(potioneffectIn: PotionEffect): Boolean {
-        return potioneffectIn.getPotion() !== MobEffects.POISON && super.isPotionApplicable(potioneffectIn)
+    override fun canBeAffected(potioneffectIn: PotionEffect): Boolean {
+        return !potioneffectIn.`is`(MobEffects.POISON) && super.canBeAffected(potioneffectIn)
     }
 
     override fun getEyeHeight(): Float {
@@ -328,26 +331,26 @@ open class EntitySpiderQueen constructor(worldIn: World?) : EntityBossBase((worl
     override fun writeEntityToNBT(tagCompound: NBTTagCompound) {
         super.writeEntityToNBT(tagCompound)
 
-        tagCompound.setBoolean("should_evade", this.shouldEvade)
+        tagCompound.putBoolean("should_evade", this.shouldEvade)
 
         val list: NBTTagList = NBTTagList()
         for (juicer: EntityJuicer in this.juicersSpawned) {
-            list.appendTag(NBTTagLong(juicer.getPersistentID().getMostSignificantBits()))
-            list.appendTag(NBTTagLong(juicer.getPersistentID().getLeastSignificantBits()))
+            list.add(NBTTagLong(juicer.getPersistentID().getMostSignificantBits()))
+            list.add(NBTTagLong(juicer.getPersistentID().getLeastSignificantBits()))
         }
-        tagCompound.setTag("spawned_children", list)
+        tagCompound.put("spawned_children", list)
     }
 
     override fun readEntityFromNBT(tagCompound: NBTTagCompound) {
         super.readEntityFromNBT(tagCompound)
 
-        this.shouldEvade = tagCompound.getBoolean("should_evade")
+        this.shouldEvade = tagCompound.getBooleanOr("should_evade", false)
 
-        if (tagCompound.hasKey("spawned_children")) {
+        if (tagCompound.containsTag("spawned_children")) {
             this.spawnedPreload = Lists.newArrayList<UUID?>()
-            val list: NBTTagList = tagCompound.getTagList("spawned_children", 4)
+            val list: NBTTagList = tagCompound.listOfType("spawned_children", 4)
             var i: Int = 0
-            while (i < list.tagCount()) {
+            while (i < list.size) {
                 val tagMost: NBTTagLong = list.get(i) as NBTTagLong
                 val tagLeast: NBTTagLong = list.get(i + 1) as NBTTagLong
                 this.spawnedPreload!!.add(UUID(tagMost.getLong(), tagLeast.getLong()))
@@ -373,7 +376,7 @@ open class EntitySpiderQueen constructor(worldIn: World?) : EntityBossBase((worl
     }
 
     override fun dropKey() {
-        this.entityDropItem(ItemStack(VenusItems.key, 1, 0), 0.5f)
+        this.entityDropItem(ItemStack(requireNotNull(VenusItems.key)), 0.5f)
     }
 
     override fun getHealthBarColor(): BossInfo.Color {

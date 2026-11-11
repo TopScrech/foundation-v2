@@ -1,5 +1,7 @@
 package galaxyspace.systems.TauCetiSystem
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.systems.TauCetiSystem.planets.tauceti_f.blocks.TauCeti_F_Watergrass.EnumBlockDandelions
 
 import galaxyspace.core.util.GSUtils
@@ -37,20 +39,19 @@ import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import net.minecraft.block.BlockLiquid
 import net.minecraft.client.renderer.block.statemap.StateMap
 import net.minecraftforge.client.model.ModelLoader
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.io.File
 
 @IBodiesHandler
 open class TauCetiSystemBodies : IBodies {
-    override fun preInitialization(event: FMLPreInitializationEvent?) {
-        TCConfigCore(File((event)!!.getModConfigurationDirectory(), "GalaxySpace/tau_ceti/core.conf"))
+    override fun preInitialization() {
+        TCConfigCore(File(foundation.bootstrap.FoundationBootstrap.configDirectory, "GalaxySpace/tau_ceti/core.conf"))
     }
 
-    override fun preInit(event: FMLPreInitializationEvent?) {
+    override fun preInit() {
         TauCetiSystem = BodiesRegistry.registerSolarSystem(
             GalaxySpace.ASSET_PREFIX,
             "tauceti",
@@ -109,7 +110,7 @@ open class TauCetiSystemBodies : IBodies {
     override fun registerRecipes() {
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun registerRender() {
         var name: Array<String?> = arrayOfNulls<String>(EnumBlockTauCetiF.entries.size)
         for (blockBasic: EnumBlockTauCetiF in EnumBlockTauCetiF.entries) {
@@ -151,7 +152,7 @@ open class TauCetiSystemBodies : IBodies {
         )
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun registerVariant() {
         var blocks: Array<String?> = arrayOfNulls<String>(EnumBlockTauCetiF.entries.size)
         for (i: Int in blocks.indices) blocks[i] = (EnumBlockTauCetiF.byMetadata(i))!!.getName()

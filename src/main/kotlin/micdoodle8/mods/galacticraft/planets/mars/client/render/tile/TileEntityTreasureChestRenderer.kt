@@ -4,13 +4,13 @@ import micdoodle8.mods.galacticraft.core.client.model.block.ModelTreasureChest
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityTreasureChestMars
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL12
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class TileEntityTreasureChestRenderer : TileEntitySpecialRenderer<TileEntityTreasureChestMars>() {
     private val chestModel = ModelTreasureChest()
 
@@ -74,6 +74,6 @@ open class TileEntityTreasureChestRenderer : TileEntitySpecialRenderer<TileEntit
 
     companion object {
         private val treasureChestTexture =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/model/treasure.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/model/treasure.png")
     }
 }

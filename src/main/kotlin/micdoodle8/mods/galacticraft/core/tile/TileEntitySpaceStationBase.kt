@@ -4,11 +4,11 @@ import micdoodle8.mods.galacticraft.core.blocks.BlockMulti.EnumBlockMultiType
 
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.blocks.BlockMulti
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.LinkedList
 
 open class TileEntitySpaceStationBase constructor() : TileEntityMulti(null), IMultiBlock {
@@ -57,7 +57,7 @@ open class TileEntitySpaceStationBase constructor() : TileEntityMulti(null), IMu
             val stateAt: IBlockState = this.world.getBlockState(pos)
 
             if (stateAt.getBlock() === GCBlocks.fakeBlock && stateAt.getValue(BlockMulti.MULTI_TYPE) as BlockMulti.EnumBlockMultiType == BlockMulti.EnumBlockMultiType.SPACE_STATION_BASE) {
-                this.world.setBlockToAir(pos)
+                this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
             }
         }
         this.world.destroyBlock(this.getPos(), false)

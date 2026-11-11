@@ -1,5 +1,6 @@
 package micdoodle8.mods.galacticraft.planets.venus.blocks
 
+import foundation.item.FoundationItemVariants
 import com.google.common.collect.Lists
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.blocks.BlockTileGC
@@ -11,21 +12,21 @@ import micdoodle8.mods.galacticraft.planets.GuiIdsPlanets
 import micdoodle8.mods.galacticraft.planets.venus.VenusItems
 import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntityCrashedProbe
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class BlockCrashedProbe constructor(assetName: String?) : BlockTileGC(Material.IRON), ISortableBlock,
@@ -49,7 +50,7 @@ open class BlockCrashedProbe constructor(assetName: String?) : BlockTileGC(Mater
         this.setTranslationKey(assetName)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
@@ -115,7 +116,7 @@ open class BlockCrashedProbe constructor(assetName: String?) : BlockTileGC(Mater
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val tile: TileEntity? = worldIn.getTileEntity(pos)
+        val tile: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tile is TileEntityCrashedProbe && tile.getDropCore()) {
             spawnItem(worldIn, pos)
@@ -136,9 +137,9 @@ open class BlockCrashedProbe constructor(assetName: String?) : BlockTileGC(Mater
             pos.getX() + d0,
             pos.getY() + d1,
             pos.getZ() + d2,
-            ItemStack(VenusItems.basicItem, 1, 2)
+            FoundationItemVariants.stack(requireNotNull(VenusItems.basicItem), 1, 2)
         )
         entityitem.setDefaultPickupDelay()
-        worldIn.spawnEntity(entityitem)
+        worldIn.addFreshEntity(entityitem)
     }
 }

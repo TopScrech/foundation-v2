@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityGasBurner
@@ -12,15 +14,15 @@ import micdoodle8.mods.galacticraft.core.util.OxygenUtil
 import micdoodle8.mods.galacticraft.core.wrappers.FluidHandlerWrapper
 import micdoodle8.mods.galacticraft.core.wrappers.IFluidHandlerWrapper
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
@@ -28,7 +30,7 @@ import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 
 open class TileEntityGasBurner constructor() : TileEntityElectricInventory("tile.gas_burner.name"), IFluidHandlerWrapper,
     ISidedInventory, IPacketReceiver {
@@ -89,7 +91,7 @@ open class TileEntityGasBurner constructor() : TileEntityElectricInventory("tile
 
     open fun smeltItem() {
         if (OxygenUtil.isAABBInBreathableAirBlock(world, AxisAlignedBB(getPos().add(0, 1, 0)))) {
-            this.world.setBlockState(this.getPos().up(), Blocks.FIRE.getDefaultState())
+            this.world.setBlockAndUpdate(this.getPos().up(), Blocks.FIRE.defaultBlockState())
         }
         this.gasTank.drain(100, true)
     }
@@ -97,19 +99,19 @@ open class TileEntityGasBurner constructor() : TileEntityElectricInventory("tile
     override fun readFromNBT(par1NBTTagCompound: NBTTagCompound) {
         super.readFromNBT(par1NBTTagCompound)
 
-        this.processTicks = par1NBTTagCompound.getInteger("smeltingTicks")
-        this.inventory = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.processTicks = par1NBTTagCompound.getIntOr("smeltingTicks", 0)
+        this.inventory = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(par1NBTTagCompound, this.getInventory())
 
-        if (par1NBTTagCompound.hasKey("gasTank")) this.gasTank.readFromNBT(par1NBTTagCompound.getCompoundTag("gasTank"))
+        if (par1NBTTagCompound.containsTag("gasTank")) this.gasTank.readFromNBT(par1NBTTagCompound.getCompoundOrEmpty("gasTank"))
     }
 
     override fun writeToNBT(par1NBTTagCompound: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(par1NBTTagCompound)
-        par1NBTTagCompound.setInteger("smeltingTicks", this.processTicks)
+        par1NBTTagCompound.putInt("smeltingTicks", this.processTicks)
         ItemStackHelper.saveAllItems(par1NBTTagCompound, this.inventory)
 
-        if (this.gasTank.getFluid() != null) par1NBTTagCompound.setTag(
+        if (this.gasTank.getFluid() != null) par1NBTTagCompound.put(
             "gasTank",
             this.gasTank.writeToNBT(NBTTagCompound())
         )
@@ -122,7 +124,7 @@ open class TileEntityGasBurner constructor() : TileEntityElectricInventory("tile
     }
 
     override fun getBatteryInSlot(): ItemStack {
-        return this.getStackInSlot(0)
+        return this.getItem(0)
     }
 
     override fun canFill(from: EnumFacing?, fluid: Fluid?): Boolean {
@@ -209,7 +211,7 @@ open class TileEntityGasBurner constructor() : TileEntityElectricInventory("tile
         return this.gasTank.getFluidAmount() * i / this.gasTank.getCapacity()
     }
 
-    override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf()
     }
 

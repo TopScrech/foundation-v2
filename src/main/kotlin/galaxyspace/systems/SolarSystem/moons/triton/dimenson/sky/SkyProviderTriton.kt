@@ -11,8 +11,8 @@ import micdoodle8.mods.galacticraft.core.Constants
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraftforge.fml.client.FMLClientHandler
 
 open class SkyProviderTriton : SkyProviderBase() {
@@ -46,7 +46,7 @@ open class SkyProviderTriton : SkyProviderBase() {
             Vec3d((120 / 255.0f * f).toDouble(), (160 / 255.0f * f).toDouble(), (180 / 255.0f * f).toDouble())
         )
 
-        val time: Long = this.mc.player.getEntityWorld().getWorldTime() % getDayLength()
+        val time: Long = this.mc.player.level().getWorldTime() % getDayLength()
         var k: Double = ((time / 8) / (getDayLength() / 24000L)).toDouble()
 
         GL11.glEnable(GL11.GL_BLEND)
@@ -86,7 +86,7 @@ open class SkyProviderTriton : SkyProviderBase() {
     }
 
     override fun sunImage(): ResourceLocation {
-        return ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
+        return ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
     }
 
     override fun enableStar(): Boolean {
@@ -107,6 +107,6 @@ open class SkyProviderTriton : SkyProviderBase() {
 
     companion object {
         private val neptuneTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/neptune.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/neptune.png")
     }
 }

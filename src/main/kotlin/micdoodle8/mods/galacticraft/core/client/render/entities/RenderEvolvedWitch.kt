@@ -8,11 +8,11 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedWitch
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderEvolvedWitch constructor(manager: RenderManager) :
     RenderLiving<EntityEvolvedWitch>(manager, ModelEvolvedWitch(), 0.5f) {
     private var texSwitch = false
@@ -55,6 +55,6 @@ open class RenderEvolvedWitch constructor(manager: RenderManager) :
     }
 
     companion object {
-        private val witchTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/evolved_witch.png")
+        private val witchTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/evolved_witch.png")
     }
 }

@@ -16,17 +16,16 @@ import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderLivingBase
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.monster.EntitySkeleton
 import net.minecraft.entity.monster.EntityZombie
 import net.minecraft.entity.passive.*
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.EnumDyeColor
-import net.minecraft.world.World
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.DyeColor as EnumDyeColor
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
 import java.lang.reflect.Method
@@ -80,7 +79,7 @@ open class GameScreenText constructor() : IGameScreen {
         this.frameA = frameSize
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun render(type: Int, ticks: Float, sizeX: Float, sizeY: Float, scr: IScreenManager?) {
         val screen: DrawGameScreen = scr as DrawGameScreen
 
@@ -123,19 +122,19 @@ open class GameScreenText constructor() : IGameScreen {
 
                     if (telemeter.clientClass == EntityPlayerMP::class.java) {
                         strName = (telemeter.clientName)!!
-                        entity = EntityOtherPlayerMP((screen.driver)!!.getWorld(), telemeter.clientGameProfile)
-                        renderEntity = FMLClientHandler.instance().getClient().getRenderManager()
+                        entity = EntityOtherPlayerMP((screen.driver)!!.getLevel(), telemeter.clientGameProfile)
+                        renderEntity = Minecraft.getInstance().getRenderManager()
                             .getEntityRenderObject<Entity>(entity) as Render<*>?
                     } else {
                         try {
                             entity = (telemeter.clientClass)!!.getConstructor(World::class.java)
-                                .newInstance((screen.driver)!!.getWorld()) as Entity?
+                                .newInstance((screen.driver)!!.getLevel()) as Entity?
                         } catch (ex: Exception) {
                         }
                         if (entity != null) {
                             strName = entity.getName()
                         }
-                        renderEntity = FMLClientHandler.instance().getClient().getRenderManager().entityRenderMap.get(
+                        renderEntity = Minecraft.getInstance().getRenderManager().entityRenderMap.get(
                             telemeter.clientClass
                         )
                     }
@@ -203,7 +202,7 @@ open class GameScreenText constructor() : IGameScreen {
                 }
         } else {
             //Default - draw a simple time display just to show the Display Screen is working
-            val w1: World = (screen.driver)!!.getWorld()
+            val w1: World = (screen.driver)!!.getLevel()
             val time1: Int = if (w1 != null) ((w1.getWorldTime() + 6000L) % 24000L).toInt() else 0
             str[2] = makeTimeString(time1 * 360)
         }
@@ -305,7 +304,7 @@ open class GameScreenText constructor() : IGameScreen {
             val f: Float = 0f
             val f1: Float = 0f
             val f2: Float = f1 - f
-            val f7: Float = entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTicks
+            val f7: Float = entity.xRotO + (entity.xRot - entity.xRotO) * partialTicks
             val f8: Float = 0f
             GlStateManager.rotate(180.0f, 0.0f, 1.0f, 0.0f)
             GlStateManager.enableRescaleNormal()
@@ -371,7 +370,7 @@ open class GameScreenText constructor() : IGameScreen {
     }
 
     private fun drawText(str: String, colour: Int) {
-        Minecraft.getMinecraft().fontRenderer.drawString(str, 0f, yPos.toFloat(), colour, false)
+        Minecraft.getInstance().fontRenderer.drawString(str, 0f, yPos.toFloat(), colour, false)
         yPos += 10
     }
 

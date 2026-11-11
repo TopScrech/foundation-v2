@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.EnumFacing
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTankInfo
 import org.lwjgl.opengl.GL11
@@ -42,7 +42,7 @@ open class TileEntityFluidTankRenderer : TileEntitySpecialRenderer<TileEntityFlu
 
         this.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
         val sprite: TextureAtlasSprite =
-            Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(tankFluid.getFluid().getStill().toString())
+            Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(tankFluid.getFluid().getStill().toString())
         val uMin: Double = sprite.getMinU().toDouble()
         val uMax: Double = sprite.getMaxU().toDouble()
         val vMin: Double = sprite.getMinV().toDouble()

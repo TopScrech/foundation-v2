@@ -4,8 +4,8 @@ import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.planets.mars.entities.EntityCreeperBoss
 import net.minecraft.client.model.ModelBase
 import net.minecraft.client.model.ModelRenderer
-import net.minecraft.entity.Entity
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.util.Mth as MathHelper
 
 open class ModelCreeperBoss @JvmOverloads constructor(scale: Float = 0.0f) : ModelBase() {
     @JvmField

@@ -13,15 +13,15 @@ import micdoodle8.mods.galacticraft.core.client.gui.element.GuiElementInfoRegion
 import micdoodle8.mods.galacticraft.core.energy.EnergyDisplayHelper
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiRocketAssembler constructor(
     par1InventoryPlayer: InventoryPlayer,
     private val tileEntity: TileEntityRocketAssembler
@@ -174,7 +174,7 @@ open class GuiRocketAssembler constructor(
                 containerWidth + x,
                 containerHeight + y,
                 228,
-                if (slot.slotNumber == 0) 185 else 206,
+                if (slot.index == 0) 185 else 206,
                 16,
                 16
             )
@@ -182,25 +182,25 @@ open class GuiRocketAssembler constructor(
             val color: FloatArray = FloatArray(3)
 
             if (this.inventorySlots.getSlot(i).inventory !is InventoryPlayer) {
-                if (slot.slotNumber == 11 || slot.slotNumber == 12 || slot.slotNumber == 13) {
+                if (slot.index == 11 || slot.index == 12 || slot.index == 13) {
                     color[0] = 0.2f //R
                     color[1] = 1.0f //G
                     color[2] = 0.0f //B	        
-                } else if (slot.slotNumber == 10) {
+                } else if (slot.index == 10) {
                     color[0] = 1.0f //R
                     color[1] = 0.0f //G
                     color[2] = 0.0f //B	    
-                } else if (slot.slotNumber != 1) {
+                } else if (slot.index != 1) {
                     color[0] = 0.0f //R
                     color[1] = 0.9f //G
                     color[2] = 1.0f //B
                 }
 
                 GL11.glColor3f(color[0], color[1], color[2])
-                if (slot.slotNumber == 1) {
+                if (slot.index == 1) {
                     GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
                     this.drawTexturedModalRect(containerWidth + x - 9, containerHeight + y - 9, 215, 144, 34, 34)
-                } else if (slot.slotNumber != 10) this.drawTexturedModalRect(
+                } else if (slot.index != 10) this.drawTexturedModalRect(
                     containerWidth + x - 2,
                     containerHeight + y - 3,
                     207,
@@ -227,6 +227,6 @@ open class GuiRocketAssembler constructor(
 
     companion object {
         private val electricFurnaceTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/rocket_assembly.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/rocket_assembly.png")
     }
 }

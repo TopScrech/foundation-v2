@@ -4,15 +4,16 @@ import micdoodle8.mods.galacticraft.core.network.PacketSimple.EnumSimplePacket
 
 import galaxyspace.core.util.GSRecipeUtil
 import galaxyspace.systems.SolarSystem.planets.overworld.inventory.schematics.SlotSchematicOxTank
+import micdoodle8.mods.galacticraft.core.recipe.NasaWorkbenchRecipe
 import micdoodle8.mods.galacticraft.api.recipe.INasaWorkbenchRecipe
 import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
 
 open class SlotSchematicOxTank constructor(
     par2IInventory: IInventory,
@@ -22,25 +23,26 @@ open class SlotSchematicOxTank constructor(
     private val pos: BlockPos,
     private val player: EntityPlayer?
 ) : Slot(par2IInventory, index, par4, par5) {
-    override fun onSlotChanged() {
+    override fun setChanged() {
+        super.setChanged()
         if (this.player is EntityPlayerMP) {
-            val dimID: Int = GCCoreUtil.getDimensionID(this.player.world)
+            val dimID: Int = GCCoreUtil.getDimensionID(this.player.level())
             GCCoreUtil.sendToAllAround(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.C_SPAWN_SPARK_PARTICLES,
                     dimID,
                     arrayOf<Any?>(this.pos)
-                ), this.player.world, dimID, this.pos, 20.0
+                ), this.player.level(), dimID, this.pos, 20.0
             )
         }
     }
 
-    override fun isItemValid(par1ItemStack: ItemStack): Boolean {
+    override fun mayPlace(par1ItemStack: ItemStack): Boolean {
         if (par1ItemStack == null) return false
 
         val recipes: MutableList<INasaWorkbenchRecipe> = (GSRecipeUtil.getOxTankRecipes() as MutableList<INasaWorkbenchRecipe>)
         for (recipe: INasaWorkbenchRecipe in recipes) {
-            if (ItemStack.areItemsEqual(par1ItemStack, (recipe.getRecipeInput())!!.get(this.index))) return true
+            if (NasaWorkbenchRecipe.matchesIngredient(par1ItemStack, (recipe.getRecipeInput())!!.get(this.index))) return true
         }
         return false
     }
@@ -49,7 +51,7 @@ open class SlotSchematicOxTank constructor(
      * Returns the maximum stack size for a given slot (usually the same as
      * getInventoryStackLimit(), but 1 in the case of armor slots)
      */
-    override fun getSlotStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 1
     }
 }

@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "galaxyspace:metals",
+  "pattern": [
+    "X"
+  ],
+  "key": {
+    "X": {
+      "type": "foundation:stack",
+      "stack": {
+        "id": "galaxyspace:ingots",
+        "components": {
+          "foundation:legacy_metadata": 1
+        }
+      }
+    }
+  },
+  "result": {
+    "id": "galaxyspace:nuggets",
+    "count": 9,
+    "components": {
+      "foundation:legacy_metadata": 1
+    }
+  }
+}

@@ -1,25 +1,23 @@
 package galaxyspace.core.prefab.inventory
 
+import net.minecraft.world.ContainerHelper
 import galaxyspace.core.prefab.inventory.InventoryAstroWolf
 import galaxyspace.core.prefab.entities.EntityAstroWolf
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.util.NonNullList
-import net.minecraft.util.text.ITextComponent
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.util.text.TextComponentTranslation
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import micdoodle8.mods.galacticraft.core.inventory.IInventoryDefaults
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.NonNullList
+import net.minecraft.network.chat.Component as ITextComponent
 
-open class InventoryAstroWolf constructor(private val wolf: EntityAstroWolf) : IInventory {
+open class InventoryAstroWolf constructor(private val wolf: EntityAstroWolf) : IInventoryDefaults {
     private val stacks: NonNullList<ItemStack> = NonNullList.withSize<ItemStack>(3, ItemStack.EMPTY)
 
     @JvmField
     var currentContainer: Container? = null
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.stacks.size
     }
 
@@ -27,36 +25,36 @@ open class InventoryAstroWolf constructor(private val wolf: EntityAstroWolf) : I
         return this.stacks
     }
 
-    override fun getStackInSlot(par1: Int): ItemStack {
-        return if (par1 >= this.getSizeInventory()) ItemStack.EMPTY else this.stacks.get(par1)
+    override fun getItem(par1: Int): ItemStack {
+        return if (par1 >= this.getContainerSize()) ItemStack.EMPTY else this.stacks.get(par1)
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.astro_wolf_inventory.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.astro_wolf_inventory.name")
     }
 
-    override fun removeStackFromSlot(par1: Int): ItemStack {
-        return ItemStackHelper.getAndRemove(this.stacks, par1)
+    override fun removeItemNoUpdate(par1: Int): ItemStack {
+        return ContainerHelper.takeItem(this.stacks, par1)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.stacks.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
     override fun isEmpty(): Boolean {
@@ -69,51 +67,35 @@ open class InventoryAstroWolf constructor(private val wolf: EntityAstroWolf) : I
         return true
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 1
     }
 
-    override fun markDirty() {
+    override fun setChanged() {
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
         return !this.wolf.isDead && par1EntityPlayer.getDistanceSq(this.wolf) <= 64.0
     }
 
-    override fun isItemValidForSlot(i: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(i: Int, itemstack: ItemStack): Boolean {
         return false
     }
 
     //We don't use these because we use forge containers
-    override fun openInventory(player: EntityPlayer) {
-    }
 
     //We don't use these because we use forge containers
-    override fun closeInventory(player: EntityPlayer) {
-    }
 
-    override fun getField(id: Int): Int {
-        return 0
-    }
 
-    override fun setField(id: Int, value: Int) {
-    }
 
-    override fun getFieldCount(): Int {
-        return 0
-    }
 
-    override fun clear() {
+    override fun clearContent() {
+        for (slot in 0 until containerSize) setItem(slot, ItemStack.EMPTY)
     }
 
     override fun hasCustomName(): Boolean {
         return false
     }
 
-    override fun getDisplayName(): ITextComponent {
-        return if (this.hasCustomName()) TextComponentString(this.getName()) else TextComponentTranslation(
-            this.getName(),
-            *arrayOfNulls<Any>(0)
-        )
-    }
+    override fun getDisplayName(): ITextComponent = getName()
 }

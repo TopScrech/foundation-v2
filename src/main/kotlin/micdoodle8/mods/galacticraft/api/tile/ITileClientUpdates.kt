@@ -5,10 +5,10 @@ import micdoodle8.mods.galacticraft.core.network.PacketSimple.EnumSimplePacket
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.tileentity.TileEntity
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 /***
  * Sends basic tile load configuration data
@@ -29,7 +29,7 @@ interface ITileClientUpdates {
      * The supplied data list has 4 ints
      * of data to use at positions 1 through 4.
      */
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun updateClient(data: MutableList<Any?>?)
 
     /**
@@ -37,12 +37,12 @@ interface ITileClientUpdates {
      */
     fun clientOnLoad() {
         val tile: TileEntity = this as TileEntity
-        if (tile.getWorld().isRemote) {
+        if (tile.getLevel().isClientSide) {
             (GalacticraftCore.packetPipeline)!!.sendToServer(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.S_REQUEST_MACHINE_DATA,
-                    tile.getWorld(),
-                    arrayOf<Any>(tile.getPos())
+                    tile.getLevel(),
+                    arrayOf<Any>(tile.getBlockPos())
                 )
             )
         }
@@ -60,8 +60,8 @@ interface ITileClientUpdates {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimple(
                 PacketSimple.EnumSimplePacket.C_UPDATE_MACHINE_DATA,
-                GCCoreUtil.getDimensionID(player.world),
-                arrayOf<Any>((this as TileEntity).getPos(), data[0], data[1], data[2], data[3])
+                GCCoreUtil.getDimensionID(player.level()),
+                arrayOf<Any>((this as TileEntity).getBlockPos(), data[0], data[1], data[2], data[3])
             ), player
         )
     }
@@ -72,12 +72,12 @@ interface ITileClientUpdates {
     fun updateAllInDimension() {
         val data: IntArray = IntArray(4)
         this.buildDataPacket(data)
-        val dimID: Int = GCCoreUtil.getDimensionID((this as TileEntity).getWorld())
+        val dimID: Int = GCCoreUtil.getDimensionID((this as TileEntity).getLevel())
         (GalacticraftCore.packetPipeline)!!.sendToDimension(
             PacketSimple(
                 PacketSimple.EnumSimplePacket.C_UPDATE_MACHINE_DATA,
                 dimID,
-                arrayOf<Any>((this as TileEntity).getPos(), data[0], data[1], data[2], data[3])
+                arrayOf<Any>((this as TileEntity).getBlockPos(), data[0], data[1], data[2], data[3])
             ), dimID
         )
     }

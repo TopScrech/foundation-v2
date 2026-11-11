@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import foundation.block.getStateFromMeta
+
+import foundation.persistence.listOfType
+
 import io.netty.buffer.ByteBuf
 import micdoodle8.mods.galacticraft.api.entity.IEntityBreathable
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
@@ -10,30 +14,30 @@ import micdoodle8.mods.galacticraft.core.items.ItemEmergencyKit
 import micdoodle8.mods.galacticraft.core.network.IPacketReceiver
 import micdoodle8.mods.galacticraft.core.network.PacketDynamic
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockAir
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityCreature
 import net.minecraft.entity.ai.RandomPositionGenerator
 import net.minecraft.entity.monster.IMob
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
 import net.minecraft.pathfinding.PathNavigate
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraft.util.ITickable
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraft.world.EnumSkyBlock
-import net.minecraft.world.World
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import net.minecraftforge.items.ItemHandlerHelper
 import java.lang.Exception
 import java.util.ArrayList
@@ -300,13 +304,13 @@ when (side) {
                 if (this.openN && this.cooldown == 0) {
                     if (kitted) {
                         ItemHandlerHelper.giveItemToPlayer(player, ItemStack(GCItems.emergencyKit), 0)
-                        this.world.setBlockState(this.pos, (GCBlocks.emergencyBox)!!.getDefaultState(), 3)
+                        this.world.setBlock(this.pos, (GCBlocks.emergencyBox)!!.defaultBlockState(), 3)
                         break
                     } else {
-                        val stack: ItemStack = player.inventory.getCurrentItem()
+                        val stack: ItemStack = player.inventory.getSelectedItem()
                         if (!stack.isEmpty() && stack.getItem() is ItemEmergencyKit) {
-                            player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY)
-                            this.world.setBlockState(this.pos, (GCBlocks.emergencyBox)!!.getStateFromMeta(1), 3)
+                            player.inventory.setItem(player.inventory.selectedSlot, ItemStack.EMPTY)
+                            this.world.setBlock(this.pos, (GCBlocks.emergencyBox)!!.getStateFromMeta(1), 3)
                             this.openW = false
                             this.openS = false
                             this.openE = false
@@ -322,13 +326,13 @@ when (side) {
                 if (this.openW && this.cooldown == 0) {
                     if (kitted) {
                         ItemHandlerHelper.giveItemToPlayer(player, ItemStack(GCItems.emergencyKit), 0)
-                        this.world.setBlockState(this.pos, (GCBlocks.emergencyBox)!!.getDefaultState(), 3)
+                        this.world.setBlock(this.pos, (GCBlocks.emergencyBox)!!.defaultBlockState(), 3)
                         break
                     } else {
-                        val stack: ItemStack = player.inventory.getCurrentItem()
+                        val stack: ItemStack = player.inventory.getSelectedItem()
                         if (!stack.isEmpty() && stack.getItem() is ItemEmergencyKit) {
-                            player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY)
-                            this.world.setBlockState(this.pos, (GCBlocks.emergencyBox)!!.getStateFromMeta(1), 3)
+                            player.inventory.setItem(player.inventory.selectedSlot, ItemStack.EMPTY)
+                            this.world.setBlock(this.pos, (GCBlocks.emergencyBox)!!.getStateFromMeta(1), 3)
                             this.openN = false
                             this.openS = false
                             this.openE = false
@@ -344,13 +348,13 @@ when (side) {
                 if (this.openS && this.cooldown == 0) {
                     if (kitted) {
                         ItemHandlerHelper.giveItemToPlayer(player, ItemStack(GCItems.emergencyKit), 0)
-                        this.world.setBlockState(this.pos, (GCBlocks.emergencyBox)!!.getDefaultState(), 3)
+                        this.world.setBlock(this.pos, (GCBlocks.emergencyBox)!!.defaultBlockState(), 3)
                         break
                     } else {
-                        val stack: ItemStack = player.inventory.getCurrentItem()
+                        val stack: ItemStack = player.inventory.getSelectedItem()
                         if (!stack.isEmpty() && stack.getItem() is ItemEmergencyKit) {
-                            player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY)
-                            this.world.setBlockState(this.pos, (GCBlocks.emergencyBox)!!.getStateFromMeta(1), 3)
+                            player.inventory.setItem(player.inventory.selectedSlot, ItemStack.EMPTY)
+                            this.world.setBlock(this.pos, (GCBlocks.emergencyBox)!!.getStateFromMeta(1), 3)
                             this.openN = false
                             this.openW = false
                             this.openE = false
@@ -366,13 +370,13 @@ when (side) {
                 if (this.openE && this.cooldown == 0) {
                     if (kitted) {
                         ItemHandlerHelper.giveItemToPlayer(player, ItemStack(GCItems.emergencyKit), 0)
-                        this.world.setBlockState(this.pos, (GCBlocks.emergencyBox)!!.getDefaultState(), 3)
+                        this.world.setBlock(this.pos, (GCBlocks.emergencyBox)!!.defaultBlockState(), 3)
                         break
                     } else {
-                        val stack: ItemStack = player.inventory.getCurrentItem()
+                        val stack: ItemStack = player.inventory.getSelectedItem()
                         if (!stack.isEmpty() && stack.getItem() is ItemEmergencyKit) {
-                            player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY)
-                            this.world.setBlockState(this.pos, (GCBlocks.emergencyBox)!!.getStateFromMeta(1), 3)
+                            player.inventory.setItem(player.inventory.selectedSlot, ItemStack.EMPTY)
+                            this.world.setBlock(this.pos, (GCBlocks.emergencyBox)!!.getStateFromMeta(1), 3)
                             this.openN = false
                             this.openW = false
                             this.openS = false
@@ -391,17 +395,17 @@ when (side) {
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        val data: Int = nbt.getInteger("open")
+        val data: Int = nbt.getIntOr("open", 0)
         this.openN = (data and 1) == 1
         this.openW = (data and 2) == 2
         this.openS = (data and 4) == 4
         this.openE = (data and 8) == 8
         if (GCCoreUtil.getEffectiveSide() == Side.SERVER) {
             this.airToRestore.clear()
-            val airBlocks: NBTTagList = nbt.getTagList("air", 10)
-            if (airBlocks.tagCount() > 0) {
-                for (j: Int in airBlocks.tagCount() - 1 downTo 0) {
-                    val tag1: NBTTagCompound = airBlocks.getCompoundTagAt(j)
+            val airBlocks: NBTTagList = nbt.listOfType("air", 10)
+            if (airBlocks.size > 0) {
+                for (j: Int in airBlocks.size - 1 downTo 0) {
+                    val tag1: NBTTagCompound = airBlocks.getCompoundOrEmpty(j)
                     if (tag1 != null) {
                         this.airToRestore.add(BlockVec3.readFromNBT(tag1))
                     }
@@ -414,15 +418,15 @@ when (side) {
         super.writeToNBT(nbt)
         val data: Int =
             (if (this.openN) 1 else 0) + (if (this.openW) 2 else 0) + (if (this.openS) 4 else 0) + (if (this.openE) 8 else 0)
-        nbt.setInteger("open", data)
+        nbt.putInt("open", data)
 
         val airBlocks: NBTTagList = NBTTagList()
         for (vec: BlockVec3 in this.airToRestore) {
             val tag: NBTTagCompound = NBTTagCompound()
             vec.writeToNBT(tag)
-            airBlocks.appendTag(tag)
+            airBlocks.add(tag)
         }
-        nbt.setTag("air", airBlocks)
+        nbt.put("air", airBlocks)
         return nbt
     }
 
@@ -500,9 +504,9 @@ when (side) {
         val b: Block = this.world.getBlockState(blockpos).getBlock()
         val newState: IBlockState
         if (b === GCBlocks.brightAir) {
-            newState = Blocks.AIR.getDefaultState()
+            newState = Blocks.AIR.defaultBlockState()
         } else if (b === GCBlocks.brightBreatheableAir) {
-            newState = (GCBlocks.breatheableAir)!!.getDefaultState()
+            newState = (GCBlocks.breatheableAir)!!.defaultBlockState()
         } else {
             return
         }
@@ -550,20 +554,20 @@ when (side) {
         var blockPos: BlockPos = blockPos
         var bs: IBlockState = this.world.getBlockState(blockPos)
         if (bs.getBlock() === Blocks.AIR) {
-            this.brightenAir(blockPos, (GCBlocks.brightAir)!!.getDefaultState())
+            this.brightenAir(blockPos, (GCBlocks.brightAir)!!.defaultBlockState())
             return true
         } else if (bs.getBlock() === GCBlocks.breatheableAir) {
-            this.brightenAir(blockPos, (GCBlocks.brightBreatheableAir)!!.getDefaultState())
+            this.brightenAir(blockPos, (GCBlocks.brightBreatheableAir)!!.defaultBlockState())
             return true
         }
 
-        blockPos = blockPos.up(1)
+        blockPos = blockPos.above(1)
         bs = this.world.getBlockState(blockPos)
         if (bs.getBlock() === Blocks.AIR) {
-            this.brightenAir(blockPos, (GCBlocks.brightAir)!!.getDefaultState())
+            this.brightenAir(blockPos, (GCBlocks.brightAir)!!.defaultBlockState())
             return true
         } else if (bs.getBlock() === GCBlocks.breatheableAir) {
-            this.brightenAir(blockPos, (GCBlocks.brightBreatheableAir)!!.getDefaultState())
+            this.brightenAir(blockPos, (GCBlocks.brightBreatheableAir)!!.defaultBlockState())
             return true
         }
 

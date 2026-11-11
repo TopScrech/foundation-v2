@@ -11,14 +11,14 @@ import micdoodle8.mods.galacticraft.api.vector.Vector3
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 
 open class SkyProviderAsteroids : SkyProviderBase() {
     override fun rendererSky(tessellator: Tessellator?, worldRenderer: BufferBuilder?, f10: Float, ticks: Float) {
         var f10: Float = f10
         if (ceresTexture == null && ACCompatibilityManager.isGalaxySpaceLoaded()) ceresTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/ceres.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/ceres.png")
 
         if (ceresTexture != null) {
             GL11.glPushMatrix()
@@ -56,7 +56,7 @@ open class SkyProviderAsteroids : SkyProviderBase() {
     }
 
     override fun sunImage(): ResourceLocation {
-        return ResourceLocation(AsmodeusCore.ASSET_PREFIX, "textures/gui/celestialbodies/white.png")
+        return ResourceLocation.fromNamespaceAndPath(AsmodeusCore.ASSET_PREFIX, "textures/gui/celestialbodies/white.png")
     }
 
     override fun modeLight(): ModeLight {

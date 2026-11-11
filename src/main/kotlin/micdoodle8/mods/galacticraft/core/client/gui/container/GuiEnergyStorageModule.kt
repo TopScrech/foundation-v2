@@ -7,13 +7,13 @@ import micdoodle8.mods.galacticraft.core.energy.EnergyDisplayHelper
 import micdoodle8.mods.galacticraft.core.inventory.ContainerEnergyStorageModule
 import micdoodle8.mods.galacticraft.core.tile.TileEntityEnergyStorageModule
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiEnergyStorageModule constructor(
     par1InventoryPlayer: InventoryPlayer?,
     private val tileEntity: TileEntityEnergyStorageModule
@@ -64,6 +64,6 @@ open class GuiEnergyStorageModule constructor(
 
     companion object {
         private val batteryBoxTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/energy_storage_module.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/energy_storage_module.png")
     }
 }

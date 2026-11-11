@@ -1,5 +1,8 @@
 package galaxyspace.systems.SolarSystem.planets.kuiperbelt.dimension
 
+import foundation.persistence.containsTag
+import foundation.persistence.listOfType
+
 import galaxyspace.systems.SolarSystem.SolarSystemBodies
 import galaxyspace.core.util.GSDimensions
 import galaxyspace.systems.SolarSystem.planets.kuiperbelt.dimension.ChunkProviderKuiperBelt
@@ -17,18 +20,18 @@ import micdoodle8.mods.galacticraft.core.client.CloudRenderer
 import micdoodle8.mods.galacticraft.core.event.EventHandlerGC
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.planets.asteroids.entities.EntityAstroMiner
-import net.minecraft.block.Block
-import net.minecraft.entity.Entity
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.Entity
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.biome.BiomeProvider
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.HashSet
 import java.util.TreeMap
@@ -82,7 +85,7 @@ open class WorldProviderKuiperBelt : WorldProviderAdvancedSpace(), ISolarLevel, 
         return 0.22f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val var2: Float = this.world.getCelestialAngle(par1)
         var var3: Float = 1.0f - (MathHelper.cos(var2 * Math.PI.toFloat() * 2.0f) * 2.0f + 0.25f)
@@ -135,7 +138,7 @@ open class WorldProviderKuiperBelt : WorldProviderAdvancedSpace(), ISolarLevel, 
         return CloudRenderer()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyRenderer(): IRenderHandler? {
         if (super.getSkyRenderer() == null) {
             this.setSkyRenderer(SkyProviderKuiperBelt())
@@ -144,7 +147,7 @@ open class WorldProviderKuiperBelt : WorldProviderAdvancedSpace(), ISolarLevel, 
         return super.getSkyRenderer()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSunBrightness(par1: Float): Float {
         val f1: Float = this.world.getCelestialAngle(1.0f)
         var f2: Float = 1.25f - (MathHelper.cos(f1 * 3.1415927f * 2.0f) * 2.0f + 0.2f)
@@ -187,27 +190,17 @@ open class WorldProviderKuiperBelt : WorldProviderAdvancedSpace(), ISolarLevel, 
     }
 
     private fun loadAsteroidSavedData() {
-        this.datafile = this.world.loadData(
-            KuiperBeltSaveData::class.java,
-            KuiperBeltSaveData.Companion.saveDataID
-        ) as KuiperBeltSaveData?
-
-        if (this.datafile == null) {
-            this.datafile = KuiperBeltSaveData("")
-            this.world.setData(KuiperBeltSaveData.Companion.saveDataID, this.datafile)
-            this.writeToNBT(this.datafile!!.datacompound)
-        } else {
-            this.readFromNBT(this.datafile!!.datacompound)
-        }
+        this.datafile = KuiperBeltSaveData.get(this.world)
+        this.readFromNBT(this.datafile!!.datacompound)
 
         this.dataNotLoaded = false
     }
 
     private fun readFromNBT(nbt: NBTTagCompound) {
-        val coordList: NBTTagList = nbt.getTagList("coords", 10)
-        if (coordList.tagCount() > 0) {
-            for (j: Int in 0..<coordList.tagCount()) {
-                val tag1: NBTTagCompound = coordList.getCompoundTagAt(j)
+        val coordList: NBTTagList = nbt.listOfType("coords", 10)
+        if (coordList.size > 0) {
+            for (j: Int in 0..<coordList.size) {
+                val tag1: NBTTagCompound = coordList.getCompoundOrEmpty(j)
 
                 if (tag1 != null) {
                     this.asteroids.add(AsteroidData.Companion.readFromNBT(tag1))
@@ -221,19 +214,19 @@ open class WorldProviderKuiperBelt : WorldProviderAdvancedSpace(), ISolarLevel, 
         for (coords: AsteroidData in this.asteroids) {
             val tag: NBTTagCompound = NBTTagCompound()
             coords.writeToNBT(tag)
-            coordList.appendTag(tag)
+            coordList.add(tag)
         }
-        nbt.setTag("coords", coordList)
-        this.datafile!!.markDirty()
+        nbt.put("coords", coordList)
+        this.datafile!!.setDirty()
     }
 
     private fun addToNBT(nbt: NBTTagCompound, coords: AsteroidData) {
-        val coordList: NBTTagList = nbt.getTagList("coords", 10)
+        val coordList: NBTTagList = nbt.listOfType("coords", 10)
         val tag: NBTTagCompound = NBTTagCompound()
         coords.writeToNBT(tag)
-        coordList.appendTag(tag)
-        nbt.setTag("coords", coordList)
-        this.datafile!!.markDirty()
+        coordList.add(tag)
+        nbt.put("coords", coordList)
+        this.datafile!!.setDirty()
     }
 
 
@@ -412,11 +405,11 @@ open class WorldProviderKuiperBelt : WorldProviderAdvancedSpace(), ISolarLevel, 
         }
 
         open fun writeToNBT(tag: NBTTagCompound): NBTTagCompound {
-            tag.setInteger("x", this.centre!!.x)
-            tag.setInteger("y", this.centre!!.y)
-            tag.setInteger("z", this.centre!!.z)
-            tag.setInteger("coreAndFlag", this.coreAndSpawnedFlag)
-            tag.setInteger("sizeAndFlag", this.sizeAndLandedFlag)
+            tag.putInt("x", this.centre!!.x)
+            tag.putInt("y", this.centre!!.y)
+            tag.putInt("z", this.centre!!.z)
+            tag.putInt("coreAndFlag", this.coreAndSpawnedFlag)
+            tag.putInt("sizeAndFlag", this.sizeAndLandedFlag)
             return tag
         }
 
@@ -424,16 +417,16 @@ open class WorldProviderKuiperBelt : WorldProviderAdvancedSpace(), ISolarLevel, 
             @JvmStatic
             fun readFromNBT(tag: NBTTagCompound): AsteroidData {
                 val tempVector: BlockVec3 = BlockVec3()
-                tempVector.x = tag.getInteger("x")
-                tempVector.y = tag.getInteger("y")
-                tempVector.z = tag.getInteger("z")
+                tempVector.x = tag.getIntOr("x", 0)
+                tempVector.y = tag.getIntOr("y", 0)
+                tempVector.z = tag.getIntOr("z", 0)
 
                 val roid: AsteroidData = AsteroidData(tempVector)
-                if (tag.hasKey("coreAndFlag")) {
-                    roid.coreAndSpawnedFlag = tag.getInteger("coreAndFlag")
+                if (tag.containsTag("coreAndFlag")) {
+                    roid.coreAndSpawnedFlag = tag.getIntOr("coreAndFlag", 0)
                 }
-                if (tag.hasKey("sizeAndFlag")) {
-                    roid.sizeAndLandedFlag = tag.getInteger("sizeAndFlag")
+                if (tag.containsTag("sizeAndFlag")) {
+                    roid.sizeAndLandedFlag = tag.getIntOr("sizeAndFlag", 0)
                 }
 
                 return roid

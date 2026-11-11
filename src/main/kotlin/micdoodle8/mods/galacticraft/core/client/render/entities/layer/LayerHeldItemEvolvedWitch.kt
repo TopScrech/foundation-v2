@@ -9,13 +9,13 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms
 import net.minecraft.client.renderer.entity.layers.LayerRenderer
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class LayerHeldItemEvolvedWitch constructor(private val witchRenderer: RenderEvolvedWitch) :
     LayerRenderer<EntityEvolvedWitch> {
     override fun doRenderLayer(
@@ -43,7 +43,7 @@ open class LayerHeldItemEvolvedWitch constructor(private val witchRenderer: Rend
             (this.witchRenderer.getMainModel() as ModelEvolvedWitch).villagerNose.postRender(0.0625f)
             GlStateManager.translate(-0.0625f, 0.53125f, 0.21875f)
             val item: Item = itemstack.getItem()
-            val mc: Minecraft = Minecraft.getMinecraft()
+            val mc: Minecraft = Minecraft.getInstance()
 
             //            if (item instanceof ItemBlock && mc.getBlockRendererDispatcher().isRenderTypeChest(Block.getBlockFromItem(item), itemstack.getMetadata()))
 //            {

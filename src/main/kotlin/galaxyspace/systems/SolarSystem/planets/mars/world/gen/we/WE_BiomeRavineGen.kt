@@ -4,9 +4,9 @@ import galaxyspace.GalaxySpace
 import asmodeuscore.core.utils.worldengine.additions.WE_GeneratorData
 import asmodeuscore.core.utils.worldengine.additions.WE_CreateChunkGen_InXZ
 import net.minecraft.block.BlockFalling
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.util.Mth as MathHelper
 import java.util.ArrayList
 import java.util.Random
 
@@ -16,10 +16,10 @@ open class WE_BiomeRavineGen constructor() : WE_CreateChunkGen_InXZ() {
 
     //-//
     @JvmField
-    var caveBlock: IBlockState = Blocks.AIR.getDefaultState()
+    var caveBlock: IBlockState = Blocks.AIR.defaultBlockState()
 
     @JvmField
-    var lavaBlock: IBlockState = Blocks.LAVA.getDefaultState()
+    var lavaBlock: IBlockState = Blocks.LAVA.defaultBlockState()
 
     @JvmField
     var lavaMaxY: Int = 12
@@ -34,7 +34,7 @@ open class WE_BiomeRavineGen constructor() : WE_CreateChunkGen_InXZ() {
     var rand: Random = Random()
 
     init {
-        replaceBlocksList.add(Blocks.STONE.getDefaultState())
+        replaceBlocksList.add(Blocks.STONE.defaultBlockState())
     }
 
     override fun gen(data: WE_GeneratorData?) {

@@ -1,18 +1,19 @@
 package micdoodle8.mods.galacticraft.core.energy.tile
 
+import net.minecraft.world.ContainerHelper
 import micdoodle8.mods.galacticraft.core.inventory.IInventoryDefaults
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
 
 abstract class TileBaseElectricBlockWithInventory : TileBaseElectricBlock(), IInventoryDefaults {
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent? = super<TileBaseElectricBlock>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = getName()
 
     fun readStandardItemsFromNBT(nbt: NBTTagCompound): NonNullList<ItemStack> {
-        val stacks: NonNullList<ItemStack> = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        val stacks: NonNullList<ItemStack> = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, stacks)
         return stacks
     }
@@ -31,45 +32,45 @@ abstract class TileBaseElectricBlockWithInventory : TileBaseElectricBlock(), IIn
         return true
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.getContainingItems()!!.size
     }
 
-    override fun getStackInSlot(index: Int): ItemStack {
+    override fun getItem(index: Int): ItemStack {
         return this.getContainingItems()!!.get(index)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.getContainingItems(), index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.getContainingItems(), index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        val oldstack: ItemStack = ItemStackHelper.getAndRemove(this.getContainingItems(), index)
-        if (!oldstack.isEmpty()) this.markDirty()
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        val oldstack: ItemStack = ContainerHelper.takeItem(this.getContainingItems(), index)
+        if (!oldstack.isEmpty()) this.setChanged()
         return oldstack
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.getContainingItems()!!.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
         return this.getWorld().getTileEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
@@ -80,7 +81,7 @@ abstract class TileBaseElectricBlockWithInventory : TileBaseElectricBlock(), IIn
     }
 
     override fun getBatteryInSlot(): ItemStack? {
-        return this.getStackInSlot(0)
+        return this.getItem(0)
     }
 
     /*

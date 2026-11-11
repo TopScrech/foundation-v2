@@ -2,10 +2,10 @@ package micdoodle8.mods.galacticraft.planets.venus.world.gen.dungeon
 
 import java.util.Random
 
-import net.minecraft.init.Blocks
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import java.lang.reflect.Constructor
 import java.util.*
 import kotlin.math.abs
@@ -26,7 +26,7 @@ open class CorridorVenus : SizedPieceVenus {
         direction: EnumFacing?
     ) : super(configuration, sizeX, sizeY, sizeZ, direction) {
         this.setCoordBaseMode(EnumFacing.SOUTH)
-        this.boundingBox = StructureBoundingBox(
+        this.boundingBox = BoundingBox(
             blockPosX,
             configuration.getYPosition(),
             blockPosZ,
@@ -39,61 +39,61 @@ open class CorridorVenus : SizedPieceVenus {
     override fun addComponentParts(
         worldIn: World,
         randomIn: Random,
-        structureBoundingBoxIn: StructureBoundingBox
+        structureBoundingBoxIn: BoundingBox
     ): Boolean {
-        for (i: Int in 0..<this.boundingBox.getXSize()) {
-            for (j: Int in 0..<this.boundingBox.getYSize()) {
-                for (k: Int in 0..<this.boundingBox.getZSize()) {
+        for (i: Int in 0..<this.boundingBox.getXSpan()) {
+            for (j: Int in 0..<this.boundingBox.getYSpan()) {
+                for (k: Int in 0..<this.boundingBox.getZSpan()) {
                     if (j == 2 && (this.getDirection())!!
-                            .getAxis() == EnumFacing.Axis.Z && (k + 1) % 4 == 0 && k != this.boundingBox.getZSize() - 1
+                            .getAxis() == EnumFacing.Axis.Z && (k + 1) % 4 == 0 && k != this.boundingBox.getZSpan() - 1
                     ) {
-                        if (i == 0 || i == this.boundingBox.getXSize() - 1) {
-                            this.setBlockState(worldIn, Blocks.LAVA.getDefaultState(), i, j, k, this.boundingBox)
-                        } else if (i == 1 || i == this.boundingBox.getXSize() - 2) {
-                            this.setBlockState(worldIn, Blocks.IRON_BARS.getDefaultState(), i, j, k, this.boundingBox)
+                        if (i == 0 || i == this.boundingBox.getXSpan() - 1) {
+                            this.setBlockState(worldIn, Blocks.LAVA.defaultBlockState(), i, j, k, this.boundingBox)
+                        } else if (i == 1 || i == this.boundingBox.getXSpan() - 2) {
+                            this.setBlockState(worldIn, Blocks.IRON_BARS.defaultBlockState(), i, j, k, this.boundingBox)
                         } else {
-                            this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i, j, k, this.boundingBox)
+                            this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i, j, k, this.boundingBox)
                         }
                     } else if (j == 2 && (this.getDirection())!!
-                            .getAxis() == EnumFacing.Axis.X && (i + 1) % 4 == 0 && i != this.boundingBox.getXSize() - 1
+                            .getAxis() == EnumFacing.Axis.X && (i + 1) % 4 == 0 && i != this.boundingBox.getXSpan() - 1
                     ) {
-                        if (k == 0 || k == this.boundingBox.getZSize() - 1) {
-                            this.setBlockState(worldIn, Blocks.LAVA.getDefaultState(), i, j, k, this.boundingBox)
-                        } else if (k == 1 || k == this.boundingBox.getZSize() - 2) {
-                            this.setBlockState(worldIn, Blocks.IRON_BARS.getDefaultState(), i, j, k, this.boundingBox)
+                        if (k == 0 || k == this.boundingBox.getZSpan() - 1) {
+                            this.setBlockState(worldIn, Blocks.LAVA.defaultBlockState(), i, j, k, this.boundingBox)
+                        } else if (k == 1 || k == this.boundingBox.getZSpan() - 2) {
+                            this.setBlockState(worldIn, Blocks.IRON_BARS.defaultBlockState(), i, j, k, this.boundingBox)
                         } else {
-                            this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i, j, k, this.boundingBox)
+                            this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i, j, k, this.boundingBox)
                         }
                     } else if (((this.getDirection())!!
-                            .getAxis() == EnumFacing.Axis.Z && (i == 1 || i == this.boundingBox.getXSize() - 2)) || j == 0 || j == this.boundingBox.getYSize() - 1 ||
+                            .getAxis() == EnumFacing.Axis.Z && (i == 1 || i == this.boundingBox.getXSpan() - 2)) || j == 0 || j == this.boundingBox.getYSpan() - 1 ||
                         ((this.getDirection())!!
-                            .getAxis() == EnumFacing.Axis.X && (k == 1 || k == this.boundingBox.getZSize() - 2))
+                            .getAxis() == EnumFacing.Axis.X && (k == 1 || k == this.boundingBox.getZSpan() - 2))
                     ) {
                         val venusConfig: DungeonConfigurationVenus = this.configuration as DungeonConfigurationVenus
                         this.setBlockState(
                             worldIn,
-                            if (j == 0 || j == this.boundingBox.getYSize() - 1) venusConfig.getBrickBlockFloor() else ((this.configuration)!!.getBrickBlock())!!,
+                            if (j == 0 || j == this.boundingBox.getYSpan() - 1) venusConfig.getBrickBlockFloor() else ((this.configuration)!!.getBrickBlock())!!,
                             i,
                             j,
                             k,
                             this.boundingBox
                         )
                     } else if (((this.getDirection())!!
-                            .getAxis() == EnumFacing.Axis.Z && (i == 0 || i == this.boundingBox.getXSize() - 1)) ||
+                            .getAxis() == EnumFacing.Axis.Z && (i == 0 || i == this.boundingBox.getXSpan() - 1)) ||
                         ((this.getDirection())!!
-                            .getAxis() == EnumFacing.Axis.X && (k == 0 || k == this.boundingBox.getZSize() - 1))
+                            .getAxis() == EnumFacing.Axis.X && (k == 0 || k == this.boundingBox.getZSpan() - 1))
                     ) {
                         val venusConfig: DungeonConfigurationVenus = this.configuration as DungeonConfigurationVenus
                         this.setBlockState(
                             worldIn,
-                            if (j == 0 || j == this.boundingBox.getYSize() - 1) venusConfig.getBrickBlockFloor() else ((this.configuration)!!.getBrickBlock())!!,
+                            if (j == 0 || j == this.boundingBox.getYSpan() - 1) venusConfig.getBrickBlockFloor() else ((this.configuration)!!.getBrickBlock())!!,
                             i,
                             j,
                             k,
                             this.boundingBox
                         )
                     } else {
-                        this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i, j, k, this.boundingBox)
+                        this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i, j, k, this.boundingBox)
                     }
                 }
             }
@@ -112,7 +112,7 @@ open class CorridorVenus : SizedPieceVenus {
                 EnumFacing::class.java
             )
             val dummy: T? = c0.newInstance(this.configuration, rand, 0, 0, (this.getDirection())!!.getOpposite()) as T?
-            val extension: StructureBoundingBox = getExtension(
+            val extension: BoundingBox = getExtension(
                 (this.getDirection())!!,
                 if ((getDirection())!!.getAxis() == EnumFacing.Axis.X) dummy!!.getSizeX() else dummy!!.getSizeZ(),
                 if ((getDirection())!!.getAxis() == EnumFacing.Axis.X) dummy.getSizeZ() else dummy.getSizeX()
@@ -120,11 +120,11 @@ open class CorridorVenus : SizedPieceVenus {
             if (startPiece.checkIntersection(extension)) {
                 return null
             }
-            val sizeX: Int = extension.maxX - extension.minX
-            val sizeZ: Int = extension.maxZ - extension.minZ
+            val sizeX: Int = extension.maxX() - extension.minX()
+            val sizeZ: Int = extension.maxZ() - extension.minZ()
             val sizeY: Int = dummy.getSizeY()
-            val blockX: Int = extension.minX
-            val blockZ: Int = extension.minZ
+            val blockX: Int = extension.minX()
+            val blockZ: Int = extension.minZ()
             val c1: Constructor<*> = clazz.getConstructor(
                 DungeonConfigurationVenus::class.java,
                 Random::class.java,
@@ -169,24 +169,24 @@ open class CorridorVenus : SizedPieceVenus {
                     e.printStackTrace()
                 }
             } else {
-                val extension: StructureBoundingBox =
+                val extension: BoundingBox =
                     getExtension((this.getDirection())!!, (rand)!!.nextInt(4) + 6, (rand)!!.nextInt(4) + 6)
 
                 if ((startPiece)!!.checkIntersection(extension)) {
                     return null
                 }
 
-                val sizeX: Int = extension.maxX - extension.minX
-                val sizeZ: Int = extension.maxZ - extension.minZ
+                val sizeX: Int = extension.maxX() - extension.minX()
+                val sizeZ: Int = extension.maxZ() - extension.minZ()
                 val sizeY: Int = (configuration)!!.getRoomHeight()
-                val blockX: Int = extension.minX
-                val blockZ: Int = extension.minZ
+                val blockX: Int = extension.minX()
+                val blockZ: Int = extension.minZ()
 
-                if (abs((startPiece)!!.getBoundingBox().maxZ - boundingBox.minZ) > 200) {
+                if (abs((startPiece)!!.getBoundingBox().maxZ() - boundingBox.minZ()) > 200) {
                     return null
                 }
 
-                if (abs((startPiece)!!.getBoundingBox().maxX - boundingBox.minX) > 200) {
+                if (abs((startPiece)!!.getBoundingBox().maxX() - boundingBox.minX()) > 200) {
                     return null
                 }
 

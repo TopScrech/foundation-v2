@@ -1,24 +1,24 @@
 package micdoodle8.mods.galacticraft.api.vector
 
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.HitResult
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.EntityHitResult
+import net.minecraft.world.phys.Vec3 as Vec3d
 
-import micdoodle8.mods.galacticraft.core.Constants
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.*
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
-import org.lwjgl.util.vector.Vector3f
+import org.joml.Vector3f
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
@@ -40,26 +40,26 @@ open class Vector3 constructor(
 
     constructor(amount: Double) : this(amount, amount, amount)
 
-    constructor(par1: Entity) : this(par1.posX, par1.posY, par1.posZ)
+    constructor(par1: Entity) : this(par1.x, par1.y, par1.z)
 
     constructor(pos: BlockPos) : this(pos.getX().toDouble(), pos.getY().toDouble(), pos.getZ().toDouble())
 
-    constructor(par1: TileEntity) : this(par1.getPos())
+    constructor(par1: TileEntity) : this(par1.blockPos)
 
     constructor(par1: Vec3d) : this(par1.x, par1.y, par1.z)
 
-    constructor(par1: RayTraceResult) : this(par1.getBlockPos())
+    constructor(hit: HitResult) : this(if (hit is BlockHitResult) Vec3d.atLowerCornerOf(hit.blockPos) else hit.location)
 
     constructor(direction: EnumFacing) : this(
-        (direction.getXOffset()).toDouble(),
-        (direction.getYOffset()).toDouble(),
-        (direction.getZOffset()).toDouble()
+        (direction.getStepX()).toDouble(),
+        (direction.getStepY()).toDouble(),
+        (direction.getStepZ()).toDouble()
     )
 
     /**
      * Loads a Vector3 from an NBT compound.
      */
-    constructor(nbt: NBTTagCompound) : this(nbt.getDouble("x"), nbt.getDouble("y"), nbt.getDouble("z"))
+    constructor(nbt: NBTTagCompound) : this(nbt.getDoubleOr("x", 0.0), nbt.getDoubleOr("y", 0.0), nbt.getDoubleOr("z", 0.0))
 
     constructor(vec: BlockVec3) : this(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble())
 
@@ -112,11 +112,11 @@ open class Vector3 constructor(
     }
 
     open fun getTileEntity(world: IBlockAccess): TileEntity? {
-        return world.getTileEntity(BlockPos(this.intX(), this.intY(), this.intZ()))
+        return world.getBlockEntity(BlockPos(this.intX(), this.intY(), this.intZ()))
     }
 
     open fun setBlock(world: World, state: IBlockState, notify: Int): Boolean {
-        return world.setBlockState(BlockPos(this.intX(), this.intY(), this.intZ()), state, notify)
+        return world.setBlock(BlockPos(this.intX(), this.intY(), this.intZ()), state, notify)
     }
 
     open fun setBlock(world: World, state: IBlockState): Boolean {
@@ -144,8 +144,8 @@ open class Vector3 constructor(
      * Converts Vector3 into a EnumFacing.
      */
     open fun toEnumFacing(): EnumFacing? {
-        for (direction: EnumFacing in EnumFacing.VALUES) {
-            if (this.x == (direction.getXOffset()).toDouble() && this.y == (direction.getYOffset()).toDouble() && this.z == (direction.getZOffset()).toDouble()) {
+        for (direction: EnumFacing in EnumFacing.values()) {
+            if (this.x == (direction.getStepX()).toDouble() && this.y == (direction.getStepY()).toDouble() && this.z == (direction.getStepZ()).toDouble()) {
                 return direction
             }
         }
@@ -291,18 +291,10 @@ open class Vector3 constructor(
     /**
      * Gets all entities inside of this position in block space.
      */
-    open fun getEntitiesWithin(worldObj: World, par1Class: Class<out Entity>): MutableList<Entity?> {
-        return worldObj.getEntitiesWithinAABB<Entity?>(
-            par1Class,
-            AxisAlignedBB(
-                this.intX().toDouble(),
-                this.intY().toDouble(),
-                this.intZ().toDouble(),
-                (this.intX() + 1).toDouble(),
-                (this.intY() + 1).toDouble(),
-                (this.intZ() + 1).toDouble()
-            )
-        )
+    open fun getEntitiesWithin(world: World, entityClass: Class<out Entity>): MutableList<Entity?> {
+        val box = AxisAlignedBB(intX().toDouble(), intY().toDouble(), intZ().toDouble(),
+            (intX() + 1).toDouble(), (intY() + 1).toDouble(), (intZ() + 1).toDouble())
+        return world.getEntitiesOfClass(entityClass, box).mapTo(ArrayList()) { it }
     }
 
     /**
@@ -384,10 +376,10 @@ open class Vector3 constructor(
         val x: Double = axis.x
         val y: Double = axis.y
         val z: Double = axis.z
-        angle /= Constants.RADIANS_TO_DEGREES
-        val cos: Float = MathHelper.cos(angle)
+        angle /= (180f / 3.1415927f)
+        val cos: Float = cos(angle)
         val ocos: Float = 1.0f - cos
-        val sin: Float = MathHelper.sin(angle)
+        val sin: Float = sin(angle)
         matrix[0] = x * x * ocos + cos
         matrix[1] = y * x * ocos + z * sin
         matrix[2] = x * z * ocos - y * sin
@@ -449,23 +441,23 @@ open class Vector3 constructor(
     /**
      * Gets the angle between this vector and another vector.
      *
-     * @return Angle in degrees
+     * @return Angle in radians
      */
     open fun getAngle(vec2: Vector3): Double {
         return anglePreNorm(this.clone().normalize(), vec2.clone().normalize())
     }
 
     open fun anglePreNorm(vec2: Vector3): Double {
-        return acos(this.dotProduct(vec2))
+        return acos(this.dotProduct(vec2).coerceIn(-1.0, 1.0))
     }
 
     /**
      * Saves this Vector3 to disk
      */
     open fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
-        nbt.setDouble("x", this.x)
-        nbt.setDouble("y", this.y)
-        nbt.setDouble("z", this.z)
+        nbt.putDouble("x", this.x)
+        nbt.putDouble("y", this.y)
+        nbt.putDouble("z", this.z)
         return nbt
     }
 
@@ -476,7 +468,7 @@ open class Vector3 constructor(
         rotationPitch: Float,
         collisionFlag: Boolean,
         reachDistance: Double
-    ): RayTraceResult? {
+    ): EntityHitResult? {
         return this.rayTraceEntities(world, rotationYaw, rotationPitch, reachDistance)
     }
 
@@ -485,7 +477,7 @@ open class Vector3 constructor(
         rotationYaw: Float,
         rotationPitch: Float,
         reachDistance: Double
-    ): RayTraceResult? {
+    ): EntityHitResult? {
         return this.rayTraceEntities(
             world,
             getDeltaPositionFromRotation(rotationYaw, rotationPitch).scale(reachDistance)
@@ -500,61 +492,23 @@ open class Vector3 constructor(
      * getDeltaPositionFromRotation()
      * @return The target hit.
      */
-    open fun rayTraceEntities(world: World, target: Vector3): RayTraceResult? {
-        var pickedEntity: RayTraceResult? = null
-        val startingPosition: Vec3d = this.toVec3()
-        val look: Vec3d = target.toVec3()
-        val reachDistance: Double = this.distance(target)
-        val reachPoint: Vec3d = Vec3d(
-            startingPosition.x + look.x * reachDistance,
-            startingPosition.y + look.y * reachDistance,
-            startingPosition.z + look.z * reachDistance
-        )
-
-        val checkBorder: Double = 1.1 * reachDistance
-        val boxToScan: AxisAlignedBB = AxisAlignedBB(
-            -checkBorder,
-            -checkBorder,
-            -checkBorder,
-            checkBorder,
-            checkBorder,
-            checkBorder
-        ).offset(this.x, this.y, this.z)
-
-        val entitiesHit: MutableList<Entity?> = world.getEntitiesWithinAABBExcludingEntity(null, boxToScan)
-        var closestEntity: Double = reachDistance
-
-        if (entitiesHit == null || entitiesHit.isEmpty()) {
-            return null
-        }
-        for (entityHit: Entity? in entitiesHit) {
-            if (entityHit != null && entityHit.canBeCollidedWith() && entityHit.getCollisionBoundingBox() != null) {
-                val border: Float = entityHit.getCollisionBorderSize()
-                val aabb: AxisAlignedBB = entityHit.getEntityBoundingBox().grow(border.toDouble())
-                val hitMOP: RayTraceResult? = aabb.calculateIntercept(startingPosition, reachPoint)
-
-                if (hitMOP != null) {
-                    if (aabb.contains(startingPosition)) {
-                        if (0.0 < closestEntity || closestEntity == 0.0) {
-                            pickedEntity = RayTraceResult(entityHit)
-                            if (pickedEntity != null) {
-                                pickedEntity.hitVec = hitMOP.hitVec
-                                closestEntity = 0.0
-                            }
-                        }
-                    } else {
-                        val distance: Double = startingPosition.distanceTo(hitMOP.hitVec)
-
-                        if (distance < closestEntity || closestEntity == 0.0) {
-                            pickedEntity = RayTraceResult(entityHit)
-                            pickedEntity.hitVec = hitMOP.hitVec
-                            closestEntity = distance
-                        }
-                    }
-                }
+    open fun rayTraceEntities(world: World, target: Vector3): EntityHitResult? {
+        val start = toVec3()
+        val end = start.add(target.toVec3())
+        if (!end.x.isFinite() || !end.y.isFinite() || !end.z.isFinite() || start == end) return null
+        val bounds = AxisAlignedBB(start, end).inflate(1.1)
+        var nearestDistance = start.distanceToSqr(end)
+        var nearest: EntityHitResult? = null
+        for (entity in world.getEntities(null, bounds) { it.isPickable && !it.isSpectator }) {
+            val box = entity.boundingBox.inflate(entity.pickRadius.toDouble())
+            val point = if (box.contains(start)) start else box.clip(start, end).orElse(null) ?: continue
+            val distance = start.distanceToSqr(point)
+            if (distance <= nearestDistance) {
+                nearest = EntityHitResult(entity, point)
+                nearestDistance = distance
             }
         }
-        return pickedEntity
+        return nearest
     }
 
     override fun hashCode(): Int {
@@ -677,11 +631,10 @@ open class Vector3 constructor(
          */
         @JvmStatic
         fun getDeltaPositionFromRotation(rotationYaw: Float, rotationPitch: Float): Vector3 {
-            return Vector3(
-                cos(Math.toRadians((rotationYaw + 90).toDouble())),
-                sin(Math.toRadians(-rotationPitch.toDouble())),
-                sin(Math.toRadians((rotationYaw + 90).toDouble()))
-            )
+            val yaw = Math.toRadians(rotationYaw.toDouble())
+            val pitch = Math.toRadians(rotationPitch.toDouble())
+            val horizontal = cos(pitch)
+            return Vector3(-sin(yaw) * horizontal, -sin(pitch), cos(yaw) * horizontal)
         }
 
         @JvmStatic
@@ -691,7 +644,7 @@ open class Vector3 constructor(
 
         @JvmStatic
         fun anglePreNorm(vec1: Vector3, vec2: Vector3): Double {
-            return acos(vec1.clone().dotProduct(vec2))
+            return acos(vec1.clone().dotProduct(vec2).coerceIn(-1.0, 1.0))
         }
 
         /**

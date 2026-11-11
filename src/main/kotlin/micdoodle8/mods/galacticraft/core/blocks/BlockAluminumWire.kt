@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
@@ -8,27 +10,27 @@ import micdoodle8.mods.galacticraft.core.tile.TileEntityAluminumWireSwitch
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class BlockAluminumWire constructor(assetName: String?) : BlockTransmitter(Material.CLOTH),
-    ITileEntityProvider, IShiftDescription, ISortableBlock {
+    ITileEntityProvider, IShiftDescription, ISortableBlock, LegacyBlockMetadata {
     enum class EnumWireType(private val meta: Int, private val serializedName: String) : IStringSerializable {
         ALUMINUM_WIRE(0, "alu_wire"),
         ALUMINUM_WIRE_HEAVY(1, "alu_wire_heavy"),
@@ -39,7 +41,9 @@ open class BlockAluminumWire constructor(assetName: String?) : BlockTransmitter(
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -104,7 +108,7 @@ open class BlockAluminumWire constructor(assetName: String?) : BlockTransmitter(
         return tile
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         list.add(ItemStack(this, 1, 0))
         list.add(ItemStack(this, 1, 1))
@@ -127,8 +131,8 @@ open class BlockAluminumWire constructor(assetName: String?) : BlockTransmitter(
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(WIRE_TYPE, (EnumWireType.Companion.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(WIRE_TYPE, (EnumWireType.Companion.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {

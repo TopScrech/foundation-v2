@@ -1,149 +1,93 @@
 package micdoodle8.mods.galacticraft.core.items
 
-import micdoodle8.mods.galacticraft.core.GCItems
-import micdoodle8.mods.galacticraft.core.GalacticraftCore
-import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
-import micdoodle8.mods.galacticraft.core.util.EnumColor
+import foundation.item.FoundationItemProperties
+import foundation.item.FoundationItemVariant
+import foundation.item.FoundationItemVariants
+import foundation.item.FoundationVariantMaterial
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
-import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.EnumRarity
-import net.minecraft.item.ItemFood
-import net.minecraft.item.ItemStack
-import net.minecraft.util.NonNullList
-import net.minecraft.util.SoundCategory
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.ChatFormatting
+import net.minecraft.core.component.DataComponents
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.food.FoodProperties
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Rarity
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.world.item.component.TooltipDisplay
+import net.minecraft.world.level.Level
+import java.util.function.Consumer
 
-open class ItemFood constructor(assetName: String?) : ItemFood(2, 0.3f, false), ISortableItem {
-    init {
-        this.setMaxDamage(0)
-        this.setHasSubtypes(true)
-        this.setTranslationKey(assetName)
+open class ItemFood(properties: Item.Properties) : FoundationVariantMaterial(properties), ISortableItem {
+    constructor(assetName: String?) : this(
+        FoundationItemProperties.named("galacticraftcore", requireNotNull(assetName)).rarity(Rarity.RARE)
+            .food(foodProperties(0))
+            .component(DataComponents.ITEM_MODEL, Identifier.parse("galacticraftcore:food"))
+    )
+
+    override fun getCategory(meta: Int): EnumSortCategoryItem = EnumSortCategoryItem.GENERAL
+    override fun creativeMetadata(): List<Int> = listOf(0, 1, 2, 3, 9, 4, 5, 6, 7, 8)
+    override fun variant(metadata: Int): FoundationItemVariant? {
+        val name = names.getOrNull(metadata) ?: return null
+        val translation = if (metadata < 4) "item.basic_item.canned_food.name" else "item.food.$name.name"
+        val model = if (metadata == 0) "food" else name
+        return FoundationItemVariant(translation, Identifier.parse("galacticraftcore:item/$model"), ChatFormatting.BLUE)
     }
 
-    override fun getCreativeTab(): CreativeTabs? {
-        return GalacticraftCore.galacticraftItemsTab
+    override fun configureVariant(stack: ItemStack, metadata: Int) {
+        stack.set(DataComponents.FOOD, foodProperties(metadata))
     }
 
-    @SideOnly(Side.CLIENT)
-    override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
-        return (ClientProxyCore.galacticraftItem)!!
+    override fun use(level: Level, player: Player, hand: InteractionHand): InteractionResult {
+        val stack = player.getItemInHand(hand)
+        configureVariant(stack, FoundationItemVariants.metadata(stack))
+        return super.use(level, player, hand)
     }
 
-    public override fun getTranslationKey(itemStack: ItemStack): String {
-        if (itemStack.getItemDamage() < 4) {
-            return "item.basic_item.canned_food"
-        } else {
-            return "item.food." + names[itemStack.getItemDamage()]
+    fun consumptionRemainder(stack: ItemStack): ItemStack {
+        if (stack.isEmpty) return ItemStack.EMPTY
+        val metadata = FoundationItemVariants.metadata(stack)
+        require(variant(metadata) != null) { "Unknown food variant $metadata" }
+        if (metadata !in 0..3 && metadata != 9) return ItemStack.EMPTY
+        val canister = FoundationItemProperties.registered(Identifier.parse("galacticraftcore:canister"))
+        return FoundationItemVariants.stack(canister, 1, 0)
+    }
+
+    override fun finishUsingItem(stack: ItemStack, level: Level, entity: LivingEntity): ItemStack {
+        if (stack.isEmpty) return stack
+        // Resolve the legacy dropped container before consumption so missing registrations cannot destroy it
+        val remainder = consumptionRemainder(stack)
+        configureVariant(stack, FoundationItemVariants.metadata(stack))
+        val result = super.finishUsingItem(stack, level, entity)
+        if (level is ServerLevel && !remainder.isEmpty) entity.spawnAtLocation(level, remainder, 0f)
+        return result
+    }
+
+    override fun appendHoverText(stack: ItemStack, context: TooltipContext, display: TooltipDisplay, builder: Consumer<Component>, flag: TooltipFlag) {
+        val metadata = FoundationItemVariants.metadata(stack)
+        val key = when (metadata) {
+            in 0..3 -> "item.basic_item.${names[metadata]}.name"
+            8 -> "item.food.cheeseburger.desc"
+            else -> return
         }
-    }
-
-    override fun getSubItems(tab: CreativeTabs, list: NonNullList<ItemStack>) {
-        if (tab === GalacticraftCore.galacticraftItemsTab || tab === CreativeTabs.SEARCH) {
-            for (i: Int in 0..3) {
-                list.add(ItemStack(this, 1, i))
-            }
-            list.add(ItemStack(this, 1, 9))
-            for (i: Int in 4..8) {
-                list.add(ItemStack(this, 1, i))
-            }
-        }
-    }
-
-    override fun getMetadata(par1: Int): Int {
-        return par1
-    }
-
-    @SideOnly(Side.CLIENT)
-    override fun addInformation(
-        par1ItemStack: ItemStack,
-        worldIn: World?,
-        tooltip: MutableList<String?>,
-        flagIn: ITooltipFlag
-    ) {
-        if (par1ItemStack.getItemDamage() < 4) {
-            tooltip.add(EnumColor.BRIGHT_GREEN.toString() + GCCoreUtil.translate("item.basic_item." + names[par1ItemStack.getItemDamage()] + ".name"))
-        } else if (par1ItemStack.getItemDamage() == 8) {
-            tooltip.add(EnumColor.BRIGHT_GREEN.toString() + GCCoreUtil.translate("item.food.cheeseburger.desc"))
-        }
-    }
-
-    override fun getHealAmount(par1ItemStack: ItemStack): Int {
-        when (par1ItemStack.getItemDamage()) {
-            0 -> return 8
-            1 -> return 8
-            2 -> return 4
-            3 -> return 2
-            4 -> return 2
-            5 -> return 4
-            6 -> return 2
-            7 -> return 4
-            8 -> return 14
-            9 -> return 8
-            else -> return 0
-        }
-    }
-
-    override fun getSaturationModifier(par1ItemStack: ItemStack): Float {
-        when (par1ItemStack.getItemDamage()) {
-            0 -> return 0.3f
-            1 -> return 0.6f
-            2 -> return 0.3f
-            3 -> return 0.3f
-            4 -> return 0.1f
-            5 -> return 0.8f
-            6 -> return 0.3f
-            7 -> return 0.6f
-            8 -> return 1.0f
-            9 -> return 0.6f
-            else -> return 0.0f
-        }
-    }
-
-    override fun onItemUseFinish(stack: ItemStack, worldIn: World, entityLiving: EntityLivingBase): ItemStack {
-        if (entityLiving is EntityPlayer) {
-            entityLiving.getFoodStats().addStats(this, stack)
-        }
-        worldIn.playSound(
-            null,
-            entityLiving.posX,
-            entityLiving.posY,
-            entityLiving.posZ,
-            SoundEvents.ENTITY_PLAYER_BURP,
-            SoundCategory.PLAYERS,
-            0.5f,
-            worldIn.rand.nextFloat() * 0.1f + 0.9f
-        )
-        if (!worldIn.isRemote && (stack.getItemDamage() < 4 || stack.getItemDamage() == 9)) {
-            entityLiving.entityDropItem(ItemStack(GCItems.canister, 1, 0), 0.0f)
-        }
-        stack.shrink(1)
-        return stack
-    }
-
-    override fun getCategory(meta: Int): EnumSortCategoryItem {
-        return EnumSortCategoryItem.GENERAL
+        builder.accept(Component.translatable(key).withStyle(ChatFormatting.GREEN))
     }
 
     companion object {
-        @JvmField
-        val names: Array<String> = arrayOf<String>(
-            "dehydrated_apple",
-            "dehydrated_carrot",
-            "dehydrated_melon",
-            "dehydrated_potato",
-            "cheese_slice",
-            "burger_bun",
-            "beef_patty_raw",
-            "beef_patty_cooked",
-            "cheeseburger",
-            "canned_beef"
+        @JvmField val names: Array<String> = arrayOf(
+            "dehydrated_apple", "dehydrated_carrot", "dehydrated_melon", "dehydrated_potato", "cheese_slice",
+            "burger_bun", "beef_patty_raw", "beef_patty_cooked", "cheeseburger", "canned_beef"
         )
+        private val nutrition = listOf(8, 8, 4, 2, 2, 4, 2, 4, 14, 8)
+        private val saturationModifiers = listOf(0.3f, 0.6f, 0.3f, 0.3f, 0.1f, 0.8f, 0.3f, 0.6f, 1f, 0.6f)
+        @JvmStatic fun foodProperties(metadata: Int): FoodProperties {
+            require(metadata in names.indices) { "Unknown food variant $metadata" }
+            return FoodProperties.Builder().nutrition(nutrition[metadata]).saturationModifier(saturationModifiers[metadata]).build()
+        }
     }
 }

@@ -3,9 +3,9 @@ package galaxyspace.core.configs
 import java.util.ArrayList
 
 import micdoodle8.mods.galacticraft.core.Constants
-import net.minecraftforge.common.config.Configuration
-import net.minecraftforge.common.config.Property
-import net.minecraftforge.fml.common.FMLLog
+import foundation.config.FoundationConfiguration as Configuration
+import foundation.config.FoundationConfigProperty as Property
+import foundation.logging.FoundationLog as FMLLog
 import org.apache.logging.log4j.Level
 import java.io.File
 

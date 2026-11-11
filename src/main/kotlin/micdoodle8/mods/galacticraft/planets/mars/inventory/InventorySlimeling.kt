@@ -3,12 +3,12 @@ package micdoodle8.mods.galacticraft.planets.mars.inventory
 import micdoodle8.mods.galacticraft.core.inventory.IInventoryDefaults
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.mars.entities.EntitySlimeling
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.util.NonNullList
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
+import net.minecraft.core.NonNullList
 
 open class InventorySlimeling constructor(private val slimeling: EntitySlimeling) : IInventoryDefaults {
     private var stacks: NonNullList<ItemStack> = NonNullList.withSize<ItemStack>(30, ItemStack.EMPTY)
@@ -16,23 +16,23 @@ open class InventorySlimeling constructor(private val slimeling: EntitySlimeling
     @JvmField
     var currentContainer: Container? = null
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.stacks.size
     }
 
-    override fun getStackInSlot(par1: Int): ItemStack {
-        return if (par1 >= this.getSizeInventory()) ItemStack.EMPTY else this.stacks.get(par1)
+    override fun getItem(par1: Int): ItemStack {
+        return if (par1 >= this.getContainerSize()) ItemStack.EMPTY else this.stacks.get(par1)
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.slimeling_inventory.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.slimeling_inventory.name")
     }
 
-    override fun removeStackFromSlot(par1: Int): ItemStack {
+    override fun removeItemNoUpdate(par1: Int): ItemStack {
         if (!this.stacks.get(par1).isEmpty()) {
             val var2: ItemStack = this.stacks.get(par1)
             this.stacks.set(par1, ItemStack.EMPTY)
-            this.markDirty()
+            this.setChanged()
             return var2
         } else {
             return ItemStack.EMPTY
@@ -55,7 +55,7 @@ open class InventorySlimeling constructor(private val slimeling: EntitySlimeling
         }
     }
 
-    override fun decrStackSize(par1: Int, par2: Int): ItemStack {
+    override fun removeItem(par1: Int, par2: Int): ItemStack {
         if (!this.stacks.get(par1).isEmpty()) {
             val var3: ItemStack
 
@@ -64,7 +64,7 @@ open class InventorySlimeling constructor(private val slimeling: EntitySlimeling
                 this.removeInventoryBagContents()
                 var3 = this.stacks.get(par1)
                 this.stacks.set(par1, ItemStack.EMPTY)
-                this.markDirty()
+                this.setChanged()
                 return var3
             } else  //Normal case of decrStackSize for a slot
             {
@@ -79,7 +79,7 @@ open class InventorySlimeling constructor(private val slimeling: EntitySlimeling
                     this.stacks.set(par1, ItemStack.EMPTY)
                 }
 
-                this.markDirty()
+                this.setChanged()
                 return var3
             }
         } else {
@@ -87,7 +87,7 @@ open class InventorySlimeling constructor(private val slimeling: EntitySlimeling
         }
     }
 
-    override fun setInventorySlotContents(par1: Int, par2ItemStack: ItemStack) {
+    override fun setItem(par1: Int, par2ItemStack: ItemStack) {
         if (par1 == 1 && (par2ItemStack.isEmpty() && !this.stacks.get(par1).isEmpty() || !ItemStack.areItemStacksEqual(
                 par2ItemStack,
                 this.stacks.get(par1)
@@ -101,7 +101,7 @@ open class InventorySlimeling constructor(private val slimeling: EntitySlimeling
         }
 
         this.stacks.set(par1, par2ItemStack)
-        this.markDirty()
+        this.setChanged()
     }
 
     override fun isEmpty(): Boolean {
@@ -115,15 +115,15 @@ open class InventorySlimeling constructor(private val slimeling: EntitySlimeling
     }
 
     open fun readFromNBT(tagList: NBTTagList?) {
-        if (tagList == null || tagList.tagCount() <= 0) {
+        if (tagList == null || tagList.size <= 0) {
             return
         }
 
         this.stacks = NonNullList.withSize<ItemStack>(this.stacks.size, ItemStack.EMPTY)
 
-        for (i: Int in 0..<tagList.tagCount()) {
-            val nbttagcompound: NBTTagCompound = tagList.getCompoundTagAt(i)
-            val j: Int = nbttagcompound.getByte("Slot").toInt() and 255
+        for (i: Int in 0..<tagList.size) {
+            val nbttagcompound: NBTTagCompound = tagList.getCompoundOrEmpty(i)
+            val j: Int = nbttagcompound.getByteOr("Slot", 0).toInt() and 255
             val itemstack: ItemStack = ItemStack(nbttagcompound)
 
             if (!itemstack.isEmpty()) {
@@ -138,23 +138,23 @@ open class InventorySlimeling constructor(private val slimeling: EntitySlimeling
         for (i: Int in this.stacks.indices) {
             if (!this.stacks.get(i).isEmpty()) {
                 nbttagcompound = NBTTagCompound()
-                nbttagcompound.setByte("Slot", i.toByte())
+                nbttagcompound.putByte("Slot", i.toByte())
                 this.stacks.get(i).writeToNBT(nbttagcompound)
-                tagList.appendTag(nbttagcompound)
+                tagList.add(nbttagcompound)
             }
         }
 
         return tagList
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun markDirty() {
+    override fun setChanged() {
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
         return !this.slimeling.isDead && par1EntityPlayer.getDistanceSq(this.slimeling) <= 64.0
     }
 
@@ -162,7 +162,7 @@ open class InventorySlimeling constructor(private val slimeling: EntitySlimeling
         return true
     }
 
-    override fun isItemValidForSlot(i: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(i: Int, itemstack: ItemStack): Boolean {
         return false
     }
 }

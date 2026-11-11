@@ -1,44 +1,31 @@
 package micdoodle8.mods.galacticraft.api.event.oxygen
 
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.world.WorldProvider
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.level.Level
 import net.minecraftforge.event.entity.living.LivingEvent
-import net.minecraftforge.fml.common.eventhandler.Cancelable
+import net.minecraftforge.eventbus.api.bus.CancellableEventBus
+import net.minecraftforge.eventbus.api.bus.EventBus
+import net.minecraftforge.eventbus.api.event.MutableEvent
+import net.minecraftforge.eventbus.api.event.characteristic.Cancellable
 
-/**
- * Entity Living suffocation events.
- *
- *
- * Be sure to make the proper checks before cancelling oxygen events... world
- * providers, armor equipped, etc.
- */
-abstract class GCCoreOxygenSuffocationEvent(entity: EntityLivingBase) : LivingEvent(entity) {
-    @JvmField
-    val provider: WorldProvider?
+/** Posted before oxygen damage and, when the damage was not cancelled, afterwards */
+abstract class GCCoreOxygenSuffocationEvent(private val living: LivingEntity) : MutableEvent(), LivingEvent {
+    @JvmField val level: Level = living.level()
+    override fun getEntity(): LivingEntity = living
+    abstract fun post(): Boolean
 
-    init {
-        this.provider = entity.world.provider
+    /** Return true from a listener to prevent suffocation and suppress the invalid-oxygen warning */
+    class Pre(entity: LivingEntity) : GCCoreOxygenSuffocationEvent(entity), Cancellable {
+        override fun post(): Boolean = BUS.post(this)
+        companion object {
+            @JvmField val BUS: CancellableEventBus<Pre> = CancellableEventBus.create(Pre::class.java)
+        }
     }
 
-    /**
-     * This event is posted just before the living entity suffocates
-     *
-     *
-     * Set the event as cancelled to stop the living entity from suffocating
-     *
-     *
-     * IF THE Pre EVENT IS CANCELLED, THE "WARNING: OXYGEN SETUP INVALID!" HUD MESSAGE WILL NOT BE SHOWN
-     */
-    @Cancelable
-    open class Pre constructor(entity: EntityLivingBase) : GCCoreOxygenSuffocationEvent(entity)
-
-
-    /**
-     * This event is called after the living entity takes damage from oxygen
-     * suffocation
-     *
-     *
-     * The event is not called if the pre event was canceled
-     */
-    open class Post constructor(entity: EntityLivingBase) : GCCoreOxygenSuffocationEvent(entity)
+    class Post(entity: LivingEntity) : GCCoreOxygenSuffocationEvent(entity) {
+        override fun post(): Boolean = BUS.post(this)
+        companion object {
+            @JvmField val BUS: EventBus<Post> = EventBus.create(Post::class.java)
+        }
+    }
 }

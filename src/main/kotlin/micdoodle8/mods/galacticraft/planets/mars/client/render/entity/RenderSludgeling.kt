@@ -6,11 +6,11 @@ import micdoodle8.mods.galacticraft.planets.mars.client.model.ModelSludgeling
 import micdoodle8.mods.galacticraft.planets.mars.entities.EntitySludgeling
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderSludgeling constructor(renderManager: RenderManager) :
     RenderLiving<EntitySludgeling>(renderManager, ModelSludgeling(), 0.3f) {
     private var texSwitch = false
@@ -48,6 +48,6 @@ open class RenderSludgeling constructor(renderManager: RenderManager) :
 
     companion object {
         private val sludgelingTexture =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/model/sludgeling.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/model/sludgeling.png")
     }
 }

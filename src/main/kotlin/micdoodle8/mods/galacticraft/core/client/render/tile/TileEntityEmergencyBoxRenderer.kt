@@ -3,17 +3,17 @@ package micdoodle8.mods.galacticraft.core.client.render.tile
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.blocks.BlockEmergencyBox
 import micdoodle8.mods.galacticraft.core.tile.TileEntityEmergencyBox
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.model.ModelBase
 import net.minecraft.client.model.ModelRenderer
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.max
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class TileEntityEmergencyBoxRenderer : TileEntitySpecialRenderer<TileEntityEmergencyBox>() {
     open inner class Flap constructor() : ModelBase() {
         @JvmField
@@ -195,10 +195,10 @@ open class TileEntityEmergencyBoxRenderer : TileEntitySpecialRenderer<TileEntity
     companion object {
         private const val MASKSCALE = 3f
 
-        private val boxTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/blocks/emergency_box.png")
-        private val flapTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/blocks/emergency_box_flap.png")
-        private val packTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/parachute/red.png")
-        private val oxygenMaskTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/oxygen.png")
-        private val oxygenTankTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/player.png")
+        private val boxTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/blocks/emergency_box.png")
+        private val flapTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/blocks/emergency_box_flap.png")
+        private val packTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/parachute/red.png")
+        private val oxygenMaskTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/oxygen.png")
+        private val oxygenTankTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/player.png")
     }
 }

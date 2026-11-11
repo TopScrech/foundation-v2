@@ -8,7 +8,7 @@ import galaxyspace.systems.TauCetiSystem.planets.tauceti_f.items.ItemBlocksTauCe
 import galaxyspace.systems.TauCetiSystem.planets.tauceti_f.items.ItemBlocksTauCeti_F_Dandelions
 import galaxyspace.systems.TauCetiSystem.planets.tauceti_f.items.ItemBlocksTauCeti_F_Corals
 import micdoodle8.mods.galacticraft.core.GCBlocks
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.item.ItemBlock
 
 object TCBlocks {

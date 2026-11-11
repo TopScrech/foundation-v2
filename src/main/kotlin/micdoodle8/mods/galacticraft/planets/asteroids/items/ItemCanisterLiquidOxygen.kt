@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.items
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.api.item.IItemOxygenSupply
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.items.ISortableItem
@@ -7,10 +9,11 @@ import micdoodle8.mods.galacticraft.core.items.ItemCanisterGeneric
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.HashMap
 import kotlin.math.floor
 import kotlin.math.min
@@ -23,7 +26,7 @@ open class ItemCanisterLiquidOxygen constructor(assetName: String?) : ItemCanist
     }
 
     /*@Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void registerIcons(IIconRegister iconRegister)
     {
         for (int i = 0; i < this.icons.length; i++)
@@ -32,11 +35,11 @@ open class ItemCanisterLiquidOxygen constructor(assetName: String?) : ItemCanist
         }
     }*/
     public override fun getTranslationKey(itemStack: ItemStack): String {
-        if (EMPTY - itemStack.getItemDamage() == 0) {
+        if (EMPTY - itemStack.legacyItemValue == 0) {
             return "item.empty_gas_canister"
         }
 
-        if (itemStack.getItemDamage() == 1) {
+        if (itemStack.legacyItemValue == 1) {
             return "item.canister.lox.full"
         }
 
@@ -55,15 +58,15 @@ open class ItemCanisterLiquidOxygen constructor(assetName: String?) : ItemCanist
 
         return super.getIconFromDamage(damage);
     }*/
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(
         par1ItemStack: ItemStack,
         worldIn: World?,
         tooltip: MutableList<String?>,
         flagIn: ITooltipFlag
     ) {
-        if (EMPTY - par1ItemStack.getItemDamage() > 0) {
-            tooltip.add(GCCoreUtil.translate("item.canister.lox.name") + ": " + (EMPTY - par1ItemStack.getItemDamage()))
+        if (EMPTY - par1ItemStack.legacyItemValue > 0) {
+            tooltip.add(GCCoreUtil.translate("item.canister.lox.name") + ": " + (EMPTY - par1ItemStack.legacyItemValue))
         }
     }
 
@@ -84,14 +87,14 @@ open class ItemCanisterLiquidOxygen constructor(assetName: String?) : ItemCanist
     }
 
     override fun discharge(itemStack: ItemStack?, amount: Int): Int {
-        val damage: Int = (itemStack)!!.getItemDamage()
+        val damage: Int = (itemStack)!!.legacyItemValue
         val used: Int = min((amount * Constants.LOX_GAS_RATIO).toInt(), EMPTY - damage)
         this.setNewDamage((itemStack)!!, damage + used)
         return floor((used / Constants.LOX_GAS_RATIO).toDouble()).toInt()
     }
 
     override fun getOxygenStored(par1ItemStack: ItemStack?): Int {
-        return EMPTY - (par1ItemStack)!!.getItemDamage()
+        return EMPTY - (par1ItemStack)!!.legacyItemValue
     }
 
     override fun getCategory(meta: Int): EnumSortCategoryItem {

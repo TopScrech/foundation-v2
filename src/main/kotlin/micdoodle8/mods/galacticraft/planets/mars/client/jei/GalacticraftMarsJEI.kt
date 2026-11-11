@@ -25,7 +25,7 @@ import micdoodle8.mods.galacticraft.planets.mars.client.jei.methanesynthesizer.M
 import micdoodle8.mods.galacticraft.planets.mars.client.jei.methanesynthesizer.MethaneSynthesizerRecipeWrapper
 import micdoodle8.mods.galacticraft.planets.mars.client.jei.tier2rocket.Tier2RocketRecipeCategory
 import micdoodle8.mods.galacticraft.planets.mars.client.jei.tier2rocket.Tier2RocketRecipeMaker
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 @JEIPlugin
 open class GalacticraftMarsJEI : BlankModPlugin() {

@@ -3,19 +3,18 @@ package galaxyspace.core.proxy
 import net.minecraftforge.client.event.TextureStitchEvent.Pre
 
 import micdoodle8.mods.galacticraft.api.vector.Vector3
-import net.minecraft.block.Block
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.Item
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.Item
 import net.minecraft.network.INetHandler
 import net.minecraft.network.NetHandlerPlayServer
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 
 open class CommonProxy {
-    open fun preload(event: FMLPreInitializationEvent?) {
+    open fun preload() {
         //GameRegistry.registerFuelHandler(new GSFuelHandler());
     }
 

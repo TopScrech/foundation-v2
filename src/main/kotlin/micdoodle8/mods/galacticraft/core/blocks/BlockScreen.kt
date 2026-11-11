@@ -1,41 +1,46 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.tile.TileEntityScreen
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyBool
-import net.minecraft.block.properties.PropertyDirection
+import net.minecraft.world.level.block.state.properties.BooleanProperty as PropertyBool
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 
 open class BlockScreen constructor(assetName: String?) : BlockAdvanced(Material.CIRCUITS), IShiftDescription,
-    IPartialSealableBlock, ITileEntityProvider, ISortableBlock {
+    IPartialSealableBlock, ITileEntityProvider, ISortableBlock, LegacyBlockMetadata {
     //Metadata: 0-5 = direction of screen back;  bit 3 = reserved for future use
     init {
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH)
-                .withProperty(LEFT, false).withProperty(RIGHT, false)
-                .withProperty(UP, false).withProperty(DOWN, false)
+            this.blockState.getBaseState().setValue(FACING, EnumFacing.NORTH)
+                .setValue(LEFT, false).setValue(RIGHT, false)
+                .setValue(UP, false).setValue(DOWN, false)
         )
         this.setHardness(0.1f)
         this.setSoundType(SoundType.GLASS)
@@ -52,7 +57,7 @@ open class BlockScreen constructor(assetName: String?) : BlockAdvanced(Material.
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        (worldIn.getTileEntity(pos) as TileEntityScreen).breakScreen(state)
+        (worldIn.getBlockEntity(pos) as TileEntityScreen).breakScreen(state)
         super.breakBlock(worldIn, pos, state)
     }
 
@@ -80,9 +85,9 @@ open class BlockScreen constructor(assetName: String?) : BlockAdvanced(Material.
         placer: EntityLivingBase,
         stack: ItemStack
     ) {
-        val angle: Int = MathHelper.floor(placer.rotationYaw * 4.0f / 360.0f + 0.5) and 3
+        val angle: Int = MathHelper.floor(placer.yRot * 4.0f / 360.0f + 0.5) and 3
         val change: Int = EnumFacing.byHorizontalIndex(angle).getOpposite().getIndex()
-        worldIn.setBlockState(pos, getStateFromMeta(change), 3)
+        worldIn.setBlock(pos, getStateFromMeta(change), 3)
     }
 
     override fun onUseWrench(
@@ -99,7 +104,7 @@ open class BlockScreen constructor(assetName: String?) : BlockAdvanced(Material.
         val change: Int = (world)!!.getBlockState(pos)
             .getValue(micdoodle8.mods.galacticraft.core.blocks.BlockScreen.Companion.FACING)
             .rotateY().getIndex()
-        (world)!!.setBlockState(pos, this.getStateFromMeta(change), 3)
+        (world)!!.setBlock(pos, this.getStateFromMeta(change), 3)
         return true
     }
 
@@ -123,7 +128,7 @@ open class BlockScreen constructor(assetName: String?) : BlockAdvanced(Material.
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val tile: TileEntity? = (world)!!.getTileEntity(pos)
+        val tile: TileEntity? = (world)!!.getBlockEntity(pos)
         if (tile is TileEntityScreen) {
             tile.changeChannel()
             return true
@@ -132,7 +137,7 @@ open class BlockScreen constructor(assetName: String?) : BlockAdvanced(Material.
     }
 
     override fun neighborChanged(state: IBlockState, worldIn: World, pos: BlockPos, blockIn: Block, fromPos: BlockPos) {
-        val tile: TileEntity? = worldIn.getTileEntity(pos)
+        val tile: TileEntity? = worldIn.getBlockEntity(pos)
         if (tile is TileEntityScreen) {
             tile.refreshConnections(true)
         }
@@ -163,8 +168,8 @@ open class BlockScreen constructor(assetName: String?) : BlockAdvanced(Material.
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        val enumfacing: EnumFacing = EnumFacing.byIndex(meta)
-        return this.getDefaultState().withProperty(FACING, enumfacing)
+        val enumfacing: EnumFacing = EnumFacing.from3DDataValue(meta)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -176,11 +181,11 @@ open class BlockScreen constructor(assetName: String?) : BlockAdvanced(Material.
     }
 
     override fun getActualState(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState {
-        val screen: TileEntityScreen? = worldIn.getTileEntity(pos) as TileEntityScreen?
-        return state.withProperty(LEFT, screen!!.connectedLeft)
-            .withProperty(RIGHT, screen.connectedRight)
-            .withProperty(UP, screen.connectedUp)
-            .withProperty(DOWN, screen.connectedDown)
+        val screen: TileEntityScreen? = worldIn.getBlockEntity(pos) as TileEntityScreen?
+        return state.setValue(LEFT, screen!!.connectedLeft)
+            .setValue(RIGHT, screen.connectedRight)
+            .setValue(UP, screen.connectedUp)
+            .setValue(DOWN, screen.connectedDown)
     }
 
     override fun getCategory(meta: Int): EnumSortCategoryBlock {
@@ -189,7 +194,7 @@ open class BlockScreen constructor(assetName: String?) : BlockAdvanced(Material.
 
     companion object {
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing")
+        val FACING: EnumProperty<Direction> = BlockStateProperties.FACING
 
         @JvmField
         val LEFT: PropertyBool = PropertyBool.create("left")

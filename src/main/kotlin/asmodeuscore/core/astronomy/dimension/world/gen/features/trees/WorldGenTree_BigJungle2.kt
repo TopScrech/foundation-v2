@@ -1,9 +1,9 @@
 package asmodeuscore.core.astronomy.dimension.world.gen.features.trees
 
 import asmodeuscore.core.astronomy.dimension.world.gen.WorldGenCustomStructure
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class WorldGenTree_BigJungle2 constructor(
@@ -306,8 +306,8 @@ open class WorldGenTree_BigJungle2 constructor(
 
     override fun generateBlock(world: World?, random: Random?, position: BlockPos?, matrixValue: Int) {
         when (matrixValue) {
-            1 -> (world)!!.setBlockState(position, this.log)
-            2 -> (world)!!.setBlockState(position, this.leaves)
+            1 -> (world)!!.setBlockAndUpdate(position, this.log)
+            2 -> (world)!!.setBlockAndUpdate(position, this.leaves)
         }
     }
 }

@@ -9,11 +9,11 @@ import asmodeuscore.api.dimension.IAdvancedSpace.StarColor
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class SkyProviderTauCeti_F : SkyProviderBase() {
-    //private static final ResourceLocation barnarda_c1_Texture = new ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/barnards/moons/barnarda_c1.png");
-    //private static final ResourceLocation barnarda_c2_Texture = new ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/barnards/moons/barnarda_c2.png");
+    //private static final ResourceLocation barnarda_c1_Texture = new ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/barnards/moons/barnarda_c1.png");
+    //private static final ResourceLocation barnarda_c2_Texture = new ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/barnards/moons/barnarda_c2.png");
     override fun rendererSky(tessellator: Tessellator?, buffer: BufferBuilder?, size: Float, ticks: Float) {
         GL11.glEnable(GL11.GL_BLEND)
 

@@ -8,17 +8,16 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.settings.GameSettings
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.sin
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 object OverlayLander : Overlay() {
-    private val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+    private val minecraft: Minecraft = Minecraft.getInstance()
 
     private var screenTicks: Long = 0
 
@@ -38,7 +37,7 @@ object OverlayLander : Overlay() {
 
         GL11.glScalef(2.0f, 2.0f, 0.0f)
 
-        if (minecraft.player.getRidingEntity()!!.motionY < -2.0) {
+        if (minecraft.player.getVehicle()!!.motionY < -2.0) {
             minecraft.fontRenderer.drawString(
                 GCCoreUtil.translate("gui.warning"),
                 width / 4 - minecraft.fontRenderer.getStringWidth(GCCoreUtil.translate("gui.warning")) / 2,
@@ -60,15 +59,15 @@ object OverlayLander : Overlay() {
 
         GL11.glPopMatrix()
 
-        if (minecraft.player.getRidingEntity()!!.motionY != 0.0) {
+        if (minecraft.player.getVehicle()!!.motionY != 0.0) {
             val string: String =
-                GCCoreUtil.translate("gui.lander.velocity") + ": " + Math.round((minecraft.player.getRidingEntity() as EntityLander).motionY * 1000) / 100.0 + " " + GCCoreUtil.translate(
+                GCCoreUtil.translate("gui.lander.velocity") + ": " + Math.round((minecraft.player.getVehicle() as EntityLander).motionY * 1000) / 100.0 + " " + GCCoreUtil.translate(
                     "gui.lander.velocityu"
                 )
             val color: Int = ColorUtil.to32BitColor(
                 255,
-                floor(abs(minecraft.player.getRidingEntity()!!.motionY) * 51.0).toInt(),
-                255 - floor(abs(minecraft.player.getRidingEntity()!!.motionY) * 51.0).toInt(),
+                floor(abs(minecraft.player.getVehicle()!!.motionY) * 51.0).toInt(),
+                255 - floor(abs(minecraft.player.getVehicle()!!.motionY) * 51.0).toInt(),
                 0
             )
             minecraft.fontRenderer.drawString(

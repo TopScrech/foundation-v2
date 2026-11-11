@@ -8,8 +8,8 @@ import galaxyspace.core.util.GSUtils
 import galaxyspace.systems.SolarSystem.planets.overworld.inventory.ContainerHydroponicBase
 import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityHydroponicBase
 import micdoodle8.mods.galacticraft.core.client.gui.element.GuiElementInfoRegion
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Slot
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.Slot
 import org.lwjgl.opengl.GL11
 
 open class GuiHydroponicBase constructor(

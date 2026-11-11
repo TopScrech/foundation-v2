@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items.armor
 
+import foundation.persistence.containsTag
+
 import galaxyspace.systems.SolarSystem.planets.overworld.items.modules.armor.Autofeeding
 import galaxyspace.systems.SolarSystem.planets.overworld.items.modules.armor.Gravity
 import galaxyspace.systems.SolarSystem.planets.overworld.items.modules.armor.Jetpack
@@ -18,9 +20,9 @@ import micdoodle8.mods.galacticraft.api.item.IArmorCorrosionResistant
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.client.FMLClientHandler
 
 open class ItemSpaceSuitTier1 constructor(materialIn: ArmorMaterial?, armorIndex: EntityEquipmentSlot?) :
@@ -54,7 +56,7 @@ open class ItemSpaceSuitTier1 constructor(materialIn: ArmorMaterial?, armorIndex
     }
 
     public override fun getMaxElectricityStored(stack: ItemStack?): Float {
-        val energy: Boolean = (stack)!!.hasTagCompound() && (stack)!!.getTagCompound()!!.hasKey("energy")
+        val energy: Boolean = (stack)!!.hasTagCompound() && (stack)!!.getTagCompound()!!.containsTag("energy")
         return if (energy) 180000.0f else 90000.0f
     }
 }

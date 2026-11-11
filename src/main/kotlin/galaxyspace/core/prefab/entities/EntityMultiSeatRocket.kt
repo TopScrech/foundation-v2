@@ -1,5 +1,7 @@
 package galaxyspace.core.prefab.entities
 
+import net.minecraft.network.chat.Component
+
 import micdoodle8.mods.galacticraft.core.network.PacketSimple.EnumSimplePacket
 
 import galaxyspace.GalaxySpace
@@ -7,7 +9,7 @@ import galaxyspace.core.network.packet.GSPacketSimple
 import galaxyspace.core.network.packet.GSPacketSimple.GSEnumSimplePacket
 import galaxyspace.core.GSItems
 import galaxyspace.api.entity.IMultiSeatEntity
-import com.mojang.realmsclient.gui.ChatFormatting
+import net.minecraft.ChatFormatting
 import asmodeuscore.core.handler.capabilities.ACStatsCapability
 import galaxyspace.core.prefab.entities.EntityMultiSeatRocket
 import galaxyspace.core.network.trackers.MultiSeatRocketDriverTracker
@@ -27,18 +29,18 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.util.Mth as MathHelper
+
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.WorldServer
+import net.minecraft.server.level.ServerLevel as WorldServer
 import java.lang.Exception
 import java.lang.reflect.Field
 import kotlin.math.abs
@@ -75,8 +77,8 @@ abstract class EntityMultiSeatRocket : EntityTieredRocket, IMultiSeatEntity {
                         motionY = motionZ
                         motionX = motionY
                         passenger.motionZ = 0.0
-                        passenger.motionY = passenger.motionZ
-                        passenger.motionX = passenger.motionY
+                        passenger.motionY = passenger.deltaMovement.z
+                        passenger.motionX = passenger.deltaMovement.y
                     }
                 }
             } else {
@@ -295,8 +297,8 @@ abstract class EntityMultiSeatRocket : EntityTieredRocket, IMultiSeatEntity {
         }
 
         if (getPassengers().size >= getMaxSeats()) {
-            player.sendStatusMessage(
-                TextComponentString(ChatFormatting.RED.toString() + "Not enough seats in rocket!"),
+            player.displayClientMessage(
+                Component.literal("Not enough seats in rocket!").withStyle(ChatFormatting.RED),
                 true
             )
             return false
@@ -343,7 +345,7 @@ abstract class EntityMultiSeatRocket : EntityTieredRocket, IMultiSeatEntity {
 
 
         // if dismount successfully
-        if (passenger.getRidingEntity() !== this) {
+        if (passenger.getVehicle() !== this) {
             GalaxySpace.info(String.format("Remove passenger %s", passenger.toString()))
         }
     }
@@ -502,7 +504,7 @@ abstract class EntityMultiSeatRocket : EntityTieredRocket, IMultiSeatEntity {
         (GalaxySpace.packetPipeline)!!.sendTo(
             GSPacketSimple(
                 GSEnumSimplePacket.C_OPEN_WAITFORDRIVER_GUI,
-                GCCoreUtil.getDimensionID(player.world),
+                GCCoreUtil.getDimensionID(player.level()),
                 *arrayOf<Any?>()
             ), player
         )
@@ -513,8 +515,8 @@ abstract class EntityMultiSeatRocket : EntityTieredRocket, IMultiSeatEntity {
         MultiSeatRocketDriverTracker.get().addPassengerToTrackedDriver((getDriver() as EntityPlayerMP?)!!, player)
 
         //
-        val fakeEntity: Entity = EntityCelestialFake(player.world, player.posX, player.posY, player.posZ)
-        player.world.spawnEntity(fakeEntity)
+        val fakeEntity: Entity = EntityCelestialFake(player.level(), player.x, player.y, player.z)
+        player.level().spawnEntity(fakeEntity)
         player.startRiding(fakeEntity)
     }
 

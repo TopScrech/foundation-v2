@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.api.GalacticraftRegistry
 import micdoodle8.mods.galacticraft.api.tile.ITileClientUpdates
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
@@ -7,13 +9,13 @@ import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.blocks.BlockScreen
 import micdoodle8.mods.galacticraft.core.client.screen.DrawGameScreen
 import micdoodle8.mods.galacticraft.core.tick.TickHandlerClient
-import net.minecraft.block.state.IBlockState
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 
 open class TileEntityScreen : TileEntityAdvanced(), ITileClientUpdates {
@@ -358,12 +360,12 @@ open class TileEntityScreen : TileEntityAdvanced(), ITileClientUpdates {
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.imageType = nbt.getInteger("type")
-        this.connectionsDown = nbt.getInteger("connectionsDown")
-        this.connectionsUp = nbt.getInteger("connectionsUp")
-        this.connectionsLeft = nbt.getInteger("connectionsLeft")
-        this.connectionsRight = nbt.getInteger("connectionsRight")
-        this.isMultiscreen = nbt.getBoolean("multiscreen")
+        this.imageType = nbt.getIntOr("type", 0)
+        this.connectionsDown = nbt.getIntOr("connectionsDown", 0)
+        this.connectionsUp = nbt.getIntOr("connectionsUp", 0)
+        this.connectionsLeft = nbt.getIntOr("connectionsLeft", 0)
+        this.connectionsRight = nbt.getIntOr("connectionsRight", 0)
+        this.isMultiscreen = nbt.getBooleanOr("multiscreen", false)
         this.setConnectedUp(this.connectionsUp > 0)
         this.setConnectedDown(this.connectionsDown > 0)
         this.setConnectedLeft(this.connectionsLeft > 0)
@@ -376,12 +378,12 @@ open class TileEntityScreen : TileEntityAdvanced(), ITileClientUpdates {
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setInteger("type", this.imageType)
-        nbt.setInteger("connectionsDown", this.connectionsDown)
-        nbt.setInteger("connectionsUp", this.connectionsUp)
-        nbt.setInteger("connectionsLeft", this.connectionsLeft)
-        nbt.setInteger("connectionsRight", this.connectionsRight)
-        nbt.setBoolean("multiscreen", this.isMultiscreen)
+        nbt.putInt("type", this.imageType)
+        nbt.putInt("connectionsDown", this.connectionsDown)
+        nbt.putInt("connectionsUp", this.connectionsUp)
+        nbt.putInt("connectionsLeft", this.connectionsLeft)
+        nbt.putInt("connectionsRight", this.connectionsRight)
+        nbt.putBoolean("multiscreen", this.isMultiscreen)
         return nbt
     }
 
@@ -913,7 +915,7 @@ open class TileEntityScreen : TileEntityAdvanced(), ITileClientUpdates {
 
     private fun joinUp() {
         val meta: Int = this.getBlockMetadata()
-        //    	EnumFacing side = EnumFacing.byIndex(this.getRight(meta));
+        //    	EnumFacing side = EnumFacing.from3DDataValue(this.getRight(meta));
         val side: EnumFacing = getFront().rotateY()
         val vec: BlockVec3 = BlockVec3(this)
         for (x: Int in -this.connectionsLeft..this.connectionsRight) {
@@ -938,7 +940,7 @@ open class TileEntityScreen : TileEntityAdvanced(), ITileClientUpdates {
 
     private fun joinDown() {
         val meta: Int = this.getBlockMetadata()
-        //    	EnumFacing side = EnumFacing.byIndex(this.getRight(meta));
+        //    	EnumFacing side = EnumFacing.from3DDataValue(this.getRight(meta));
         val side: EnumFacing = getFront().rotateY()
         val vec: BlockVec3 = BlockVec3(this)
         for (x: Int in -this.connectionsLeft..this.connectionsRight) {
@@ -1106,7 +1108,7 @@ open class TileEntityScreen : TileEntityAdvanced(), ITileClientUpdates {
         //System.out.println(strSide + ":" + msg + " at "+this.getPos().getX()+","+this.getPos().getZ()+" "+connections);
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun refreshNextTick(b: Boolean) {
         this.refreshOnUpdate = true
         TickHandlerClient.screenConnectionsUpdateList.add(this)
@@ -1124,7 +1126,7 @@ open class TileEntityScreen : TileEntityAdvanced(), ITileClientUpdates {
         return false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun updateClient(data: MutableList<Any?>?) {
         val screenType: Int = (data)!!.get(1) as Int
         val flags: Int = (data)!!.get(2) as Int
@@ -1136,7 +1138,7 @@ open class TileEntityScreen : TileEntityAdvanced(), ITileClientUpdates {
         this.refreshNextTick(true)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         if (this.renderAABB == null) {
             this.renderAABB = AxisAlignedBB(pos, pos.add(1, 1, 1))
@@ -1144,7 +1146,7 @@ open class TileEntityScreen : TileEntityAdvanced(), ITileClientUpdates {
         return this.renderAABB!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return Constants.RENDERDISTANCE_MEDIUM
     }

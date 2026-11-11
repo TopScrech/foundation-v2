@@ -8,10 +8,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 import micdoodle8.mods.galacticraft.planets.asteroids.world.gen.ChunkProviderAsteroids
 import micdoodle8.mods.galacticraft.planets.asteroids.world.gen.SpecialAsteroidBlock
 import micdoodle8.mods.galacticraft.planets.asteroids.world.gen.SpecialAsteroidBlockHandler
-import net.minecraft.block.Block
-import net.minecraft.util.ResourceLocation
-import net.minecraft.world.World
-import net.minecraftforge.fml.common.registry.ForgeRegistries
+import net.minecraft.world.level.block.Block
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.registries.ForgeRegistries
 import org.spongepowered.asm.mixin.Final
 import org.spongepowered.asm.mixin.Mixin
 
@@ -36,7 +36,7 @@ open class MixinChunkProviderAsteroids {
             val blockProbabiblity: Int = dataBlock[3]!!.toInt()
             val blockThickness: Float = dataBlock[4]!!.toFloat()
 
-            val block: Block? = ForgeRegistries.BLOCKS.getValue(ResourceLocation(blockModId + ":" + blockName))
+            val block: Block? = ForgeRegistries.BLOCKS.getValue(ResourceLocation.parse(blockModId + ":" + blockName))
 
             coreHandler!!.addBlock(
                 SpecialAsteroidBlock(

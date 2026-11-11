@@ -8,7 +8,7 @@ import galaxyspace.systems.SolarSystem.planets.kuiperbelt.dimension.sky.SkyProvi
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class SkyProviderKuiperBelt : SkyProviderBase() {
     override fun rendererSky(tessellator: Tessellator?, worldRenderer: BufferBuilder?, f10: Float, ticks: Float) {
@@ -27,7 +27,7 @@ open class SkyProviderKuiperBelt : SkyProviderBase() {
     }
 
     override fun sunImage(): ResourceLocation {
-        return ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
+        return ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
     }
 
     override fun modeLight(): ModeLight {

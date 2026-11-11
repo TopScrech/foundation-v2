@@ -12,9 +12,9 @@ import micdoodle8.mods.galacticraft.core.inventory.ContainerSchematic
 import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
 import org.lwjgl.opengl.GL11
 
 open class GuiSchematicInput constructor(par1InventoryPlayer: InventoryPlayer, pos: BlockPos) :
@@ -107,6 +107,6 @@ open class GuiSchematicInput constructor(par1InventoryPlayer: InventoryPlayer, p
     }
 
     companion object {
-        private val schematicInputTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/schematicpage.png")
+        private val schematicInputTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/schematicpage.png")
     }
 }

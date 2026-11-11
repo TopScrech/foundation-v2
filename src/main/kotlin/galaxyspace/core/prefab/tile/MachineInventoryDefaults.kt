@@ -1,42 +1,40 @@
 package galaxyspace.core.prefab.tile
 
 import micdoodle8.mods.galacticraft.core.inventory.IInventoryDefaults
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
+import net.minecraft.core.Direction
+import net.minecraft.core.NonNullList
+import net.minecraft.world.Container
+import net.minecraft.world.ContainerHelper
+import net.minecraft.world.WorldlyContainer
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity
 
-/** Inventory operations shared by the project's advanced, oxygen, and generator tiles */
-interface MachineInventoryDefaults : ISidedInventory, IInventoryDefaults {
+/** Native storage and sided access shared by GalaxySpace machine families */
+interface MachineInventoryDefaults : WorldlyContainer, IInventoryDefaults {
     fun getInventory(): NonNullList<ItemStack>
+    fun getInventoryBlockEntity(): BlockEntity
+
     override fun isEmpty(): Boolean = getInventory().all { it.isEmpty }
-    override fun getSizeInventory(): Int = getInventory().size
-    override fun getStackInSlot(index: Int): ItemStack = getInventory()[index]
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val stack = ItemStackHelper.getAndSplit(getInventory(), index, count)
-        if (!stack.isEmpty) markDirty()
-        return stack
+    override fun getContainerSize(): Int = getInventory().size
+    override fun getItem(slot: Int): ItemStack = getInventory().getOrNull(slot) ?: ItemStack.EMPTY
+    override fun removeItem(slot: Int, count: Int): ItemStack = ContainerHelper.removeItem(getInventory(), slot, count).also {
+        if (!it.isEmpty) setChanged()
     }
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        val stack = ItemStackHelper.getAndRemove(getInventory(), index)
-        if (!stack.isEmpty) markDirty()
-        return stack
+    override fun removeItemNoUpdate(slot: Int): ItemStack = ContainerHelper.takeItem(getInventory(), slot)
+    override fun setItem(slot: Int, stack: ItemStack) {
+        getInventory()[slot] = stack
+        stack.limitSize(getMaxStackSize(stack))
+        setChanged()
     }
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
-        getInventory()[index] = stack
-        if (stack.count > getInventoryStackLimit()) stack.count = getInventoryStackLimit()
-        markDirty()
+    override fun canPlaceItem(slot: Int, stack: ItemStack): Boolean = slot in 0 until containerSize
+    override fun getSlotsForFace(side: Direction): IntArray = IntArray(containerSize) { it }
+    override fun canPlaceItemThroughFace(slot: Int, stack: ItemStack, side: Direction?): Boolean = canPlaceItem(slot, stack)
+    override fun canTakeItemThroughFace(slot: Int, stack: ItemStack, side: Direction): Boolean = slot in 0 until containerSize
+    override fun clearContent() {
+        if (isEmpty) return
+        getInventory().clear()
+        setChanged()
     }
-    override fun getInventoryStackLimit(): Int = 64
-    override fun isItemValidForSlot(index: Int, stack: ItemStack): Boolean = true
-    override fun getSlotsForFace(side: EnumFacing?): IntArray = IntArray(getSizeInventory()) { it }
-    override fun canInsertItem(index: Int, stack: ItemStack, side: EnumFacing?): Boolean = isItemValidForSlot(index, stack)
-    override fun canExtractItem(index: Int, stack: ItemStack, side: EnumFacing?): Boolean = true
-    override fun clear() { getInventory().clear() }
-    override fun isUsableByPlayer(player: EntityPlayer): Boolean {
-        val tile = this as net.minecraft.tileentity.TileEntity
-        return tile.world.getTileEntity(tile.pos) === tile && player.getDistanceSq(tile.pos.x + 0.5, tile.pos.y + 0.5, tile.pos.z + 0.5) <= 64.0
-    }
+    override fun stillValid(player: Player): Boolean = Container.stillValidBlockEntity(getInventoryBlockEntity(), player)
 }

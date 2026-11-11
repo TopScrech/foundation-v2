@@ -1,8 +1,8 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.StructureComponent
 import java.util.ArrayList
 import java.util.Random
@@ -197,7 +197,7 @@ object StructureVillagePiecesMoon {
                 }
             }
 
-            val var14: StructureBoundingBox? = StructureComponentVillageTorch.Companion.func_74904_a(
+            val var14: BoundingBox? = StructureComponentVillageTorch.Companion.func_74904_a(
                 par0ComponentVillageStartPiece,
                 (par1List)!!,
                 par2Random,
@@ -232,7 +232,7 @@ object StructureVillagePiecesMoon {
     ): StructureComponent? {
         if (par7 > 50) {
             return null
-        } else if (abs(par3 - par0ComponentVillageStartPiece.getBoundingBox().minX) <= 112 && abs(par5 - par0ComponentVillageStartPiece.getBoundingBox().minZ) <= 112) {
+        } else if (abs(par3 - par0ComponentVillageStartPiece.getBoundingBox().minX()) <= 112 && abs(par5 - par0ComponentVillageStartPiece.getBoundingBox().minZ()) <= 112) {
             val var8: StructureComponentVillage? = getNextVillageComponent(
                 par0ComponentVillageStartPiece,
                 par1List,
@@ -269,8 +269,8 @@ object StructureVillagePiecesMoon {
     ): StructureComponent? {
         if (par7 > 3 + par0ComponentVillageStartPiece.terrainType) {
             return null
-        } else if (abs(par3 - par0ComponentVillageStartPiece.getBoundingBox().minX) <= 112 && abs(par5 - par0ComponentVillageStartPiece.getBoundingBox().minZ) <= 112) {
-            val var8: StructureBoundingBox? = StructureComponentVillagePathGen.Companion.func_74933_a(
+        } else if (abs(par3 - par0ComponentVillageStartPiece.getBoundingBox().minX()) <= 112 && abs(par5 - par0ComponentVillageStartPiece.getBoundingBox().minZ()) <= 112) {
+            val var8: BoundingBox? = StructureComponentVillagePathGen.Companion.func_74933_a(
                 par0ComponentVillageStartPiece,
                 par1List,
                 par2Random,
@@ -280,7 +280,7 @@ object StructureVillagePiecesMoon {
                 (par6)!!
             )
 
-            if (var8 != null && var8.minY > 10) {
+            if (var8 != null && var8.minY() > 10) {
                 val var9: StructureComponentVillagePathGen =
                     StructureComponentVillagePathGen(par0ComponentVillageStartPiece, par7, par2Random, var8, par6)
 

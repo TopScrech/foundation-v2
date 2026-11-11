@@ -4,19 +4,19 @@ import org.lwjgl.opengl.GL11
 import asmodeuscore.core.astronomy.sky.CloudProviderBase
 import asmodeuscore.core.utils.Utils
 import net.minecraft.client.Minecraft
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.Entity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 abstract class CloudProviderBase : IRenderHandler() {
     @JvmField
@@ -29,7 +29,7 @@ abstract class CloudProviderBase : IRenderHandler() {
     var cloudSpeed: Float = 2f
 
     @JvmField
-    var default_clouds: ResourceLocation = ResourceLocation("textures/environment/clouds.png")
+    var default_clouds: ResourceLocation = ResourceLocation.parse("textures/environment/clouds.png")
 
     @JvmField
     var default_color: Vec3d = Vec3d(150.0, 150.0, 150.0)
@@ -49,24 +49,24 @@ abstract class CloudProviderBase : IRenderHandler() {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun renderClouds(renderPartialTicks: Float) {
         GlStateManager.disableCull()
         val entity: Entity? = mc.getRenderViewEntity()
         val yOffset: Float =
-            (entity!!.lastTickPosY + (entity.posY - entity.lastTickPosY) * renderPartialTicks.toDouble()).toFloat()
+            (entity!!.lastTickPosY + (entity.y - entity.lastTickPosY) * renderPartialTicks.toDouble()).toFloat()
         val cloudSections: Byte = 2
         val tessellator: Tessellator = Tessellator.getInstance()
         val vertexbuffer: BufferBuilder = tessellator.getBuffer()
         var viewX: Double =
-            (entity.prevPosX + (entity.posX - entity.prevPosX) * renderPartialTicks.toDouble() + getCloudMovementX(
-                entity.world,
+            (entity.prevPosX + (entity.x - entity.prevPosX) * renderPartialTicks.toDouble() + getCloudMovementX(
+                entity.level(),
                 cloudTicksPrev.toFloat(),
                 cloudTicks.toFloat()
             ) * 0.029999999329447746) / 12.0
         var viewZ: Double =
-            (entity.prevPosZ + (entity.posZ - entity.prevPosZ) * renderPartialTicks.toDouble() + getCloudMovementZ(
-                entity.world,
+            (entity.prevPosZ + (entity.z - entity.prevPosZ) * renderPartialTicks.toDouble() + getCloudMovementZ(
+                entity.level(),
                 cloudTicksPrev.toFloat(),
                 cloudTicks.toFloat()
             ) * 0.029999999329447746) / 12.0
@@ -85,7 +85,7 @@ abstract class CloudProviderBase : IRenderHandler() {
         val r: Float = getCloudColor(renderPartialTicks)!!.x.toFloat() / 255f
         val g: Float = getCloudColor(renderPartialTicks)!!.y.toFloat() / 255f
         val b: Float = getCloudColor(renderPartialTicks)!!.z.toFloat() / 255f
-        var alpha: Float = (1.0f - (entity.posY / 700)).toFloat()
+        var alpha: Float = (1.0f - (entity.y / 700)).toFloat()
         if (alpha < 0.0f) alpha = 0.0f
 
         val f17: Float = MathHelper.floor(viewX).toFloat() * 0.00390625f
@@ -409,7 +409,7 @@ abstract class CloudProviderBase : IRenderHandler() {
     }
 
     private fun getCloudMovementX(world: World?, cloudTicksPrev: Float, cloudTicks: Float): Double {
-        return Utils.interpolateRotation(cloudTicksPrev, cloudTicks, Minecraft.getMinecraft().getRenderPartialTicks())
+        return Utils.interpolateRotation(cloudTicksPrev, cloudTicks, Minecraft.getInstance().getRenderPartialTicks())
             .toDouble()
     }
 
@@ -420,14 +420,14 @@ abstract class CloudProviderBase : IRenderHandler() {
 
     abstract fun getCloudMovementSpeed(world: World?): Float
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     abstract fun getCloudTexture(): ResourceLocation?
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     abstract fun getCloudColor(renderPartialTicks: Float): Vec3d?
 
     companion object {
         @JvmField
-        var mc: Minecraft = Minecraft.getMinecraft()
+        var mc: Minecraft = Minecraft.getInstance()
     }
 }

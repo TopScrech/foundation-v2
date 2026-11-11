@@ -1,11 +1,14 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.block.state.pattern.BlockMatcher
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenMinable
 import java.util.Random
 
@@ -82,7 +85,7 @@ open class WorldGenMinableMeta constructor(
                                     if (state.getBlock() === this.fillerID && state.getBlock()
                                             .getMetaFromState(state) == this.fillerMetadata
                                     ) {
-                                        worldIn.setBlockState(blockpos, oreState, 2)
+                                        worldIn.setBlock(blockpos, oreState, 2)
                                     }
                                 }
                             }

@@ -18,14 +18,14 @@ import net.minecraft.command.CommandBase
 import net.minecraft.command.CommandException
 import net.minecraft.command.ICommandSender
 import net.minecraft.command.WrongUsageException
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.WorldServer
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.server.level.ServerLevel as WorldServer
 import java.util.*
 
 open class CommandGCHouston : CommandBase() {
@@ -82,7 +82,7 @@ open class CommandGCHouston : CommandBase() {
                 if (args.size == 0) {
                     playerBase = PlayerUtil.getPlayerBaseServerFromPlayerUsername(sender.getName(), true)
                     if (!(playerBase)!!.capabilities.isCreativeMode) {
-                        if (ConfigManagerCore.challengeMode || (playerBase)!!.world.provider !is IGalacticraftWorldProvider) {
+                        if (ConfigManagerCore.challengeMode || (playerBase)!!.level().provider !is IGalacticraftWorldProvider) {
                             notifyCommandListener(sender, this, "commands.gchouston.fail")
                             return
                         }

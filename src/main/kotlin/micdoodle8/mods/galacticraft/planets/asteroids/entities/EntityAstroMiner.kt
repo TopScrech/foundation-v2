@@ -1,6 +1,16 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.entities
 
-import net.minecraft.block.Block
+import net.minecraft.network.chat.Component
+
+import net.minecraft.world.ContainerHelper
+import foundation.block.getMetaFromState
+
+import foundation.level.offset
+
+import foundation.persistence.containsTag
+import foundation.persistence.listOfType
+
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockFlower
 import net.minecraft.block.BlockLeaves
 import net.minecraft.block.BlockLiquid
@@ -29,38 +39,38 @@ import micdoodle8.mods.galacticraft.planets.asteroids.tick.AsteroidsTickHandlerS
 import micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityMinerBase
 import net.minecraft.block.*
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.client.audio.ISound
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.client.resources.sounds.SoundInstance as ISound
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.DamageSource
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ITickable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.client.resources.sounds.TickableSoundInstance as ITickable
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.ForgeHooks
 import net.minecraftforge.common.IPlantable
 import net.minecraftforge.fluids.IFluidBlock
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import java.util.*
 import kotlin.Any
@@ -78,7 +88,7 @@ import kotlin.toString
 
 open class EntityAstroMiner constructor(world: World) : Entity(world), IInventoryDefaults, IPacketReceiver,
     IEntityNoisy, IAntiGrav, ITelemetry {
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent? = super<Entity>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = super<Entity>.getDisplayName()
 
     private val TEMPDEBUG = false
     private val TEMPFAST = false
@@ -148,13 +158,13 @@ open class EntityAstroMiner constructor(world: World) : Entity(world), IInventor
     private var minecartYaw = 0.0
     private var minecartPitch = 0.0
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private var velocityX = 0.0
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private var velocityY = 0.0
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private var velocityZ = 0.0
 
     private var tryBlockLimit = 0
@@ -202,7 +212,7 @@ open class EntityAstroMiner constructor(world: World) : Entity(world), IInventor
 //        this.dataManager.addObject(this.timeSinceHit, new Integer(0));
         this.noClip = true
 
-        if (world != null && world.isRemote) {
+        if (world != null && world.isClientSide) {
             (GalacticraftCore.packetPipeline)!!.sendToServer(PacketDynamic(this))
         }
     }
@@ -222,40 +232,40 @@ open class EntityAstroMiner constructor(world: World) : Entity(world), IInventor
         this.dataManager.register<Float>(DAMAGE, 0.0f)
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.stacks!!.size
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack {
+    override fun getItem(var1: Int): ItemStack {
         return this.stacks!!.get(var1)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        val oldstack: ItemStack = ItemStackHelper.getAndRemove(this.stacks, index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        val oldstack: ItemStack = ContainerHelper.takeItem(this.stacks, index)
         if (!oldstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
         return oldstack
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.stacks!!.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
     override fun isEmpty(): Boolean {
@@ -268,22 +278,22 @@ open class EntityAstroMiner constructor(world: World) : Entity(world), IInventor
         return true
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("entity.astro_miner.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return Component.translatable("entity.astro_miner.name")
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun isUsableByPlayer(var1: EntityPlayer): Boolean {
+    override fun stillValid(var1: EntityPlayer): Boolean {
         return !this.isDead && var1.getDistanceSq(this) <= 64.0
     }
 
-    override fun markDirty() {
+    override fun setChanged() {
     }
 
-    override fun isItemValidForSlot(i: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(i: Int, itemstack: ItemStack): Boolean {
         return false
     }
 
@@ -302,11 +312,11 @@ open class EntityAstroMiner constructor(world: World) : Entity(world), IInventor
             minerBase.addToInventory(stack)
             if (stack.isEmpty()) {
                 this.stacks!!.set(i, ItemStack.EMPTY)
-                this.markDirty()
+                this.setChanged()
                 return true
             } else if (stack.getCount() < sizeprev) {
                 this.stacks!!.set(i, stack)
-                this.markDirty()
+                this.setChanged()
                 //Something was transferred although some stacks remaining
                 return true
             }
@@ -401,7 +411,7 @@ open class EntityAstroMiner constructor(world: World) : Entity(world), IInventor
                     }
                 } else {
                     if (this.playerMP != null && (this.givenFailMessage and (1 shl FAIL_BASEDESTROYED)) == 0) {
-                        this.playerMP!!.sendMessage(TextComponentString(GCCoreUtil.translate("gui.message.astro_miner" + FAIL_BASEDESTROYED + ".fail")))
+                        this.playerMP!!.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.message.astro_miner" + FAIL_BASEDESTROYED + ".fail")))
                         this.givenFailMessage += (1 shl FAIL_BASEDESTROYED)
                         //Continue mining even though base was destroyed - maybe it will be replaced
                     }
@@ -536,7 +546,7 @@ open class EntityAstroMiner constructor(world: World) : Entity(world), IInventor
         this.motionY = 0.0
         this.motionZ = 0.0
         if (this.playerMP != null && (this.givenFailMessage and (1 shl i)) == 0) {
-            this.playerMP!!.sendMessage(TextComponentString(GCCoreUtil.translate("gui.message.astro_miner" + i + ".fail")))
+            this.playerMP!!.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.message.astro_miner" + i + ".fail")))
             this.givenFailMessage += (1 shl i)
         }
     }
@@ -553,7 +563,7 @@ open class EntityAstroMiner constructor(world: World) : Entity(world), IInventor
         val z: Int = (buffer)!!.readInt()
         val pos: BlockPos = BlockPos(x, y, z)
         if (this.world.isBlockLoaded(pos)) {
-            val tile: TileEntity? = this.world.getTileEntity(pos)
+            val tile: TileEntity? = this.world.getBlockEntity(pos)
             if (tile is TileEntityMinerBase) {
                 tile.linkedMiner = this
                 tile.linkCountDown = 20
@@ -637,7 +647,7 @@ open class EntityAstroMiner constructor(world: World) : Entity(world), IInventor
                 this.mineCount = 0
             } else {
                 if (this.playerMP != null && (this.givenFailMessage and 64) == 0) {
-                    this.playerMP!!.sendMessage(TextComponentString(GCCoreUtil.translate("gui.message.astro_miner6.fail")))
+                    this.playerMP!!.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.message.astro_miner6.fail")))
                     this.givenFailMessage += 64
                 }
             }
@@ -645,7 +655,7 @@ open class EntityAstroMiner constructor(world: World) : Entity(world), IInventor
     }
 
     private fun hasHoldSpace(): Boolean {
-        for (i: Int in 0..<this.getSizeInventory()) {
+        for (i: Int in 0..<this.getContainerSize()) {
             if (this.stacks!!.get(i).isEmpty()) {
                 return true
             }
@@ -867,120 +877,120 @@ else -> {}
         //There are 12 blocks around ... and 12 in front.  One block per tick?
         //(That means can move at 5/6 block per second when mining, and 1.67 bps when traveling)
         val pos: BlockPos = BlockPos(x, y, z)
-        when (EnumFacing.byIndex(this.facingAI!!.getIndex() and 6)) {
+        when (EnumFacing.from3DDataValue(this.facingAI!!.getIndex() and 6)) {
             EnumFacing.DOWN -> {
                 if (tryMineBlock(pos)) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(1, 0, 0))) {
+                if (tryMineBlock(pos.offset(1, 0, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(1, 0, -1))) {
+                if (tryMineBlock(pos.offset(1, 0, -1))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, 0, -1))) {
+                if (tryMineBlock(pos.offset(0, 0, -1))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, 0, -2))) {
+                if (tryMineBlock(pos.offset(0, 0, -2))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(-1, 0, -2))) {
+                if (tryMineBlock(pos.offset(-1, 0, -2))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(-1, 0, -1))) {
+                if (tryMineBlock(pos.offset(-1, 0, -1))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(-2, 0, -1))) {
+                if (tryMineBlock(pos.offset(-2, 0, -1))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(-2, 0, 0))) {
+                if (tryMineBlock(pos.offset(-2, 0, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(-1, 0, 0))) {
+                if (tryMineBlock(pos.offset(-1, 0, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(-1, 0, 1))) {
+                if (tryMineBlock(pos.offset(-1, 0, 1))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, 0, 1))) {
+                if (tryMineBlock(pos.offset(0, 0, 1))) {
                     wayBarred = true
                 }
             }
 
             EnumFacing.NORTH -> {
-                if (tryMineBlock(pos.add(0, -2, 0))) {
+                if (tryMineBlock(pos.offset(0, -2, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(-1, -2, 0))) {
+                if (tryMineBlock(pos.offset(-1, -2, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, -1, 0))) {
+                if (tryMineBlock(pos.offset(0, -1, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(-1, -1, 0))) {
+                if (tryMineBlock(pos.offset(-1, -1, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(1, -1, 0))) {
+                if (tryMineBlock(pos.offset(1, -1, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(-2, -1, 0))) {
+                if (tryMineBlock(pos.offset(-2, -1, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(1, 0, 0))) {
+                if (tryMineBlock(pos.offset(1, 0, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(-2, 0, 0))) {
+                if (tryMineBlock(pos.offset(-2, 0, 0))) {
                     wayBarred = true
                 }
                 if (tryMineBlock(pos)) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(-1, 0, 0))) {
+                if (tryMineBlock(pos.offset(-1, 0, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, 1, 0))) {
+                if (tryMineBlock(pos.offset(0, 1, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(-1, 1, 0))) {
+                if (tryMineBlock(pos.offset(-1, 1, 0))) {
                     wayBarred = true
                 }
             }
 
             EnumFacing.WEST -> {
-                if (tryMineBlock(pos.add(0, -2, -1))) {
+                if (tryMineBlock(pos.offset(0, -2, -1))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, -1, 0))) {
+                if (tryMineBlock(pos.offset(0, -1, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, -1, -1))) {
+                if (tryMineBlock(pos.offset(0, -1, -1))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, -1, +1))) {
+                if (tryMineBlock(pos.offset(0, -1, +1))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, -1, -2))) {
+                if (tryMineBlock(pos.offset(0, -1, -2))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, 0, 1))) {
+                if (tryMineBlock(pos.offset(0, 0, 1))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, 0, -2))) {
+                if (tryMineBlock(pos.offset(0, 0, -2))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, 0, -1))) {
+                if (tryMineBlock(pos.offset(0, 0, -1))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, -2, 0))) {
+                if (tryMineBlock(pos.offset(0, -2, 0))) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, 1, -1))) {
+                if (tryMineBlock(pos.offset(0, 1, -1))) {
                     wayBarred = true
                 }
                 if (tryMineBlock(pos)) {
                     wayBarred = true
                 }
-                if (tryMineBlock(pos.add(0, 1, 0))) {
+                if (tryMineBlock(pos.offset(0, 1, 0))) {
                     wayBarred = true
                 }
             }
@@ -992,16 +1002,16 @@ else -> {}
         if (wayBarred) {
             if (this.playerMP != null && blockingBlock.block !== Blocks.AIR) {
                 if (blockingBlock.block === Blocks.STONE) {
-                    this.playerMP!!.sendMessage(
-                        TextComponentString(
+                    this.playerMP!!.sendSystemMessage(
+                        Component.literal(
                             GCCoreUtil.translate("gui.message.astro_miner1_a.fail") + " " + GCCoreUtil.translate(
                                 "gui.message.astro_miner1_b.fail"
                             )
                         )
                     )
                 } else {
-                    this.playerMP!!.sendMessage(
-                        TextComponentString(
+                    this.playerMP!!.sendSystemMessage(
+                        Component.literal(
                             GCCoreUtil.translate("gui.message.astro_miner1_a.fail") + " " + GCCoreUtil.translate(
                                 blockingBlock.toString()
                             )
@@ -1068,120 +1078,120 @@ else -> {}
         //There are 12 blocks around ... and 12 in front.  One block per tick?
         //(That means can move at 5/6 block per second when mining, and 1.67 bps when traveling)
         val pos: BlockPos = BlockPos(x, y, z)
-        when (EnumFacing.byIndex(this.facing.getIndex() and 6)) {
+        when (EnumFacing.from3DDataValue(this.facing.getIndex() and 6)) {
             EnumFacing.DOWN -> {
                 if (tryBlockClient(pos)) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(1, 0, 0))) {
+                if (tryBlockClient(pos.offset(1, 0, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(1, 0, -1))) {
+                if (tryBlockClient(pos.offset(1, 0, -1))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, 0, -1))) {
+                if (tryBlockClient(pos.offset(0, 0, -1))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, 0, -2))) {
+                if (tryBlockClient(pos.offset(0, 0, -2))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(-1, 0, -2))) {
+                if (tryBlockClient(pos.offset(-1, 0, -2))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(-1, 0, -1))) {
+                if (tryBlockClient(pos.offset(-1, 0, -1))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(-2, 0, -1))) {
+                if (tryBlockClient(pos.offset(-2, 0, -1))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(-2, 0, 0))) {
+                if (tryBlockClient(pos.offset(-2, 0, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(-1, 0, 0))) {
+                if (tryBlockClient(pos.offset(-1, 0, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(-1, 0, 1))) {
+                if (tryBlockClient(pos.offset(-1, 0, 1))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, 0, 1))) {
+                if (tryBlockClient(pos.offset(0, 0, 1))) {
                     wayBarred = true
                 }
             }
 
             EnumFacing.NORTH -> {
-                if (tryBlockClient(pos.add(0, -2, 0))) {
+                if (tryBlockClient(pos.offset(0, -2, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(-1, -2, 0))) {
+                if (tryBlockClient(pos.offset(-1, -2, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, -1, 0))) {
+                if (tryBlockClient(pos.offset(0, -1, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(-1, -1, 0))) {
+                if (tryBlockClient(pos.offset(-1, -1, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(1, -1, 0))) {
+                if (tryBlockClient(pos.offset(1, -1, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(-2, -1, 0))) {
+                if (tryBlockClient(pos.offset(-2, -1, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(1, 0, 0))) {
+                if (tryBlockClient(pos.offset(1, 0, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(-2, 0, 0))) {
+                if (tryBlockClient(pos.offset(-2, 0, 0))) {
                     wayBarred = true
                 }
                 if (tryBlockClient(pos)) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(-1, 0, 0))) {
+                if (tryBlockClient(pos.offset(-1, 0, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, 1, 0))) {
+                if (tryBlockClient(pos.offset(0, 1, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(-1, 1, 0))) {
+                if (tryBlockClient(pos.offset(-1, 1, 0))) {
                     wayBarred = true
                 }
             }
 
             EnumFacing.WEST -> {
-                if (tryBlockClient(pos.add(0, -2, -1))) {
+                if (tryBlockClient(pos.offset(0, -2, -1))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, -1, 0))) {
+                if (tryBlockClient(pos.offset(0, -1, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, -1, -1))) {
+                if (tryBlockClient(pos.offset(0, -1, -1))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, -1, +1))) {
+                if (tryBlockClient(pos.offset(0, -1, +1))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, -1, -2))) {
+                if (tryBlockClient(pos.offset(0, -1, -2))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, 0, 1))) {
+                if (tryBlockClient(pos.offset(0, 0, 1))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, 0, -2))) {
+                if (tryBlockClient(pos.offset(0, 0, -2))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, 0, -1))) {
+                if (tryBlockClient(pos.offset(0, 0, -1))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, -2, 0))) {
+                if (tryBlockClient(pos.offset(0, -2, 0))) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, 1, -1))) {
+                if (tryBlockClient(pos.offset(0, 1, -1))) {
                     wayBarred = true
                 }
                 if (tryBlockClient(pos)) {
                     wayBarred = true
                 }
-                if (tryBlockClient(pos.add(0, 1, 0))) {
+                if (tryBlockClient(pos.offset(0, 1, 0))) {
                     wayBarred = true
                 }
             }
@@ -1277,7 +1287,7 @@ else -> {}
             }
         }
 
-        this.world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3)
+        this.world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3)
         return false
     }
 
@@ -1298,7 +1308,7 @@ else -> {}
     }
 
     private fun getGTDrops(w: World, pos: BlockPos, b: Block): ItemStack {
-        val array: MutableList<ItemStack?> = b.getDrops(w, pos, b.getDefaultState(), 1)
+        val array: MutableList<ItemStack?> = b.getDrops(w, pos, b.defaultBlockState(), 1)
         if (array != null && array.size > 0) {
             return array.get(0)!!
         }
@@ -1356,7 +1366,7 @@ else -> {}
             return ItemStack(GCItems.meteoricIronRaw)
         }
         if (b is BlockSpaceGlass) {
-            return b.getDrops(world, pos, b.getDefaultState(), 0).get(0)
+            return b.getDrops(world, pos, b.defaultBlockState(), 0).get(0)
         }
 
         var i: Int = 0
@@ -1377,7 +1387,7 @@ else -> {}
     private fun addToInventory(itemstack: ItemStack): Boolean {
         var flag1: Boolean = false
         var k: Int = 0
-        val invSize: Int = this.getSizeInventory()
+        val invSize: Int = this.getContainerSize()
 
         var itemstack1: ItemStack
 
@@ -1421,7 +1431,7 @@ else -> {}
         }
 
         if (flag1) {
-            this.markDirty()
+            this.setChanged()
             this.mineCount++
         }
         return flag1
@@ -1627,7 +1637,7 @@ else -> {}
 
     open fun setPlayer(player: EntityPlayerMP) {
         this.playerMP = player
-        this.playerUUID = player.getUniqueID()
+        this.playerUUID = player.getUUID()
     }
 
     private fun setBoundingBoxForFacing() {
@@ -1667,7 +1677,7 @@ else -> {}
             //If creative mode player, kill the entity (even if player owner is offline) and drop nothing
             if (e is EntityPlayer && e.capabilities.isCreativeMode) {
                 if (this.playerMP == null && !this.spawnedInCreative) {
-                    e.sendMessage(TextComponentString("WARNING: that Astro Miner belonged to an offline player, cannot reset player's Astro Miner count."))
+                    e.sendSystemMessage(Component.literal("WARNING: that Astro Miner belonged to an offline player, cannot reset player's Astro Miner count."))
                 }
                 this.setDead()
                 return true
@@ -1738,7 +1748,7 @@ else -> {}
         super.setLocationAndAngles(x, y, z, rotYaw, rotPitch)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setPositionAndRotationDirect(
         x: kotlin.Double,
         y: kotlin.Double,
@@ -1759,7 +1769,7 @@ else -> {}
         this.motionZ = this.velocityZ
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setVelocity(p_70016_1_: kotlin.Double, p_70016_3_: kotlin.Double, p_70016_5_: kotlin.Double) {
         this.motionX = p_70016_1_
         this.velocityX = this.motionX
@@ -1804,7 +1814,7 @@ else -> {}
         }
 
         if (this.soundUpdater != null) {
-            this.soundUpdater!!.update()
+            this.soundUpdater?.tick()
         }
     }
 
@@ -1839,12 +1849,12 @@ else -> {}
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSoundUpdater(): ITickable? {
         return this.soundUpdater
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setSoundUpdater(player: EntityPlayerSP?): ISound {
         this.soundUpdater = SoundUpdaterMiner(player, this)
         return this.soundUpdater as ISound
@@ -1896,33 +1906,33 @@ else -> {}
         }
         this.mineCount = itemCount
 
-        if (nbt.hasKey("sindex")) {
-            this.serverIndex = nbt.getInteger("sindex")
+        if (nbt.containsTag("sindex")) {
+            this.serverIndex = nbt.getIntOr("sindex", 0)
         } else {
             this.serverIndex = -1
         }
 
-        if (nbt.hasKey("Energy")) {
-            this.energyLevel = nbt.getInteger("Energy")
+        if (nbt.containsTag("Energy")) {
+            this.energyLevel = nbt.getIntOr("Energy", 0)
         }
-        if (nbt.hasKey("BaseX")) {
-            this.posBase = BlockVec3(nbt.getInteger("BaseX"), nbt.getInteger("BaseY"), nbt.getInteger("BaseZ"))
+        if (nbt.containsTag("BaseX")) {
+            this.posBase = BlockVec3(nbt.getIntOr("BaseX", 0), nbt.getIntOr("BaseY", 0), nbt.getIntOr("BaseZ", 0))
             this.flagLink = true
         }
-        if (nbt.hasKey("TargetX")) {
-            this.posTarget = BlockVec3(nbt.getInteger("TargetX"), nbt.getInteger("TargetY"), nbt.getInteger("TargetZ"))
+        if (nbt.containsTag("TargetX")) {
+            this.posTarget = BlockVec3(nbt.getIntOr("TargetX", 0), nbt.getIntOr("TargetY", 0), nbt.getIntOr("TargetZ", 0))
         }
-        if (nbt.hasKey("WBaseX")) {
-            this.waypointBase = BlockVec3(nbt.getInteger("WBaseX"), nbt.getInteger("WBaseY"), nbt.getInteger("WBaseZ"))
+        if (nbt.containsTag("WBaseX")) {
+            this.waypointBase = BlockVec3(nbt.getIntOr("WBaseX", 0), nbt.getIntOr("WBaseY", 0), nbt.getIntOr("WBaseZ", 0))
         }
-        if (nbt.hasKey("BaseFacing")) {
-            this.baseFacing = EnumFacing.byIndex(nbt.getInteger("BaseFacing"))
+        if (nbt.containsTag("BaseFacing")) {
+            this.baseFacing = EnumFacing.from3DDataValue(nbt.getIntOr("BaseFacing", 0))
         }
-        if (nbt.hasKey("AIState")) {
-            this.AIstate = nbt.getInteger("AIState")
+        if (nbt.containsTag("AIState")) {
+            this.AIstate = nbt.getIntOr("AIState", 0)
         }
-        if (nbt.hasKey("Facing")) {
-            this.facingAI = EnumFacing.byIndex(nbt.getInteger("Facing"))
+        if (nbt.containsTag("Facing")) {
+            this.facingAI = EnumFacing.from3DDataValue(nbt.getIntOr("Facing", 0))
             when (this.facingAI) {
                 EnumFacing.NORTH -> this.targetYaw = 180f
                 EnumFacing.SOUTH -> this.targetYaw = 0f
@@ -1933,41 +1943,41 @@ else -> {}
 }
         }
         this.lastFacing = null
-        if (nbt.hasKey("WayPoints")) {
+        if (nbt.containsTag("WayPoints")) {
             this.wayPoints.clear()
-            val wpList: NBTTagList = nbt.getTagList("WayPoints", 10)
-            for (j: Int in 0..<wpList.tagCount()) {
-                val bvTag: NBTTagCompound = wpList.getCompoundTagAt(j)
+            val wpList: NBTTagList = nbt.listOfType("WayPoints", 10)
+            for (j: Int in 0..<wpList.size) {
+                val bvTag: NBTTagCompound = wpList.getCompoundOrEmpty(j)
                 this.wayPoints.add(BlockVec3.readFromNBT(bvTag))
             }
         }
-        if (nbt.hasKey("MinePoints")) {
+        if (nbt.containsTag("MinePoints")) {
             this.minePoints.clear()
-            val mpList: NBTTagList = nbt.getTagList("MinePoints", 10)
-            for (j: Int in 0..<mpList.tagCount()) {
-                val bvTag: NBTTagCompound = mpList.getCompoundTagAt(j)
+            val mpList: NBTTagList = nbt.listOfType("MinePoints", 10)
+            for (j: Int in 0..<mpList.size) {
+                val bvTag: NBTTagCompound = mpList.getCompoundOrEmpty(j)
                 this.minePoints.add(BlockVec3.readFromNBT(bvTag))
             }
         }
-        if (nbt.hasKey("MinePointCurrent")) {
-            this.minePointCurrent = BlockVec3.readFromNBT(nbt.getCompoundTag("MinePointCurrent"))
+        if (nbt.containsTag("MinePointCurrent")) {
+            this.minePointCurrent = BlockVec3.readFromNBT(nbt.getCompoundOrEmpty("MinePointCurrent"))
         } else {
             this.minePointCurrent = null
         }
-        if (nbt.hasKey("playerUUIDMost", 4) && nbt.hasKey("playerUUIDLeast", 4)) {
-            this.playerUUID = UUID(nbt.getLong("playerUUIDMost"), nbt.getLong("playerUUIDLeast"))
+        if (nbt.containsTag("playerUUIDMost", 4) && nbt.containsTag("playerUUIDLeast", 4)) {
+            this.playerUUID = UUID(nbt.getLongOr("playerUUIDMost", 0L), nbt.getLongOr("playerUUIDLeast", 0L))
         } else {
             this.playerUUID = null
         }
-        if (nbt.hasKey("speedup")) {
-            this.speedup = nbt.getDouble("speedup")
+        if (nbt.containsTag("speedup")) {
+            this.speedup = nbt.getDoubleOr("speedup", 0.0)
         } else {
             this.speedup =
                 if (WorldUtil.getProviderForDimensionServer(this.dimension) is WorldProviderAsteroids) SPEEDUP * 1.6 else SPEEDUP
         }
 
-        this.pathBlockedCount = nbt.getInteger("pathBlockedCount")
-        this.spawnedInCreative = nbt.getBoolean("spawnedInCreative")
+        this.pathBlockedCount = nbt.getIntOr("pathBlockedCount", 0)
+        this.spawnedInCreative = nbt.getBooleanOr("spawnedInCreative", false)
         this.flagCheckPlayer = true
     }
 
@@ -1977,51 +1987,51 @@ else -> {}
 
         ItemStackHelper.saveAllItems(nbt, this.stacks)
 
-        nbt.setTag("Items", var2)
-        nbt.setInteger("sindex", this.serverIndex)
-        nbt.setInteger("Energy", this.energyLevel)
+        nbt.put("Items", var2)
+        nbt.putInt("sindex", this.serverIndex)
+        nbt.putInt("Energy", this.energyLevel)
         if (this.posBase != null) {
-            nbt.setInteger("BaseX", this.posBase!!.x)
-            nbt.setInteger("BaseY", this.posBase!!.y)
-            nbt.setInteger("BaseZ", this.posBase!!.z)
+            nbt.putInt("BaseX", this.posBase!!.x)
+            nbt.putInt("BaseY", this.posBase!!.y)
+            nbt.putInt("BaseZ", this.posBase!!.z)
         }
         if (this.posTarget != null) {
-            nbt.setInteger("TargetX", this.posTarget!!.x)
-            nbt.setInteger("TargetY", this.posTarget!!.y)
-            nbt.setInteger("TargetZ", this.posTarget!!.z)
+            nbt.putInt("TargetX", this.posTarget!!.x)
+            nbt.putInt("TargetY", this.posTarget!!.y)
+            nbt.putInt("TargetZ", this.posTarget!!.z)
         }
         if (this.waypointBase != null) {
-            nbt.setInteger("WBaseX", this.waypointBase!!.x)
-            nbt.setInteger("WBaseY", this.waypointBase!!.y)
-            nbt.setInteger("WBaseZ", this.waypointBase!!.z)
+            nbt.putInt("WBaseX", this.waypointBase!!.x)
+            nbt.putInt("WBaseY", this.waypointBase!!.y)
+            nbt.putInt("WBaseZ", this.waypointBase!!.z)
         }
-        nbt.setInteger("BaseFacing", this.baseFacing!!.getIndex())
-        nbt.setInteger("AIState", this.AIstate)
-        nbt.setInteger("Facing", this.facingAI!!.getIndex())
+        nbt.putInt("BaseFacing", this.baseFacing!!.getIndex())
+        nbt.putInt("AIState", this.AIstate)
+        nbt.putInt("Facing", this.facingAI!!.getIndex())
         if (this.wayPoints.size > 0) {
             val wpList: NBTTagList = NBTTagList()
             for (j: Int in this.wayPoints.indices) {
-                wpList.appendTag(this.wayPoints.get(j)!!.writeToNBT(NBTTagCompound()))
+                wpList.add(this.wayPoints.get(j)!!.writeToNBT(NBTTagCompound()))
             }
-            nbt.setTag("WayPoints", wpList)
+            nbt.put("WayPoints", wpList)
         }
         if (this.minePoints.size > 0) {
             val mpList: NBTTagList = NBTTagList()
             for (j: Int in this.minePoints.indices) {
-                mpList.appendTag(this.minePoints.get(j)!!.writeToNBT(NBTTagCompound()))
+                mpList.add(this.minePoints.get(j)!!.writeToNBT(NBTTagCompound()))
             }
-            nbt.setTag("MinePoints", mpList)
+            nbt.put("MinePoints", mpList)
         }
         if (this.minePointCurrent != null) {
-            nbt.setTag("MinePointCurrent", this.minePointCurrent!!.writeToNBT(NBTTagCompound()))
+            nbt.put("MinePointCurrent", this.minePointCurrent!!.writeToNBT(NBTTagCompound()))
         }
         if (this.playerUUID != null) {
-            nbt.setLong("playerUUIDMost", this.playerUUID!!.getMostSignificantBits())
-            nbt.setLong("playerUUIDLeast", this.playerUUID!!.getLeastSignificantBits())
+            nbt.putLong("playerUUIDMost", this.playerUUID!!.getMostSignificantBits())
+            nbt.putLong("playerUUIDLeast", this.playerUUID!!.getLeastSignificantBits())
         }
-        nbt.setDouble("speedup", this.speedup)
-        nbt.setInteger("pathBlockedCount", this.pathBlockedCount)
-        nbt.setBoolean("spawnedInCreative", this.spawnedInCreative)
+        nbt.putDouble("speedup", this.speedup)
+        nbt.putInt("pathBlockedCount", this.pathBlockedCount)
+        nbt.putBoolean("spawnedInCreative", this.spawnedInCreative)
     }
 
     companion object {
@@ -2127,7 +2137,7 @@ else -> {}
             base: BlockVec3?,
             player: EntityPlayerMP
         ): Boolean {
-            if (world.isRemote) {
+            if (world.isClientSide) {
                 return true
             }
             val miner: EntityAstroMiner =
@@ -2180,7 +2190,7 @@ else -> {}
                 return false
             }
 
-            world.spawnEntity(miner)
+            world.addFreshEntity(miner)
             miner.flagLink = true
             return true
         }

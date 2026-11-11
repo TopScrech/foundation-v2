@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType
@@ -14,12 +16,12 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.wrappers.FluidHandlerWrapper
 import micdoodle8.mods.galacticraft.core.wrappers.IFluidHandlerWrapper
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.WorldlyContainer as ISidedInventory
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
@@ -27,7 +29,7 @@ import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import kotlin.math.min
 
 open class TileEntityRefinery constructor() : TileBaseElectricBlockWithInventory(), ISidedInventory,
@@ -126,19 +128,19 @@ open class TileEntityRefinery constructor() : TileBaseElectricBlockWithInventory
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.processTicks = nbt.getInteger("smeltingTicks")
+        this.processTicks = nbt.getIntOr("smeltingTicks", 0)
         this.stacks = this.readStandardItemsFromNBT(nbt)
 
-        if (nbt.hasKey("oilTank")) {
-            this.oilTank.readFromNBT(nbt.getCompoundTag("oilTank"))
+        if (nbt.containsTag("oilTank")) {
+            this.oilTank.readFromNBT(nbt.getCompoundOrEmpty("oilTank"))
         }
         if (this.oilTank.getFluid() != null && this.oilTank.getFluid()!!.getFluid() !== GCFluids.fluidOil) {
             this.oilTank.setFluid(FluidStack(GCFluids.fluidOil, this.oilTank.getFluidAmount()))
         }
 
 
-        if (nbt.hasKey("fuelTank")) {
-            this.fuelTank.readFromNBT(nbt.getCompoundTag("fuelTank"))
+        if (nbt.containsTag("fuelTank")) {
+            this.fuelTank.readFromNBT(nbt.getCompoundOrEmpty("fuelTank"))
         }
         if (this.fuelTank.getFluid() != null && this.fuelTank.getFluid()!!.getFluid() !== GCFluids.fluidFuel) {
             this.fuelTank.setFluid(FluidStack(GCFluids.fluidFuel, this.fuelTank.getFluidAmount()))
@@ -147,15 +149,15 @@ open class TileEntityRefinery constructor() : TileBaseElectricBlockWithInventory
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setInteger("smeltingTicks", this.processTicks)
+        nbt.putInt("smeltingTicks", this.processTicks)
         this.writeStandardItemsToNBT(nbt, this.stacks)
 
         if (this.oilTank.getFluid() != null) {
-            nbt.setTag("oilTank", this.oilTank.writeToNBT(NBTTagCompound()))
+            nbt.put("oilTank", this.oilTank.writeToNBT(NBTTagCompound()))
         }
 
         if (this.fuelTank.getFluid() != null) {
-            nbt.setTag("fuelTank", this.fuelTank.writeToNBT(NBTTagCompound()))
+            nbt.put("fuelTank", this.fuelTank.writeToNBT(NBTTagCompound()))
         }
         return nbt
     }
@@ -165,8 +167,8 @@ open class TileEntityRefinery constructor() : TileBaseElectricBlockWithInventory
         return this.stacks
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.refinery.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.refinery.name")
     }
 
     override fun hasCustomName(): Boolean {
@@ -178,8 +180,8 @@ open class TileEntityRefinery constructor() : TileBaseElectricBlockWithInventory
         return intArrayOf(0, 1, 2)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
-        if (!itemstack.isEmpty() && this.isItemValidForSlot(slotID, itemstack)) {
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        if (!itemstack.isEmpty() && this.canPlaceItem(slotID, itemstack)) {
             when (slotID) {
                 0 -> return ItemElectricBase.isElectricItemCharged(itemstack)
                 1 -> return FluidUtil.isOilContainerAny(itemstack)
@@ -190,8 +192,8 @@ open class TileEntityRefinery constructor() : TileBaseElectricBlockWithInventory
         return false
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
-        if (!itemstack.isEmpty() && this.isItemValidForSlot(slotID, itemstack)) {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
+        if (!itemstack.isEmpty() && this.canPlaceItem(slotID, itemstack)) {
             when (slotID) {
                 0 -> return ItemElectricBase.isElectricItemEmpty(itemstack) || !this.shouldPullEnergy()
                 1 -> return FluidUtil.isEmptyContainer(itemstack)
@@ -202,7 +204,7 @@ open class TileEntityRefinery constructor() : TileBaseElectricBlockWithInventory
         return false
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         when (slotID) {
             0 -> return !itemstack.isEmpty() && ItemElectricBase.isElectricItem(itemstack.getItem())
             1, 2 -> return FluidUtil.isValidContainer(itemstack)

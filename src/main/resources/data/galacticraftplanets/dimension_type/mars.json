@@ -1,0 +1,44 @@
+{
+  "has_fixed_time": false,
+  "has_skylight": true,
+  "has_ceiling": false,
+  "has_ender_dragon_fight": false,
+  "coordinate_scale": 1.0,
+  "min_y": 0,
+  "height": 256,
+  "logical_height": 256,
+  "infiniburn": "#minecraft:infiniburn_overworld",
+  "ambient_light": 0.0,
+  "monster_spawn_light_level": 7,
+  "monster_spawn_block_light_limit": 0,
+  "skybox": "overworld",
+  "attributes": {
+    "foundation:space_environment": {
+      "body": "galacticraftplanets:mars",
+      "save_name": "mars",
+      "atmosphere": {
+        "breathable": false,
+        "precipitation": false,
+        "corrosive": false,
+        "temperature": -1.0,
+        "wind": 0.3,
+        "density": 0.1,
+        "gases": [
+          "co2",
+          "argon",
+          "nitrogen"
+        ]
+      },
+      "weather": false,
+      "day_length": 24660,
+      "star_scale": 0.75,
+      "star_offset": 0
+    },
+    "minecraft:gameplay/bed_rule": {
+      "can_sleep": "never",
+      "can_set_spawn": "never",
+      "destroy_on_use": true
+    }
+  },
+  "default_clock": "galacticraftplanets:mars"
+}

@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.mars.dimension
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.GalaxySpace
 import asmodeuscore.core.astronomy.dimension.world.worldengine.WE_WorldProviderSpace
 import asmodeuscore.core.astronomy.dimension.world.worldengine.WE_ChunkProviderSpace
@@ -36,26 +38,26 @@ import micdoodle8.mods.galacticraft.planets.mars.world.gen.MapGenCavernMars
 import micdoodle8.mods.galacticraft.planets.mars.world.gen.MapGenDungeonMars
 import micdoodle8.mods.galacticraft.planets.mars.world.gen.RoomBossMars
 import micdoodle8.mods.galacticraft.planets.mars.world.gen.RoomTreasureMars
-import net.minecraft.block.Block
-import net.minecraft.init.Blocks
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.biome.BiomeProvider
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.max
 
 open class WorldProviderMars_WE : WE_WorldProviderSpace(), IProviderFog, IProviderWeather {
     private val dungeonGenerator: MapGenDungeon = MapGenDungeonMars(
         DungeonConfiguration(
-            (MarsBlocks.marsBlock)!!.getDefaultState()
-                .withProperty(
+            (MarsBlocks.marsBlock)!!.defaultBlockState()
+                .setValue(
                     BlockBasicMars.BASIC_TYPE,
                     BlockBasicMars.EnumBlockBasic.DUNGEON_BRICK
                 ), 30, 8, 16, 7, 7, RoomBossMars::class.java, RoomTreasureMars::class.java
@@ -117,7 +119,7 @@ open class WorldProviderMars_WE : WE_WorldProviderSpace(), IProviderFog, IProvid
         return !ConfigManagerCore.forceOverworldRespawn
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val var2: Float = this.world.getCelestialAngle(par1)
         var var3: Float = 1.0f - (MathHelper.cos(var2 * Math.PI.toFloat() * 2.0f) * 2.0f + 0.25f)
@@ -125,7 +127,7 @@ open class WorldProviderMars_WE : WE_WorldProviderSpace(), IProviderFog, IProvid
         return var3 * var3 * 0.5f + 0.1f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSunBrightness(partialTicks: Float): Float {
         val f: Float = this.world.getCelestialAngle(partialTicks)
         var f1: Float = 1.0f - (MathHelper.cos(f * (Math.PI.toFloat() * 2f)) * 2.0f + 0.2f)
@@ -140,7 +142,7 @@ open class WorldProviderMars_WE : WE_WorldProviderSpace(), IProviderFog, IProvid
         return f1 * 0.8f + 0.2f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun calcSunriseSunsetColors(celestialAngle: Float, partialTicks: Float): FloatArray? {
         val f1: Float = MathHelper.cos(celestialAngle * (Math.PI.toFloat() * 2f)) - 0.0f
 
@@ -164,7 +166,7 @@ open class WorldProviderMars_WE : WE_WorldProviderSpace(), IProviderFog, IProvid
         return CloudRenderer()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyRenderer(): IRenderHandler? {
         if (super.getSkyRenderer() == null) {
             this.setSkyRenderer(SkyProviderMars())
@@ -173,7 +175,7 @@ open class WorldProviderMars_WE : WE_WorldProviderSpace(), IProviderFog, IProvid
         return super.getSkyRenderer()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getWeatherRenderer(): IRenderHandler? {
         return WeatherProviderMars()
     }
@@ -207,7 +209,7 @@ open class WorldProviderMars_WE : WE_WorldProviderSpace(), IProviderFog, IProvid
         val terrainGenerator: WE_TerrainGenerator = WE_TerrainGenerator()
         terrainGenerator.worldStoneBlock = (MarsBlocks.marsBlock)!!.getStateFromMeta(9)
         terrainGenerator.worldSeaGen = false
-        terrainGenerator.worldSeaGenBlock = Blocks.WATER.getDefaultState()
+        terrainGenerator.worldSeaGenBlock = Blocks.WATER.defaultBlockState()
         terrainGenerator.worldSeaGenMaxY = 64
         cp.createChunkGen_List.add(terrainGenerator)
 
@@ -226,8 +228,8 @@ open class WorldProviderMars_WE : WE_WorldProviderSpace(), IProviderFog, IProvid
         rg.addReplacingBlock(terrainGenerator.worldStoneBlock)
         rg.addReplacingBlock((MarsBlocks.marsBlock)!!.getStateFromMeta(6))
         rg.addReplacingBlock((MarsBlocks.marsBlock)!!.getStateFromMeta(5))
-        rg.addReplacingBlock(Blocks.PACKED_ICE.getDefaultState())
-        rg.lavaBlock = Blocks.AIR.getDefaultState()
+        rg.addReplacingBlock(Blocks.PACKED_ICE.defaultBlockState())
+        rg.lavaBlock = Blocks.AIR.defaultBlockState()
         rg.lavaMaxY = 0
 
         //cp.createChunkGen_List.add(rg);
@@ -259,7 +261,7 @@ open class WorldProviderMars_WE : WE_WorldProviderSpace(), IProviderFog, IProvid
             -1,
             true
         )
-        layer.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        layer.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
 
         val mount_layer: WE_BiomeLayer = WE_BiomeLayer()
         mount_layer.add(
@@ -280,7 +282,7 @@ open class WorldProviderMars_WE : WE_WorldProviderSpace(), IProviderFog, IProvid
             -1,
             true
         )
-        mount_layer.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        mount_layer.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
 
         WE_Biome.addBiomeToGeneration(cp, Mars_Plains(-0.0, 0.0).setAbsoluteValue())
         WE_Biome.addBiomeToGeneration(cp, Mars_High_Plains(-0.4, 0.4).setAbsoluteValue())
@@ -296,8 +298,8 @@ open class WorldProviderMars_WE : WE_WorldProviderSpace(), IProviderFog, IProvid
 		biome_ravine.addReplacingBlock(terrainGenerator.worldStoneBlock);
 		biome_ravine.addReplacingBlock(MarsBlocks.marsBlock.getStateFromMeta(6));
 		biome_ravine.addReplacingBlock(MarsBlocks.marsBlock.getStateFromMeta(5));
-		biome_ravine.addReplacingBlock(Blocks.PACKED_ICE.getDefaultState());
-		biome_ravine.lavaBlock = Blocks.AIR.getDefaultState();
+		biome_ravine.addReplacingBlock(Blocks.PACKED_ICE.defaultBlockState());
+		biome_ravine.lavaBlock = Blocks.AIR.defaultBlockState();
 		biome_ravine.lavaMaxY = 0;
 		WE_Biome.addBiomeToGeneration(cp, new WE_BaseBiome(-1.8D, 1.8D, 2.8F, 2, 90, 5, layer).addChunkGen(biome_ravine));
 		 */

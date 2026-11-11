@@ -16,22 +16,22 @@ import micdoodle8.mods.galacticraft.planets.venus.client.fx.ParticleAcidVapor
 import micdoodle8.mods.galacticraft.planets.venus.world.gen.BiomeProviderVenus
 import micdoodle8.mods.galacticraft.planets.venus.world.gen.ChunkProviderVenus
 import micdoodle8.mods.galacticraft.planets.venus.world.gen.dungeon.RoomTreasureVenus
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.client.Minecraft
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.particle.Particle
-import net.minecraft.init.SoundEvents
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
-import net.minecraft.world.World
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.biome.BiomeProvider
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.gen.IChunkGenerator
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.LinkedList
 import java.util.Random
 
@@ -93,7 +93,7 @@ open class WorldProviderVenus : WorldProviderSpace(), IGalacticraftWorldProvider
         return BiomeProviderVenus::class.java
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val f1: Float = this.world.getCelestialAngle(par1)
         var f2: Float = 1.0f - (MathHelper.cos(f1 * Constants.twoPI) * 2.0f + 0.25f)
@@ -188,7 +188,7 @@ open class WorldProviderVenus : WorldProviderSpace(), IGalacticraftWorldProvider
         return true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getParticle(world: WorldClient?, x: Double, y: Double, z: Double): Particle {
         return ParticleAcidVapor((world)!!, x, y, z, 0.0, 0.0, 0.0, 0.95f)
     }

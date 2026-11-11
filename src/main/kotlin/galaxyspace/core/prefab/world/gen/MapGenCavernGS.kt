@@ -1,11 +1,13 @@
 package galaxyspace.core.prefab.world.gen
 
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.ChunkPrimer
 import java.util.Random
 import kotlin.math.abs
@@ -225,7 +227,7 @@ open class MapGenCavernGS constructor(private val vines: IBlockState, vararg sta
                                             for (state: IBlockState? in this.blocks) if (block == state) flag = true
 
                                             if (flag) {
-                                                primer.setBlockState(var42, var50, var45, Blocks.AIR.getDefaultState())
+                                                primer.setBlockState(var42, var50, var45, Blocks.AIR.defaultBlockState())
                                             }
                                         }
                                     }

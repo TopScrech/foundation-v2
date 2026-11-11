@@ -9,8 +9,8 @@ import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 
 open class GuiElementCheckboxPreLaunch private constructor(
@@ -102,10 +102,10 @@ open class GuiElementCheckboxPreLaunch private constructor(
     }
 
     open fun willFit(max: Int): Int {
-        val size: Int = Minecraft.getMinecraft().fontRenderer.listFormattedStringToWidth(
+        val size: Int = Minecraft.getInstance().fontRenderer.listFormattedStringToWidth(
             this.displayString,
             100
-        ).size * Minecraft.getMinecraft().fontRenderer.FONT_HEIGHT
+        ).size * Minecraft.getInstance().fontRenderer.FONT_HEIGHT
         GCLog.debug(displayString + " " + size + " " + max)
         if (size > max) {
             return -1
@@ -126,6 +126,6 @@ open class GuiElementCheckboxPreLaunch private constructor(
     companion object {
         @JvmField
         protected val texture: ResourceLocation =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/checklist_book.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/checklist_book.png")
     }
 }

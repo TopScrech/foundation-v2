@@ -12,11 +12,11 @@ import micdoodle8.mods.galacticraft.core.util.CompatibilityManager
 import micdoodle8.mods.galacticraft.core.util.DamageSourceGC
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.OxygenUtil
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.MobEffects
-import net.minecraft.item.ItemStack
-import net.minecraft.potion.PotionEffect
-import net.minecraft.util.math.MathHelper
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
+import net.minecraft.util.Mth as MathHelper
 import org.spongepowered.asm.mixin.Mixin
 import kotlin.math.abs
 import kotlin.math.max
@@ -32,7 +32,7 @@ open class MixinGCPlayerHandler {
     protected open fun checkThermalStatus(player: EntityPlayerMP, playerStats: GCPlayerStats) {
         val gh: GCPlayerHandler = this as Any as GCPlayerHandler
 
-        if (player.world.provider is IGalacticraftWorldProvider && !player.capabilities.isCreativeMode && !CompatibilityManager.isAndroid(
+        if (player.level().provider is IGalacticraftWorldProvider && !player.capabilities.isCreativeMode && !CompatibilityManager.isAndroid(
                 player
             )
         ) {
@@ -61,11 +61,11 @@ open class MixinGCPlayerHandler {
                 lowestThermalStrength /= 4.0f
                 lowestThermalStrength = abs(lowestThermalStrength) //It shouldn't be negative, but just in case!
             }
-            var provider: IGalacticraftWorldProvider = player.world.provider as IGalacticraftWorldProvider
+            var provider: IGalacticraftWorldProvider = player.level().provider as IGalacticraftWorldProvider
             var thermalLevelMod: Float = provider.getThermalLevelModifier()
 
-            if (player.world.provider is IAdvancedSpace) {
-                provider = player.world.provider as IAdvancedSpace
+            if (player.level().provider is IAdvancedSpace) {
+                provider = player.level().provider as IAdvancedSpace
                 thermalLevelMod = provider.getThermalLevelModifier(player)
             }
 
@@ -88,7 +88,7 @@ open class MixinGCPlayerHandler {
                         normaliseCooldown = 1 //Prevent divide by zero errors
                     }
                     // Player is wearing all required thermal padding items
-                    if ((player.ticksExisted - 1) % normaliseCooldown == 0) {
+                    if ((player.tickCount - 1) % normaliseCooldown == 0) {
                         gh.normaliseThermalLevel(player, playerStats, 1)
                     }
                     thermalLevelMod /= max(1.0f, lowestThermalStrength / 2.0f)
@@ -124,7 +124,7 @@ open class MixinGCPlayerHandler {
                     thermalLevelTickCooldownSingle = 1 //Prevent divide by zero errors
                 }
 
-                if ((player.ticksExisted - 1) % thermalLevelTickCooldownSingle == 0) {
+                if ((player.tickCount - 1) % thermalLevelTickCooldownSingle == 0) {
                     val last: Int = playerStats.getThermalLevel()
                     playerStats.setThermalLevel(min(max(last + (if (thermalLevelMod < 0) -1 else 1), -22), 22))
 
@@ -133,7 +133,7 @@ open class MixinGCPlayerHandler {
                         (GalacticraftCore.packetPipeline)!!.sendTo(
                             PacketSimple(
                                 PacketSimple.EnumSimplePacket.C_UPDATE_THERMAL_LEVEL,
-                                GCCoreUtil.getDimensionID(player.world),
+                                GCCoreUtil.getDimensionID(player.level()),
                                 arrayOf<Any>(playerStats.getThermalLevel(), playerStats.isThermalLevelNormalising())
                             ), player
                         )
@@ -144,18 +144,18 @@ open class MixinGCPlayerHandler {
                 playerStats.setThermalLevelNormalising(thermalLevelTickCooldownSingle > normaliseCooldown && !thermalPaddingHelm.isEmpty() && !thermalPaddingChestplate.isEmpty() && !thermalPaddingLeggings.isEmpty() && !thermalPaddingBoots.isEmpty())
 
                 if (!playerStats.isThermalLevelNormalising()) {
-                    if ((player.ticksExisted - 1) % thermalLevelTickCooldown == 0) {
+                    if ((player.tickCount - 1) % thermalLevelTickCooldown == 0) {
                         if (abs(playerStats.getThermalLevel()) >= 22) {
-                            player.attackEntityFrom(DamageSourceGC.thermal, 1.5f)
+                            foundation.damage.FoundationDamageTypes.hurt(player, DamageSourceGC.thermal, 1.5f)
                         }
                     }
 
                     if (playerStats.getThermalLevel() < -15) {
-                        player.addPotionEffect(PotionEffect(MobEffects.SLOWNESS, 5, 2, true, true))
+                        player.addEffect(PotionEffect(MobEffects.SLOWNESS, 5, 2, true, true))
                     }
 
                     if (playerStats.getThermalLevel() > 15) {
-                        player.addPotionEffect(PotionEffect(MobEffects.NAUSEA, 5, 2, true, true))
+                        player.addEffect(PotionEffect(MobEffects.NAUSEA, 5, 2, true, true))
                     }
                 } else  //Normalise thermal level if on Space Station or non-modifier planet
                 {

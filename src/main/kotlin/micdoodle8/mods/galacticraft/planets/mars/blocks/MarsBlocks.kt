@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.planets.mars.blocks
 
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.blocks.BlockStairsGC
 import micdoodle8.mods.galacticraft.core.items.ItemBlockDesc
@@ -7,9 +9,9 @@ import micdoodle8.mods.galacticraft.core.items.ItemBlockGC
 import micdoodle8.mods.galacticraft.planets.mars.items.ItemBlockEgg
 import micdoodle8.mods.galacticraft.planets.mars.items.ItemBlockMachine
 import micdoodle8.mods.galacticraft.planets.mars.items.ItemBlockMars
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.item.ItemBlock
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.oredict.OreDictionary
 
 object MarsBlocks {
@@ -58,14 +60,14 @@ object MarsBlocks {
         bossSpawner = BlockBossSpawnerMars("boss_spawner_mars")
         marsCobblestoneStairs = BlockStairsGC(
             "mars_stairs_cobblestone",
-            marsBlock!!.getDefaultState().withProperty(
+            marsBlock!!.defaultBlockState().setValue(
                 BlockBasicMars.BASIC_TYPE,
                 BlockBasicMars.EnumBlockBasic.COBBLESTONE
             )
         ).setHardness(1.5f)
         marsBricksStairs = BlockStairsGC(
             "mars_stairs_brick",
-            marsBlock!!.getDefaultState().withProperty(
+            marsBlock!!.defaultBlockState().setValue(
                 BlockBasicMars.BASIC_TYPE,
                 BlockBasicMars.EnumBlockBasic.DUNGEON_BRICK
             )

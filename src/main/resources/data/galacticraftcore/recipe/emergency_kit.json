@@ -1,0 +1,105 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "EAB",
+    "CID",
+    "FGH"
+  ],
+  "key": {
+    "A": {
+      "stack": {
+        "id": "galacticraftcore:oxygen_mask"
+      },
+      "match_components": true,
+      "type": "foundation:stack"
+    },
+    "B": {
+      "stack": {
+        "id": "galacticraftcore:oxygen_gear"
+      },
+      "match_components": true,
+      "type": "foundation:stack"
+    },
+    "C": {
+      "stack": {
+        "id": "galacticraftcore:oxygen_tank_light_full"
+      },
+      "match_components": true,
+      "type": "foundation:stack"
+    },
+    "D": {
+      "stack": {
+        "id": "galacticraftcore:oxygen_tank_light_full"
+      },
+      "match_components": true,
+      "type": "foundation:stack"
+    },
+    "E": {
+      "stack": {
+        "id": "galacticraftcore:steel_pickaxe"
+      },
+      "match_components": true,
+      "type": "foundation:stack"
+    },
+    "F": {
+      "stack": {
+        "id": "galacticraftcore:food",
+        "components": {
+          "foundation:legacy_metadata": 3,
+          "minecraft:item_name": {
+            "translate": "item.basic_item.canned_food.name",
+            "color": "blue"
+          },
+          "minecraft:food": {
+            "nutrition": 2,
+            "saturation": 1.2
+          }
+        }
+      },
+      "match_components": true,
+      "type": "foundation:stack"
+    },
+    "G": {
+      "stack": {
+        "id": "minecraft:potion",
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "minecraft:healing"
+          }
+        }
+      },
+      "match_components": true,
+      "type": "foundation:stack"
+    },
+    "H": {
+      "stack": {
+        "id": "minecraft:potion",
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "minecraft:long_night_vision"
+          }
+        }
+      },
+      "match_components": true,
+      "type": "foundation:stack"
+    },
+    "I": {
+      "stack": {
+        "id": "galacticraftcore:parachute",
+        "components": {
+          "foundation:legacy_metadata": 13,
+          "minecraft:item_name": {
+            "translate": "item.parachute_red.name",
+            "color": "blue"
+          }
+        }
+      },
+      "match_components": true,
+      "type": "foundation:stack"
+    }
+  },
+  "result": {
+    "id": "galacticraftcore:emergency_kit"
+  }
+}

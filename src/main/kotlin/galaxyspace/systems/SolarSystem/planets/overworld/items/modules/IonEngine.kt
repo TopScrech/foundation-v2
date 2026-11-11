@@ -1,11 +1,12 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items.modules
 
+import foundation.item.FoundationItemVariants
 import asmodeuscore.core.astronomy.SpaceData.Engine_Type
 import galaxyspace.core.GSItems
 import galaxyspace.core.prefab.items.modules.ItemModule
 import galaxyspace.core.util.GSUtils.Module_Type
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.ItemStack
 
 open class IonEngine : ItemModule() {
     override fun getName(): String? {
@@ -13,7 +14,7 @@ open class IonEngine : ItemModule() {
     }
 
     override fun getIcon(): ItemStack {
-        return ItemStack(GSItems.ROCKET_MODULES, 1, 4)
+        return FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 4)
     }
 
     override fun getEquipmentSlot(): EntityEquipmentSlot? {

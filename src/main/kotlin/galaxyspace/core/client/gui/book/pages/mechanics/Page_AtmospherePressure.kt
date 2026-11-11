@@ -9,11 +9,11 @@ import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 @IPage
 open class Page_AtmospherePressure : IBookPage {
-    private val mc: Minecraft = Minecraft.getMinecraft()
+    private val mc: Minecraft = Minecraft.getInstance()
     override fun titlePage(): String {
         return "atmosphere_pressure"
     }
@@ -86,7 +86,7 @@ open class Page_AtmospherePressure : IBookPage {
     }
 
     companion object {
-        private val starTexture = ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/book/star_bg.png")
-        private val guiTexture = ResourceLocation(AsmodeusCore.ASSET_PREFIX, "textures/gui/gui.png")
+        private val starTexture = ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/book/star_bg.png")
+        private val guiTexture = ResourceLocation.fromNamespaceAndPath(AsmodeusCore.ASSET_PREFIX, "textures/gui/gui.png")
     }
 }

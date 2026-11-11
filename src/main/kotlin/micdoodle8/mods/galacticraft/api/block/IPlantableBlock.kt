@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.api.block
 
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 
 /**
  * Extend this block to allow planting of saplings on it. Requires

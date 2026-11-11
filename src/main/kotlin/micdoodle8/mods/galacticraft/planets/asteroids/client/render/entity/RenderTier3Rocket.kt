@@ -18,18 +18,17 @@ import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.MathHelper
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.util.Mth as MathHelper
 import net.minecraftforge.client.model.IModel
 import net.minecraftforge.client.model.obj.OBJModel
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import java.io.IOException
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderTier3Rocket constructor(manager: RenderManager) : Render<EntityTier3Rocket>(manager) {
     private var rocketModel: OBJModel.OBJBakedModel? = null
     private var coneModel: OBJModel.OBJBakedModel? = null
@@ -50,7 +49,7 @@ open class RenderTier3Rocket constructor(manager: RenderManager) : Render<Entity
                 )
                 val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> =
                     Function { location: ResourceLocation? ->
-                        Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+                        Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
                     }
                 this.rocketModel = model.bake(
                     OBJModel.OBJState(ImmutableList.of<String?>("Boosters", "Rocket"), false),
@@ -75,12 +74,12 @@ open class RenderTier3Rocket constructor(manager: RenderManager) : Render<Entity
 //                @Override
 //                public TextureAtlasSprite apply(ResourceLocation input)
 //                {
-//                    return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(input.toString());
+//                    return Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(input.toString());
 //                }
 //            };
 //
 //            ModelResourceLocation modelResourceLocation = new ModelResourceLocation(GalacticraftPlanets.TEXTURE_PREFIX + "rocket_t3", "inventory");
-//            rocketModel = (ItemModelRocketT3) FMLClientHandler.instance().getClient().getRenderItem().getItemModelMesher().getModelManager().getModel(modelResourceLocation);
+//            rocketModel = (ItemModelRocketT3) Minecraft.getInstance().getRenderItem().getItemModelMesher().getModelManager().getModel(modelResourceLocation);
         }
     }
 
@@ -127,7 +126,7 @@ open class RenderTier3Rocket constructor(manager: RenderManager) : Render<Entity
         ClientUtil.drawBakedModel((this.rocketModel)!!)
 
         val teamColor: Vector3? =
-            ClientUtil.updateTeamColor(PlayerUtil.getName(FMLClientHandler.instance().getClient().player), true)
+            ClientUtil.updateTeamColor(PlayerUtil.getName(Minecraft.getInstance().player), true)
 
         if (teamColor != null) {
             val color: Int = ColorUtil.to32BitColor(
@@ -145,7 +144,7 @@ open class RenderTier3Rocket constructor(manager: RenderManager) : Render<Entity
 
         GlStateManager.disableLighting()
 
-        val red: Boolean = FMLClientHandler.instance().getClient().player.ticksExisted / 10 % 2 < 1
+        val red: Boolean = Minecraft.getInstance().player.tickCount / 10 % 2 < 1
         val color: Int = ColorUtil.to32BitColor(255, 0, if (red) 0 else 255, if (red) 255 else 0)
         ClientUtil.drawBakedModelColored((cubeModel)!!, color)
 

@@ -1,5 +1,9 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
+import foundation.block.getMetaFromState
+
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import galaxyspace.core.GSItems
@@ -15,16 +19,16 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.wrappers.FluidHandlerWrapper
 import micdoodle8.mods.galacticraft.core.wrappers.IFluidHandlerWrapper
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.BlockFluidClassic
 import net.minecraftforge.fluids.Fluid
@@ -34,7 +38,7 @@ import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.IFluidBlock
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.function.Consumer
@@ -129,7 +133,7 @@ open class TileEntityLiquidExtractor constructor() :
 
     open fun smeltItem(num: Int) {
         if (this.canProcess()) {
-            val pos: BlockPos = this.blocks.get(num)!!.down()
+            val pos: BlockPos = this.blocks.get(num)!!.below()
             val state: IBlockState = this.world.getBlockState(pos)
             val block: Block = state.getBlock()
             val meta: Int = state.getBlock().getMetaFromState(state)
@@ -138,7 +142,7 @@ open class TileEntityLiquidExtractor constructor() :
             if (ext != null) {
                 val water: Fluid = ext.getFluid()
                 this.waterTank.fill(FluidStack(water, ext.amount), true)
-                //if(this.waterTank.getFluid().isFluidEqual(ext) && (block != Blocks.ICE || block != Blocks.PACKED_ICE)) this.world.setBlockToAir(pos);
+                //if(this.waterTank.getFluid().isFluidEqual(ext) && (block != Blocks.ICE || block != Blocks.PACKED_ICE)) this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
                 return
             }
 
@@ -154,13 +158,13 @@ open class TileEntityLiquidExtractor constructor() :
                     this.waterTank.fill(FluidStack(water, Fluid.BUCKET_VOLUME), true)
                     if (this.waterTank.getFluid()!!
                             .isFluidEqual(FluidStack(FluidRegistry.lookupFluidForBlock(block), 0))
-                    ) this.world.setBlockToAir(pos)
+                    ) this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                     return
                 } else if (block === Blocks.LAVA) {
                     this.waterTank.fill(FluidStack(FluidRegistry.LAVA, Fluid.BUCKET_VOLUME), true)
                     if (this.waterTank.getFluid()!!
                             .isFluidEqual(FluidStack(FluidRegistry.lookupFluidForBlock(block), 0))
-                    ) this.world.setBlockToAir(pos)
+                    ) this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                     return
                 } else if (block is BlockFluidClassic) {
                     val fluid: Fluid = block.getFluid()
@@ -169,7 +173,7 @@ open class TileEntityLiquidExtractor constructor() :
                     this.waterTank.fill(FluidStack(fluid, Fluid.BUCKET_VOLUME), true)
                     if (this.waterTank.getFluid()!!
                             .isFluidEqual(FluidStack(FluidRegistry.lookupFluidForBlock(block), 0))
-                    ) this.world.setBlockToAir(pos)
+                    ) this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                     return
                 } else if (block is IFluidBlock) {
                     val fluid: IFluidBlock = block as IFluidBlock
@@ -178,7 +182,7 @@ open class TileEntityLiquidExtractor constructor() :
                     this.waterTank.fill(FluidStack(fluid.getFluid(), Fluid.BUCKET_VOLUME), true)
                     if (this.waterTank.getFluid()!!
                             .isFluidEqual(FluidStack(FluidRegistry.lookupFluidForBlock(block), 0))
-                    ) this.world.setBlockToAir(pos)
+                    ) this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                     return
                 }
             }
@@ -188,24 +192,24 @@ open class TileEntityLiquidExtractor constructor() :
     override fun readFromNBT(par1NBTTagCompound: NBTTagCompound) {
         super.readFromNBT(par1NBTTagCompound)
 
-        this.processTicks = par1NBTTagCompound.getInteger("smeltingTicks")
+        this.processTicks = par1NBTTagCompound.getIntOr("smeltingTicks", 0)
         ItemStackHelper.loadAllItems(par1NBTTagCompound, this.getInventory())
 
-        this.number = par1NBTTagCompound.getInteger("number")
+        this.number = par1NBTTagCompound.getIntOr("number", 0)
 
-        //this.z = par1NBTTagCompound.getInteger("posZ");
-        if (par1NBTTagCompound.hasKey("waterTank")) this.waterTank.readFromNBT(par1NBTTagCompound.getCompoundTag("waterTank"))
+        //this.z = par1NBTTagCompound.getIntOr("posZ", 0);
+        if (par1NBTTagCompound.containsTag("waterTank")) this.waterTank.readFromNBT(par1NBTTagCompound.getCompoundOrEmpty("waterTank"))
     }
 
     override fun writeToNBT(par1NBTTagCompound: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(par1NBTTagCompound)
-        par1NBTTagCompound.setInteger("smeltingTicks", this.processTicks)
+        par1NBTTagCompound.putInt("smeltingTicks", this.processTicks)
         ItemStackHelper.saveAllItems(par1NBTTagCompound, this.getInventory())
 
-        par1NBTTagCompound.setInteger("number", this.number)
+        par1NBTTagCompound.putInt("number", this.number)
 
         if (this.waterTank.getFluid() != null) {
-            par1NBTTagCompound.setTag("waterTank", this.waterTank.writeToNBT(NBTTagCompound()))
+            par1NBTTagCompound.put("waterTank", this.waterTank.writeToNBT(NBTTagCompound()))
         }
 
         return par1NBTTagCompound
@@ -220,27 +224,27 @@ open class TileEntityLiquidExtractor constructor() :
     }
 
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack {
+    override fun getItem(var1: Int): ItemStack {
         return this.getInventory().get(var1)
     }
 
-    override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf(0, 1, 2)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
-        return this.isItemValidForSlot(slotID, itemstack)
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, itemstack)
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         return slotID == 0
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         when (slotID) {
             0 -> return ItemElectricBase.isElectricItem(itemstack.getItem())
             1 -> return true

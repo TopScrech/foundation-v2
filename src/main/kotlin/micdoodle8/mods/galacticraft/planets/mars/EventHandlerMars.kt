@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.planets.mars
 
+import foundation.level.offset
+
 import micdoodle8.mods.galacticraft.core.event.EventHandlerGC.OrientCameraEvent
 import micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMars.EnumMachineType
 
@@ -23,24 +25,24 @@ import micdoodle8.mods.galacticraft.planets.mars.entities.EntitySlimeling
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityCryogenicChamber
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityLaunchController
 import micdoodle8.mods.galacticraft.planets.mars.world.gen.WorldGenEggs
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.MobEffects
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EntityDamageSource
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.WorldServer
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraft.world.gen.feature.WorldGenerator
 import net.minecraftforge.event.entity.living.LivingAttackEvent
 import net.minecraftforge.event.entity.living.LivingDeathEvent
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class EventHandlerMars {
     @SubscribeEvent
@@ -57,9 +59,9 @@ open class EventHandlerMars {
     @SubscribeEvent
     open fun onLivingAttacked(event: LivingAttackEvent) {
         if (!event.getEntity()
-                .isEntityInvulnerable(event.getSource()) && !event.getEntity().world.isRemote && event.getEntityLiving()
+                .isEntityInvulnerable(event.getSource()) && !event.getEntity().level().isRemote && event.getEntityLiving()
                 .getHealth() <= 0.0f && !(event.getSource().isFireDamage() && event.getEntityLiving()
-                .isPotionActive(MobEffects.FIRE_RESISTANCE))
+                .hasEffect(MobEffects.FIRE_RESISTANCE))
         ) {
             val entity: Entity? = event.getSource().getTrueSource()
 
@@ -78,18 +80,18 @@ open class EventHandlerMars {
     open fun onPlayerWakeUp(event: EventWakePlayer) {
         val player: EntityPlayer = event.getEntityPlayer()
         val c: BlockPos = player.bedLocation
-        val state: IBlockState = player.getEntityWorld().getBlockState(c)
+        val state: IBlockState = player.level().getBlockState(c)
         val blockID: Block = state.getBlock()
 
         if (blockID === MarsBlocks.machine && state.getValue(BlockMachineMars.Companion.TYPE) == BlockMachineMars.EnumMachineType.CRYOGENIC_CHAMBER) {
             if (!event.immediately && event.updateWorld && event.setSpawn) {
                 event.result = EntityPlayer.SleepResult.NOT_POSSIBLE_HERE
             } else if (!event.immediately && !event.updateWorld && event.setSpawn) {
-                if (!player.world.isRemote) {
+                if (!player.level().isRemote) {
                     player.heal(5.0f)
                     (GCPlayerStats.get(player))!!.setCryogenicChamberCooldown(6000)
 
-                    val ws: WorldServer = player.world as WorldServer
+                    val ws: WorldServer = player.level() as WorldServer
                     ws.updateAllPlayersSleepingFlag()
                     if (ws.areAllPlayersAsleep() && ws.getGameRules().getBoolean("doDaylightCycle")) {
                         WorldUtil.setNextMorning(ws)
@@ -99,14 +101,14 @@ open class EventHandlerMars {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onPlayerRotate(event: RenderPlayerGC.RotatePlayerEvent) {
         val blockPos: BlockPos? = event.getEntityPlayer().bedLocation
         if (blockPos != null) {
             var state: IBlockState = event.getEntityPlayer().world.getBlockState(blockPos)
             if (state.getBlock() === GCBlocks.fakeBlock && state.getValue(BlockMulti.MULTI_TYPE) == BlockMulti.EnumBlockMultiType.CRYO_CHAMBER) {
-                val tile: TileEntity? = event.getEntityPlayer().world.getTileEntity(blockPos)
+                val tile: TileEntity? = event.getEntityPlayer().world.getBlockEntity(blockPos)
                 if (tile is TileEntityMulti) {
                     state = event.getEntityPlayer().world.getBlockState(tile.mainBlockPosition)
                 }
@@ -136,22 +138,22 @@ open class EventHandlerMars {
 
             for (eggCount: Int in 0..<eggsPerChunk) {
                 blockpos =
-                    (event.pos)!!.add((event.rand)!!.nextInt(16) + 8, (event.rand)!!.nextInt(104) + 24, (event.rand)!!.nextInt(16) + 8)
+                    (event.pos)!!.offset((event.rand)!!.nextInt(16) + 8, (event.rand)!!.nextInt(104) + 24, (event.rand)!!.nextInt(16) + 8)
                 this.eggGenerator!!.generate(event.world, event.rand, blockpos)
             }
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun orientCamera(event: EventHandlerGC.OrientCameraEvent?) {
-        val entity: EntityPlayer? = Minecraft.getMinecraft().player
+        val entity: EntityPlayer? = Minecraft.getInstance().player
 
         if (entity != null) {
-            val x: Int = MathHelper.floor(entity.posX)
-            val y: Int = MathHelper.floor(entity.posY)
-            val z: Int = MathHelper.floor(entity.posZ)
-            var tile: TileEntity? = Minecraft.getMinecraft().world.getTileEntity(BlockPos(x, y - 1, z))
+            val x: Int = MathHelper.floor(entity.x)
+            val y: Int = MathHelper.floor(entity.y)
+            val z: Int = MathHelper.floor(entity.z)
+            var tile: TileEntity? = Minecraft.getInstance().level.getTileEntity(BlockPos(x, y - 1, z))
 
             if (tile is TileEntityMulti) {
                 tile = tile.getMainBlockTile()
@@ -182,7 +184,7 @@ open class EventHandlerMars {
 
     @SubscribeEvent
     open fun onLandingPadRemoved(event: EventLandingPadRemoval) {
-        val tile: TileEntity? = (event.world)!!.getTileEntity(event.pos)
+        val tile: TileEntity? = (event.world)!!.getBlockEntity(event.pos)
 
         if (tile is IFuelDock) {
             val dock: IFuelDock = tile as IFuelDock

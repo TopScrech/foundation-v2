@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "   ",
+    "XYX",
+    "   "
+  ],
+  "key": {
+    "X": {
+      "type": "foundation:stack",
+      "stack": {
+        "id": "galacticraftplanets:item_basic_asteroids",
+        "components": {
+          "foundation:legacy_metadata": 7
+        }
+      }
+    },
+    "Y": {
+      "type": "galacticraftcore:advanced_metal",
+      "metal": "desh_ingot"
+    }
+  },
+  "result": {
+    "id": "galacticraftplanets:basic_item_venus",
+    "components": {
+      "foundation:legacy_metadata": 3
+    }
+  }
+}

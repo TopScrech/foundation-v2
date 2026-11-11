@@ -5,8 +5,8 @@ import micdoodle8.mods.galacticraft.api.transmission.grid.IGridNetwork
 import micdoodle8.mods.galacticraft.api.transmission.tile.ITransmitter
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.level.Level as World
 
 /**
  * A universal network that works with multiple energy systems.
@@ -47,14 +47,14 @@ open class SolarModuleNetwork : IGridNetwork<SolarModuleNetwork?, ITransmitter?,
             }
 
             val tile: TileEntity = transmitter as TileEntity
-            val world: World = tile.getWorld()
+            val world: World = tile.getLevel()
             //Remove any transmitters in unloaded chunks
-            if (tile.isInvalid() || world == null || !world.isBlockLoaded(tile.getPos())) {
+            if (tile.isRemoved() || world == null || !world.isBlockLoaded(tile.getBlockPos())) {
                 it.remove()
                 continue
             }
 
-            if (transmitter !== world.getTileEntity(tile.getPos())) {
+            if (transmitter !== world.getBlockEntity(tile.getBlockPos())) {
                 it.remove()
                 continue
             }
@@ -77,9 +77,9 @@ open class SolarModuleNetwork : IGridNetwork<SolarModuleNetwork?, ITransmitter?,
             }
 
             val tile: TileEntity = conductor as TileEntity
-            val world: World = tile.getWorld()
+            val world: World = tile.getLevel()
             //Remove any transmitters in unloaded chunks
-            if (tile.isInvalid() || world == null) {
+            if (tile.isRemoved() || world == null) {
                 it.remove()
                 continue
             }
@@ -137,7 +137,7 @@ open class SolarModuleNetwork : IGridNetwork<SolarModuleNetwork?, ITransmitter?,
 
             //If the size of the residual network is 1, it should simply be preserved
             if ((this.getTransmitters())!!.size > 1) {
-                val world: World = (splitPoint as TileEntity).getWorld()
+                val world: World = (splitPoint as TileEntity).getLevel()
 
                 if ((this.getTransmitters())!!.size > 0) {
                     val nextToSplit: Array<ITransmitter?> = arrayOfNulls<ITransmitter>(6)
@@ -146,12 +146,12 @@ open class SolarModuleNetwork : IGridNetwork<SolarModuleNetwork?, ITransmitter?,
 
                     for (j: Int in 0..5) {
                         when (j) {
-                            0 -> tileEntity = world.getTileEntity((splitPoint as TileEntity).getPos().down())
-                            1 -> tileEntity = world.getTileEntity((splitPoint as TileEntity).getPos().up())
-                            2 -> tileEntity = world.getTileEntity((splitPoint as TileEntity).getPos().north())
-                            3 -> tileEntity = world.getTileEntity((splitPoint as TileEntity).getPos().south())
-                            4 -> tileEntity = world.getTileEntity((splitPoint as TileEntity).getPos().west())
-                            5 -> tileEntity = world.getTileEntity((splitPoint as TileEntity).getPos().east())
+                            0 -> tileEntity = world.getBlockEntity((splitPoint as TileEntity).getBlockPos().down())
+                            1 -> tileEntity = world.getBlockEntity((splitPoint as TileEntity).getBlockPos().up())
+                            2 -> tileEntity = world.getBlockEntity((splitPoint as TileEntity).getBlockPos().north())
+                            3 -> tileEntity = world.getBlockEntity((splitPoint as TileEntity).getBlockPos().south())
+                            4 -> tileEntity = world.getBlockEntity((splitPoint as TileEntity).getBlockPos().west())
+                            5 -> tileEntity = world.getBlockEntity((splitPoint as TileEntity).getBlockPos().east())
                             else ->                                 //Not reachable, only to prevent uninitiated compile errors
                                 tileEntity = null
                         }

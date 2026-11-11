@@ -6,25 +6,24 @@ import micdoodle8.mods.galacticraft.core.util.ClientUtil
 import micdoodle8.mods.galacticraft.planets.asteroids.AsteroidsModuleClient
 import micdoodle8.mods.galacticraft.planets.mars.MarsModuleClient
 import micdoodle8.mods.galacticraft.planets.venus.VenusModuleClient
-import net.minecraft.item.Item
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent
+import net.minecraft.world.item.Item
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
+import net.minecraftforge.event.server.ServerStartingEvent as FMLServerStartingEvent
 
 open class PlanetsProxyClient : PlanetsProxy() {
     private val itemsToRegisterJson: MutableList<Item?> = Lists.newArrayList<Item?>()
 
-    override fun preInit(event: FMLPreInitializationEvent?) {
+    override fun preInit() {
         OBJLoaderGC.instance.addDomain(GalacticraftPlanets.Companion.ASSET_PREFIX)
         GalacticraftPlanets.Companion.clientModules.add(MarsModuleClient())
         GalacticraftPlanets.Companion.clientModules.add(AsteroidsModuleClient())
         GalacticraftPlanets.Companion.clientModules.add(VenusModuleClient())
 
-        super.preInit(event)
+        super.preInit()
 
         for (module: IPlanetsModuleClient in GalacticraftPlanets.Companion.clientModules) {
-            module.preInit(event)
+            module.preInit()
         }
     }
 

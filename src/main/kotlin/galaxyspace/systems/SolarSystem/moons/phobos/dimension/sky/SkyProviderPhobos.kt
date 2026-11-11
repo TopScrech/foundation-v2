@@ -11,8 +11,8 @@ import micdoodle8.mods.galacticraft.core.Constants
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.Vec3 as Vec3d
 
 open class SkyProviderPhobos : SkyProviderBase() {
     override fun rendererSky(tessellator: Tessellator?, worldRenderer: BufferBuilder?, f10: Float, ticks: Float) {
@@ -84,7 +84,7 @@ open class SkyProviderPhobos : SkyProviderBase() {
     }
 
     override fun sunImage(): ResourceLocation {
-        return ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
+        return ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
     }
 
     override fun modeLight(): ModeLight {
@@ -104,10 +104,10 @@ open class SkyProviderPhobos : SkyProviderBase() {
     }
 
     companion object {
-        private val marsTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/mars.png")
+        private val marsTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/mars.png")
         private val overworldTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png")
         private val deimosTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/moons/deimos.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/moons/deimos.png")
     }
 }

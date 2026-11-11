@@ -3,7 +3,7 @@ package micdoodle8.mods.galacticraft.core.world.gen
 import micdoodle8.mods.galacticraft.api.world.BiomeGenBaseGC
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSpider
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedZombie
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 import net.minecraftforge.common.BiomeDictionary
 
 open class BiomeOrbit private constructor(properties: BiomeProperties) : BiomeGenBaseGC(properties, true) {

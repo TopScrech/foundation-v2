@@ -1,10 +1,10 @@
 package micdoodle8.mods.galacticraft.core.client
 
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.renderer.block.statemap.StateMapperBase
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class GalacticraftStateMapper : StateMapperBase() {
     override fun getModelResourceLocation(state: IBlockState): ModelResourceLocation {

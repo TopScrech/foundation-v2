@@ -1,11 +1,11 @@
 package micdoodle8.mods.galacticraft.core.tile
 
 import micdoodle8.mods.galacticraft.core.GCBlocks
-import net.minecraft.block.state.IBlockState
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.ITickable
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.ArrayList
 
 open class TileEntityLandingPadSingle : TileEntity(), ITickable {
@@ -17,7 +17,7 @@ open class TileEntityLandingPadSingle : TileEntity(), ITickable {
 
             for (x: Int in this.getPos().getX() - 1..<this.getPos().getX() + 2) {
                 for (z: Int in this.getPos().getZ() - 1..<this.getPos().getZ() + 2) {
-                    val tile: TileEntity? = this.world.getTileEntity(BlockPos(x, this.getPos().getY(), z))
+                    val tile: TileEntity? = this.world.getBlockEntity(BlockPos(x, this.getPos().getY(), z))
 
                     if (tile is TileEntityLandingPadSingle && !tile.isInvalid() && tile.corner == 0) {
                         attachedLaunchPads.add(tile)
@@ -31,7 +31,7 @@ open class TileEntityLandingPadSingle : TileEntity(), ITickable {
                     (tile as TileEntityLandingPadSingle).corner = 1
                 }
 
-                this.world.setBlockState(this.getPos(), (GCBlocks.landingPadFull)!!.getDefaultState(), 2)
+                this.world.setBlock(this.getPos(), (GCBlocks.landingPadFull)!!.defaultBlockState(), 2)
             }
         }
     }

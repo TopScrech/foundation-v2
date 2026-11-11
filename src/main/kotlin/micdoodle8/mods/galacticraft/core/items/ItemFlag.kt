@@ -1,5 +1,10 @@
 package micdoodle8.mods.galacticraft.core.items
 
+import net.minecraft.network.chat.Component
+
+import foundation.item.legacyItemValue
+
+import foundation.inventory.mainItems
 import micdoodle8.mods.galacticraft.api.item.IHoldableItemCustom
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
@@ -8,25 +13,25 @@ import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.item.EnumAction
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemFlag constructor(assetName: String?) : Item(), IHoldableItemCustom, ISortableItem {
     @JvmField
@@ -66,13 +71,13 @@ open class ItemFlag constructor(assetName: String?) : Item(), IHoldableItemCusto
         if (var7 == 1.0f && var12 != null && var12.typeOfHit == RayTraceResult.Type.BLOCK) {
             val pos: BlockPos = var12.getBlockPos()
 
-            if (!worldIn.isRemote) {
+            if (!worldIn.isClientSide) {
                 val flag: EntityFlag = EntityFlag(
                     worldIn,
                     (pos.getX() + 0.5f).toDouble(),
                     (pos.getY() + 1.0f).toDouble(),
                     (pos.getZ() + 0.5f).toDouble(),
-                    (entity.rotationYaw - 90).toInt()
+                    (entity.yRot - 90).toInt()
                 )
 
                 if (worldIn.getEntitiesWithinAABB<EntityFlag?>(
@@ -87,8 +92,8 @@ open class ItemFlag constructor(assetName: String?) : Item(), IHoldableItemCusto
                         )
                     ).isEmpty()
                 ) {
-                    worldIn.spawnEntity(flag)
-                    flag.setType(stack.getItemDamage())
+                    worldIn.addFreshEntity(flag)
+                    flag.setType(stack.legacyItemValue)
                     flag.setOwner(PlayerUtil.getName(player))
                     worldIn.playSound(
                         null,
@@ -102,7 +107,7 @@ open class ItemFlag constructor(assetName: String?) : Item(), IHoldableItemCusto
                     )
                     placed = true
                 } else {
-                    entity.sendMessage(TextComponentString(GCCoreUtil.translate("gui.flag.already_placed")))
+                    entity.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.flag.already_placed")))
                 }
             }
 
@@ -110,15 +115,15 @@ open class ItemFlag constructor(assetName: String?) : Item(), IHoldableItemCusto
                 val var2: Int = this.getInventorySlotContainItem(player, stack)
 
                 if (var2 >= 0 && !player.capabilities.isCreativeMode) {
-                    player.inventory.mainInventory.get(var2).shrink(1)
+                    player.inventory.mainItems.get(var2).shrink(1)
                 }
             }
         }
     }
 
     private fun getInventorySlotContainItem(player: EntityPlayer, stack: ItemStack): Int {
-        for (var2: Int in player.inventory.mainInventory.indices) {
-            if (!player.inventory.mainInventory.get(var2).isEmpty() && player.inventory.mainInventory.get(var2)
+        for (var2: Int in player.inventory.mainItems.indices) {
+            if (!player.inventory.mainItems.get(var2).isEmpty() && player.inventory.mainItems.get(var2)
                     .isItemEqual(stack)
             ) {
                 return var2
@@ -138,10 +143,10 @@ open class ItemFlag constructor(assetName: String?) : Item(), IHoldableItemCusto
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, hand: EnumHand): ActionResult<ItemStack?> {
         playerIn.setActiveHand(hand)
-        return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, playerIn.getHeldItem(hand))
+        return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, playerIn.getItemInHand(hand))
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }

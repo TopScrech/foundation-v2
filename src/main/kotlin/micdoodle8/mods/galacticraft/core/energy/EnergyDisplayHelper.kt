@@ -1,19 +1,19 @@
 package micdoodle8.mods.galacticraft.core.energy
 
-import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.text.TextFormatting
+import net.minecraft.network.chat.Component
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.ChatFormatting as TextFormatting
 
 object EnergyDisplayHelper {
     @JvmStatic
     fun getEnergyDisplayTooltip(energyVal: Float, maxEnergy: Float, strList: MutableList<String?>) {
         strList.add(
-            TextFormatting.GREEN.toString() + GCCoreUtil.translate("gui.message.energy") + ": " + getEnergyDisplayS(
+            TextFormatting.GREEN.toString() + Component.translatable("gui.message.energy").string + ": " + getEnergyDisplayS(
                 energyVal
             )
         )
         strList.add(
-            TextFormatting.RED.toString() + GCCoreUtil.translate("gui.message.max_energy") + ": " + getEnergyDisplayS(
+            TextFormatting.RED.toString() + Component.translatable("gui.message.max_energy").string + ": " + getEnergyDisplayS(
                 maxEnergy
             )
         )

@@ -5,9 +5,9 @@ import asmodeuscore.core.handler.capabilities.ACCapabilityStatsHandler
 import asmodeuscore.core.handler.capabilities.ACStatsCapability
 import asmodeuscore.core.astronomy.SpaceData.Engine_Type
 import micdoodle8.mods.galacticraft.core.util.GCLog
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.Entity
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import java.lang.Exception
 import java.lang.ref.WeakReference
 
@@ -23,14 +23,14 @@ open class ACStatsCapability : IStatsCapability {
     private var isSecondPassenger = false
 
     override fun saveNBTData(nbt: NBTTagCompound?) {
-        (nbt)!!.setInteger("rocket_engine", getEngineType()!!.getID())
-        (nbt)!!.setBoolean("SecondPassenger", isSecondPassenger)
+        (nbt)!!.putInt("rocket_engine", getEngineType()!!.getID())
+        (nbt)!!.putBoolean("SecondPassenger", isSecondPassenger)
     }
 
     override fun loadNBTData(nbt: NBTTagCompound?) {
         try {
-            this.rocket_engine = Engine_Type.byID((nbt)!!.getInteger("rocket_engine"))
-            this.isSecondPassenger = (nbt)!!.getBoolean("SecondPassenger")
+            this.rocket_engine = Engine_Type.byID((nbt)!!.getIntOr("rocket_engine", 0))
+            this.isSecondPassenger = (nbt)!!.getBooleanOr("SecondPassenger", false)
         } catch (e: Exception) {
             GCLog.severe(
                 "Found error in saved AsmodeusCore player data for " + player!!.get()!!.getGameProfile()

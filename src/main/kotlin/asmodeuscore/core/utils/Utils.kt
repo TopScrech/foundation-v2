@@ -1,42 +1,43 @@
 package asmodeuscore.core.utils
 
+import foundation.inventory.getArmorItem
+import foundation.block.getStateFromMeta
+
 import net.minecraft.world.biome.Biome.BiomeProperties
 
 import asmodeuscore.api.dimension.IProviderWeather
 import asmodeuscore.core.astronomy.dimension.world.data.DustStormSaveData
 import asmodeuscore.api.item.IItemPressurized
 import org.lwjgl.opengl.GL11
-import asmodeuscore.core.utils.worldengine2.world.properties.WE_BiomeProperties
-import asmodeuscore.core.utils.worldengine.WE_Biome
 import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.common.registry.ForgeRegistries
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.registries.ForgeRegistries
+import net.minecraftforge.fml.LogicalSide as Side
 import kotlin.math.cos
 
 object Utils {
     @JvmField
-    var WE_Biome: Biome = WE_Biome(Biome.BiomeProperties("-=|WorldEngine|=-").setBaseHeight(1.2f))
+    var WE_Biome: net.minecraft.resources.ResourceKey<Biome> = foundation.biome.FoundationBiomeKeys.WORLD_ENGINE
 
     @JvmField
-    var WE_Biome_2: Biome = asmodeuscore.core.utils.worldengine2.world.biome.WE_Biome(WE_BiomeProperties())
+    var WE_Biome_2: net.minecraft.resources.ResourceKey<Biome> = foundation.biome.FoundationBiomeKeys.WORLD_ENGINE_2
 
 
     @JvmField
@@ -54,7 +55,7 @@ object Utils {
     fun inWater(player: EntityPlayer): Boolean {
         val pos: BlockPos = player.getPosition()
 
-        return player.world.getBlockState(pos.up()).getMaterial() === Material.WATER
+        return player.level().getBlockState(pos.above()).getMaterial() === Material.WATER
     }
 
 
@@ -119,7 +120,7 @@ object Utils {
                 scale = 0
             }
 
-            Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
+            Minecraft.getInstance().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
             drawTexturedModalRect(
                 guiWidth + xPos,
                 guiHeight + yPos + 58 - renderRemaining - start,
@@ -266,7 +267,7 @@ object Utils {
         if (meta.size > 2) {
             return blocks!!.getStateFromMeta(meta[2]!!.toInt())
         }
-        return blocks!!.getDefaultState()
+        return blocks!!.defaultBlockState()
     }
 
     @JvmStatic
@@ -276,7 +277,7 @@ object Utils {
 
     @JvmStatic
     fun getAtmoArmor(player: EntityPlayer): Boolean {
-        for (i: Int in 0..2) if (player.inventory.armorItemInSlot(i).isEmpty() || player.inventory.armorItemInSlot(i)
+        for (i: Int in 0..2) if (player.inventory.getArmorItem(i).isEmpty() || player.inventory.getArmorItem(i)
                 .getItem() !is IItemPressurized
         ) return false
         return true
@@ -284,7 +285,7 @@ object Utils {
 
     @JvmStatic
     fun isDustStorm(world: World): Boolean {
-        if (!world.isRemote && world.getTotalWorldTime() % 20 == 0L && world.provider is IProviderWeather
+        if (!world.isClientSide && world.getGameTime() % 20 == 0L && world.provider is IProviderWeather
             && world.provider is IGalacticraftWorldProvider
         ) {
             val gcprovider: IGalacticraftWorldProvider = world.provider as IGalacticraftWorldProvider

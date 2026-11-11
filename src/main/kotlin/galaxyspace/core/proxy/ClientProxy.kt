@@ -113,19 +113,19 @@ import micdoodle8.mods.galacticraft.core.util.ClientUtil
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.wrappers.ModelTransformWrapper
 import micdoodle8.mods.galacticraft.planets.asteroids.client.render.item.ItemModelCargoRocket
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.AbstractClientPlayer
+import net.minecraft.client.player.AbstractClientPlayer
 import net.minecraft.client.renderer.block.model.ModelBakery
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.renderer.block.statemap.StateMapperBase
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.client.event.ModelBakeEvent
 import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.client.model.ModelLoader
@@ -136,15 +136,14 @@ import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.client.registry.IRenderFactory
 import net.minecraftforge.fml.client.registry.RenderingRegistry
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.HashMap
 import javax.vecmath.Vector3f
 
 open class ClientProxy : CommonProxy() {
-    override fun preload(event: FMLPreInitializationEvent?) {
+    override fun preload() {
         register_event(GSSkyProviderHandler())
         register_event(GSClientTickHandler())
         register_event(GSMapHandler())
@@ -199,21 +198,21 @@ open class ClientProxy : CommonProxy() {
     }
 
     override fun load() {
-        Minecraft.getMinecraft().getRenderManager().getSkinMap().get("default")!!
+        Minecraft.getInstance().getRenderManager().getSkinMap().get("default")!!
             .addLayer<AbstractClientPlayer?, LayerOxygenTank?>(LayerOxygenTank())
-        Minecraft.getMinecraft().getRenderManager().getSkinMap().get("slim")!!
+        Minecraft.getInstance().getRenderManager().getSkinMap().get("slim")!!
             .addLayer<AbstractClientPlayer?, LayerOxygenTank?>(LayerOxygenTank())
 
-        Minecraft.getMinecraft().getRenderManager().getSkinMap().get("default")!!
+        Minecraft.getInstance().getRenderManager().getSkinMap().get("default")!!
             .addLayer<EntityLivingBase?, LayerThermalPadding?>(
                 LayerThermalPadding(
-                    Minecraft.getMinecraft().getRenderManager().playerRenderer
+                    Minecraft.getInstance().getRenderManager().playerRenderer
                 )
             )
-        Minecraft.getMinecraft().getRenderManager().getSkinMap().get("slim")!!
+        Minecraft.getInstance().getRenderManager().getSkinMap().get("slim")!!
             .addLayer<EntityLivingBase?, LayerThermalPadding?>(
                 LayerThermalPadding(
-                    Minecraft.getMinecraft().getRenderManager().playerRenderer
+                    Minecraft.getInstance().getRenderManager().playerRenderer
                 )
             )
 
@@ -231,9 +230,9 @@ open class ClientProxy : CommonProxy() {
 
     override fun postload() {
         /*try {
-            Field ftc = Minecraft.getMinecraft().getClass().getDeclaredField(GCCoreUtil.isDeobfuscated() ? "mcMusicTicker" : "field_147126_aw");
+            Field ftc = Minecraft.getInstance().getClass().getDeclaredField(GCCoreUtil.isDeobfuscated() ? "mcMusicTicker" : "field_147126_aw");
             ftc.setAccessible(true);
-            ftc.set(Minecraft.getMinecraft(), new GSMusicTicker(Minecraft.getMinecraft()));
+            ftc.set(Minecraft.getInstance(), new GSMusicTicker(Minecraft.getInstance()));
         } catch (Exception e) {e.printStackTrace();} 
     	*/
         ItemSchematics.registerTextures()
@@ -279,7 +278,7 @@ open class ClientProxy : CommonProxy() {
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun onModelBakeEvent(event: ModelBakeEvent) {
         val rot: Quat4f = TRSRTransformation.quatFromXYZDegrees(Vector3f(30f, 225f, 0f))
         replaceModelDefault(
@@ -420,7 +419,7 @@ open class ClientProxy : CommonProxy() {
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun loadTextures(event: TextureStitchEvent.Pre?) {
         (GalaxySpace.proxy)!!.registerTexture(event, "model/modern_solarpanel")
         (GalaxySpace.proxy)!!.registerTexture(event, "model/windmill_straight")
@@ -451,13 +450,13 @@ open class ClientProxy : CommonProxy() {
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun onStitch(event: TextureStitchEvent.Post) {
         GSUtils.initFluidTextures(event.getMap())
     }
 
     override fun registerTexture(event: TextureStitchEvent.Pre?, texture: String?) {
-        (event)!!.getMap().registerSprite(ResourceLocation(GalaxySpace.TEXTURE_PREFIX + texture))
+        (event)!!.getMap().registerSprite(ResourceLocation.parse(GalaxySpace.TEXTURE_PREFIX + texture))
     }
 
     private fun replaceModelDefault(
@@ -1295,7 +1294,7 @@ open class ClientProxy : CommonProxy() {
         var GScapesMap: MutableMap<String?, ResourceLocation?> = Maps.newHashMap<String?, ResourceLocation?>()
 
         @JvmField
-        var mc: Minecraft? = FMLClientHandler.instance().getClient()
+        var mc: Minecraft? = Minecraft.getInstance()
 
         //public static MusicTicker.MusicType GS_MUSIC;
         private val LEMethaneLocation =
@@ -1311,7 +1310,7 @@ open class ClientProxy : CommonProxy() {
 
         @JvmStatic
         fun addVariant(name: String, folder: String?, vararg variants: String?) {
-            val itemBlockVariants: Item? = Item.REGISTRY.getObject(ResourceLocation(GalaxySpace.MODID, name))
+            val itemBlockVariants: Item? = Item.REGISTRY.getObject(ResourceLocation.fromNamespaceAndPath(GalaxySpace.MODID, name))
             val variants0: Array<ResourceLocation?> = arrayOfNulls<ResourceLocation>(variants.size)
             for (i: Int in variants.indices) {
                 variants0[i] = ResourceLocation(GalaxySpace.MODID + ":" + folder + variants[i])
@@ -1321,7 +1320,7 @@ open class ClientProxy : CommonProxy() {
 
         @JvmStatic
         fun registerLiquid(sludge: Item, liquid_block: Block, liquid_name: String?, model: ModelResourceLocation) {
-            ModelBakery.registerItemVariants(sludge, ResourceLocation(GalaxySpace.TEXTURE_PREFIX + liquid_name))
+            ModelBakery.registerItemVariants(sludge, ResourceLocation.parse(GalaxySpace.TEXTURE_PREFIX + liquid_name))
             ModelLoader.setCustomMeshDefinition(
                 sludge,
                 IItemMeshDefinitionCustom.create(IItemMeshDefinitionCustom { stack: ItemStack? -> model })

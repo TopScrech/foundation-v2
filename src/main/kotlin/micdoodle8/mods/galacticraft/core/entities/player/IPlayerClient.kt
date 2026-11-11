@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.core.entities.player
 
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.MoverType
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.MoverType
 
 interface IPlayerClient {
     fun move(player: EntityPlayerSP?, type: MoverType?, x: Double, y: Double, z: Double)

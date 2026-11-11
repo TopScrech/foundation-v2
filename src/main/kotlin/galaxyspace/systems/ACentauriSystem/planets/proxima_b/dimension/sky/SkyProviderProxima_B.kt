@@ -10,14 +10,14 @@ import micdoodle8.mods.galacticraft.api.vector.Vector3
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.Tessellator
-import net.minecraft.util.ResourceLocation
-import net.minecraft.world.World
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.level.Level as World
 
 open class SkyProviderProxima_B : SkyProviderBase() {
     private val acentauri_a =
-        ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/acentauri/centauri_a.png")
+        ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/acentauri/centauri_a.png")
     private val acentauri_b =
-        ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/acentauri/centauri_b.png")
+        ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/acentauri/centauri_b.png")
 
     override fun rendererSky(tessellator: Tessellator?, worldRenderer: BufferBuilder?, size: Float, ticks: Float) {
         var rain: Float = 1.0f - this.mc.world.getRainStrength(ticks)
@@ -70,7 +70,7 @@ open class SkyProviderProxima_B : SkyProviderBase() {
     }
 
     override fun sunImage(): ResourceLocation {
-        return ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/proxima/proxima.png")
+        return ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/proxima/proxima.png")
     }
 
     override fun modeLight(): ModeLight {

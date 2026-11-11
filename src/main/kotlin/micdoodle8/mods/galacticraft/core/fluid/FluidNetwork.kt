@@ -17,18 +17,18 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.network.IPacket
 import micdoodle8.mods.galacticraft.core.network.PacketFluidNetworkUpdate
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
 import net.minecraftforge.fluids.capability.IFluidHandler
-import net.minecraftforge.fml.common.FMLLog
+import foundation.logging.FoundationLog as FMLLog
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import org.apache.commons.lang3.tuple.Pair
 import java.util.*
 import kotlin.math.max
@@ -266,7 +266,7 @@ open class FluidNetwork : IGridNetwork<FluidNetwork?, IBufferTransmitter<FluidSt
     }
 
     private fun getAddTransmitterUpdate(): IPacket {
-        val pos: BlockPos = (this.pipes.iterator().next() as TileEntity).getPos()
+        val pos: BlockPos = (this.pipes.iterator().next() as TileEntity).getBlockPos()
         return PacketFluidNetworkUpdate.getAddTransmitterUpdate(
             GCCoreUtil.getDimensionID(this.world),
             pos,
@@ -299,7 +299,7 @@ open class FluidNetwork : IGridNetwork<FluidNetwork?, IBufferTransmitter<FluidSt
                 this.updateDelay--
 
                 if (this.updateDelay == 0) {
-                    val pos: BlockPos = (this.pipes.iterator().next() as TileEntity).getPos()
+                    val pos: BlockPos = (this.pipes.iterator().next() as TileEntity).getBlockPos()
                     (GalacticraftCore.packetPipeline)!!.sendToAllAround(
                         this.getAddTransmitterUpdate(),
                         NetworkRegistry.TargetPoint(
@@ -333,7 +333,7 @@ open class FluidNetwork : IGridNetwork<FluidNetwork?, IBufferTransmitter<FluidSt
             this.prevBufferAmount = stored
 
             if (this.didTransfer != this.prevTransfer || this.needsUpdate) {
-                val pos: BlockPos = (this.pipes.iterator().next() as TileEntity).getPos()
+                val pos: BlockPos = (this.pipes.iterator().next() as TileEntity).getBlockPos()
                 (GalacticraftCore.packetPipeline)!!.sendToAllAround(
                     PacketFluidNetworkUpdate.getFluidUpdate(
                         GCCoreUtil.getDimensionID(
@@ -409,7 +409,7 @@ open class FluidNetwork : IGridNetwork<FluidNetwork?, IBufferTransmitter<FluidSt
                 continue
             }
 
-            val tile: TileEntity? = this.world!!.getTileEntity(coords)
+            val tile: TileEntity? = this.world!!.getBlockEntity(coords)
 
             if (tile == null) {
                 continue
@@ -451,12 +451,12 @@ open class FluidNetwork : IGridNetwork<FluidNetwork?, IBufferTransmitter<FluidSt
 
                 transmitter.onNetworkChanged()
 
-                if (tileTransmitter!!.isInvalid() || tileTransmitter.getWorld() == null) {
+                if (tileTransmitter!!.isRemoved() || tileTransmitter.getLevel() == null) {
                     it.remove()
                     continue
                 } else {
                     if (this.world == null) {
-                        this.world = tileTransmitter.getWorld()
+                        this.world = tileTransmitter.getLevel()
                     }
 
                     transmitter.setNetwork(this)
@@ -485,7 +485,7 @@ open class FluidNetwork : IGridNetwork<FluidNetwork?, IBufferTransmitter<FluidSt
                 val transmitter: IBufferTransmitter<FluidStack?>? = it.next()
                 val tile: TileEntity? = transmitter as TileEntity?
 
-                if (transmitter == null || tile!!.isInvalid() || tile.getWorld() == null) {
+                if (transmitter == null || tile!!.isRemoved() || tile.getLevel() == null) {
                     it.remove()
                     continue
                 }
@@ -497,13 +497,13 @@ open class FluidNetwork : IGridNetwork<FluidNetwork?, IBufferTransmitter<FluidSt
                 var i: Int = 0
                 for (acceptor: TileEntity? in (transmitter.getAdjacentConnections())!!) {
                     if (acceptor !is IBufferTransmitter<*> && acceptor != null) {
-                        val facing: EnumFacing = EnumFacing.byIndex(i).getOpposite()
+                        val facing: EnumFacing = EnumFacing.from3DDataValue(i).getOpposite()
                         val handler: IFluidHandler? = acceptor.getCapability<IFluidHandler?>(
                             CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY,
                             facing
                         )
                         if (handler != null) {
-                            val acceptorPos: BlockPos = tile.getPos().offset(facing.getOpposite())
+                            val acceptorPos: BlockPos = tile.getBlockPos().offset(facing.getOpposite())
                             var facingSet: EnumSet<EnumFacing?>? = this.acceptorDirections.get(acceptorPos)
                             if (facingSet != null) {
                                 facingSet.add(facing)
@@ -552,7 +552,7 @@ open class FluidNetwork : IGridNetwork<FluidNetwork?, IBufferTransmitter<FluidSt
                     for (connectedBlockB: TileEntity? in connectedBlocks) {
                         if (connectedBlockA !== connectedBlockB && connectedBlockB is INetworkConnection) {
                             val finder: Pathfinder = PathfinderChecker(
-                                (splitPoint as TileEntity).getWorld(),
+                                (splitPoint as TileEntity).getLevel(),
                                 connectedBlockB as INetworkConnection,
                                 NetworkType.FLUID,
                                 splitPoint
@@ -568,7 +568,7 @@ open class FluidNetwork : IGridNetwork<FluidNetwork?, IBufferTransmitter<FluidSt
 
                                 for (node in (finder.closedSet)!!) {
                                     val nodeTile: TileEntity? =
-                                        (node)!!.getTileEntity((splitPoint as TileEntity).getWorld())
+                                        (node)!!.getTileEntity((splitPoint as TileEntity).getLevel())
 
                                     if (nodeTile is INetworkProvider) {
                                         if (nodeTile !== splitPoint) {
@@ -585,7 +585,7 @@ open class FluidNetwork : IGridNetwork<FluidNetwork?, IBufferTransmitter<FluidSt
 
                                 for (node in (finder.closedSet)!!) {
                                     val nodeTile: TileEntity? =
-                                        (node)!!.getTileEntity((splitPoint as TileEntity).getWorld())
+                                        (node)!!.getTileEntity((splitPoint as TileEntity).getLevel())
 
                                     if (nodeTile is IBufferTransmitter<*>) {
                                         if (nodeTile !== splitPoint) {

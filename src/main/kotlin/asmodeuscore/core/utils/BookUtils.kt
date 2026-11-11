@@ -2,7 +2,7 @@ package asmodeuscore.core.utils
 
 import asmodeuscore.api.space.IBookPage
 import asmodeuscore.core.utils.BookUtils
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import java.util.Comparator
 import java.util.HashMap
 import java.util.Locale

@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.planets.mars.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import net.minecraftforge.common.ForgeChunkManager.Type
 
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
@@ -22,34 +24,36 @@ import micdoodle8.mods.galacticraft.planets.mars.ConfigManagerMars
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityCryogenicChamber
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityLaunchController
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityTerraformer
-import net.minecraft.block.SoundType
-import net.minecraft.block.properties.PropertyDirection
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.ForgeChunkManager
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 import kotlin.math.floor
 
 open class BlockMachineMars constructor(assetName: String?) : BlockTileGC(GCBlocks.machine), IShiftDescription,
-    ISortableBlock, IPartialSealableBlock {
+    ISortableBlock, IPartialSealableBlock, LegacyBlockMetadata {
     enum class EnumMachineType(private val meta: Int, private val serializedName: String) : IStringSerializable {
         TERRAFORMER(0, "terraformer"),
         CRYOGENIC_CHAMBER(1, "cryogenic_chamber"),
@@ -59,7 +63,9 @@ open class BlockMachineMars constructor(assetName: String?) : BlockTileGC(GCBloc
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -77,7 +83,7 @@ open class BlockMachineMars constructor(assetName: String?) : BlockTileGC(GCBloc
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val var9: TileEntity? = worldIn.getTileEntity(pos)
+        val var9: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (var9 is IMultiBlock) {
             (var9 as IMultiBlock).onDestroy(var9)
@@ -86,7 +92,7 @@ open class BlockMachineMars constructor(assetName: String?) : BlockTileGC(GCBloc
         super.breakBlock(worldIn, pos, state)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
@@ -100,17 +106,17 @@ open class BlockMachineMars constructor(assetName: String?) : BlockTileGC(GCBloc
     ) {
         val metadata: Int = getMetaFromState(state)
 
-        val angle: Int = MathHelper.floor(placer.rotationYaw * 4.0f / 360.0f + 0.5) and 3
+        val angle: Int = MathHelper.floor(placer.yRot * 4.0f / 360.0f + 0.5) and 3
         val change: Int = EnumFacing.byHorizontalIndex(angle).getOpposite().getHorizontalIndex()
 
-        worldIn.setBlockState(pos, getStateFromMeta((metadata and 12) + change), 3)
+        worldIn.setBlock(pos, getStateFromMeta((metadata and 12) + change), 3)
 
         when (metadata and 12) {
             CRYOGENIC_CHAMBER_METADATA -> BlockMulti.onPlacement(worldIn, pos, placer, this)
             LAUNCH_CONTROLLER_METADATA -> {
                 WorldUtil.markAdjacentPadForUpdate(worldIn, pos)
-                val var8: TileEntity? = worldIn.getTileEntity(pos)
-                if (var8 is IChunkLoader && !worldIn.isRemote && ConfigManagerMars.Companion.launchControllerChunkLoad && placer is EntityPlayer) {
+                val var8: TileEntity? = worldIn.getBlockEntity(pos)
+                if (var8 is IChunkLoader && !worldIn.isClientSide && ConfigManagerMars.Companion.launchControllerChunkLoad && placer is EntityPlayer) {
                     (var8 as IChunkLoader).setOwnerName(placer.getName())
                     (var8 as IChunkLoader).onTicketLoaded(
                         ForgeChunkManager.requestTicket(
@@ -166,7 +172,7 @@ open class BlockMachineMars constructor(assetName: String?) : BlockTileGC(GCBloc
             )
             return true
         } else if (type == EnumMachineType.CRYOGENIC_CHAMBER) {
-            ((worldIn)!!.getTileEntity(pos) as IMultiBlock).onActivated(playerIn)
+            ((worldIn)!!.getBlockEntity(pos) as IMultiBlock).onActivated(playerIn)
             return true
         } else {
             (playerIn)!!.openGui(
@@ -264,11 +270,11 @@ open class BlockMachineMars constructor(assetName: String?) : BlockTileGC(GCBloc
         pos: BlockPos,
         player: EntityPlayer?
     ): BlockPos? {
-        return pos.up()
+        return pos.above()
     }
 
     override fun setBedOccupied(world: IBlockAccess, pos: BlockPos, player: EntityPlayer, occupied: Boolean) {
-        val tile: TileEntity? = world.getTileEntity(pos)
+        val tile: TileEntity? = world.getBlockEntity(pos)
 
         if (tile is TileEntityCryogenicChamber) {
             tile.isOccupied = true
@@ -292,7 +298,7 @@ open class BlockMachineMars constructor(assetName: String?) : BlockTileGC(GCBloc
         return true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun shouldSideBeRendered(
         blockState: IBlockState,
         blockAccess: IBlockAccess,
@@ -305,8 +311,8 @@ open class BlockMachineMars constructor(assetName: String?) : BlockTileGC(GCBloc
     override fun getStateFromMeta(meta: Int): IBlockState {
         val enumfacing: EnumFacing = EnumFacing.byHorizontalIndex(meta % 4)
         val type: EnumMachineType = EnumMachineType.Companion.byMetadata(floor(meta / 4.0).toInt())
-        return this.getDefaultState().withProperty(FACING, enumfacing)
-            .withProperty(TYPE, type)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
+            .setValue(TYPE, type)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -317,7 +323,7 @@ open class BlockMachineMars constructor(assetName: String?) : BlockTileGC(GCBloc
         return BlockStateContainer(this, FACING, TYPE)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun randomDisplayTick(state: IBlockState, worldIn: World, pos: BlockPos, rand: Random) {
         if (state.getValue(TYPE) == EnumMachineType.CRYOGENIC_CHAMBER) {
             GalacticraftPlanets.spawnParticle(
@@ -394,7 +400,7 @@ open class BlockMachineMars constructor(assetName: String?) : BlockTileGC(GCBloc
         const val LAUNCH_CONTROLLER_METADATA: Int = 8
 
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL)
+        val FACING: EnumProperty<Direction> = BlockStateProperties.HORIZONTAL_FACING
 
         @JvmField
         val TYPE: PropertyEnum<EnumMachineType> =

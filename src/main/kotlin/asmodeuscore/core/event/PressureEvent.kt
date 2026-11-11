@@ -2,7 +2,7 @@ package asmodeuscore.core.event
 
 import asmodeuscore.core.event.PressureEvent
 import asmodeuscore.core.event.PressureEvent.WaterPressure
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraftforge.event.entity.EntityEvent
 import net.minecraftforge.fml.common.eventhandler.Cancelable
 

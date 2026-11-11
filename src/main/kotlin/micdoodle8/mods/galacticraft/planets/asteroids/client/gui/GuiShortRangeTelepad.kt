@@ -19,9 +19,9 @@ import micdoodle8.mods.galacticraft.planets.asteroids.inventory.ContainerShortRa
 import micdoodle8.mods.galacticraft.planets.asteroids.network.PacketSimpleAsteroids
 import micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityShortRangeTelepad
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.input.Keyboard
 import org.lwjgl.opengl.GL11
@@ -272,6 +272,6 @@ open class GuiShortRangeTelepad constructor(
 
     companion object {
         private val launchControllerGui =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/short_range_telepad.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/short_range_telepad.png")
     }
 }

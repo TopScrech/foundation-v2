@@ -1,13 +1,15 @@
 package micdoodle8.mods.galacticraft.core.util
 
+import net.minecraft.network.chat.Component
+
 import micdoodle8.mods.galacticraft.core.util.ThreadVersionCheck
 import java.io.BufferedReader
 import java.io.IOException
 import micdoodle8.mods.galacticraft.core.Constants
-import net.minecraft.util.text.TextComponentString
+
 import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.io.InputStreamReader
 import java.lang.Exception
 import java.net.HttpURLConnection
@@ -51,7 +53,7 @@ open class ThreadVersionCheck constructor() : Thread("Galacticraft Version Check
 
                             if (sideToCheck == Side.CLIENT) {
                                 FMLClientHandler.instance()
-                                    .getClient().player.sendMessage(TextComponentString(EnumColor.GREY.toString() + "New " + EnumColor.DARK_AQUA + Constants.MOD_NAME_SIMPLE + EnumColor.GREY + " version available! v" + remoteMajVer.toString() + "." + remoteMinVer.toString() + "." + remotePatchVer.toString() + ".xxx" + EnumColor.DARK_BLUE + " http://micdoodle8.com/"))
+                                    .getClient().player.sendMessage(Component.literal(EnumColor.GREY.toString() + "New " + EnumColor.DARK_AQUA + Constants.MOD_NAME_SIMPLE + EnumColor.GREY + " version available! v" + remoteMajVer.toString() + "." + remoteMinVer.toString() + "." + remotePatchVer.toString() + ".xxx" + EnumColor.DARK_BLUE + " http://micdoodle8.com/"))
                             } else if (sideToCheck == Side.SERVER) {
                                 GCLog.severe("New Galacticraft version available! v" + remoteMajVer.toString() + "." + remoteMinVer.toString() + "." + remotePatchVer.toString() + ".xxx" + " http://micdoodle8.com/")
                             }

@@ -1,5 +1,9 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.recipes
 
+import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
+
+import foundation.item.FoundationItemVariants
+
 import java.util.Arrays
 import java.util.HashMap
 import java.util.LinkedList
@@ -14,7 +18,6 @@ import galaxyspace.systems.SolarSystem.moons.miranda.blocks.MirandaBlocks
 import galaxyspace.systems.SolarSystem.moons.miranda.blocks.MirandaBlocks.EnumMirandaBlocks
 import galaxyspace.systems.SolarSystem.planets.overworld.items.ItemBasicGS
 import galaxyspace.systems.SolarSystem.planets.overworld.items.ItemBasicGS.BasicItems
-import galaxyspace.systems.SolarSystem.planets.overworld.items.ItemIngots
 import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityFuelGenerator
 import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityGasGenerator
 import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityHydroponicBase
@@ -35,10 +38,10 @@ import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
 import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
 import micdoodle8.mods.galacticraft.planets.venus.VenusItems
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
 import net.minecraftforge.fluids.FluidStack
@@ -119,9 +122,9 @@ object CraftingRecipesOverworld {
         RecipeUtil.addRecipe(ItemStack(GSBlocks.METALS, 1, 1), (arrayOf<Any>("XXX", "XXX", "XXX", 'X', "ingotNickel") as Array<Any?>))
         RecipeUtil.addRecipe(ItemStack(GSBlocks.METALS, 1, 2), (arrayOf<Any>("XXX", "XXX", "XXX", 'X', "ingotMagnesium") as Array<Any?>))
 
-        RecipeUtil.addRecipe(ItemStack(GSItems.INGOTS, 9, 0), (arrayOf<Any>("X", 'X', ItemStack(GSBlocks.METALS, 1, 0)) as Array<Any?>))
-        RecipeUtil.addRecipe(ItemStack(GSItems.INGOTS, 9, 2), (arrayOf<Any>("X", 'X', ItemStack(GSBlocks.METALS, 1, 1)) as Array<Any?>))
-        RecipeUtil.addRecipe(ItemStack(GSItems.INGOTS, 9, 1), (arrayOf<Any>("X", 'X', ItemStack(GSBlocks.METALS, 1, 2)) as Array<Any?>))
+        RecipeUtil.addRecipe(FoundationItemVariants.stack(GSItems.INGOTS, 9, 0), (arrayOf<Any>("X", 'X', ItemStack(GSBlocks.METALS, 1, 0)) as Array<Any?>))
+        RecipeUtil.addRecipe(FoundationItemVariants.stack(GSItems.INGOTS, 9, 2), (arrayOf<Any>("X", 'X', ItemStack(GSBlocks.METALS, 1, 1)) as Array<Any?>))
+        RecipeUtil.addRecipe(FoundationItemVariants.stack(GSItems.INGOTS, 9, 1), (arrayOf<Any>("X", 'X', ItemStack(GSBlocks.METALS, 1, 2)) as Array<Any?>))
 
         RecipeUtil.addRecipe(
             ItemStack(GSBlocks.FUTURE_GLASS_BASIC, 8, 0),
@@ -167,7 +170,7 @@ object CraftingRecipesOverworld {
                 "WZW",
                 "XXX",
                 'W',
-                ItemStack(GCItems.canister, 1, 1),
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.canister), 1, 1),
                 'X',
                 plateSteel,
                 'Y',
@@ -187,7 +190,7 @@ object CraftingRecipesOverworld {
                 'W',
                 ItemStack(GCBlocks.aluminumWire, 1, 0),
                 'X',
-                ItemStack(GCItems.basicItem, 1, 13),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 13),
                 'Y',
                 ItemStack(Blocks.CRAFTING_TABLE, 1, 0),
                 'Z',
@@ -204,7 +207,7 @@ object CraftingRecipesOverworld {
                 "XYZ",
                 "BNB",
                 'V',
-                ItemStack(GCItems.basicItem, 1, 14),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 14),
                 'W',
                 ItemStack(GCBlocks.nasaWorkbench, 1, 0),
                 'X',
@@ -229,7 +232,7 @@ object CraftingRecipesOverworld {
                 'X',
                 plateSteel,
                 'Y',
-                ItemStack(GCItems.basicItem, 1, 13),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 13),
                 'W',
                 ItemStack(GCBlocks.aluminumWire, 1, 0),
                 'V',
@@ -245,7 +248,7 @@ object CraftingRecipesOverworld {
                 'X',
                 plateTitanium,
                 'Y',
-                ItemStack(GCItems.basicItem, 1, 14),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 14),
                 'W',
                 ItemStack(GCBlocks.aluminumWire, 1, 1),
                 'V',
@@ -276,7 +279,7 @@ object CraftingRecipesOverworld {
                 "WVW",
                 "XYX",
                 'X',
-                ItemStack(GSItems.INGOTS, 1, 1),
+                FoundationItemVariants.stack(GSItems.INGOTS, 1, 1),
                 'Y',
                 ItemStack(GCBlocks.machineTiered, 1, 8),
                 'W',
@@ -312,7 +315,7 @@ object CraftingRecipesOverworld {
                 'X',
                 ItemStack(Items.GOLD_INGOT, 1, 0),
                 'Y',
-                ItemStack(GCItems.basicItem, 1, 1),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 1),
                 'W',
                 ItemStack(GCItems.flagPole, 1, 0),
                 'V',
@@ -330,7 +333,7 @@ object CraftingRecipesOverworld {
                 "WVW",
                 "CZC",
                 'X',
-                ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+                FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
                 'Y',
                 BasicItems.UNKNOW_CRYSTAL.getItemStack(),
                 'W',
@@ -340,7 +343,7 @@ object CraftingRecipesOverworld {
                 'Z',
                 ItemStack(GSBlocks.MACHINE_FRAMES, 1, 2),
                 'C',
-                ItemStack(GCItems.basicItem, 1, 14)
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 14)
             ) as Array<Any?>)
         )
         RecipeUtil.addRecipe(
@@ -398,7 +401,7 @@ object CraftingRecipesOverworld {
                 'C',
                 ItemStack(GSBlocks.MACHINE_FRAMES, 1, 0),
                 'V',
-                ItemStack(GCItems.basicItem, 1, 14),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 14),
                 'B',
                 ItemStack(GCBlocks.oxygenPipe, 1, 0)
             )
@@ -410,7 +413,7 @@ object CraftingRecipesOverworld {
                 "ZCZ",
                 "VBV",
                 'X',
-                ItemStack(MarsItems.marsItemBasic, 1, 6),
+                FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 6),
                 'Z',
                 ItemStack(GCBlocks.fluidTank, 1, 0),
                 'C',
@@ -430,7 +433,7 @@ object CraftingRecipesOverworld {
                 "DED",
                 "DFD",
                 'A',
-                ItemStack(GCItems.basicItem, 1, 20),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 20),
                 'B',
                 ItemStack(GCBlocks.fluidTank, 1, 0),
                 'C',
@@ -509,7 +512,7 @@ object CraftingRecipesOverworld {
                 'V',
                 plateBronze,
                 'X',
-                ItemStack(GCItems.basicItem, 1, 14),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 14),
                 'B',
                 BasicItems.WAFER_MODERN.getItemStack(),
                 'C',
@@ -569,11 +572,11 @@ object CraftingRecipesOverworld {
                 'V',
                 ItemStack(GCBlocks.aluminumWire, 1, 1),
                 'X',
-                ItemStack(MarsItems.marsItemBasic, 1, 6),
+                FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 6),
                 'C',
                 ItemStack(GSBlocks.MACHINE_FRAMES, 1, 2),
                 'Z',
-                ItemStack(GSItems.HDP, 1, 0),
+                FoundationItemVariants.stack(GSItems.HDP, 1, 0),
                 'Y',
                 ItemStack(GSBlocks.GRAVITATION_MODULE, 1, 0)
             ) as Array<Any?>)
@@ -587,7 +590,7 @@ object CraftingRecipesOverworld {
                 'W',
                 ItemStack(GCBlocks.aluminumWire, 1, 1),
                 'Z',
-                ItemStack(MarsItems.marsItemBasic, 1, 5),
+                FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 5),
                 'C',
                 BasicItems.WAFER_MODERN.getItemStack(),
                 'X',
@@ -606,7 +609,7 @@ object CraftingRecipesOverworld {
                 "ZCV",
                 "XWX",
                 'W',
-                ItemStack(GCItems.canister, 1, 0),
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.canister), 1, 0),
                 'Z',
                 ItemStack(GCItems.oxygenFan, 1, 0),
                 'C',
@@ -616,7 +619,7 @@ object CraftingRecipesOverworld {
                 'Y',
                 ItemStack(GCItems.oxygenVent, 1, 0),
                 'V',
-                ItemStack(MarsItems.marsItemBasic, 1, 6)
+                FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 6)
             )
         )
         RecipeUtil.addRecipe(
@@ -626,9 +629,9 @@ object CraftingRecipesOverworld {
                 "WZW",
                 "XVX",
                 'W',
-                ItemStack(GCItems.canister, 1, 0),
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.canister), 1, 0),
                 'X',
-                ItemStack(GCItems.itemBasicMoon, 1, 1),
+                FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 1),
                 'Y',
                 ItemStack(GCBlocks.spaceGlassClear, 1, OreDictionary.WILDCARD_VALUE),
                 'Z',
@@ -646,7 +649,7 @@ object CraftingRecipesOverworld {
                 'X',
                 "ingotLead",
                 'Y',
-                ItemStack(MarsItems.marsItemBasic, 1, 1),
+                FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 1),
                 'M',
                 ItemStack(GCBlocks.aluminumWire, 1, 1),
                 'Z',
@@ -695,7 +698,7 @@ object CraftingRecipesOverworld {
                 'X',
                 plateIron,
                 'C',
-                ItemStack(GCItems.canister, 1, 0),
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.canister), 1, 0),
                 'Y',
                 Items.MILK_BUCKET
             )
@@ -880,7 +883,7 @@ object CraftingRecipesOverworld {
                 "TYT",
                 "TCT",
                 'T',
-                ItemStack(GSItems.HDP, 1, 0),
+                FoundationItemVariants.stack(GSItems.HDP, 1, 0),
                 'R',
                 ItemStack(GSItems.MODERN_BATTERY, 1, GSItems.MODERN_BATTERY.getMaxDamage()),
                 'C',
@@ -896,7 +899,7 @@ object CraftingRecipesOverworld {
                 "TYT",
                 "TCT",
                 'T',
-                ItemStack(GSItems.HDP, 1, 0),
+                FoundationItemVariants.stack(GSItems.HDP, 1, 0),
                 'R',
                 ItemStack(GSItems.EXTRA_BATTERY, 1, GSItems.EXTRA_BATTERY.getMaxDamage()),
                 'C',
@@ -918,7 +921,7 @@ object CraftingRecipesOverworld {
                 'X',
                 GCItems.flagPole,
                 'V',
-                ItemStack(GCItems.basicItem, 1, 0),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 0),
                 'Z',
                 plateIron
             )
@@ -928,19 +931,19 @@ object CraftingRecipesOverworld {
             arrayOf<Any?>("YXY", "XYX", "YXY", 'X', BasicItems.PART_SOLARFLARES.getItemStack(), 'Y', GCItems.flagPole)
         )
         RecipeUtil.addRecipe(
-            ItemStack(GSItems.ROCKET_MODULES, 1, 0),
+            FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 0),
             arrayOf<Any?>(
                 "ZXX",
                 "XYV",
                 "BNB",
                 'Z',
-                ItemStack(GCItems.basicItem, 1, 19),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 19),
                 'X',
-                ItemStack(GCItems.basicItem, 1, 9),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 9),
                 'Y',
                 ItemStack(GCItems.partBuggy, 1, 1),
                 'V',
-                ItemStack(GCItems.basicItem, 1, 6),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 6),
                 'B',
                 GCItems.flagPole,
                 'N',
@@ -948,7 +951,7 @@ object CraftingRecipesOverworld {
             )
         )
         RecipeUtil.addRecipe(
-            ItemStack(GSItems.ROCKET_MODULES, 1, 1),
+            FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 1),
             arrayOf<Any?>(
                 "ZXZ",
                 "YVY",
@@ -960,11 +963,11 @@ object CraftingRecipesOverworld {
                 'Y',
                 GCItems.canvas,
                 'V',
-                ItemStack(GSItems.ROCKET_MODULES, 1, 0)
+                FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 0)
             )
         )
         RecipeUtil.addRecipe(
-            ItemStack(GSItems.ROCKET_MODULES, 1, 2),
+            FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 2),
             arrayOf<Any?>(
                 "ZXZ",
                 "YWY",
@@ -981,7 +984,7 @@ object CraftingRecipesOverworld {
         )
 
         RecipeUtil.addRecipe(
-            ItemStack(GSItems.OXYGENTANK_TIER_4, 1, GSItems.OXYGENTANK_TIER_4.getMaxDamage()),
+            ItemOxygenTank.stack(requireNotNull(GSItems.OXYGENTANK_TIER_4), 1, ItemOxygenTank.capacityOf(requireNotNull(GSItems.OXYGENTANK_TIER_4))),
             arrayOf<Any?>(
                 "XYX",
                 "ZCZ",
@@ -993,11 +996,11 @@ object CraftingRecipesOverworld {
                 'C',
                 ItemStack(GCItems.oxTankHeavy, 1, OreDictionary.WILDCARD_VALUE),
                 'Z',
-                ItemStack(AsteroidsItems.basicItem, 1, 6)
+                FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 6)
             )
         )
         RecipeUtil.addRecipe(
-            ItemStack(GSItems.OXYGENTANK_TIER_5, 1, GSItems.OXYGENTANK_TIER_5.getMaxDamage()),
+            ItemOxygenTank.stack(requireNotNull(GSItems.OXYGENTANK_TIER_5), 1, ItemOxygenTank.capacityOf(requireNotNull(GSItems.OXYGENTANK_TIER_5))),
             arrayOf<Any?>(
                 "XYX",
                 "ZCZ",
@@ -1009,11 +1012,11 @@ object CraftingRecipesOverworld {
                 'C',
                 ItemStack(GSItems.OXYGENTANK_TIER_4, 1, OreDictionary.WILDCARD_VALUE),
                 'Z',
-                ItemStack(AsteroidsItems.basicItem, 1, 6)
+                FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 6)
             )
         )
         RecipeUtil.addRecipe(
-            ItemStack(GSItems.OXYGENTANK_TIER_6, 1, GSItems.OXYGENTANK_TIER_6.getMaxDamage()),
+            ItemOxygenTank.stack(requireNotNull(GSItems.OXYGENTANK_TIER_6), 1, ItemOxygenTank.capacityOf(requireNotNull(GSItems.OXYGENTANK_TIER_6))),
             arrayOf<Any?>(
                 "XYA",
                 "ZCZ",
@@ -1025,7 +1028,7 @@ object CraftingRecipesOverworld {
                 'C',
                 ItemStack(GSItems.OXYGENTANK_TIER_5, 1, OreDictionary.WILDCARD_VALUE),
                 'Z',
-                ItemStack(AsteroidsItems.basicItem, 1, 6),
+                FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 6),
                 'A',
                 GCItems.oxygenConcentrator
             )
@@ -1042,11 +1045,11 @@ object CraftingRecipesOverworld {
                 'Y',
                 Items.GOLD_INGOT,
                 'Z',
-                ItemStack(GSItems.COMPRESSED_PLATES, 1, 1),
+                FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 1),
                 'C',
                 Items.REDSTONE,
                 'B',
-                ItemStack(GCItems.basicItem, 1, 13)
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 13)
             )
         )
 
@@ -1115,7 +1118,7 @@ object CraftingRecipesOverworld {
                 'Y',
                 BasicItems.MODULE_BASE.getItemStack(),
                 'Z',
-                ItemStack(VenusItems.basicItem, 1, 4),
+                FoundationItemVariants.stack(requireNotNull(VenusItems.basicItem), 1, 4),
                 'C',
                 BasicItems.WAFER_MODERN.getItemStack(),
                 'B',
@@ -1136,7 +1139,7 @@ object CraftingRecipesOverworld {
                 'Z',
                 BasicItems.VOLCANIC_STONE.getItemStack(),
                 'C',
-                ItemStack(VenusItems.basicItem, 1, 3)
+                FoundationItemVariants.stack(requireNotNull(VenusItems.basicItem), 1, 3)
             ) as Array<Any?>)
         )
         RecipeUtil.addRecipe(
@@ -1146,7 +1149,7 @@ object CraftingRecipesOverworld {
                 "CYC",
                 "XZX",
                 'X',
-                ItemStack(VenusItems.basicItem, 1, 4),
+                FoundationItemVariants.stack(requireNotNull(VenusItems.basicItem), 1, 4),
                 'Y',
                 BasicItems.ICE_BUCKET.getItemStack(),
                 'Z',
@@ -1158,7 +1161,7 @@ object CraftingRecipesOverworld {
 
         RecipeUtil.addRecipe(
             BasicItems.WOLF_THERMAL_SUIT.getItemStack(),
-            (arrayOf<Any>("X X", "XXX", "X X", 'X', ItemStack(AsteroidsItems.basicItem, 1, 7)) as Array<Any?>)
+            (arrayOf<Any>("X X", "XXX", "X X", 'X', FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 7)) as Array<Any?>)
         )
         RecipeUtil.addRecipe(
             BasicItems.ANIMAL_CAGE.getItemStack(),
@@ -1189,7 +1192,7 @@ object CraftingRecipesOverworld {
         )
 
         RecipeUtil.addRecipe(
-            ItemStack(GSItems.ROCKET_MODULES, 1, 8),
+            FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 8),
             (arrayOf<Any>(
                 "XY ",
                 "   ",
@@ -1201,7 +1204,7 @@ object CraftingRecipesOverworld {
             ) as Array<Any?>)
         )
         RecipeUtil.addRecipe(
-            ItemStack(GSItems.ROCKET_MODULES, 1, 9),
+            FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 9),
             (arrayOf<Any>(
                 "XY ",
                 "   ",
@@ -1213,7 +1216,7 @@ object CraftingRecipesOverworld {
             ) as Array<Any?>)
         )
         RecipeUtil.addRecipe(
-            ItemStack(GSItems.ROCKET_MODULES, 1, 10),
+            FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 10),
             (arrayOf<Any>(
                 "XY ",
                 "   ",
@@ -1236,7 +1239,7 @@ object CraftingRecipesOverworld {
                 'Y',
                 Items.REDSTONE,
                 'Z',
-                ItemStack(GCItems.basicItem, 1, 13)
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 13)
             )
         )
         RecipeUtil.addRecipe(
@@ -1246,9 +1249,9 @@ object CraftingRecipesOverworld {
                 "YZY",
                 " W ",
                 'X',
-                ItemStack(GCItems.basicItem, 1, 14),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 14),
                 'Y',
-                ItemStack(MarsItems.marsItemBasic, 1, 3),
+                FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3),
                 'Z',
                 ItemStack(GCItems.oxygenFan, 1, 0),
                 'W',
@@ -1256,16 +1259,7 @@ object CraftingRecipesOverworld {
             )
         )
 
-        for (i: Int in ItemIngots.Companion.names.indices) {
-            RecipeUtil.addRecipe(
-                ItemStack(GSItems.NUGGETS, 9, i),
-                (arrayOf<Any>("X", 'X', ItemStack(GSItems.INGOTS, 1, i)) as Array<Any?>)
-            )
-            RecipeUtil.addRecipe(
-                ItemStack(GSItems.INGOTS, 1, i),
-                (arrayOf<Any>("XXX", "XXX", "XXX", 'X', ItemStack(GSItems.NUGGETS, 1, i)) as Array<Any?>)
-            )
-        }
+        // Metal ingot and nugget conversions are loaded from native recipe data
 
         RecipeUtil.addRecipe(
             ItemStack(GSItems.GAS_EXTRACTOR, 1, GSItems.GAS_EXTRACTOR.getMaxDamage()),
@@ -1282,15 +1276,15 @@ object CraftingRecipesOverworld {
                 'C',
                 plateSteel,
                 'V',
-                ItemStack(GCItems.basicItem, 1, 14)
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 14)
             )
         )
     }
 
     @JvmStatic
     private fun addBlockSmelting() {
-        GameRegistry.addSmelting(ItemStack(GSBlocks.OVERWORLD_ORES, 1, 0), ItemStack(GSItems.INGOTS, 1, 0), 1.0f)
-        GameRegistry.addSmelting(ItemStack(GSBlocks.OVERWORLD_ORES, 1, 1), ItemStack(GSItems.INGOTS, 1, 2), 1.0f)
+        GameRegistry.addSmelting(ItemStack(GSBlocks.OVERWORLD_ORES, 1, 0), FoundationItemVariants.stack(GSItems.INGOTS, 1, 0), 1.0f)
+        GameRegistry.addSmelting(ItemStack(GSBlocks.OVERWORLD_ORES, 1, 1), FoundationItemVariants.stack(GSItems.INGOTS, 1, 2), 1.0f)
         GameRegistry.addSmelting(BasicItems.ICE_BUCKET.getItemStack(), ItemStack(Items.WATER_BUCKET), 0.0f)
         GameRegistry.addSmelting(BasicItems.HEMATITE.getItemStack(), ItemStack(Items.IRON_INGOT, 2), 1.0f)
         GameRegistry.addSmelting(BasicItems.RAW_PLASTIC.getItemStack(), BasicItems.PLASTIC.getItemStack(), 0.0f)
@@ -1299,7 +1293,7 @@ object CraftingRecipesOverworld {
     @JvmStatic
     private fun addCompressor() {
         CompressorRecipes.addShapelessRecipe(
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 0),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 0),
             Items.COAL,
             Items.COAL,
             Items.COAL,
@@ -1311,7 +1305,7 @@ object CraftingRecipesOverworld {
             Items.COAL
         )
         CompressorRecipes.addShapelessRecipe(
-            ItemStack(GCItems.itemBasicMoon, 1, 0),
+            FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 0),
             BasicItems.METEORIC_IRON_FRAGMENTS.getItemStack(),
             BasicItems.METEORIC_IRON_FRAGMENTS.getItemStack(),
             BasicItems.METEORIC_IRON_FRAGMENTS.getItemStack(),
@@ -1323,14 +1317,14 @@ object CraftingRecipesOverworld {
             BasicItems.METEORIC_IRON_FRAGMENTS.getItemStack()
         )
 
-        CompressorRecipes.addShapelessRecipe(ItemStack(GSItems.COMPRESSED_PLATES, 1, 0), Blocks.COAL_BLOCK)
-        CompressorRecipes.addShapelessRecipe(ItemStack(GSItems.COMPRESSED_PLATES, 1, 1), "ingotCobalt", "ingotCobalt")
+        CompressorRecipes.addShapelessRecipe(FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 0), Blocks.COAL_BLOCK)
+        CompressorRecipes.addShapelessRecipe(FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 1), "ingotCobalt", "ingotCobalt")
         CompressorRecipes.addShapelessRecipe(
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 2),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 2),
             "ingotMagnesium",
             "ingotMagnesium"
         )
-        CompressorRecipes.addShapelessRecipe(ItemStack(GSItems.COMPRESSED_PLATES, 1, 3), "ingotNickel", "ingotNickel")
+        CompressorRecipes.addShapelessRecipe(FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 3), "ingotNickel", "ingotNickel")
         CompressorRecipes.addShapelessRecipe(
             ItemStack(Items.COAL),
             MarsItems.carbonFragments,
@@ -1353,10 +1347,10 @@ object CraftingRecipesOverworld {
             modernWafers,
             Arrays.asList<Any?>(
                 ItemStack(Items.DIAMOND),
-                ItemStack(GCItems.itemBasicMoon, 1, 2),
-                ItemStack(GCItems.itemBasicMoon, 1, 2),
+                FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 2),
+                FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 2),
                 ItemStack(Items.REDSTONE),
-                ItemStack(GCItems.basicItem, 1, 14)
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 14)
             )
         )
     }
@@ -1378,25 +1372,25 @@ object CraftingRecipesOverworld {
             )
 
             for (i: Int in 0..5) AssemblyRecipes.addShapelessRecipe(
-                ItemStack(GSItems.SCHEMATICS, 2, i),
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GSItems.SCHEMATICS), 2, i),
                 BasicItems.BLANK_SCHEMATIC.getItemStack(),
-                ItemStack(GSItems.SCHEMATICS, 1, i)
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GSItems.SCHEMATICS), 1, i)
             )
 
             AssemblyRecipes.addShapelessRecipe(
-                ItemStack(GCItems.schematic, 2, 0),
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 2, 0),
                 BasicItems.BLANK_SCHEMATIC.getItemStack(),
-                ItemStack(GCItems.schematic, 1, 0)
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 0)
             )
             AssemblyRecipes.addShapelessRecipe(
-                ItemStack(GCItems.schematic, 2, 1),
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 2, 1),
                 BasicItems.BLANK_SCHEMATIC.getItemStack(),
-                ItemStack(GCItems.schematic, 1, 1)
+                foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 1)
             )
         }
 
         AssemblyRecipes.addShapelessRecipe(
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             plateBronze,
             "plateCoal",
             plateAluminum
@@ -1414,41 +1408,41 @@ object CraftingRecipesOverworld {
             plateSteel
         )
         AssemblyRecipes.addShapelessRecipe(
-            ItemStack(GSItems.ROCKET_MODULES, 1, 3),
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 3),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             BasicItems.MODULE_SMALLCANISTER.getItemStack(),
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4)
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4)
         )
 
         AssemblyRecipes.addShapelessRecipe(
             ItemStack(GSItems.SPACE_SUIT_HELMET, 1),
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             plateDesh,
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             plateDesh,
             ItemStack(Blocks.STAINED_GLASS_PANE, 1, OreDictionary.WILDCARD_VALUE),
             plateDesh,
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             GCItems.oxygenConcentrator,
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4)
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4)
         )
         AssemblyRecipes.addShapelessRecipe(
             ItemStack(GSItems.SPACE_SUIT_BODY, 1),
             plateDesh,
             "ingotNickel",
             plateDesh,
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             ItemStack(GCItems.steelChestplate, 1, 0),
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             plateDesh,
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             plateDesh
         )
         AssemblyRecipes.addShapelessRecipe(
             ItemStack(GSItems.SPACE_SUIT_LEGGINS, 1),
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             plateDesh,
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             plateDesh,
             "ingotNickel",
             plateDesh,
@@ -1459,33 +1453,33 @@ object CraftingRecipesOverworld {
         AssemblyRecipes.addShapelessRecipe(
             ItemStack(GSItems.SPACE_SUIT_BOOTS, 1),
             plateDesh,
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             plateDesh,
             plateDesh,
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             plateDesh,
             "ingotNickel",
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             "ingotNickel"
         )
 
         AssemblyRecipes.addShapelessRecipe(
-            ItemStack(GSItems.HDP, 1, 0),
+            FoundationItemVariants.stack(GSItems.HDP, 1, 0),
             "plateMagnesium",
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
-            ItemStack(AsteroidsItems.basicItem, 1, 5)
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 5)
         )
         AssemblyRecipes.addShapelessRecipe(
-            ItemStack(GSItems.HDP, 1, 1),
+            FoundationItemVariants.stack(GSItems.HDP, 1, 1),
             "plateCobalt",
-            ItemStack(GSItems.HDP, 1, 0),
+            FoundationItemVariants.stack(GSItems.HDP, 1, 0),
             "plateNickel",
             BasicItems.DOLOMITE_MEAL.getItemStack()
         )
         AssemblyRecipes.addShapelessRecipe(
-            ItemStack(GSItems.HDP, 1, 2),
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
-            ItemStack(GSItems.HDP, 1, 1),
+            FoundationItemVariants.stack(GSItems.HDP, 1, 2),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.HDP, 1, 1),
             BasicItems.VOLCANIC_STONE.getItemStack()
         )
 
@@ -1494,21 +1488,21 @@ object CraftingRecipesOverworld {
             "blockGlass",
             "blockGlass",
             "blockGlass",
-            ItemStack(GCItems.basicItem, 1, 0),
-            ItemStack(GCItems.basicItem, 1, 0),
-            ItemStack(GCItems.basicItem, 1, 0),
-            ItemStack(MarsItems.marsItemBasic, 1, 5),
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 0),
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 0),
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 0),
+            FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 5),
             BasicItems.WAFER_MODERN.getItemStack(),
-            ItemStack(MarsItems.marsItemBasic, 1, 5)
+            FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 5)
         )
         AssemblyRecipes.addShapelessRecipe(
             ItemStack(GSBlocks.MODERN_SINGLE_SOLARPANEL, 1, 0),
             BasicItems.DOLOMITE_MEAL.getItemStack(),
             ItemStack(Items.GOLD_INGOT, 1, 0),
             BasicItems.DOLOMITE_MEAL.getItemStack(),
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 1),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 1),
             ItemStack(GSBlocks.SINGLE_SOLARPANEL, 1, 0),
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 1)
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 1)
         )
 
         AssemblyRecipes.addShapelessRecipe(
@@ -1516,9 +1510,9 @@ object CraftingRecipesOverworld {
             plateTitanium,
             plateTitanium,
             plateTitanium,
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
-            ItemStack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
+            FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 4),
             ItemStack(GCBlocks.basicBlock, 1, 12),
             ItemStack(GCBlocks.basicBlock, 1, 12),
             ItemStack(GCBlocks.basicBlock, 1, 12)
@@ -1527,85 +1521,85 @@ object CraftingRecipesOverworld {
         if (!GSConfigCore.enableAdvancedRocketCraft) {
             for (i: Int in 0..2) {
                 AssemblyRecipes.addRecipe(
-                    ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 5),
+                    FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 5),
                     *arrayOf<Any>(
                         " X ",
                         "XYX",
                         "ZWZ",
                         'X',
-                        ItemStack(GSItems.HDP, 1, i),
+                        FoundationItemVariants.stack(GSItems.HDP, 1, i),
                         'Y',
                         ItemStack(GCItems.partBuggy, 1, 1),
                         'Z',
                         ItemStack(GCBlocks.sealableBlock, 1, 14),
                         'W',
-                        ItemStack(GCItems.oxTankHeavy, 1, 0)
+                        ItemOxygenTank.stack(requireNotNull(GCItems.oxTankHeavy), 1, 0)
                     )
                 )
                 AssemblyRecipes.addRecipe(
-                    ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 6),
+                    FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 6),
                     *arrayOf<Any>(
                         "XYX",
                         "ZCW",
                         "XAX",
                         'X',
-                        ItemStack(GSItems.HDP, 1, i),
+                        FoundationItemVariants.stack(GSItems.HDP, 1, i),
                         'Y',
-                        ItemStack(GCItems.basicItem, 1, 20),
+                        FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 20),
                         'Z',
                         ItemStack(GCItems.oxygenConcentrator, 1, 0),
                         'C',
-                        ItemStack(GSItems.ROCKET_MODULES, 1, 3),
+                        FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 3),
                         'W',
-                        ItemStack(GCItems.basicItem, 1, 14),
+                        FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 14),
                         'A',
-                        ItemStack(AsteroidsItems.basicItem, 1, 1)
+                        FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 1)
                     )
                 )
                 AssemblyRecipes.addRecipe(
-                    ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 7),
+                    FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 7),
                     *arrayOf<Any>(
                         "XYX",
                         "XCX",
                         "ZWZ",
                         'X',
-                        ItemStack(GSItems.HDP, 1, i),
+                        FoundationItemVariants.stack(GSItems.HDP, 1, i),
                         'Y',
                         ItemStack(Items.FLINT_AND_STEEL, 1, 0),
                         'Z',
                         ItemStack(GCBlocks.oxygenPipe, 1, 0),
                         'C',
-                        ItemStack(GSItems.ROCKET_MODULES, 1, 3),
+                        FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 3),
                         'W',
-                        ItemStack(GSItems.ROCKET_PARTS, 1, 8)
+                        FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 8)
                     )
                 )
                 AssemblyRecipes.addRecipe(
-                    ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 8),
+                    FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 8),
                     *arrayOf<Any>(
                         "XYX",
                         "XCX",
                         " W ",
                         'X',
-                        ItemStack(GSItems.HDP, 1, i),
+                        FoundationItemVariants.stack(GSItems.HDP, 1, i),
                         'Y',
                         ItemStack(GCBlocks.oxygenPipe, 1, 0),
                         'C',
                         ItemStack((GCItems.fuelCanister)!!.setContainerItem(null), 1, 1),
                         'W',
-                        ItemStack(AsteroidsItems.basicItem, 1, 1)
+                        FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 1)
                     )
                 )
                 AssemblyRecipes.addRecipe(
-                    ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 9),
+                    FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 9),
                     *arrayOf<Any>(
                         " Y ",
                         "XYX",
                         "X X",
                         'X',
-                        ItemStack(GSItems.HDP, 1, i),
+                        FoundationItemVariants.stack(GSItems.HDP, 1, i),
                         'Y',
-                        ItemStack(AsteroidsItems.basicItem, 1, 5)
+                        FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 5)
                     )
                 )
             }
@@ -1622,7 +1616,7 @@ object CraftingRecipesOverworld {
                 'Y',
                 ItemStack(GCBlocks.aluminumWire, 1, 1),
                 'Z',
-                ItemStack(GSItems.HDP, 1, 0),
+                FoundationItemVariants.stack(GSItems.HDP, 1, 0),
                 'W',
                 ItemStack(GSItems.BASIC, 1, 5),
                 'C',
@@ -1636,7 +1630,7 @@ object CraftingRecipesOverworld {
                 " Y ",
                 "X X",
                 'X',
-                ItemStack(GSItems.HDP, 1, 2),
+                FoundationItemVariants.stack(GSItems.HDP, 1, 2),
                 'Y',
                 BasicItems.PLASTIC_FAN.getItemStack()
             )
@@ -1648,9 +1642,9 @@ object CraftingRecipesOverworld {
                 "ZCV",
                 "XWX",
                 'X',
-                ItemStack(AsteroidsItems.basicItem, 1, 6),
+                FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 6),
                 'Y',
-                ItemStack(GCItems.basicItem, 1, 19),
+                FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 19),
                 'Z',
                 BasicItems.WAFER_MODERN.getItemStack(),
                 'C',
@@ -1669,11 +1663,11 @@ object CraftingRecipesOverworld {
             (AsteroidsItems.tier3Rocket)!!,
             GSItems.ROCKET_PARTS,
             0,
-            ItemStack(GSItems.ROCKET_MODULES, 1, 2)
+            FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 2)
         )
-        addRocketRecipe(GSItems.ROCKET_TIER_4, GSItems.ROCKET_PARTS, 5, ItemStack(GSItems.ROCKET_MODULES, 1, 8))
-        addRocketRecipe(GSItems.ROCKET_TIER_5, GSItems.ROCKET_PARTS, 10, ItemStack(GSItems.ROCKET_MODULES, 1, 9))
-        addRocketRecipe(GSItems.ROCKET_TIER_6, GSItems.ROCKET_PARTS, 15, ItemStack(GSItems.ROCKET_MODULES, 1, 10))
+        addRocketRecipe(GSItems.ROCKET_TIER_4, GSItems.ROCKET_PARTS, 5, FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 8))
+        addRocketRecipe(GSItems.ROCKET_TIER_5, GSItems.ROCKET_PARTS, 10, FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 9))
+        addRocketRecipe(GSItems.ROCKET_TIER_6, GSItems.ROCKET_PARTS, 15, FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 10))
     }
 
     @JvmStatic
@@ -1683,7 +1677,7 @@ object CraftingRecipesOverworld {
         RecyclerRecipes.recycling()
             .addNewRecipe(ItemStack(Blocks.PACKED_ICE, 1), ItemStack.EMPTY, FluidStack(FluidRegistry.WATER, 500))
         RecyclerRecipes.recycling()
-            .addNewRecipe(ItemStack(GCBlocks.blockMoon, 1, 4), ItemStack(GCItems.itemBasicMoon, 1, 2), 5, null)
+            .addNewRecipe(ItemStack(GCBlocks.blockMoon, 1, 4), FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 2), 5, null)
         RecyclerRecipes.recycling().addNewRecipe(
             ItemStack(GCBlocks.blockMoon, 1, 5),
             ItemStack(GCBlocks.blockMoon, 1, 3),
@@ -1757,7 +1751,7 @@ object CraftingRecipesOverworld {
         RecyclerRecipes.recycling().addNewRecipe(
             ItemStack(GCItems.meteoricIronRaw, 2, 0),
             ItemStack(Items.IRON_INGOT, 1, 0),
-            ItemStack(GSItems.NUGGETS, 1, 2),
+            FoundationItemVariants.stack(GSItems.NUGGETS, 1, 2),
             100,
             30,
             null
@@ -1772,7 +1766,7 @@ object CraftingRecipesOverworld {
         TileEntityLiquidExtractor.addBlockAndFluid(AsteroidBlocks.blockDenseIce, FluidStack(FluidRegistry.WATER, 100))
         TileEntityLiquidExtractor.addBlockAndFluid(GSBlocks.SURFACE_ICE, FluidStack(FluidRegistry.WATER, 100))
         TileEntityLiquidExtractor.addBlockAndFluid(
-            GSBlocks.MIRANDA_BLOCKS.getDefaultState().withProperty(
+            GSBlocks.MIRANDA_BLOCKS.defaultBlockState().setValue(
                 MirandaBlocks.BASIC_TYPE,
                 EnumMirandaBlocks.MIRANDA_ICE
             ).getBlock(), FluidStack(FluidRegistry.WATER, 100)
@@ -1867,9 +1861,9 @@ object CraftingRecipesOverworld {
         TileEntityGasGenerator.registerNewFuel(FluidRegistry.getFluid("hydrogen"), 4, 1.1f, 3)
         TileEntityGasGenerator.registerNewFuel(FluidRegistry.getFluid("methane"), 4, 1.2f, 3)
 
-        TileEntityDeconstructor.addSalvage(ItemStack(GSItems.HDP, 1, 0))
-        TileEntityDeconstructor.addSalvage(ItemStack(GSItems.HDP, 1, 1))
-        TileEntityDeconstructor.addSalvage(ItemStack(GSItems.HDP, 1, 2))
+        TileEntityDeconstructor.addSalvage(FoundationItemVariants.stack(GSItems.HDP, 1, 0))
+        TileEntityDeconstructor.addSalvage(FoundationItemVariants.stack(GSItems.HDP, 1, 1))
+        TileEntityDeconstructor.addSalvage(FoundationItemVariants.stack(GSItems.HDP, 1, 2))
 
         TileEntityDeconstructor.knownRecipes.addAll((GSRecipeUtil.getBodyRecipes() as Collection<INasaWorkbenchRecipe>))
         TileEntityDeconstructor.knownRecipes.addAll((GSRecipeUtil.getBoosterRecipes() as Collection<INasaWorkbenchRecipe>))
@@ -1881,22 +1875,22 @@ object CraftingRecipesOverworld {
             val knownRecipes: MutableList<INasaWorkbenchRecipe?> = LinkedList<INasaWorkbenchRecipe?>()
             val input: HashMap<Int, ItemStack?> = HashMap<Int, ItemStack?>()
 
-            input.put(0, ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 5))
-            input.put(1, ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 6))
-            input.put(2, ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 7))
-            input.put(3, ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 8))
-            input.put(4, ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 9))
+            input.put(0, FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 5))
+            input.put(1, FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 6))
+            input.put(2, FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 7))
+            input.put(3, FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 8))
+            input.put(4, FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 9))
 
             var rocket: Item = GSItems.ROCKET_TIER_4
             if (i == 1) rocket = GSItems.ROCKET_TIER_5
             if (i == 2) rocket = GSItems.ROCKET_TIER_6
             for (k: Int in 0..2) knownRecipes.add(NasaWorkbenchRecipe(ItemStack(rocket, 1, k), input))
 
-            TileEntityDeconstructor.addSalvage(ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 5))
-            TileEntityDeconstructor.addSalvage(ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 6))
-            TileEntityDeconstructor.addSalvage(ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 7))
-            TileEntityDeconstructor.addSalvage(ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 8))
-            TileEntityDeconstructor.addSalvage(ItemStack(GSItems.ROCKET_PARTS, 1, 5 * i + 9))
+            TileEntityDeconstructor.addSalvage(FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 5))
+            TileEntityDeconstructor.addSalvage(FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 6))
+            TileEntityDeconstructor.addSalvage(FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 7))
+            TileEntityDeconstructor.addSalvage(FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 8))
+            TileEntityDeconstructor.addSalvage(FoundationItemVariants.stack(GSItems.ROCKET_PARTS, 1, 5 * i + 9))
             TileEntityDeconstructor.knownRecipes.addAll((knownRecipes as Collection<INasaWorkbenchRecipe>))
         }
     }
@@ -1905,53 +1899,53 @@ object CraftingRecipesOverworld {
     private fun addRocketRecipe(rocket: Item, parts: Item, metafirstparts: Int, key: ItemStack) {
         RocketAssemblyRecipes.addShapelessRecipe(
             ItemStack(rocket, 1, 0),
-            ItemStack(parts, 1, metafirstparts),
-            ItemStack(parts, 1, metafirstparts + 1),
-            ItemStack(parts, 1, metafirstparts + 1),
-            ItemStack(parts, 1, metafirstparts + 2),
-            ItemStack(parts, 1, metafirstparts + 3),
-            ItemStack(parts, 1, metafirstparts + 3),
-            ItemStack(parts, 1, metafirstparts + 4),
-            ItemStack(parts, 1, metafirstparts + 4),
+            FoundationItemVariants.stack(parts, 1, metafirstparts),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 1),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 1),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 2),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 3),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 3),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 4),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 4),
             key
         )
         RocketAssemblyRecipes.addShapelessRecipe(
             ItemStack(rocket, 1, 1),
-            ItemStack(parts, 1, metafirstparts),
-            ItemStack(parts, 1, metafirstparts + 1),
-            ItemStack(parts, 1, metafirstparts + 1),
-            ItemStack(parts, 1, metafirstparts + 2),
-            ItemStack(parts, 1, metafirstparts + 3),
-            ItemStack(parts, 1, metafirstparts + 3),
-            ItemStack(parts, 1, metafirstparts + 4),
-            ItemStack(parts, 1, metafirstparts + 4),
+            FoundationItemVariants.stack(parts, 1, metafirstparts),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 1),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 1),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 2),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 3),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 3),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 4),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 4),
             key,
             ItemStack(Blocks.CHEST, 1, 0)
         )
         RocketAssemblyRecipes.addShapelessRecipe(
             ItemStack(rocket, 1, 2),
-            ItemStack(parts, 1, metafirstparts),
-            ItemStack(parts, 1, metafirstparts + 1),
-            ItemStack(parts, 1, metafirstparts + 1),
-            ItemStack(parts, 1, metafirstparts + 2),
-            ItemStack(parts, 1, metafirstparts + 3),
-            ItemStack(parts, 1, metafirstparts + 3),
-            ItemStack(parts, 1, metafirstparts + 4),
-            ItemStack(parts, 1, metafirstparts + 4),
+            FoundationItemVariants.stack(parts, 1, metafirstparts),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 1),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 1),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 2),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 3),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 3),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 4),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 4),
             key,
             ItemStack(Blocks.CHEST, 1, 0),
             ItemStack(Blocks.CHEST, 1, 0)
         )
         RocketAssemblyRecipes.addShapelessRecipe(
             ItemStack(rocket, 1, 3),
-            ItemStack(parts, 1, metafirstparts),
-            ItemStack(parts, 1, metafirstparts + 1),
-            ItemStack(parts, 1, metafirstparts + 1),
-            ItemStack(parts, 1, metafirstparts + 2),
-            ItemStack(parts, 1, metafirstparts + 3),
-            ItemStack(parts, 1, metafirstparts + 3),
-            ItemStack(parts, 1, metafirstparts + 4),
-            ItemStack(parts, 1, metafirstparts + 4),
+            FoundationItemVariants.stack(parts, 1, metafirstparts),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 1),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 1),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 2),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 3),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 3),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 4),
+            FoundationItemVariants.stack(parts, 1, metafirstparts + 4),
             key,
             ItemStack(Blocks.CHEST, 1, 0),
             ItemStack(Blocks.CHEST, 1, 0),

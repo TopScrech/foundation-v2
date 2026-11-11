@@ -6,11 +6,11 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.sin
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 object OverlayOxygenWarning : Overlay() {
     private var screenTicks: Long = 0
 
@@ -20,7 +20,7 @@ object OverlayOxygenWarning : Overlay() {
     @JvmStatic
     fun renderOxygenWarningOverlay() {
         screenTicks++
-        val mc: Minecraft = Minecraft.getMinecraft()
+        val mc: Minecraft = Minecraft.getInstance()
         val scaledresolution: ScaledResolution = ClientUtil.getScaledRes(mc, mc.displayWidth, mc.displayHeight)
         val width: Int = scaledresolution.getScaledWidth()
         val height: Int = scaledresolution.getScaledHeight()

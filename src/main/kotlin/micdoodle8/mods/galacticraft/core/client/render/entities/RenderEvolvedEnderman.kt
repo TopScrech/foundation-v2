@@ -8,15 +8,15 @@ import micdoodle8.mods.galacticraft.core.client.model.ModelEvolvedEnderman
 import micdoodle8.mods.galacticraft.core.client.render.entities.layer.LayerEvolvedEndermanEyes
 import micdoodle8.mods.galacticraft.core.client.render.entities.layer.LayerEvolvedEndermanHeldBlock
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedEnderman
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.*
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderEvolvedEnderman constructor(manager: RenderManager) :
     RenderLiving<EntityEvolvedEnderman>(manager, ModelEvolvedEnderman(), 0.5f) {
     private val endermanModel: ModelEvolvedEnderman
@@ -67,6 +67,6 @@ open class RenderEvolvedEnderman constructor(manager: RenderManager) :
     }
 
     companion object {
-        private val endermanTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/evolved_enderman.png")
+        private val endermanTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/evolved_enderman.png")
     }
 }

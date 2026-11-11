@@ -1,11 +1,13 @@
 package galaxyspace.systems.SolarSystem.moons.europa.world.gen
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import galaxyspace.systems.SolarSystem.moons.europa.world.gen.MapGenSnowEuropa
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
-import net.minecraft.block.Block
-import net.minecraft.init.Blocks
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.ChunkPrimer
 
 open class MapGenSnowEuropa : MapGenBaseMeta() {
@@ -26,7 +28,7 @@ open class MapGenSnowEuropa : MapGenBaseMeta() {
             if ((primer)!!.getBlockState(x, y, z).getBlock() === Blocks.AIR && (primer)!!.getBlockState(x, y - 1, z)
                     .getBlock() === GSBlocks.EUROPA_BLOCKS
             ) {
-                if (world.rand.nextInt(5) == 0) (primer)!!.setBlockState(
+                if (world.random.nextInt(5) == 0) (primer)!!.setBlockState(
                     x,
                     y + 1,
                     z,

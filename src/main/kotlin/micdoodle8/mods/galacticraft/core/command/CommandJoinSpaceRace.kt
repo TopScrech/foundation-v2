@@ -12,7 +12,7 @@ import net.minecraft.command.CommandBase
 import net.minecraft.command.CommandException
 import net.minecraft.command.ICommandSender
 import net.minecraft.command.WrongUsageException
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.server.MinecraftServer
 
 open class CommandJoinSpaceRace : CommandBase() {
@@ -51,7 +51,7 @@ open class CommandJoinSpaceRace : CommandBase() {
                         (GalacticraftCore.packetPipeline)!!.sendTo(
                             PacketSimple(
                                 PacketSimple.EnumSimplePacket.C_OPEN_JOIN_RACE_GUI,
-                                GCCoreUtil.getDimensionID(playerBase.world),
+                                GCCoreUtil.getDimensionID(playerBase.level()),
                                 arrayOf<Any>(stats.getSpaceRaceInviteTeamID())
                             ), playerBase
                         )

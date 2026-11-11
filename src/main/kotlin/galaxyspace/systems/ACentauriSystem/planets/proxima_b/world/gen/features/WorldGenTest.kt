@@ -1,9 +1,11 @@
 package galaxyspace.systems.ACentauriSystem.planets.proxima_b.world.gen.features
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.systems.ACentauriSystem.core.ACBlocks
 import asmodeuscore.core.astronomy.dimension.world.gen.WorldGenCustomStructure
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class WorldGenTest constructor(mode: Int) : WorldGenCustomStructure() {
@@ -141,7 +143,7 @@ open class WorldGenTest constructor(mode: Int) : WorldGenCustomStructure() {
 
     override fun generateBlock(world: World?, random: Random?, position: BlockPos?, matrixValue: Int) {
         when (matrixValue) {
-            1 -> (world)!!.setBlockState(position, ACBlocks.PROXIMA_B_LOG_1.getStateFromMeta(0))
+            1 -> (world)!!.setBlockAndUpdate(position, ACBlocks.PROXIMA_B_LOG_1.getStateFromMeta(0))
             2 -> {}
         }
     }

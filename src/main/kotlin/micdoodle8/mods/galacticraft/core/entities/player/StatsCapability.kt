@@ -1,5 +1,10 @@
 package micdoodle8.mods.galacticraft.core.entities.player
 
+import foundation.item.legacyItemValue
+
+import foundation.persistence.containsTag
+import foundation.persistence.listOfType
+
 import java.util.ArrayList
 import java.util.Collections
 import java.util.HashMap
@@ -21,14 +26,14 @@ import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import micdoodle8.mods.galacticraft.planets.asteroids.tick.AsteroidsTickHandlerServer
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.util.NonNullList
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
+import net.minecraft.core.NonNullList
 import java.lang.ref.WeakReference
 import java.util.*
 
@@ -823,18 +828,18 @@ open class StatsCapability : GCPlayerStats() {
     }
 
     override fun saveNBTData(nbt: NBTTagCompound?) {
-        (nbt)!!.setTag("ExtendedInventoryGC", this.extendedInventory.writeToNBT(NBTTagList()))
-        (nbt)!!.setInteger("playerAirRemaining", this.airRemaining)
-        (nbt)!!.setInteger("damageCounter", this.damageCounter)
-        (nbt)!!.setBoolean("OxygenSetupValid", this.oxygenSetupValid)
-        (nbt)!!.setBoolean("usingParachute2", this.usingParachute)
-        (nbt)!!.setBoolean("usingPlanetSelectionGui", this.usingPlanetSelectionGui)
-        (nbt)!!.setInteger("teleportCooldown", this.teleportCooldown)
-        (nbt)!!.setDouble("coordsTeleportedFromX", this.coordsTeleportedFromX)
-        (nbt)!!.setDouble("coordsTeleportedFromZ", this.coordsTeleportedFromZ)
-        (nbt)!!.setString("startDimension", this.startDimension)
-        (nbt)!!.setString("spaceStationDimensionInfo", WorldUtil.spaceStationDataToString(this.spaceStationDimensionData))
-        (nbt)!!.setInteger("thermalLevel", this.thermalLevel)
+        (nbt)!!.put("ExtendedInventoryGC", this.extendedInventory.writeToNBT(NBTTagList(), requireNotNull(this.player?.get()).level().registryAccess()))
+        (nbt)!!.putInt("playerAirRemaining", this.airRemaining)
+        (nbt)!!.putInt("damageCounter", this.damageCounter)
+        (nbt)!!.putBoolean("OxygenSetupValid", this.oxygenSetupValid)
+        (nbt)!!.putBoolean("usingParachute2", this.usingParachute)
+        (nbt)!!.putBoolean("usingPlanetSelectionGui", this.usingPlanetSelectionGui)
+        (nbt)!!.putInt("teleportCooldown", this.teleportCooldown)
+        (nbt)!!.putDouble("coordsTeleportedFromX", this.coordsTeleportedFromX)
+        (nbt)!!.putDouble("coordsTeleportedFromZ", this.coordsTeleportedFromZ)
+        (nbt)!!.putString("startDimension", this.startDimension)
+        (nbt)!!.putString("spaceStationDimensionInfo", WorldUtil.spaceStationDataToString(this.spaceStationDimensionData))
+        (nbt)!!.putInt("thermalLevel", this.thermalLevel)
 
         Collections.sort<ISchematicPage>((this.unlockedSchematics)!!)
 
@@ -843,19 +848,19 @@ open class StatsCapability : GCPlayerStats() {
         for (page: ISchematicPage? in this.unlockedSchematics) {
             if (page != null) {
                 val nbttagcompound: NBTTagCompound = NBTTagCompound()
-                nbttagcompound.setInteger("UnlockedPage", page.getPageID())
-                tagList.appendTag(nbttagcompound)
+                nbttagcompound.putInt("UnlockedPage", page.getPageID())
+                tagList.add(nbttagcompound)
             }
         }
 
-        (nbt)!!.setTag("Schematics", tagList)
+        (nbt)!!.put("Schematics", tagList)
 
-        (nbt)!!.setInteger("rocketStacksLength", this.stacks.size)
-        (nbt)!!.setInteger("SpaceshipTier", this.spaceshipTier)
-        (nbt)!!.setInteger("FuelLevel", this.fuelLevel)
+        (nbt)!!.putInt("rocketStacksLength", this.stacks.size)
+        (nbt)!!.putInt("SpaceshipTier", this.spaceshipTier)
+        (nbt)!!.putInt("FuelLevel", this.fuelLevel)
         if (this.rocketItem != null) {
             val returnRocket: ItemStack = ItemStack(this.rocketItem, 1, this.rocketType)
-            (nbt)!!.setTag("ReturnRocket", returnRocket.writeToNBT(NBTTagCompound()))
+            (nbt)!!.put("ReturnRocket", returnRocket.writeToNBT(NBTTagCompound()))
         }
 
         val nbttaglist: NBTTagList = NBTTagList()
@@ -865,40 +870,40 @@ open class StatsCapability : GCPlayerStats() {
 
             if (!itemstack.isEmpty()) {
                 val nbttagcompound: NBTTagCompound = NBTTagCompound()
-                nbttagcompound.setByte("Slot", i.toByte())
+                nbttagcompound.putByte("Slot", i.toByte())
                 itemstack.writeToNBT(nbttagcompound)
-                nbttaglist.appendTag(nbttagcompound)
+                nbttaglist.add(nbttagcompound)
             }
         }
 
         if (!nbttaglist.isEmpty()) {
-            (nbt)!!.setTag("RocketItems", nbttaglist)
+            (nbt)!!.put("RocketItems", nbttaglist)
         }
 
         val var4: NBTTagCompound = NBTTagCompound()
         if (this.launchpadStack != null) {
-            (nbt)!!.setTag("LaunchpadStack", this.launchpadStack!!.writeToNBT(var4))
+            (nbt)!!.put("LaunchpadStack", this.launchpadStack!!.writeToNBT(var4))
         } else {
-            (nbt)!!.setTag("LaunchpadStack", var4)
+            (nbt)!!.put("LaunchpadStack", var4)
         }
 
-        (nbt)!!.setInteger("CryogenicChamberCooldown", this.cryogenicChamberCooldown)
-        (nbt)!!.setBoolean("ReceivedSoundWarning", this.receivedSoundWarning)
-        (nbt)!!.setBoolean("ReceivedBedWarning", this.receivedBedWarning)
-        (nbt)!!.setInteger("BuildFlags", this.buildFlags)
-        (nbt)!!.setBoolean("ShownSpaceRace", this.openedSpaceRaceManager)
-        (nbt)!!.setInteger("AstroMinerCount", this.astroMinerCount)
+        (nbt)!!.putInt("CryogenicChamberCooldown", this.cryogenicChamberCooldown)
+        (nbt)!!.putBoolean("ReceivedSoundWarning", this.receivedSoundWarning)
+        (nbt)!!.putBoolean("ReceivedBedWarning", this.receivedBedWarning)
+        (nbt)!!.putInt("BuildFlags", this.buildFlags)
+        (nbt)!!.putBoolean("ShownSpaceRace", this.openedSpaceRaceManager)
+        (nbt)!!.putInt("AstroMinerCount", this.astroMinerCount)
         val astroList: NBTTagList = NBTTagList()
         for (data: BlockVec3? in this.activeAstroMinerChunks) {
             if (data != null) {
-                astroList.appendTag(data.writeToNBT(NBTTagCompound()))
+                astroList.add(data.writeToNBT(NBTTagCompound()))
             }
         }
-        (nbt)!!.setTag("AstroData", astroList)
+        (nbt)!!.put("AstroData", astroList)
 
-        (nbt)!!.setInteger("GlassColor1", this.glassColor1)
-        (nbt)!!.setInteger("GlassColor2", this.glassColor2)
-        (nbt)!!.setInteger("GlassColor3", this.glassColor3)
+        (nbt)!!.putInt("GlassColor1", this.glassColor1)
+        (nbt)!!.putInt("GlassColor2", this.glassColor2)
+        (nbt)!!.putInt("GlassColor3", this.glassColor3)
 
         val panelList: NBTTagList = NBTTagList()
         for (i: Int in 0..<BlockPanelLighting.PANELTYPES_LENGTH) {
@@ -907,85 +912,73 @@ open class StatsCapability : GCPlayerStats() {
             if (bs != null) {
                 TileEntityPanelLight.writeBlockState(stateNBT, bs)
             }
-            panelList.appendTag(stateNBT)
+            panelList.add(stateNBT)
         }
-        (nbt)!!.setTag("PanLi", panelList)
+        (nbt)!!.put("PanLi", panelList)
 
-        (nbt)!!.setInteger("PanCo", this.panelLightingColor)
+        (nbt)!!.putInt("PanCo", this.panelLightingColor)
     }
 
     override fun loadNBTData(nbt: NBTTagCompound?) {
         try {
-            this.airRemaining = (nbt)!!.getInteger("playerAirRemaining")
-            this.damageCounter = (nbt)!!.getInteger("damageCounter")
-            this.lastOxygenSetupValid = (nbt)!!.getBoolean("OxygenSetupValid")
+            this.airRemaining = (nbt)!!.getIntOr("playerAirRemaining", 0)
+            this.damageCounter = (nbt)!!.getIntOr("damageCounter", 0)
+            this.lastOxygenSetupValid = (nbt)!!.getBooleanOr("OxygenSetupValid", false)
             this.oxygenSetupValid = this.lastOxygenSetupValid
-            this.thermalLevel = (nbt)!!.getInteger("thermalLevel")
+            this.thermalLevel = (nbt)!!.getIntOr("thermalLevel", 0)
 
-            // Backwards compatibility
-            val nbttaglist: NBTTagList = (nbt)!!.getTagList("Inventory", 10)
-            this.extendedInventory.readFromNBTOld(nbttaglist)
-
-            if ((nbt)!!.hasKey("ExtendedInventoryGC")) {
-                this.extendedInventory.readFromNBT((nbt)!!.getTagList("ExtendedInventoryGC", 10))
+            val registries = requireNotNull(this.player?.get()).level().registryAccess()
+            if (nbt.containsTag("ExtendedInventoryGC")) {
+                this.extendedInventory.readFromNBT(nbt.listOfType("ExtendedInventoryGC", 10), registries)
+            } else {
+                this.extendedInventory.readFromNBTOld(nbt.listOfType("Inventory", 10), registries)
             }
 
-            // Added for GCInv command - if tried to load an offline player's
-            // inventory, load it now
-            // (if there was no offline load, then the dontload flag in doLoad()
-            // will make sure nothing happens)
-            val p: EntityPlayerMP? = this.player!!.get()
-            if (p != null) {
-                val saveinv: Array<ItemStack?>? =
-                    CommandGCInv.getSaveData((PlayerUtil.getName(p))!!.lowercase(Locale.getDefault()))
-                if (saveinv != null) {
-                    CommandGCInv.doLoad(p)
-                }
-            }
+            this.player?.get()?.let { CommandGCInv.restoreOnLogin(it, this.extendedInventory) }
 
-            if ((nbt)!!.hasKey("SpaceshipTier")) {
-                this.spaceshipTier = (nbt)!!.getInteger("SpaceshipTier")
+            if ((nbt)!!.containsTag("SpaceshipTier")) {
+                this.spaceshipTier = (nbt)!!.getIntOr("SpaceshipTier", 0)
             }
 
             //New keys in version 3.0.5.220
-            if ((nbt)!!.hasKey("FuelLevel")) {
-                this.fuelLevel = (nbt)!!.getInteger("FuelLevel")
+            if ((nbt)!!.containsTag("FuelLevel")) {
+                this.fuelLevel = (nbt)!!.getIntOr("FuelLevel", 0)
             }
-            if ((nbt)!!.hasKey("ReturnRocket")) {
-                val returnRocket: ItemStack = ItemStack((nbt)!!.getCompoundTag("ReturnRocket"))
+            if ((nbt)!!.containsTag("ReturnRocket")) {
+                val returnRocket: ItemStack = ItemStack((nbt)!!.getCompoundOrEmpty("ReturnRocket"))
                 this.rocketItem = returnRocket.getItem()
-                this.rocketType = returnRocket.getItemDamage()
+                this.rocketType = returnRocket.legacyItemValue
             }
 
-            this.usingParachute = (nbt)!!.getBoolean("usingParachute2")
-            this.usingPlanetSelectionGui = (nbt)!!.getBoolean("usingPlanetSelectionGui")
-            this.teleportCooldown = (nbt)!!.getInteger("teleportCooldown")
-            this.coordsTeleportedFromX = (nbt)!!.getDouble("coordsTeleportedFromX")
-            this.coordsTeleportedFromZ = (nbt)!!.getDouble("coordsTeleportedFromZ")
-            this.startDimension = if ((nbt)!!.hasKey("startDimension")) (nbt)!!.getString("startDimension") else ""
-            if ((nbt)!!.hasKey("spaceStationDimensionID")) {
+            this.usingParachute = (nbt)!!.getBooleanOr("usingParachute2", false)
+            this.usingPlanetSelectionGui = (nbt)!!.getBooleanOr("usingPlanetSelectionGui", false)
+            this.teleportCooldown = (nbt)!!.getIntOr("teleportCooldown", 0)
+            this.coordsTeleportedFromX = (nbt)!!.getDoubleOr("coordsTeleportedFromX", 0.0)
+            this.coordsTeleportedFromZ = (nbt)!!.getDoubleOr("coordsTeleportedFromZ", 0.0)
+            this.startDimension = if ((nbt)!!.containsTag("startDimension")) (nbt)!!.getStringOr("startDimension", "") else ""
+            if ((nbt)!!.containsTag("spaceStationDimensionID")) {
                 // If loading from an old save file, the home space station is always the overworld, so use 0 as home planet
                 this.spaceStationDimensionData =
-                    WorldUtil.stringToSpaceStationData("0$" + (nbt)!!.getInteger("spaceStationDimensionID"))
+                    WorldUtil.stringToSpaceStationData("0$" + (nbt)!!.getIntOr("spaceStationDimensionID", 0))
             } else {
                 this.spaceStationDimensionData =
-                    WorldUtil.stringToSpaceStationData((nbt)!!.getString("spaceStationDimensionInfo"))
+                    WorldUtil.stringToSpaceStationData((nbt)!!.getStringOr("spaceStationDimensionInfo", ""))
             }
 
-            if ((nbt)!!.getBoolean("usingPlanetSelectionGui")) {
+            if ((nbt)!!.getBooleanOr("usingPlanetSelectionGui", false)) {
                 this.openPlanetSelectionGuiCooldown = 20
             }
 
-            if ((nbt)!!.hasKey("RocketItems") && (nbt)!!.hasKey("rocketStacksLength")) {
-                val length: Int = (nbt)!!.getInteger("rocketStacksLength")
+            if ((nbt)!!.containsTag("RocketItems") && (nbt)!!.containsTag("rocketStacksLength")) {
+                val length: Int = (nbt)!!.getIntOr("rocketStacksLength", 0)
 
                 this.stacks = NonNullList.withSize<ItemStack>(length, ItemStack.EMPTY)
 
-                val nbttaglist1: NBTTagList = (nbt)!!.getTagList("RocketItems", 10)
+                val nbttaglist1: NBTTagList = (nbt)!!.listOfType("RocketItems", 10)
 
-                for (i: Int in 0..<nbttaglist1.tagCount()) {
-                    val nbttagcompound: NBTTagCompound = nbttaglist1.getCompoundTagAt(i)
-                    val j: Int = nbttagcompound.getByte("Slot").toInt() and 255
+                for (i: Int in 0..<nbttaglist1.size) {
+                    val nbttagcompound: NBTTagCompound = nbttaglist1.getCompoundOrEmpty(i)
+                    val j: Int = nbttagcompound.getByteOr("Slot", 0).toInt() and 255
 
                     if (j >= 0 && j < this.stacks.size) {
                         this.stacks.set(j, ItemStack(nbttagcompound))
@@ -996,10 +989,10 @@ open class StatsCapability : GCPlayerStats() {
             this.unlockedSchematics = ArrayList<ISchematicPage>()
 
             if (p != null) {
-                for (i: Int in 0..<(nbt)!!.getTagList("Schematics", 10).tagCount()) {
-                    val nbttagcompound: NBTTagCompound = (nbt)!!.getTagList("Schematics", 10).getCompoundTagAt(i)
+                for (i: Int in 0..<(nbt)!!.listOfType("Schematics", 10).size) {
+                    val nbttagcompound: NBTTagCompound = (nbt)!!.listOfType("Schematics", 10).getCompoundOrEmpty(i)
 
-                    val j: Int = nbttagcompound.getInteger("UnlockedPage")
+                    val j: Int = nbttagcompound.getIntOr("UnlockedPage", 0)
 
                     SchematicRegistry.addUnlockedPage(p, SchematicRegistry.getMatchingRecipeForID(j))
                 }
@@ -1007,38 +1000,38 @@ open class StatsCapability : GCPlayerStats() {
 
             Collections.sort<ISchematicPage>((this.unlockedSchematics)!!)
 
-            this.cryogenicChamberCooldown = (nbt)!!.getInteger("CryogenicChamberCooldown")
+            this.cryogenicChamberCooldown = (nbt)!!.getIntOr("CryogenicChamberCooldown", 0)
 
-            if ((nbt)!!.hasKey("ReceivedSoundWarning")) {
-                this.receivedSoundWarning = (nbt)!!.getBoolean("ReceivedSoundWarning")
+            if ((nbt)!!.containsTag("ReceivedSoundWarning")) {
+                this.receivedSoundWarning = (nbt)!!.getBooleanOr("ReceivedSoundWarning", false)
             }
-            if ((nbt)!!.hasKey("ReceivedBedWarning")) {
-                this.receivedBedWarning = (nbt)!!.getBoolean("ReceivedBedWarning")
+            if ((nbt)!!.containsTag("ReceivedBedWarning")) {
+                this.receivedBedWarning = (nbt)!!.getBooleanOr("ReceivedBedWarning", false)
             }
 
-            if ((nbt)!!.hasKey("LaunchpadStack")) {
-                this.launchpadStack = ItemStack((nbt)!!.getCompoundTag("LaunchpadStack"))
+            if ((nbt)!!.containsTag("LaunchpadStack")) {
+                this.launchpadStack = ItemStack((nbt)!!.getCompoundOrEmpty("LaunchpadStack"))
             } else {
                 // for backwards compatibility with saves which don't have this tag - players can't lose launchpads
                 this.launchpadStack = ItemStack(GCBlocks.landingPad, 9, 0)
             }
 
-            if ((nbt)!!.hasKey("BuildFlags")) {
-                this.buildFlags = (nbt)!!.getInteger("BuildFlags")
+            if ((nbt)!!.containsTag("BuildFlags")) {
+                this.buildFlags = (nbt)!!.getIntOr("BuildFlags", 0)
             }
 
-            if ((nbt)!!.hasKey("ShownSpaceRace")) {
-                this.openedSpaceRaceManager = (nbt)!!.getBoolean("ShownSpaceRace")
+            if ((nbt)!!.containsTag("ShownSpaceRace")) {
+                this.openedSpaceRaceManager = (nbt)!!.getBooleanOr("ShownSpaceRace", false)
             }
 
-            if ((nbt)!!.hasKey("AstroMinerCount")) {
-                this.astroMinerCount = (nbt)!!.getInteger("AstroMinerCount")
+            if ((nbt)!!.containsTag("AstroMinerCount")) {
+                this.astroMinerCount = (nbt)!!.getIntOr("AstroMinerCount", 0)
             }
-            if ((nbt)!!.hasKey("AstroData")) {
+            if ((nbt)!!.containsTag("AstroData")) {
                 this.activeAstroMinerChunks.clear()
-                val astroList: NBTTagList = (nbt)!!.getTagList("AstroData", 10)
-                for (i: Int in 0..<astroList.tagCount()) {
-                    val nbttagcompound: NBTTagCompound = astroList.getCompoundTagAt(i)
+                val astroList: NBTTagList = (nbt)!!.listOfType("AstroData", 10)
+                for (i: Int in 0..<astroList.size) {
+                    val nbttagcompound: NBTTagCompound = astroList.getCompoundOrEmpty(i)
                     val data: BlockVec3 = BlockVec3.readFromNBT(nbttagcompound)
                     this.activeAstroMinerChunks.add(data)
                 }
@@ -1047,24 +1040,24 @@ open class StatsCapability : GCPlayerStats() {
                 }
             }
 
-            if ((nbt)!!.hasKey("GlassColor1")) {
-                this.glassColor1 = (nbt)!!.getInteger("GlassColor1")
-                this.glassColor2 = (nbt)!!.getInteger("GlassColor2")
-                this.glassColor3 = (nbt)!!.getInteger("GlassColor3")
+            if ((nbt)!!.containsTag("GlassColor1")) {
+                this.glassColor1 = (nbt)!!.getIntOr("GlassColor1", 0)
+                this.glassColor2 = (nbt)!!.getIntOr("GlassColor2", 0)
+                this.glassColor3 = (nbt)!!.getIntOr("GlassColor3", 0)
             }
 
-            if ((nbt)!!.hasKey("PanLi")) {
-                val panels: NBTTagList = (nbt)!!.getTagList("PanLi", 10)
-                for (i: Int in 0..<panels.tagCount()) {
+            if ((nbt)!!.containsTag("PanLi")) {
+                val panels: NBTTagList = (nbt)!!.listOfType("PanLi", 10)
+                for (i: Int in 0..<panels.size) {
                     if (i == BlockPanelLighting.PANELTYPES_LENGTH) break
-                    val stateNBT: NBTTagCompound = panels.getCompoundTagAt(i)
+                    val stateNBT: NBTTagCompound = panels.getCompoundOrEmpty(i)
                     val bs: IBlockState = TileEntityPanelLight.readBlockState(stateNBT)
                     this.panelLightingBases[i] = if (bs.getBlock() === Blocks.AIR) null else bs
                 }
             }
 
-            if ((nbt)!!.hasKey("PanCo")) {
-                this.panelLightingColor = (nbt)!!.getInteger("PanCo")
+            if ((nbt)!!.containsTag("PanCo")) {
+                this.panelLightingColor = (nbt)!!.getIntOr("PanCo", 0)
             }
 
 

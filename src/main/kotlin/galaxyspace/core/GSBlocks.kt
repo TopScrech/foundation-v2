@@ -71,9 +71,9 @@ import galaxyspace.systems.SolarSystem.planets.pluto.blocks.PlutoBlocks
 import galaxyspace.systems.SolarSystem.planets.pluto.items.ItemBlocksPluto
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.item.ItemBlock
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.oredict.OreDictionary
 
 object GSBlocks {

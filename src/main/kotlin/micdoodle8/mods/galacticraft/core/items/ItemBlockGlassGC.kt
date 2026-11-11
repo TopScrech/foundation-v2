@@ -1,12 +1,12 @@
 package micdoodle8.mods.galacticraft.core.items
 
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 
 open class ItemBlockGlassGC constructor(block: Block?) : ItemBlockDesc(block) {
     init {
@@ -29,7 +29,7 @@ open class ItemBlockGlassGC constructor(block: Block?) : ItemBlockDesc(block) {
         hitZ: Float,
         newState: IBlockState
     ): Boolean {
-        if (!world.setBlockState(pos, newState, 3)) return false
+        if (!world.setBlock(pos, newState, 3)) return false
 
         val state: IBlockState = world.getBlockState(pos)
         if (state.getBlock().javaClass == this.block.javaClass) {

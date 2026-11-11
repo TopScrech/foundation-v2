@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.blocks
 
+import net.minecraft.network.chat.Component
+
+import foundation.level.offset
+
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.blocks.BlockTileGC
@@ -13,26 +17,26 @@ import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.asteroids.dimension.ShortRangeTelepadHandler
 import micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityShortRangeTelepad
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.BlockFaceShape
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 import kotlin.math.min
 
@@ -44,7 +48,7 @@ open class BlockShortRangeTelepad constructor(assetName: String?) : BlockTileGC(
         this.setSoundType(SoundType.METAL)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
@@ -98,7 +102,7 @@ open class BlockShortRangeTelepad constructor(assetName: String?) : BlockTileGC(
     ) {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack)
 
-        val tile: TileEntity? = worldIn.getTileEntity(pos)
+        val tile: TileEntity? = worldIn.getBlockEntity(pos)
 
         var validSpot: Boolean = true
 
@@ -107,7 +111,7 @@ open class BlockShortRangeTelepad constructor(assetName: String?) : BlockTileGC(
             while (y < 3) {
                 for (z: Int in -1..1) {
                     if (!(x == 0 && y == 0 && z == 0)) {
-                        val stateAt: IBlockState = worldIn.getBlockState(pos.add(x, y, z))
+                        val stateAt: IBlockState = worldIn.getBlockState(pos.offset(x, y, z))
 
                         if (!stateAt.getMaterial().isReplaceable()) {
                             validSpot = false
@@ -119,13 +123,13 @@ open class BlockShortRangeTelepad constructor(assetName: String?) : BlockTileGC(
         }
 
         if (!validSpot) {
-            worldIn.setBlockToAir(pos)
+            worldIn.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
 
             if (placer is EntityPlayer) {
-                if (!worldIn.isRemote) {
-                    placer.sendMessage(TextComponentString(EnumColor.RED.toString() + GCCoreUtil.translate("gui.warning.noroom")))
+                if (!worldIn.isClientSide) {
+                    placer.sendSystemMessage(Component.literal(EnumColor.RED.toString() + GCCoreUtil.translate("gui.warning.noroom")))
                 }
-                placer.inventory.addItemStackToInventory(ItemStack(Item.getItemFromBlock(this), 1, 0))
+                placer.inventory.add(ItemStack(Item.getItemFromBlock(this), 1, 0))
             }
 
             return
@@ -149,11 +153,11 @@ open class BlockShortRangeTelepad constructor(assetName: String?) : BlockTileGC(
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        return ((worldIn)!!.getTileEntity(pos) as IMultiBlock).onActivated(playerIn)
+        return ((worldIn)!!.getBlockEntity(pos) as IMultiBlock).onActivated(playerIn)
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val tileAt: TileEntity? = worldIn.getTileEntity(pos)
+        val tileAt: TileEntity? = worldIn.getBlockEntity(pos)
 
         var fakeBlockCount: Int = 0
 
@@ -162,7 +166,7 @@ open class BlockShortRangeTelepad constructor(assetName: String?) : BlockTileGC(
             while (y < 3) {
                 for (z: Int in -1..1) {
                     if (!(x == 0 && y == 0 && z == 0)) {
-                        if (worldIn.getBlockState(pos.add(x, y, z)).getBlock() === AsteroidBlocks.fakeTelepad) {
+                        if (worldIn.getBlockState(pos.offset(x, y, z)).getBlock() === AsteroidBlocks.fakeTelepad) {
                             fakeBlockCount++
                         }
                     }
@@ -181,9 +185,9 @@ open class BlockShortRangeTelepad constructor(assetName: String?) : BlockTileGC(
         super.breakBlock(worldIn, pos, state)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun randomDisplayTick(stateIn: IBlockState, worldIn: World, pos: BlockPos, rand: Random) {
-        val tileAt: TileEntity? = worldIn.getTileEntity(pos)
+        val tileAt: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tileAt is TileEntityShortRangeTelepad) {
             val telepad: TileEntityShortRangeTelepad = tileAt

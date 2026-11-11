@@ -9,16 +9,16 @@ import java.io.FileInputStream
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.world.World
-import net.minecraft.world.WorldServer
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraftforge.common.DimensionManager
 import net.minecraftforge.common.ForgeChunkManager
-import net.minecraftforge.common.config.Configuration
+import foundation.config.FoundationConfiguration as Configuration
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
@@ -34,10 +34,10 @@ open class ChunkLoadingCallback : ForgeChunkManager.LoadingCallback {
             val nbt: NBTTagCompound? = ticket.getModData()
 
             if (nbt != null) {
-                val tileX: Int = nbt.getInteger("ChunkLoaderTileX")
-                val tileY: Int = nbt.getInteger("ChunkLoaderTileY")
-                val tileZ: Int = nbt.getInteger("ChunkLoaderTileZ")
-                val tile: TileEntity? = world.getTileEntity(BlockPos(tileX, tileY, tileZ))
+                val tileX: Int = nbt.getIntOr("ChunkLoaderTileX", 0)
+                val tileY: Int = nbt.getIntOr("ChunkLoaderTileY", 0)
+                val tileZ: Int = nbt.getIntOr("ChunkLoaderTileZ", 0)
+                val tile: TileEntity? = world.getBlockEntity(BlockPos(tileX, tileY, tileZ))
 
                 if (tile is IChunkLoader) {
                     (tile as IChunkLoader).onTicketLoaded(ticket, false)
@@ -113,7 +113,7 @@ open class ChunkLoadingCallback : ForgeChunkManager.LoadingCallback {
             val chunkPos: ChunkPos = ChunkPos(x shr 4, z shr 4)
             ForgeChunkManager.forceChunk(ticket, chunkPos)
             //
-            // TileEntity tile = world.getTileEntity(x, y, z);
+            // TileEntity tile = world.getBlockEntity(x, y, z);
             //
             // if (tile instanceof IChunkLoader)
             // {
@@ -290,7 +290,7 @@ open class ChunkLoadingCallback : ForgeChunkManager.LoadingCallback {
                         val dimID: Int = dimensionEntry.key!!
 
                         if (loadOnLogin) {
-                            player!!.world.getMinecraftServer()!!.getWorld(dimID)
+                            player!!.level().getMinecraftServer()!!.getWorld(dimID)
                         }
                     }
                 }
@@ -312,7 +312,7 @@ open class ChunkLoadingCallback : ForgeChunkManager.LoadingCallback {
             // World world = loader.getWorldObj();
             //
             // BlockPos coords = loader.getCoords();
-            // TileEntity tile = world.getTileEntity(coords.posX, coords.posY,
+            // TileEntity tile = world.getBlockEntity(coords.posX, coords.posY,
             // coords.posZ);
             //
             // if (tile != null && tile.equals(loader))

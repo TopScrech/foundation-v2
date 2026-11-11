@@ -1,76 +1,53 @@
 package micdoodle8.mods.galacticraft.core.client.sounds
 
-import micdoodle8.mods.galacticraft.core.Constants
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.SoundEvent
+import net.minecraft.core.registries.Registries
+import net.minecraft.resources.Identifier
+import net.minecraft.sounds.SoundEvent
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
 import net.minecraftforge.registries.IForgeRegistry
+import net.minecraftforge.registries.RegisterEvent
 
+/** Common sound identities retain their legacy package for callers on either physical side */
 object GCSounds {
-    @JvmField
-    var bossDeath: SoundEvent? = null
+    @JvmField val bossDeath: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:entity.bossdeath"))
+    @JvmField val bossLaugh: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:entity.bosslaugh"))
+    @JvmField val bossOoh: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:entity.ooh"))
+    @JvmField val bossOuch: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:entity.ouch"))
+    @JvmField val slimeDeath: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:entity.slime_death"))
+    @JvmField val astroMiner: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:entity.astrominer"))
+    @JvmField val shuttle: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:shuttle.shuttle"))
+    @JvmField val parachute: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:player.parachute"))
+    @JvmField val openAirLock: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:player.openairlock"))
+    @JvmField val closeAirLock: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:player.closeairlock"))
+    @JvmField val singleDrip: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:ambience.singledrip"))
+    @JvmField val scaryScape: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:ambience.scaryscape"))
+    @JvmField val music: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:galacticraft.music_space"))
+    @JvmField val deconstructor: SoundEvent = SoundEvent.createVariableRangeEvent(Identifier.parse("galacticraftcore:block.deconstructor"))
 
-    @JvmField
-    var bossLaugh: SoundEvent? = null
+    val events: Map<Identifier, SoundEvent> = listOf(
+        bossDeath,
+        bossLaugh,
+        bossOoh,
+        bossOuch,
+        slimeDeath,
+        astroMiner,
+        shuttle,
+        parachute,
+        openAirLock,
+        closeAirLock,
+        singleDrip,
+        scaryScape,
+        music,
+        deconstructor
+    ).associateBy { it.location() }
 
-    @JvmField
-    var bossOoh: SoundEvent? = null
-
-    @JvmField
-    var bossOuch: SoundEvent? = null
-
-    @JvmField
-    var slimeDeath: SoundEvent? = null
-
-    @JvmField
-    var astroMiner: SoundEvent? = null
-
-    @JvmField
-    var shuttle: SoundEvent? = null
-
-    @JvmField
-    var parachute: SoundEvent? = null
-
-    @JvmField
-    var openAirLock: SoundEvent? = null
-
-    @JvmField
-    var closeAirLock: SoundEvent? = null
-
-    @JvmField
-    var singleDrip: SoundEvent? = null
-
-    @JvmField
-    var scaryScape: SoundEvent? = null
-
-    @JvmField
-    var deconstructor: SoundEvent? = null
-
-    @JvmField
-    var music: SoundEvent? = null
-
-    @JvmStatic
-    fun registerSounds(registry: IForgeRegistry<SoundEvent?>) {
-        bossDeath = registerSound("entity.bossdeath", registry)
-        bossLaugh = registerSound("entity.bosslaugh", registry)
-        bossOoh = registerSound("entity.ooh", registry)
-        bossOuch = registerSound("entity.ouch", registry)
-        slimeDeath = registerSound("entity.slime_death", registry)
-        astroMiner = registerSound("entity.astrominer", registry)
-        shuttle = registerSound("shuttle.shuttle", registry)
-        parachute = registerSound("player.parachute", registry)
-        openAirLock = registerSound("player.openairlock", registry)
-        closeAirLock = registerSound("player.closeairlock", registry)
-        singleDrip = registerSound("ambience.singledrip", registry)
-        scaryScape = registerSound("ambience.scaryscape", registry)
-        music = registerSound("galacticraft.music_space", registry)
-        deconstructor = registerSound("block.deconstructor", registry)
+    fun install(context: FMLJavaModLoadingContext) {
+        RegisterEvent.getBus(context.modBusGroup).addListener { event ->
+            for ((id, sound) in events) event.register(Registries.SOUND_EVENT, id) { sound }
+        }
     }
 
-    @JvmStatic
-    private fun registerSound(soundName: String, registry: IForgeRegistry<SoundEvent?>): SoundEvent {
-        val soundID: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, soundName)
-        val result: SoundEvent = SoundEvent(soundID).setRegistryName(soundID)
-        registry.register(result)
-        return result
+    @JvmStatic fun registerSounds(registry: IForgeRegistry<SoundEvent>) {
+        for ((id, sound) in events) registry.register(id, sound)
     }
 }

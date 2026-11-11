@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.api.tile
 
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
 
 /**
  * Implement into tile entities that can attack to landing pads. It is

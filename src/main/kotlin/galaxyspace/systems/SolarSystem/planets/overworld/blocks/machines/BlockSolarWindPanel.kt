@@ -1,5 +1,10 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.blocks.machines
 
+import net.minecraft.network.chat.Component
+
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+
 import asmodeuscore.api.item.IShiftDescription
 import galaxyspace.GalaxySpace
 import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityWindSolarPanel
@@ -11,25 +16,27 @@ import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseUniversalElectrical
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.SoundType
-import net.minecraft.block.properties.PropertyDirection
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 
 open class BlockSolarWindPanel constructor() : BlockAdvancedTile(GCBlocks.machine), IShiftDescription,
-    ISortableBlock {
+    ISortableBlock, LegacyBlockMetadata {
     init {
         this.setTranslationKey("solarwind_panel")
         this.setHardness(1.0f)
@@ -61,12 +68,12 @@ open class BlockSolarWindPanel constructor() : BlockAdvancedTile(GCBlocks.machin
         hitZ: Float
     ): Boolean {
         //playerIn.openGui(GalaxySpace.instance, -1, world, pos.getX(), pos.getY(), pos.getZ());
-        val tile: TileEntityWindSolarPanel? = (world)!!.getTileEntity(pos) as TileEntityWindSolarPanel?
+        val tile: TileEntityWindSolarPanel? = (world)!!.getBlockEntity(pos) as TileEntityWindSolarPanel?
         val x: String =
             EnumColor.DARK_GREEN.toString() + "[INFO] Generate: " + tile!!.generateWatts + " gJ/t" + (if (GalaxySpace.debug) (" | " + tile.getSolarBoost()) else "")
 
 
-        if ((world)!!.isRemote) (playerIn)!!.sendMessage(TextComponentString(x))
+        if ((world)!!.isClientSide) (playerIn)!!.sendSystemMessage(Component.literal(x))
 
         return true
     }
@@ -78,14 +85,14 @@ open class BlockSolarWindPanel constructor() : BlockAdvancedTile(GCBlocks.machin
         placer: EntityLivingBase,
         stack: ItemStack
     ) {
-        val angle: Int = MathHelper.floor(placer.rotationYaw * 4.0f / 360.0f + 0.5) and 3
+        val angle: Int = MathHelper.floor(placer.yRot * 4.0f / 360.0f + 0.5) and 3
         val change: Int = EnumFacing.byHorizontalIndex(angle).getOpposite().getHorizontalIndex()
-        worldIn.setBlockState(pos, getStateFromMeta(change), 3)
+        worldIn.setBlock(pos, getStateFromMeta(change), 3)
         BlockMulti.onPlacement(worldIn, pos, placer, this)
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val var9: TileEntity? = worldIn.getTileEntity(pos)
+        val var9: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (var9 is TileEntityWindSolarPanel) {
             var9.onDestroy(var9)
@@ -107,9 +114,9 @@ open class BlockSolarWindPanel constructor() : BlockAdvancedTile(GCBlocks.machin
     ): Boolean {
         val metadata: Int = getMetaFromState((world)!!.getBlockState(pos))
         val change: Int = (world)!!.getBlockState(pos).getValue(FACING).rotateY().getHorizontalIndex()
-        (world)!!.setBlockState(pos, this.getStateFromMeta(metadata - (metadata % 4) + change), 3)
+        (world)!!.setBlock(pos, this.getStateFromMeta(metadata - (metadata % 4) + change), 3)
 
-        val te: TileEntity? = (world)!!.getTileEntity(pos)
+        val te: TileEntity? = (world)!!.getBlockEntity(pos)
         if (te is TileBaseUniversalElectrical) {
             te.updateFacing()
         }
@@ -139,7 +146,7 @@ open class BlockSolarWindPanel constructor() : BlockAdvancedTile(GCBlocks.machin
 
     override fun getStateFromMeta(meta: Int): IBlockState {
         val enumfacing: EnumFacing = EnumFacing.byHorizontalIndex(meta % 4)
-        return this.getDefaultState().withProperty(FACING, enumfacing)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -152,6 +159,6 @@ open class BlockSolarWindPanel constructor() : BlockAdvancedTile(GCBlocks.machin
 
     companion object {
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL)
+        val FACING: EnumProperty<Direction> = BlockStateProperties.HORIZONTAL_FACING
     }
 }

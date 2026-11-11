@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
+import foundation.inventory.armorItems
+import foundation.inventory.mainItems
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import cofh.redstoneflux.api.IEnergyContainerItem
@@ -9,15 +11,15 @@ import micdoodle8.mods.galacticraft.api.transmission.NetworkType
 import micdoodle8.mods.galacticraft.core.energy.EnergyConfigHandler
 import galaxyspace.core.prefab.tile.TileEntityElectricInventory
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.NetworkManager
 import net.minecraft.network.play.server.SPacketUpdateTileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraftforge.fml.LogicalSide as Side
 
 open class TileEntityEnergyPad constructor() : TileEntityElectricInventory("tile.energy_pad.name") {
     @JvmField
@@ -68,11 +70,11 @@ open class TileEntityEnergyPad constructor() : TileEntityElectricInventory("tile
 
     open fun smeltItem(player: EntityPlayer) {
         if (this.hasEnoughEnergyToRun && this.storage.getEnergyStoredGC() > 200.0) {
-            for (stack: ItemStack in player.inventory.armorInventory) if (chargeItem(stack, 350.0)) {
+            for (stack: ItemStack in player.inventory.armorItems) if (chargeItem(stack, 350.0)) {
                 this.storage.extractEnergyGCnoMax(200f, false)
                 break
             }
-            for (stack: ItemStack in player.inventory.mainInventory) if (chargeItem(stack, 350.0)) {
+            for (stack: ItemStack in player.inventory.mainItems) if (chargeItem(stack, 350.0)) {
                 this.storage.extractEnergyGCnoMax(200f, false)
                 break
             }
@@ -112,22 +114,22 @@ open class TileEntityEnergyPad constructor() : TileEntityElectricInventory("tile
 
     override fun readFromNBT(par1NBTTagCompound: NBTTagCompound) {
         super.readFromNBT(par1NBTTagCompound)
-        processTicks = par1NBTTagCompound.getInteger("smeltingTicks")
-        this.isCollide = par1NBTTagCompound.getBoolean("isCollide")
+        processTicks = par1NBTTagCompound.getIntOr("smeltingTicks", 0)
+        this.isCollide = par1NBTTagCompound.getBooleanOr("isCollide", false)
 
         ItemStackHelper.loadAllItems(par1NBTTagCompound, this.getInventory())
     }
 
     override fun writeToNBT(par1NBTTagCompound: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(par1NBTTagCompound)
-        par1NBTTagCompound.setInteger("smeltingTicks", processTicks)
-        par1NBTTagCompound.setBoolean("isCollide", this.isCollide)
+        par1NBTTagCompound.putInt("smeltingTicks", processTicks)
+        par1NBTTagCompound.putBoolean("isCollide", this.isCollide)
         ItemStackHelper.saveAllItems(par1NBTTagCompound, this.getInventory())
 
         return par1NBTTagCompound
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemStack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemStack: ItemStack): Boolean {
         return true
     }
 
@@ -153,7 +155,7 @@ open class TileEntityEnergyPad constructor() : TileEntityElectricInventory("tile
         return false
     }
 
-    public override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    public override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf()
     }
 

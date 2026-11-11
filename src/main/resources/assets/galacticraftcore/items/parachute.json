@@ -1,0 +1,125 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:component",
+    "component": "foundation:legacy_metadata",
+    "cases": [
+      {
+        "when": 0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute"
+        }
+      },
+      {
+        "when": 1,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_black"
+        }
+      },
+      {
+        "when": 2,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_blue"
+        }
+      },
+      {
+        "when": 3,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_lime"
+        }
+      },
+      {
+        "when": 4,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_brown"
+        }
+      },
+      {
+        "when": 5,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_darkblue"
+        }
+      },
+      {
+        "when": 6,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_darkgray"
+        }
+      },
+      {
+        "when": 7,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_darkgreen"
+        }
+      },
+      {
+        "when": 8,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_gray"
+        }
+      },
+      {
+        "when": 9,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_magenta"
+        }
+      },
+      {
+        "when": 10,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_orange"
+        }
+      },
+      {
+        "when": 11,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_pink"
+        }
+      },
+      {
+        "when": 12,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_purple"
+        }
+      },
+      {
+        "when": 13,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_red"
+        }
+      },
+      {
+        "when": 14,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_teal"
+        }
+      },
+      {
+        "when": 15,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/parachute_yellow"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "galacticraftcore:item/parachute"
+    }
+  }
+}

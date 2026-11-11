@@ -8,17 +8,17 @@ import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.tile.TileEntityAdvanced
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.chunk.Chunk
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.LinkedList
 import kotlin.math.atan2
 
@@ -40,7 +40,7 @@ abstract class TileEntityBeamOutput : TileEntityAdvanced(), ILaserNode {
 
     override fun update() {
         if (this.preLoadTarget != null) {
-            val tileAtTarget: TileEntity? = this.world.getTileEntity(this.preLoadTarget)
+            val tileAtTarget: TileEntity? = this.world.getBlockEntity(this.preLoadTarget)
 
             if (tileAtTarget != null && tileAtTarget is ILaserNode) {
                 this.setTarget(tileAtTarget as ILaserNode)
@@ -255,7 +255,7 @@ abstract class TileEntityBeamOutput : TileEntityAdvanced(), ILaserNode {
 
     override fun getTarget(): ILaserNode? {
         if (this.targetVec.getX() != -1 || this.targetVec.getY() != -1 || this.targetVec.getZ() != -1) {
-            val tileAtTarget: TileEntity? = this.world.getTileEntity(this.targetVec)
+            val tileAtTarget: TileEntity? = this.world.getBlockEntity(this.targetVec)
 
             if (tileAtTarget != null && tileAtTarget is ILaserNode) {
                 return tileAtTarget as ILaserNode
@@ -269,7 +269,7 @@ abstract class TileEntityBeamOutput : TileEntityAdvanced(), ILaserNode {
 
     open fun setTarget(target: ILaserNode?) {
         if (target != null) {
-            this.targetVec = (target.getTile())!!.getPos()
+            this.targetVec = (target.getTile())!!.getBlockPos()
         } else {
             this.targetVec = BlockPos(-1, -1, -1)
         }
@@ -278,21 +278,21 @@ abstract class TileEntityBeamOutput : TileEntityAdvanced(), ILaserNode {
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
 
-        if (nbt.getBoolean("HasTarget")) {
+        if (nbt.getBooleanOr("HasTarget", false)) {
             this.preLoadTarget =
-                BlockPos(nbt.getInteger("TargetX"), nbt.getInteger("TargetY"), nbt.getInteger("TargetZ"))
+                BlockPos(nbt.getIntOr("TargetX", 0), nbt.getIntOr("TargetY", 0), nbt.getIntOr("TargetZ", 0))
         }
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
 
-        nbt.setBoolean("HasTarget", this.getTarget() != null)
+        nbt.putBoolean("HasTarget", this.getTarget() != null)
 
         if (this.getTarget() != null) {
-            nbt.setInteger("TargetX", (this.getTarget()!!.getTile())!!.getPos().getX())
-            nbt.setInteger("TargetY", (this.getTarget()!!.getTile())!!.getPos().getY())
-            nbt.setInteger("TargetZ", (this.getTarget()!!.getTile())!!.getPos().getZ())
+            nbt.putInt("TargetX", (this.getTarget()!!.getTile())!!.getBlockPos().getX())
+            nbt.putInt("TargetY", (this.getTarget()!!.getTile())!!.getBlockPos().getY())
+            nbt.putInt("TargetZ", (this.getTarget()!!.getTile())!!.getBlockPos().getZ())
         }
 
         return nbt

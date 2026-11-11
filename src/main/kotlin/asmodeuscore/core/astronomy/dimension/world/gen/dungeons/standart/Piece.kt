@@ -1,8 +1,10 @@
 package asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart
 
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import foundation.level.horizontalStructureBounds
+
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.StructureComponent
 import net.minecraft.world.gen.structure.template.TemplateManager
 import java.util.Random
@@ -28,7 +30,7 @@ abstract class Piece : StructureComponent {
         }
     }
 
-    protected open fun getExtension(direction: EnumFacing, length: Int, width: Int): StructureBoundingBox {
+    protected open fun getExtension(direction: EnumFacing, length: Int, width: Int): BoundingBox {
         val blockX: Int
         val blockZ: Int
         val sizeX: Int
@@ -37,39 +39,39 @@ abstract class Piece : StructureComponent {
             EnumFacing.NORTH -> {
                 sizeX = width
                 sizeZ = length
-                blockX = this.boundingBox.minX + (this.boundingBox.maxX - this.boundingBox.minX) / 2 - sizeX / 2
-                blockZ = this.boundingBox.minZ - sizeZ
+                blockX = this.boundingBox.minX() + (this.boundingBox.maxX() - this.boundingBox.minX()) / 2 - sizeX / 2
+                blockZ = this.boundingBox.minZ() - sizeZ
             }
 
             EnumFacing.EAST -> {
                 sizeX = length
                 sizeZ = width
-                blockX = this.boundingBox.maxX
-                blockZ = this.boundingBox.minZ + (this.boundingBox.maxZ - this.boundingBox.minZ) / 2 - sizeZ / 2
+                blockX = this.boundingBox.maxX()
+                blockZ = this.boundingBox.minZ() + (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2 - sizeZ / 2
             }
 
             EnumFacing.SOUTH -> {
                 sizeX = width
                 sizeZ = length
-                blockX = this.boundingBox.minX + (this.boundingBox.maxX - this.boundingBox.minX) / 2 - sizeX / 2
-                blockZ = this.boundingBox.maxZ
+                blockX = this.boundingBox.minX() + (this.boundingBox.maxX() - this.boundingBox.minX()) / 2 - sizeX / 2
+                blockZ = this.boundingBox.maxZ()
             }
 
             EnumFacing.WEST -> {
                 sizeX = length
                 sizeZ = width
-                blockX = this.boundingBox.minX - sizeX
-                blockZ = this.boundingBox.minZ + (this.boundingBox.maxZ - this.boundingBox.minZ) / 2 - sizeZ / 2
+                blockX = this.boundingBox.minX() - sizeX
+                blockZ = this.boundingBox.minZ() + (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2 - sizeZ / 2
             }
 
             else -> {
                 sizeX = length
                 sizeZ = width
-                blockX = this.boundingBox.minX - sizeX
-                blockZ = this.boundingBox.minZ + (this.boundingBox.maxZ - this.boundingBox.minZ) / 2 - sizeZ / 2
+                blockX = this.boundingBox.minX() - sizeX
+                blockZ = this.boundingBox.minZ() + (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2 - sizeZ / 2
             }
         }
-        return StructureBoundingBox(blockX, blockZ, blockX + sizeX, blockZ + sizeZ)
+        return horizontalStructureBounds(blockX, blockZ, blockX + sizeX, blockZ + sizeZ)
     }
 
     open fun getNextPiece(startPiece: DungeonStart?, rand: Random?): Piece? {

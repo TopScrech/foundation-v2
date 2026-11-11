@@ -2,8 +2,8 @@ package micdoodle8.mods.galacticraft.api.prefab.world.gen
 
 import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody
 import micdoodle8.mods.galacticraft.api.world.BiomeGenBaseGC
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.biome.Biome
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.gen.layer.IntCache
 import java.util.ArrayList
 import java.util.Random

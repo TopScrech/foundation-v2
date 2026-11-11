@@ -9,7 +9,7 @@ import asmodeuscore.core.handler.GalaxyMapHandler
 import micdoodle8.mods.galacticraft.core.client.render.entities.RenderMeteor
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.network.INetHandler
 import net.minecraft.network.NetHandlerPlayServer
 import net.minecraftforge.fml.client.FMLClientHandler
@@ -48,7 +48,7 @@ open class ClientProxy : CommonProxy() {
         var enableInfoOnMap: Boolean = true
 
         @JvmField
-        var smallInfoOnMap: Boolean = Minecraft.getMinecraft().gameSettings.guiScale == 0
+        var smallInfoOnMap: Boolean = Minecraft.getInstance().gameSettings.guiScale == 0
 
         @JvmField
         var renderRingZones: Boolean = true

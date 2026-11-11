@@ -2,15 +2,15 @@ package micdoodle8.mods.galacticraft.planets.asteroids.inventory
 
 import micdoodle8.mods.galacticraft.core.inventory.SlotRocketBenchResult
 import micdoodle8.mods.galacticraft.planets.mars.util.RecipeUtilMars
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.Container as IInventory
 import net.minecraft.inventory.InventoryCraftResult
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 
 open class ContainerSchematicAstroMiner constructor(par1InventoryPlayer: InventoryPlayer, pos: BlockPos?) :
     Container() {
@@ -23,7 +23,7 @@ open class ContainerSchematicAstroMiner constructor(par1InventoryPlayer: Invento
 
     init {
         this.world = par1InventoryPlayer.player.world
-        this.addSlotToContainer(
+        this.addSlot(
             SlotRocketBenchResult(
                 par1InventoryPlayer.player,
                 this.craftMatrix,
@@ -40,7 +40,7 @@ open class ContainerSchematicAstroMiner constructor(par1InventoryPlayer: Invento
         // Miner top layer
         i = 0
         while (i < 4) {
-            this.addSlotToContainer(
+            this.addSlot(
                 SlotSchematicAstroMiner(
                     this.craftMatrix,
                     count++,
@@ -56,7 +56,7 @@ open class ContainerSchematicAstroMiner constructor(par1InventoryPlayer: Invento
         // Miner mid layer
         i = 0
         while (i < 5) {
-            this.addSlotToContainer(
+            this.addSlot(
                 SlotSchematicAstroMiner(
                     this.craftMatrix,
                     count++,
@@ -72,7 +72,7 @@ open class ContainerSchematicAstroMiner constructor(par1InventoryPlayer: Invento
         // Miner bottom layer
         i = 0
         while (i < 3) {
-            this.addSlotToContainer(
+            this.addSlot(
                 SlotSchematicAstroMiner(
                     this.craftMatrix,
                     count++,
@@ -88,7 +88,7 @@ open class ContainerSchematicAstroMiner constructor(par1InventoryPlayer: Invento
         // Laser
         i = 0
         while (i < 2) {
-            this.addSlotToContainer(
+            this.addSlot(
                 SlotSchematicAstroMiner(
                     this.craftMatrix,
                     count++,
@@ -106,7 +106,7 @@ open class ContainerSchematicAstroMiner constructor(par1InventoryPlayer: Invento
         while (i < 3) {
             j = 0
             while (j < 9) {
-                this.addSlotToContainer(Slot(par1InventoryPlayer, j + i * 9 + 9, 8 + j * 18, 140 + i * 18 - 26))
+                this.addSlot(Slot(par1InventoryPlayer, j + i * 9 + 9, 8 + j * 18, 140 + i * 18 - 26))
                 ++j
             }
             ++i
@@ -114,17 +114,17 @@ open class ContainerSchematicAstroMiner constructor(par1InventoryPlayer: Invento
 
         i = 0
         while (i < 9) {
-            this.addSlotToContainer(Slot(par1InventoryPlayer, i, 8 + i * 18, 144 + 54 - 26))
+            this.addSlot(Slot(par1InventoryPlayer, i, 8 + i * 18, 144 + 54 - 26))
             ++i
         }
 
-        this.onCraftMatrixChanged(this.craftMatrix)
+        this.slotsChanged(this.craftMatrix)
     }
 
-    override fun onContainerClosed(par1EntityPlayer: EntityPlayer) {
-        super.onContainerClosed(par1EntityPlayer)
+    override fun removed(par1EntityPlayer: EntityPlayer) {
+        super.removed(par1EntityPlayer)
 
-        if (!this.world.isRemote) {
+        if (!this.world.isClientSide) {
             for (var2: Int in 1..<this.craftMatrix.getSizeInventory()) {
                 val var3: ItemStack = this.craftMatrix.removeStackFromSlot(var2)
 
@@ -135,34 +135,34 @@ open class ContainerSchematicAstroMiner constructor(par1InventoryPlayer: Invento
         }
     }
 
-    override fun onCraftMatrixChanged(par1IInventory: IInventory) {
-        this.craftResult.setInventorySlotContents(0, RecipeUtilMars.findMatchingAstroMinerRecipe(this.craftMatrix))
+    override fun slotsChanged(par1IInventory: IInventory) {
+        this.craftResult.setItem(0, RecipeUtilMars.findMatchingAstroMinerRecipe(this.craftMatrix))
     }
 
-    override fun canInteractWith(par1EntityPlayer: EntityPlayer): Boolean {
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
         return true
     }
 
-    override fun transferStackInSlot(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
+    override fun quickMoveStack(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
         var var2: ItemStack = ItemStack.EMPTY
         val var3: Slot? = this.inventorySlots.get(par1)
 
-        if (var3 != null && var3.getHasStack()) {
-            val var4: ItemStack = var3.getStack()
+        if (var3 != null && var3.hasItem()) {
+            val var4: ItemStack = var3.getItem()
             var2 = var4.copy()
 
             val done: Boolean = false
             if (par1 <= 14) {
-                if (!this.mergeItemStack(var4, 15, 51, false)) {
+                if (!this.moveItemStackTo(var4, 15, 51, false)) {
                     return ItemStack.EMPTY
                 }
 
-                var3.onSlotChange(var4, var2)
+                var3.onQuickCraft(var4, var2)
             } else {
                 var valid: Boolean = false
                 for (i: Int in 1..14) {
                     val testSlot: Slot = this.inventorySlots.get(i)
-                    if (!testSlot.getHasStack() && testSlot.isItemValid(var2)) {
+                    if (!testSlot.hasItem() && testSlot.mayPlace(var2)) {
                         valid = true
                         break
                     }
@@ -173,23 +173,23 @@ open class ContainerSchematicAstroMiner constructor(par1InventoryPlayer: Invento
                     }
                 } else {
                     if (par1 >= 15 && par1 < 42) {
-                        if (!this.mergeItemStack(var4, 42, 51, false)) {
+                        if (!this.moveItemStackTo(var4, 42, 51, false)) {
                             return ItemStack.EMPTY
                         }
                     } else if (par1 >= 42 && par1 < 51) {
-                        if (!this.mergeItemStack(var4, 15, 42, false)) {
+                        if (!this.moveItemStackTo(var4, 15, 42, false)) {
                             return ItemStack.EMPTY
                         }
-                    } else if (!this.mergeItemStack(var4, 15, 51, false)) {
+                    } else if (!this.moveItemStackTo(var4, 15, 51, false)) {
                         return ItemStack.EMPTY
                     }
                 }
             }
 
             if (var4.isEmpty()) {
-                var3.putStack(ItemStack.EMPTY)
+                var3.set(ItemStack.EMPTY)
             } else {
-                var3.onSlotChanged()
+                var3.setChanged()
             }
 
             if (var4.getCount() == var2.getCount()) {
@@ -210,14 +210,14 @@ open class ContainerSchematicAstroMiner constructor(par1InventoryPlayer: Invento
 
             for (k: Int in par2..<par3) {
                 slot = this.inventorySlots.get(k)
-                slotStack = slot.getStack()
+                slotStack = slot.getItem()
 
-                if (slotStack.isEmpty() && slot.isItemValid(par1ItemStack)) {
+                if (slotStack.isEmpty() && slot.mayPlace(par1ItemStack)) {
                     val stackOneItem: ItemStack = par1ItemStack.copy()
                     stackOneItem.setCount(1)
                     par1ItemStack.shrink(1)
-                    slot.putStack(stackOneItem)
-                    slot.onSlotChanged()
+                    slot.set(stackOneItem)
+                    slot.setChanged()
                     flag1 = true
                     break
                 }

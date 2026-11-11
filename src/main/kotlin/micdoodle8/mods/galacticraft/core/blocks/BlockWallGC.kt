@@ -1,40 +1,43 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockFenceGate
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.IProperty
-import net.minecraft.block.properties.PropertyBool
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.Property as IProperty
+import net.minecraft.world.level.block.state.properties.BooleanProperty as PropertyBool
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class BlockWallGC /* Do not extend BlockWall */ constructor(name: String?) : Block(Material.ROCK),
-    ISortableBlock {
+    ISortableBlock, LegacyBlockMetadata {
     init {
         this.setHardness(1.5f)
         this.setResistance(2.5f)
         this.setDefaultState(
-            this.getDefaultState().withProperty(UP, false)
-                .withProperty(NORTH, false)
-                .withProperty(EAST, false)
-                .withProperty(SOUTH, false)
-                .withProperty(WEST, false)
-                .withProperty(VARIANT, BlockType.TIN_1_WALL)
+            this.defaultBlockState().setValue(UP, false)
+                .setValue(NORTH, false)
+                .setValue(EAST, false)
+                .setValue(SOUTH, false)
+                .setValue(WEST, false)
+                .setValue(VARIANT, BlockType.TIN_1_WALL)
         )
         this.setTranslationKey(name)
     }
@@ -140,7 +143,7 @@ open class BlockWallGC /* Do not extend BlockWall */ constructor(name: String?) 
         ) block.getMaterial(state) !== Material.GOURD else false else true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (i: Int in 0..<(if (GalacticraftCore.isPlanetsLoaded) 6 else 4)) {
             list.add(ItemStack(this, 1, i))
@@ -165,7 +168,7 @@ open class BlockWallGC /* Do not extend BlockWall */ constructor(name: String?) 
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(VARIANT, BlockType.entries[meta % 6])
+        return this.defaultBlockState().setValue(VARIANT, BlockType.entries[meta % 6])
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -178,11 +181,11 @@ open class BlockWallGC /* Do not extend BlockWall */ constructor(name: String?) 
         val flag2: kotlin.Boolean = this.canConnectTo(world, pos.south())
         val flag3: kotlin.Boolean = this.canConnectTo(world, pos.west())
         val flag4: kotlin.Boolean = flag && !flag1 && flag2 && !flag3 || !flag && flag1 && !flag2 && flag3
-        return state.withProperty(UP, !flag4 || !world.isAirBlock(pos.up()))
-            .withProperty(NORTH, flag)
-            .withProperty(EAST, flag1)
-            .withProperty(SOUTH, flag2)
-            .withProperty(WEST, flag3)
+        return state.setValue(UP, !flag4 || !world.isEmptyBlock(pos.above()))
+            .setValue(NORTH, flag)
+            .setValue(EAST, flag1)
+            .setValue(SOUTH, flag2)
+            .setValue(WEST, flag3)
     }
 
     override fun createBlockState(): BlockStateContainer {
@@ -205,7 +208,9 @@ open class BlockWallGC /* Do not extend BlockWall */ constructor(name: String?) 
             return this.getName()
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
     }

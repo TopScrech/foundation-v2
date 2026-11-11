@@ -1,5 +1,6 @@
 package micdoodle8.mods.galacticraft.planets.venus
 
+import foundation.item.FoundationItemVariants
 import net.minecraft.world.biome.Biome.SpawnListEntry
 
 import micdoodle8.mods.galacticraft.api.GalacticraftRegistry
@@ -48,33 +49,32 @@ import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntitySolarArrayModul
 import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntitySpout
 import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntityTreasureChestVenus
 import micdoodle8.mods.galacticraft.planets.venus.world.gen.BiomeVenus
-import net.minecraft.block.material.MapColor
+import net.minecraft.world.level.material.MapColor
 import net.minecraft.block.material.Material
 import net.minecraft.block.material.MaterialLiquid
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityList
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.common.config.Configuration
+import foundation.config.FoundationConfiguration as Configuration
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.common.event.FMLServerStartedEvent
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
+import net.minecraftforge.event.server.ServerStartedEvent as FMLServerStartedEvent
+import net.minecraftforge.event.server.ServerStartingEvent as FMLServerStartingEvent
 import net.minecraftforge.fml.common.registry.EntityRegistry
 import net.minecraftforge.fml.common.registry.GameRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 
 open class VenusModule : IPlanetsModule {
-    override fun preInit(event: FMLPreInitializationEvent?) {
+    override fun preInit() {
         planetVenus =
             Planet("venus").setParentSolarSystem(GalacticraftCore.solarSystemSol).setRingColorRGB(0.1f, 0.9f, 0.6f)
                 .setPhaseShift(2.0f).setRelativeDistanceFromCenter(CelestialBody.ScalableDistance(0.75f, 0.75f))
@@ -83,9 +83,9 @@ open class VenusModule : IPlanetsModule {
 
         if (!FluidRegistry.isFluidRegistered("sulphuricacid")) {
             val stillIcon: ResourceLocation =
-                ResourceLocation(GalacticraftPlanets.TEXTURE_PREFIX + "blocks/fluids/sulphuric_acid_still")
+                ResourceLocation.parse(GalacticraftPlanets.TEXTURE_PREFIX + "blocks/fluids/sulphuric_acid_still")
             val flowingIcon: ResourceLocation =
-                ResourceLocation(GalacticraftPlanets.TEXTURE_PREFIX + "blocks/fluids/sulphuric_acid_flow")
+                ResourceLocation.parse(GalacticraftPlanets.TEXTURE_PREFIX + "blocks/fluids/sulphuric_acid_flow")
             sulphuricAcidGC = Fluid("sulphuricacid", stillIcon, flowingIcon).setDensity(6229).setViscosity(1400)
             FluidRegistry.registerFluid(sulphuricAcidGC)
         } else {
@@ -126,7 +126,7 @@ open class VenusModule : IPlanetsModule {
         this.registerCreatures()
         this.registerOtherEntities()
 
-        planetVenus!!.setBodyIcon(ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/venus.png"))
+        planetVenus!!.setBodyIcon(ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/venus.png"))
         planetVenus!!.setDimensionInfo(ConfigManagerVenus.Companion.dimensionIDVenus, WorldProviderVenus::class.java)
             .setTierRequired(3)
         planetVenus!!.setAtmosphere(AtmosphereInfo(false, true, true, 5.0f, 0.3f, 54.0f))
@@ -142,15 +142,15 @@ open class VenusModule : IPlanetsModule {
         GalacticraftRegistry.registerTeleportType(WorldProviderVenus::class.java, TeleportTypeVenus())
         GalacticraftRegistry.registerRocketGui(
             WorldProviderVenus::class.java,
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/venus_rocket_gui.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/venus_rocket_gui.png")
         )
         GalacticraftRegistry.addDungeonLoot(3, ItemStack(VenusItems.volcanicPickaxe, 1, 0))
-        GalacticraftRegistry.addDungeonLoot(3, ItemStack(VenusItems.basicItem, 1, 0))
+        GalacticraftRegistry.addDungeonLoot(3, FoundationItemVariants.stack(requireNotNull(VenusItems.basicItem), 1, 0))
 
         GalacticraftRegistry.registerGear(
             Constants.GEAR_ID_SHIELD_CONTROLLER,
             EnumExtendedInventorySlot.SHIELD_CONTROLLER,
-            ItemStack(VenusItems.basicItem, 1, 0)
+            FoundationItemVariants.stack(requireNotNull(VenusItems.basicItem), 1, 0)
         )
         GalacticraftRegistry.registerGear(
             Constants.GEAR_ID_THERMAL_PADDING_T2_HELMET,
@@ -175,7 +175,7 @@ open class VenusModule : IPlanetsModule {
 
         (GalacticraftCore.proxy)!!.registerFluidTexture(
             sulphuricAcid,
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/misc/underacid.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/misc/underacid.png")
         )
 
         MinecraftForge.EVENT_BUS.register(VenusTickHandlerServer())
@@ -232,7 +232,7 @@ open class VenusModule : IPlanetsModule {
 
     override fun getGuiElement(side: Side?, ID: Int, player: EntityPlayer?, world: World?, x: Int, y: Int, z: Int): Any? {
         val pos: BlockPos = BlockPos(x, y, z)
-        val tile: TileEntity? = (world)!!.getTileEntity(pos)
+        val tile: TileEntity? = (world)!!.getBlockEntity(pos)
 
         if (ID == GuiIdsPlanets.MACHINE_VENUS) {
             if (tile is TileEntityGeothermalGenerator) {
@@ -259,7 +259,7 @@ open class VenusModule : IPlanetsModule {
         registerGalacticraftNonMobEntity(clazz, name, 80, 3, true)
         val nextEggID: Int = GCCoreUtil.getNextValidID()
         if (nextEggID < 65536) {
-            val resourcelocation: ResourceLocation = ResourceLocation(Constants.MOD_ID_PLANETS, name)
+            val resourcelocation: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_PLANETS, name)
             //            name = Constants.MOD_ID_PLANETS + "." + name;
 //            net.minecraftforge.fml.common.registry.EntityEntry entry = new net.minecraftforge.fml.common.registry.EntityEntry(clazz, name);
 //            net.minecraftforge.fml.common.registry.GameData.getEntityRegistry().register(nextEggID, resourcelocation, entry);
@@ -288,7 +288,7 @@ open class VenusModule : IPlanetsModule {
             updateFreq: Int,
             sendVel: Boolean
         ) {
-            val registryName: ResourceLocation = ResourceLocation(Constants.MOD_ID_PLANETS, var1)
+            val registryName: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_PLANETS, var1)
             EntityRegistry.registerModEntity(
                 registryName,
                 var0,

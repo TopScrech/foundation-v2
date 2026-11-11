@@ -1,32 +1,34 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items.tools
 
+import foundation.persistence.containsTag
+
 import galaxyspace.core.util.GSCreativeTabs
 import micdoodle8.mods.galacticraft.core.util.EnumColor
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.item.EnumAction
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
 open class ItemMatterManipulator constructor() : Item() {
@@ -44,15 +46,15 @@ open class ItemMatterManipulator constructor() : Item() {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(stack: ItemStack, worldIn: World?, list: MutableList<String?>, flagIn: ITooltipFlag) {
         if (stack.hasTagCompound()) {
-            list.add(EnumColor.DARK_RED.toString() + "Timer: " + stack.getTagCompound()!!.getInteger("timer"))
+            list.add(EnumColor.DARK_RED.toString() + "Timer: " + stack.getTagCompound()!!.getIntOr("timer", 0))
         }
     }
 
     override fun onItemRightClick(world: World, player: EntityPlayer, hand: EnumHand): ActionResult<ItemStack?> {
-        val stack: ItemStack = player.getHeldItem(hand)
+        val stack: ItemStack = player.getItemInHand(hand)
         val ray: RayTraceResult? = getRay(world, player, true) //player.rayTrace(DISTANCE, player.ticksExisted);
 
 
@@ -60,15 +62,15 @@ open class ItemMatterManipulator constructor() : Item() {
 		{
 			GalaxySpace.proxy.spawnParticle("beamFX", new Vector3(), new Vector3(), new Object[] { new Vector3(0.0F, 0.0F, 0.0F) });
 		}*/
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             if (!stack.hasTagCompound()) {
                 stack.setTagCompound(NBTTagCompound())
-                stack.getTagCompound()!!.setInteger("timer", 0)
+                stack.getTagCompound()!!.putInt("timer", 0)
             }
 
-            stack.getTagCompound()!!.setInteger("timer", stack.getTagCompound()!!.getInteger("timer") + 1)
+            stack.getTagCompound()!!.putInt("timer", stack.getTagCompound()!!.getIntOr("timer", 0) + 1)
 
-            val i: Int = stack.getTagCompound()!!.getInteger("timer")
+            val i: Int = stack.getTagCompound()!!.getIntOr("timer", 0)
 
 
             //MODE: DIG
@@ -85,14 +87,14 @@ open class ItemMatterManipulator constructor() : Item() {
                     //beam.shoot(player, player.rotationPitch, player.rotationYawHead, 0.0F, 0.8F, 0.0F);
                     //beam.shoot(player.posX, player.posY, player.posZ, 0.8F, 0.0F);
                     //world.spawnEntity(beam);
-                    if (!world.isRemote && block.isBlockNormalCube() && block.getBlock() !== Blocks.BEDROCK) {
-                        if (player.inventory.getFirstEmptyStack() > 0) for (stacks: ItemStack in world.getBlockState(pos)
+                    if (!world.isClientSide && block.isBlockNormalCube() && block.getBlock() !== Blocks.BEDROCK) {
+                        if (player.inventory.getFreeSlot() > 0) for (stacks: ItemStack in world.getBlockState(pos)
                             .getBlock().getDrops(
                                 world,
                                 pos,
                                 world.getBlockState(pos),
                                 0
-                            )) player.inventory.addItemStackToInventory(stacks)
+                            )) player.inventory.add(stacks)
                         world.destroyBlock(pos, false)
                     }
                 }
@@ -111,11 +113,11 @@ open class ItemMatterManipulator constructor() : Item() {
 				
 			}
 			*/
-            stack.getTagCompound()!!.setInteger("timer", 1)
+            stack.getTagCompound()!!.putInt("timer", 1)
             player.setActiveHand(hand)
-            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getHeldItem(hand))
+            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getItemInHand(hand))
         }
-        return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getHeldItem(hand))
+        return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getItemInHand(hand))
     }
 
     override fun onPlayerStoppedUsing(stack: ItemStack, worldIn: World, entityLiving: EntityLivingBase, timeLeft: Int) {
@@ -124,9 +126,9 @@ open class ItemMatterManipulator constructor() : Item() {
 
 
             //GalaxySpace.debug("work");
-            if (entityplayer.getActiveItemStack().hasTagCompound()) {
-                if (entityplayer.getActiveItemStack().getTagCompound()!!.hasKey("timer")) {
-                    entityplayer.getActiveItemStack().getTagCompound()!!.setInteger("timer", 0)
+            if (entityplayer.getUseItem().hasTagCompound()) {
+                if (entityplayer.getUseItem().getTagCompound()!!.containsTag("timer")) {
+                    entityplayer.getUseItem().getTagCompound()!!.putInt("timer", 0)
                 }
             }
         }
@@ -146,11 +148,11 @@ open class ItemMatterManipulator constructor() : Item() {
 
         @JvmStatic
         fun getRay(world: World, player: EntityPlayer, useLiquids: Boolean): RayTraceResult? {
-            val f: Float = player.rotationPitch
-            val f1: Float = player.rotationYaw
-            val d0: Double = player.posX
-            val d1: Double = player.posY + player.getEyeHeight().toDouble()
-            val d2: Double = player.posZ
+            val f: Float = player.xRot
+            val f1: Float = player.yRot
+            val d0: Double = player.x
+            val d1: Double = player.y + player.getEyeHeight().toDouble()
+            val d2: Double = player.z
             val vec3d: Vec3d = Vec3d(d0, d1, d2)
             val f2: Float = MathHelper.cos(-f1 * 0.017453292f - Math.PI.toFloat())
             val f3: Float = MathHelper.sin(-f1 * 0.017453292f - Math.PI.toFloat())
@@ -164,7 +166,7 @@ open class ItemMatterManipulator constructor() : Item() {
         }
 
         @JvmStatic
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         fun drawLine(start: BlockPos, end: BlockPos, x: Double, y: Double, z: Double) {
             val start1: Vec3d = Vec3d(start)
             val end1: Vec3d = Vec3d(end)

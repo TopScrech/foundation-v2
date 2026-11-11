@@ -1,25 +1,29 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.items
 
+import foundation.item.legacyItemValue
+
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.core.items.ISortableItem
 import micdoodle8.mods.galacticraft.core.items.ItemCanisterGeneric
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemCanisterLiquidNitrogen constructor(assetName: String?) : ItemCanisterGeneric(assetName),
     ISortableItem {
@@ -30,7 +34,7 @@ open class ItemCanisterLiquidNitrogen constructor(assetName: String?) : ItemCani
     }
 
     /*@Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void registerIcons(IIconRegister iconRegister)
     {
         for (int i = 0; i < this.icons.length; i++)
@@ -39,11 +43,11 @@ open class ItemCanisterLiquidNitrogen constructor(assetName: String?) : ItemCani
         }
     }*/
     public override fun getTranslationKey(itemStack: ItemStack): String {
-        if (itemStack.getMaxDamage() - itemStack.getItemDamage() == 0) {
+        if (itemStack.getMaxDamage() - itemStack.legacyItemValue == 0) {
             return "item.empty_gas_canister"
         }
 
-        if (itemStack.getItemDamage() == 1) {
+        if (itemStack.legacyItemValue == 1) {
             return "item.canister.liquid_nitrogen.full"
         }
 
@@ -62,15 +66,15 @@ open class ItemCanisterLiquidNitrogen constructor(assetName: String?) : ItemCani
 
         return super.getIconFromDamage(damage);
     }*/
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(
         par1ItemStack: ItemStack,
         worldIn: World?,
         tooltip: MutableList<String?>,
         flagIn: ITooltipFlag
     ) {
-        if (par1ItemStack.getMaxDamage() - par1ItemStack.getItemDamage() > 0) {
-            tooltip.add(GCCoreUtil.translate("item.canister.liquid_nitrogen.name") + ": " + (par1ItemStack.getMaxDamage() - par1ItemStack.getItemDamage()))
+        if (par1ItemStack.getMaxDamage() - par1ItemStack.legacyItemValue > 0) {
+            tooltip.add(GCCoreUtil.translate("item.canister.liquid_nitrogen.name") + ": " + (par1ItemStack.getMaxDamage() - par1ItemStack.legacyItemValue))
         }
     }
 
@@ -85,9 +89,9 @@ open class ItemCanisterLiquidNitrogen constructor(assetName: String?) : ItemCani
     }
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, hand: EnumHand): ActionResult<ItemStack?> {
-        val itemStack: ItemStack = playerIn.getHeldItem(hand)
+        val itemStack: ItemStack = playerIn.getItemInHand(hand)
 
-        val damage: Int = itemStack.getItemDamage() + 125
+        val damage: Int = itemStack.legacyItemValue + 125
         if (damage > itemStack.getMaxDamage()) {
             return ActionResult<ItemStack?>(EnumActionResult.PASS, itemStack)
         }
@@ -126,7 +130,7 @@ open class ItemCanisterLiquidNitrogen constructor(assetName: String?) : ItemCani
                         1.0f,
                         itemRand.nextFloat() * 0.4f + 0.8f
                     )
-                    worldIn.setBlockState(pos, result.getDefaultState(), 3)
+                    worldIn.setBlock(pos, result.defaultBlockState(), 3)
                     return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, itemStack)
                 }
             }

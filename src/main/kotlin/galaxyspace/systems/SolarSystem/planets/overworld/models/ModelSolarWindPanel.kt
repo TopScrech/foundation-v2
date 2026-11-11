@@ -2,7 +2,7 @@ package galaxyspace.systems.SolarSystem.planets.overworld.models
 
 import net.minecraft.client.model.ModelBase
 import net.minecraft.client.model.ModelRenderer
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 
 /**
  * ModelSolarPanel - Either Mojang or a mod author

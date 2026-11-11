@@ -50,7 +50,6 @@ import micdoodle8.mods.galacticraft.core.client.render.entities.RenderMeteor
 import micdoodle8.mods.galacticraft.core.client.render.entities.RenderMeteorChunk
 import micdoodle8.mods.galacticraft.core.client.render.entities.RenderParaChest
 import micdoodle8.mods.galacticraft.core.client.render.entities.RenderPlayerGC
-import micdoodle8.mods.galacticraft.core.client.render.entities.RenderSchematic
 import micdoodle8.mods.galacticraft.core.client.render.entities.RenderTier1Rocket
 import micdoodle8.mods.galacticraft.core.client.render.item.ItemModelBuggy
 import micdoodle8.mods.galacticraft.core.client.render.item.ItemModelFlag
@@ -79,7 +78,6 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSpider
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedWitch
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedZombie
 import micdoodle8.mods.galacticraft.core.entities.EntityFlag
-import micdoodle8.mods.galacticraft.core.entities.EntityHangingSchematic
 import micdoodle8.mods.galacticraft.core.entities.EntityLander
 import micdoodle8.mods.galacticraft.core.entities.EntityMeteor
 import micdoodle8.mods.galacticraft.core.entities.EntityMeteorChunk
@@ -118,12 +116,12 @@ import micdoodle8.mods.galacticraft.core.wrappers.ModelTransformWrapper
 import micdoodle8.mods.galacticraft.core.wrappers.PartialCanister
 import micdoodle8.mods.galacticraft.core.wrappers.PlayerGearData
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockLiquid
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.audio.MusicTicker
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 import net.minecraft.client.renderer.block.model.ModelBakery
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.renderer.block.statemap.StateMap
@@ -134,19 +132,19 @@ import net.minecraft.client.renderer.entity.RenderPlayer
 import net.minecraft.client.resources.IReloadableResourceManager
 import net.minecraft.client.resources.IResourceManager
 import net.minecraft.client.resources.IResourceManagerReloadListener
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.network.INetHandler
 import net.minecraft.network.NetHandlerPlayServer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.SoundEvent
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextFormatting
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.core.BlockPos
+import net.minecraft.ChatFormatting as TextFormatting
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.client.event.ModelBakeEvent
 import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.client.model.ModelLoader
@@ -161,14 +159,14 @@ import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.client.registry.IRenderFactory
 import net.minecraftforge.fml.client.registry.RenderingRegistry
-import net.minecraftforge.fml.common.FMLLog
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import foundation.logging.FoundationLog as FMLLog
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.Event
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.lang.Exception
@@ -182,7 +180,7 @@ import java.util.HashSet
 import javax.vecmath.Vector3f
 
 open class ClientProxyCore : CommonProxyCore(), IResourceManagerReloadListener {
-    override fun preInit(event: FMLPreInitializationEvent?) {
+    override fun preInit() {
         registerEntityRenderers()
         ModelLoaderRegistry.registerLoader(OBJLoaderGC.instance)
         OBJLoaderGC.instance.addDomain(Constants.ASSET_PREFIX)
@@ -207,7 +205,7 @@ open class ClientProxyCore : CommonProxyCore(), IResourceManagerReloadListener {
         updateCapeList()
         registerInventoryJsons()
 
-        Minecraft.getMinecraft().getBlockColors().registerBlockColorHandler(
+        Minecraft.getInstance().getBlockColors().registerBlockColorHandler(
             IBlockColor { state: IBlockState?, world: IBlockAccess?, pos: BlockPos?, tintIndex: Int ->
                 BlockFallenMeteor.colorMultiplier(
                     world,
@@ -216,20 +214,20 @@ open class ClientProxyCore : CommonProxyCore(), IResourceManagerReloadListener {
             }, GCBlocks.fallenMeteor
         )
 
-        Minecraft.getMinecraft().getBlockColors().registerBlockColorHandler(
+        Minecraft.getInstance().getBlockColors().registerBlockColorHandler(
             IBlockColor { state: IBlockState?, world: IBlockAccess?, pos: BlockPos?, tintIndex: Int ->
                 val b: Block = state!!.getBlock()
                 if (b is BlockSpaceGlass) b.color else 0xFFFFFF
             }, *arrayOf<Block?>(GCBlocks.spaceGlassVanilla, GCBlocks.spaceGlassClear, GCBlocks.spaceGlassStrong)
         )
 
-        Minecraft.getMinecraft().getBlockColors().registerBlockColorHandler(
+        Minecraft.getInstance().getBlockColors().registerBlockColorHandler(
             IBlockColor { state: IBlockState?, world: IBlockAccess?, pos: BlockPos?, tintIndex: Int ->
                 if (world != null && pos != null) {
-                    val tile: TileEntity? = world.getTileEntity(pos)
+                    val tile: TileEntity? = world.getBlockEntity(pos)
                     if (tile is TileEntityPanelLight) {
                         val baseState: IBlockState = tile.getBaseBlock()
-                        return@IBlockColor Minecraft.getMinecraft().getBlockColors()
+                        return@IBlockColor Minecraft.getInstance().getBlockColors()
                             .colorMultiplier(baseState, world, pos, tintIndex)
                     }
                 }
@@ -249,13 +247,13 @@ open class ClientProxyCore : CommonProxyCore(), IResourceManagerReloadListener {
                 var field: Field =
                     RenderManager::class.java.getDeclaredField(if (GCCoreUtil.isDeobfuscated()) "playerRenderer" else "field_178637_m")
                 field.setAccessible(true)
-                field.set(FMLClientHandler.instance().getClient().getRenderManager(), RenderPlayerGC())
+                field.set(Minecraft.getInstance().getRenderManager(), RenderPlayerGC())
 
                 field =
                     RenderManager::class.java.getDeclaredField(if (GCCoreUtil.isDeobfuscated()) "skinMap" else "field_178636_l")
                 field.setAccessible(true)
                 val skinMap: MutableMap<String?, RenderPlayer?> = field.get(
-                    FMLClientHandler.instance().getClient().getRenderManager()
+                    Minecraft.getInstance().getRenderManager()
                 ) as MutableMap<String?, RenderPlayer?>
                 skinMap.put("default", RenderPlayerGC((skinMap.get("default"))!!, false))
                 skinMap.put("slim", RenderPlayerGC((skinMap.get("slim"))!!, true))
@@ -264,20 +262,20 @@ open class ClientProxyCore : CommonProxyCore(), IResourceManagerReloadListener {
             }
         }
 
-        (Minecraft.getMinecraft().getResourceManager() as IReloadableResourceManager).registerReloadListener(this)
+        (Minecraft.getInstance().getResourceManager() as IReloadableResourceManager).registerReloadListener(this)
 
         try {
             val ftc: Field =
-                Minecraft.getMinecraft().javaClass.getDeclaredField(if (GCCoreUtil.isDeobfuscated()) "mcMusicTicker" else "field_147126_aw")
+                Minecraft.getInstance().javaClass.getDeclaredField(if (GCCoreUtil.isDeobfuscated()) "mcMusicTicker" else "field_147126_aw")
             ftc.setAccessible(true)
-            ftc.set(Minecraft.getMinecraft(), MusicTickerGC(Minecraft.getMinecraft()))
+            ftc.set(Minecraft.getInstance(), MusicTickerGC(Minecraft.getInstance()))
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
     override fun onResourceManagerReload(resourceManager: IResourceManager) {
-        var lang: String? = Minecraft.getMinecraft().gameSettings.language
+        var lang: String? = Minecraft.getInstance().gameSettings.language
         GCLog.debug("Reloading entity names for language " + lang)
         if (lang == null) {
             lang = "en_US"
@@ -298,7 +296,7 @@ open class ClientProxyCore : CommonProxyCore(), IResourceManagerReloadListener {
         addVariants()
 
         val fuel: Item = Item.getItemFromBlock(GCBlocks.fuel)
-        ModelBakery.registerItemVariants(fuel, ResourceLocation("galacticraftcore:fuel"))
+        ModelBakery.registerItemVariants(fuel, ResourceLocation.parse("galacticraftcore:fuel"))
         ModelLoader.setCustomMeshDefinition(
             fuel,
             IItemMeshDefinitionCustom.create(IItemMeshDefinitionCustom { stack: ItemStack? -> fuelLocation })
@@ -309,7 +307,7 @@ open class ClientProxyCore : CommonProxyCore(), IResourceManagerReloadListener {
             }
         })
         val oil: Item = Item.getItemFromBlock(GCBlocks.crudeOil)
-        ModelBakery.registerItemVariants(oil, ResourceLocation("galacticraftcore:oil"))
+        ModelBakery.registerItemVariants(oil, ResourceLocation.parse("galacticraftcore:oil"))
         ModelLoader.setCustomMeshDefinition(
             oil,
             IItemMeshDefinitionCustom.create(IItemMeshDefinitionCustom { stack: ItemStack? -> oilLocation })
@@ -430,10 +428,10 @@ open class ClientProxyCore : CommonProxyCore(), IResourceManagerReloadListener {
     }
 
     override fun isPaused(): Boolean {
-        if (FMLClientHandler.instance().getClient().isSingleplayer() && !FMLClientHandler.instance().getClient()
+        if (Minecraft.getInstance().isSingleplayer() && !Minecraft.getInstance()
                 .getIntegratedServer()!!.getPublic()
         ) {
-            val screen: GuiScreen? = FMLClientHandler.instance().getClient().currentScreen
+            val screen: GuiScreen? = Minecraft.getInstance().gui.screen()
 
             if (screen != null) {
                 return screen.doesGuiPauseGame()
@@ -445,21 +443,21 @@ open class ClientProxyCore : CommonProxyCore(), IResourceManagerReloadListener {
 
     @SubscribeEvent
     open fun onTextureStitchedPre(event: TextureStitchEvent.Pre) {
-        event.getMap().registerSprite(ResourceLocation("galacticraftcore:blocks/assembly"))
-        event.getMap().registerSprite(ResourceLocation("galacticraftcore:model/rocket_t1"))
-        event.getMap().registerSprite(ResourceLocation("galacticraftcore:model/buggy_main"))
-        event.getMap().registerSprite(ResourceLocation("galacticraftcore:model/buggy_storage"))
-        event.getMap().registerSprite(ResourceLocation("galacticraftcore:model/buggy_wheels"))
-        event.getMap().registerSprite(ResourceLocation("galacticraftcore:model/flag0"))
-        event.getMap().registerSprite(ResourceLocation("galacticraftcore:model/frequency_module"))
-        event.getMap().registerSprite(ResourceLocation("galacticraftcore:blocks/fluids/oxygen_gas"))
-        event.getMap().registerSprite(ResourceLocation("galacticraftcore:blocks/fluids/hydrogen_gas"))
-        event.getMap().registerSprite(ResourceLocation("galacticraftcore:blocks/bubble"))
+        event.getMap().registerSprite(ResourceLocation.parse("galacticraftcore:blocks/assembly"))
+        event.getMap().registerSprite(ResourceLocation.parse("galacticraftcore:model/rocket_t1"))
+        event.getMap().registerSprite(ResourceLocation.parse("galacticraftcore:model/buggy_main"))
+        event.getMap().registerSprite(ResourceLocation.parse("galacticraftcore:model/buggy_storage"))
+        event.getMap().registerSprite(ResourceLocation.parse("galacticraftcore:model/buggy_wheels"))
+        event.getMap().registerSprite(ResourceLocation.parse("galacticraftcore:model/flag0"))
+        event.getMap().registerSprite(ResourceLocation.parse("galacticraftcore:model/frequency_module"))
+        event.getMap().registerSprite(ResourceLocation.parse("galacticraftcore:blocks/fluids/oxygen_gas"))
+        event.getMap().registerSprite(ResourceLocation.parse("galacticraftcore:blocks/fluids/hydrogen_gas"))
+        event.getMap().registerSprite(ResourceLocation.parse("galacticraftcore:blocks/bubble"))
         TextureDungeonFinder("galacticraftcore:items/dungeonfinder").register(event.getMap())
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun onModelBakeEvent(event: ModelBakeEvent) {
         //Specified transformations only take effect on the "inventory" variant, not other variants.
         val rot: Quat4f = TRSRTransformation.quatFromXYZDegrees(Vector3f(30f, 225f, 0f))
@@ -621,7 +619,7 @@ open class ClientProxyCore : CommonProxyCore(), IResourceManagerReloadListener {
                 (GalacticraftCore.packetPipeline)!!.sendToServer(
                     PacketSimple(
                         PacketSimple.EnumSimplePacket.S_REQUEST_GEAR_DATA,
-                        GCCoreUtil.getDimensionID(player.world),
+                        GCCoreUtil.getDimensionID(player.level()),
                         arrayOf<Any?>(id)
                     )
                 )
@@ -688,7 +686,7 @@ open class ClientProxyCore : CommonProxyCore(), IResourceManagerReloadListener {
         var playerClientHandler: IPlayerClient = PlayerClient()
 
         @JvmField
-        var mc: Minecraft = FMLClientHandler.instance().getClient()
+        var mc: Minecraft = Minecraft.getInstance()
 
         @JvmField
         var gearDataRequests: MutableList<String?> = Lists.newArrayList<String?>()
@@ -716,11 +714,11 @@ open class ClientProxyCore : CommonProxyCore(), IResourceManagerReloadListener {
 
         @JvmField
         val saturnRingTexture: ResourceLocation =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/saturn_rings.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/saturn_rings.png")
 
         @JvmField
         val uranusRingTexture: ResourceLocation =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/uranus_rings.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/uranus_rings.png")
         private val itemsToRegisterJson: MutableList<Item?> = Lists.newArrayList<Item?>()
         private val fuelLocation = ModelResourceLocation(Constants.TEXTURE_PREFIX + "fuel", "fluid")
         private val oilLocation = ModelResourceLocation(Constants.TEXTURE_PREFIX + "oil", "fluid")
@@ -777,9 +775,6 @@ open class ClientProxyCore : CommonProxyCore(), IResourceManagerReloadListener {
             RenderingRegistry.registerEntityRenderingHandler<EntityMeteorChunk>(
                 EntityMeteorChunk::class.java,
                 IRenderFactory { manager: RenderManager? -> RenderMeteorChunk((manager)!!) })
-            RenderingRegistry.registerEntityRenderingHandler<EntityHangingSchematic>(
-                EntityHangingSchematic::class.java,
-                IRenderFactory { manager: RenderManager? -> RenderSchematic((manager)!!) })
             RenderingRegistry.registerEntityRenderingHandler<EntityEvolvedEnderman>(
                 EntityEvolvedEnderman::class.java,
                 IRenderFactory { manager: RenderManager? -> RenderEvolvedEnderman((manager)!!) })

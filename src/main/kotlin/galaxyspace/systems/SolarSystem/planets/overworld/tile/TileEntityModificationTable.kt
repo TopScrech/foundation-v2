@@ -4,17 +4,17 @@ import galaxyspace.api.item.IModificationItem
 import galaxyspace.systems.SolarSystem.planets.overworld.items.armor.ItemSpaceSuit
 import micdoodle8.mods.galacticraft.core.inventory.IInventoryDefaults
 import galaxyspace.core.prefab.tile.TileEntityInventoryAdvanced
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
 
 open class TileEntityModificationTable constructor() : TileEntityInventoryAdvanced("tile.modification_table.name"),
     IInventoryDefaults, ISidedInventory {
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent = super<TileEntityInventoryAdvanced>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = super<TileEntityInventoryAdvanced>.getDisplayName()
 
     init {
         this.inventory = NonNullList.withSize<ItemStack>(1, ItemStack.EMPTY)
@@ -29,14 +29,14 @@ open class TileEntityModificationTable constructor() : TileEntityInventoryAdvanc
             if (!stack.hasTagCompound()) {
                 val copied: ItemStack = stack
                 copied.setTagCompound(NBTTagCompound())
-                copied.getTagCompound()!!.setInteger(ItemSpaceSuit.mod_count, 1)
+                copied.getTagCompound()!!.putInt(ItemSpaceSuit.mod_count, 1)
                 this.getInventory().set(0, copied)
             }
         }
     }
 
     open fun readStandardItemsFromNBT(nbt: NBTTagCompound): NonNullList<ItemStack> {
-        val stacks: NonNullList<ItemStack> = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        val stacks: NonNullList<ItemStack> = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, stacks)
         return stacks
     }
@@ -56,11 +56,11 @@ open class TileEntityModificationTable constructor() : TileEntityInventoryAdvanc
         return par1NBTTagCompound
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 1
     }
 
-    override fun isItemValidForSlot(index: Int, stack: ItemStack): Boolean {
+    override fun canPlaceItem(index: Int, stack: ItemStack): Boolean {
         return false
     }
 
@@ -68,39 +68,39 @@ open class TileEntityModificationTable constructor() : TileEntityInventoryAdvanc
         return false
     }
 
-    override fun getSizeInventory(): Int {
-        return super.getSizeInventory()
+    override fun getContainerSize(): Int {
+        return super.getContainerSize()
     }
 
-    override fun getStackInSlot(par1: Int): ItemStack {
-        return super.getStackInSlot(par1)
+    override fun getItem(par1: Int): ItemStack {
+        return super.getItem(par1)
     }
 
-    override fun decrStackSize(slot: Int, amount: Int): ItemStack {
-        return super.decrStackSize(slot, amount)
+    override fun removeItem(slot: Int, amount: Int): ItemStack {
+        return super.removeItem(slot, amount)
     }
 
-    override fun removeStackFromSlot(slot: Int): ItemStack {
-        return super.removeStackFromSlot(slot)
+    override fun removeItemNoUpdate(slot: Int): ItemStack {
+        return super.removeItemNoUpdate(slot)
     }
 
-    override fun setInventorySlotContents(slot: Int, stack: ItemStack) {
-        super.setInventorySlotContents(slot, stack)
+    override fun setItem(slot: Int, stack: ItemStack) {
+        super.setItem(slot, stack)
     }
 
-    override fun isUsableByPlayer(player: EntityPlayer): Boolean {
+    override fun stillValid(player: EntityPlayer): Boolean {
         return !isInvalid() && this.world.isBlockLoaded(this.pos)
     }
 
-    override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf(0)
     }
 
-    override fun canInsertItem(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing?): Boolean {
-        return this.isItemValidForSlot(slotID, par2ItemStack)
+    override fun canPlaceItemThroughFace(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, par2ItemStack)
     }
 
-    override fun canExtractItem(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing?): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
         return slotID == 1
     }
 
@@ -127,31 +127,19 @@ open class TileEntityModificationTable constructor() : TileEntityInventoryAdvanc
     }
 
     // We don't use these because we use forge containers
-    override fun openInventory(player: EntityPlayer) {
-    }
 
     // We don't use these because we use forge containers
-    override fun closeInventory(player: EntityPlayer) {
+
+
+
+
+    override fun clearContent() {
+        if (isEmpty) return
+        getInventory().clear()
+        setChanged()
     }
 
-    override fun getField(id: Int): Int {
-        return 0
-    }
-
-    override fun setField(id: Int, value: Int) {
-    }
-
-    override fun getFieldCount(): Int {
-        return 0
-    }
-
-    override fun clear() {
-        for (i: Int in 0..<this.getInventory().size) {
-            this.getInventory().set(i, ItemStack.EMPTY)
-        }
-    }
-
-    override fun getName(): String {
+    override fun getName(): net.minecraft.network.chat.Component {
         return super.getName()
     }
 

@@ -11,7 +11,7 @@ import micdoodle8.mods.galacticraft.api.prefab.world.gen.WorldProviderSpace
 import micdoodle8.mods.galacticraft.api.world.IExitHeight
 import micdoodle8.mods.galacticraft.api.world.ISolarLevel
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.util.math.MathHelper
+import net.minecraft.util.Mth as MathHelper
 
 abstract class WorldProviderAdvancedSpace : WorldProviderSpace(), ISolarLevel, IExitHeight, IAdvancedSpace {
     private val data: BodiesData? = BodiesRegistry.getData(this.getCelestialBody())

@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.pluto.dimension
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import asmodeuscore.core.astronomy.dimension.world.gen.ChunkProviderSpaceLakes
 import com.google.common.collect.Lists
@@ -11,10 +13,10 @@ import galaxyspace.systems.SolarSystem.planets.pluto.dimension.ChunkProviderPlut
 import asmodeuscore.core.astronomy.dimension.world.gen.MapGenCaves
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
-import net.minecraft.block.state.IBlockState
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 
 

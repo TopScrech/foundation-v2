@@ -6,8 +6,8 @@ import net.minecraft.client.model.ModelBox
 import net.minecraft.client.model.ModelRenderer
 import net.minecraft.client.renderer.GLAllocation
 import net.minecraft.client.renderer.Tessellator
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
 open class ModelRendererGC constructor(par1ModelBase: ModelBase, par2: Int, par3: Int) :
@@ -15,7 +15,7 @@ open class ModelRendererGC constructor(par1ModelBase: ModelBase, par2: Int, par3
     private var compiled = false
     private var displayList = 0
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun render(par1: Float) {
         if (!this.isHidden) {
             if (this.showModel) {
@@ -97,7 +97,7 @@ open class ModelRendererGC constructor(par1ModelBase: ModelBase, par2: Int, par3
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private fun compileDisplayList(par1: Float) {
         this.displayList = GLAllocation.generateDisplayLists(1)
         GL11.glNewList(this.displayList, GL11.GL_COMPILE)

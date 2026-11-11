@@ -3,9 +3,9 @@ package asmodeuscore.core.utils.worldengine.standardcustomgen
 import java.util.ArrayList
 import java.util.Random
 
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.IChunkProvider
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.fml.common.IWorldGenerator
@@ -48,13 +48,13 @@ open class WE_GrassGen : IWorldGenerator {
                     val pos: BlockPos = world.getTopSolidOrLiquidBlock(BlockPos(x, 0, z))
                     if (this.waterGen.get(i)) {
                         val state: IBlockState = world.getBlockState(pos)
-                        if (state.getBlock() === this.surface.get(i)!!.getBlock() && world.isAirBlock(pos.up())) {
-                            world.setBlockState(pos.up(), this.flowerList.get(i), 2)
+                        if (state.getBlock() === this.surface.get(i)!!.getBlock() && world.isEmptyBlock(pos.above())) {
+                            world.setBlock(pos.above(), this.flowerList.get(i), 2)
                         }
                     } else {
-                        val state: IBlockState = world.getBlockState(pos.down())
+                        val state: IBlockState = world.getBlockState(pos.below())
                         if (state.getBlock() === this.surface.get(i)!!.getBlock()) {
-                            world.setBlockState(pos, this.flowerList.get(i), 2)
+                            world.setBlock(pos, this.flowerList.get(i), 2)
                         }
                     }
                     i2++

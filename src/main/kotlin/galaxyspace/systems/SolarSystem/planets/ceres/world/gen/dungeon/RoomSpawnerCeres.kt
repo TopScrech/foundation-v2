@@ -4,13 +4,13 @@ import galaxyspace.systems.SolarSystem.planets.ceres.world.gen.dungeon.RoomEmpty
 import galaxyspace.systems.SolarSystem.planets.ceres.world.gen.dungeon.RoomSpawnerCeres
 import asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart.DungeonConfiguration
 import micdoodle8.mods.galacticraft.core.Constants
-import net.minecraft.init.Blocks
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.tileentity.TileEntityMobSpawner
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import java.util.Random
 
 open class RoomSpawnerCeres : RoomEmptyCeres {
@@ -44,22 +44,22 @@ open class RoomSpawnerCeres : RoomEmptyCeres {
         entranceDir: EnumFacing
     ) : super((configuration)!!, rand, blockPosX, blockPosZ, sizeX, sizeY, sizeZ, entranceDir)
 
-    override fun addComponentParts(worldIn: World, random: Random, boundingBox: StructureBoundingBox): Boolean {
+    override fun addComponentParts(worldIn: World, random: Random, boundingBox: BoundingBox): Boolean {
         if (super.addComponentParts(worldIn, random, boundingBox)) {
             for (i: Int in 1..this.sizeX - 1) {
                 for (j: Int in 1..this.sizeY - 1) {
                     for (k: Int in 1..this.sizeZ - 1) {
                         if (random.nextFloat() < 0.05f) {
-                            this.setBlockState(worldIn, Blocks.WEB.getDefaultState(), i, j, k, boundingBox)
+                            this.setBlockState(worldIn, Blocks.WEB.defaultBlockState(), i, j, k, boundingBox)
                         }
                     }
                 }
             }
 
-            this.setBlockState(worldIn, Blocks.MOB_SPAWNER.getDefaultState(), 1, 0, 1, boundingBox)
+            this.setBlockState(worldIn, Blocks.MOB_SPAWNER.defaultBlockState(), 1, 0, 1, boundingBox)
             this.setBlockState(
                 worldIn,
-                Blocks.MOB_SPAWNER.getDefaultState(),
+                Blocks.MOB_SPAWNER.defaultBlockState(),
                 this.sizeX - 1,
                 0,
                 this.sizeZ - 1,
@@ -68,7 +68,7 @@ open class RoomSpawnerCeres : RoomEmptyCeres {
 
             var blockpos: BlockPos =
                 BlockPos(this.getXWithOffset(1, 1), this.getYWithOffset(0), this.getZWithOffset(1, 1))
-            var spawner: TileEntityMobSpawner? = worldIn.getTileEntity(blockpos) as TileEntityMobSpawner?
+            var spawner: TileEntityMobSpawner? = worldIn.getBlockEntity(blockpos) as TileEntityMobSpawner?
 
             if (spawner != null) {
                 spawner.getSpawnerBaseLogic().setEntityId(getMob(random))
@@ -79,7 +79,7 @@ open class RoomSpawnerCeres : RoomEmptyCeres {
                 this.getYWithOffset(0),
                 this.getZWithOffset(this.sizeX - 1, this.sizeZ - 1)
             )
-            spawner = worldIn.getTileEntity(blockpos) as TileEntityMobSpawner?
+            spawner = worldIn.getBlockEntity(blockpos) as TileEntityMobSpawner?
 
             if (spawner != null) {
                 spawner.getSpawnerBaseLogic().setEntityId(getMob(random))
@@ -95,11 +95,11 @@ open class RoomSpawnerCeres : RoomEmptyCeres {
         @JvmStatic
         private fun getMob(rand: Random): ResourceLocation {
             when (rand.nextInt(4)) {
-                0 -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_spider")
-                1 -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_creeper")
-                2 -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_skeleton")
-                3 -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_zombie")
-                else -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_zombie")
+                0 -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_spider")
+                1 -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_creeper")
+                2 -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_skeleton")
+                3 -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_zombie")
+                else -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_zombie")
             }
         }
     }

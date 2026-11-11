@@ -7,12 +7,12 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms
 import net.minecraft.client.renderer.entity.layers.LayerRenderer
-import net.minecraft.init.Items
-import net.minecraft.item.ItemStack
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.ItemStack
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class LayerHeldItemEvolvedSkeletonBoss constructor(private val renderer: RenderEvolvedSkeletonBoss) :
     LayerRenderer<EntitySkeletonBoss> {
     override fun doRenderLayer(
@@ -50,7 +50,7 @@ open class LayerHeldItemEvolvedSkeletonBoss constructor(private val renderer: Re
                 GlStateManager.translate(0.025f, 1.525f, -0.125f)
             }
 
-            Minecraft.getMinecraft().getItemRenderer().renderItemSide(entity, bow, type, false)
+            Minecraft.getInstance().getItemRenderer().renderItemSide(entity, bow, type, false)
             GlStateManager.popMatrix()
         }
     }

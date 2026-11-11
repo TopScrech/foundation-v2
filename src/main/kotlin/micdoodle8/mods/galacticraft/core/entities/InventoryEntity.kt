@@ -1,17 +1,18 @@
 package micdoodle8.mods.galacticraft.core.entities
 
+import net.minecraft.world.ContainerHelper
 import micdoodle8.mods.galacticraft.core.inventory.IInventoryDefaults
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.NonNullList
-import net.minecraft.world.World
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.NonNullList
+import net.minecraft.world.level.Level as World
 
 abstract class InventoryEntity(par1World: World?) : NetworkedEntity((par1World)!!), IInventoryDefaults {
     override fun hasCustomName(): Boolean = super<NetworkedEntity>.hasCustomName()
 
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent? = super<NetworkedEntity>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = super<NetworkedEntity>.getDisplayName()
 
     @JvmField
     protected var stacks: NonNullList<ItemStack> = NonNullList.withSize<ItemStack>(0, ItemStack.EMPTY)
@@ -24,32 +25,32 @@ abstract class InventoryEntity(par1World: World?) : NetworkedEntity((par1World)!
         ItemStackHelper.saveAllItems(nbt, this.stacks)
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack {
+    override fun getItem(var1: Int): ItemStack {
         return this.stacks.get(var1)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        return ItemStackHelper.getAndRemove(this.stacks, index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        return ContainerHelper.takeItem(this.stacks, index)
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.stacks.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
     override fun isEmpty(): Boolean {
@@ -62,14 +63,14 @@ abstract class InventoryEntity(par1World: World?) : NetworkedEntity((par1World)!
         return true
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun markDirty() {
+    override fun setChanged() {
     }
 
-    override fun isUsableByPlayer(entityplayer: EntityPlayer): Boolean {
+    override fun stillValid(entityplayer: EntityPlayer): Boolean {
         return true
     }
 }

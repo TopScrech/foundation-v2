@@ -6,28 +6,28 @@ import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.block.BlockBreakable
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.EnumPushReaction
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.BlockFaceShape
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.enchantment.EnchantmentHelper
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.init.Enchantments
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.enchantment.Enchantments
+import net.minecraft.world.item.ItemStack
 import net.minecraft.stats.StatList
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
 import net.minecraft.world.EnumSkyBlock
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.event.ForgeEventFactory
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.Random
 
@@ -41,12 +41,12 @@ open class BlockIceAsteroids constructor(assetName: String?) : BlockBreakable(Ma
         this.setSoundType(SoundType.GLASS)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.TRANSLUCENT
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
@@ -78,7 +78,7 @@ open class BlockIceAsteroids constructor(assetName: String?) : BlockBreakable(Ma
             }
         } else {
             if (worldIn.provider.getDimension() == -1 || worldIn.provider is IGalacticraftWorldProvider) {
-                worldIn.setBlockToAir(pos)
+                worldIn.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                 return
             }
 
@@ -86,11 +86,11 @@ open class BlockIceAsteroids constructor(assetName: String?) : BlockBreakable(Ma
             harvesters.set(player)
             this.dropBlockAsItem(worldIn, pos, state, i1)
             harvesters.set(null)
-            val state1: IBlockState = worldIn.getBlockState(pos.down())
+            val state1: IBlockState = worldIn.getBlockState(pos.below())
             val material: Material = state1.getMaterial()
 
             if (material.blocksMovement() || material.isLiquid()) {
-                worldIn.setBlockState(pos, Blocks.FLOWING_WATER.getDefaultState())
+                worldIn.setBlockAndUpdate(pos, Blocks.FLOWING_WATER.defaultBlockState())
             }
         }
     }
@@ -102,12 +102,12 @@ open class BlockIceAsteroids constructor(assetName: String?) : BlockBreakable(Ma
     override fun updateTick(worldIn: World, pos: BlockPos, state: IBlockState, rand: Random) {
         if (worldIn.getLightFor(EnumSkyBlock.BLOCK, pos) > 13 - this.getLightOpacity(state)) {
             if (GCCoreUtil.getDimensionID(worldIn) == -1 || worldIn.provider is IGalacticraftWorldProvider) {
-                worldIn.setBlockToAir(pos)
+                worldIn.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                 return
             }
 
             this.dropBlockAsItem(worldIn, pos, worldIn.getBlockState(pos), 0)
-            worldIn.setBlockState(pos, Blocks.WATER.getDefaultState())
+            worldIn.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState())
         }
     }
 

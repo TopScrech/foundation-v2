@@ -21,11 +21,11 @@ import micdoodle8.mods.galacticraft.core.util.ColorUtil
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.core.wrappers.FlagData
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.client.gui.screens.Screen as GuiScreen
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 import java.io.IOException
@@ -261,6 +261,6 @@ open class GuiJoinSpaceRace constructor(player: EntityPlayerSP) : GuiScreen(),
 
     companion object {
         @JvmField
-        protected val texture: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/gui.png")
+        protected val texture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/gui.png")
     }
 }

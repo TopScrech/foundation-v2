@@ -5,20 +5,20 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedCreeper
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSkeleton
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSpider
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedZombie
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.entity.EnumCreatureAttribute
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.EntityAIAttackMelee
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget
 import net.minecraft.entity.monster.EntityMob
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.Item
-import net.minecraft.util.DamageSource
-import net.minecraft.util.SoundEvent
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.Item
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 
 open class EntitySludgeling constructor(par1World: World) : EntityMob(par1World), IEntityBreathable {
     init {

@@ -3,17 +3,17 @@ package galaxyspace.systems.SolarSystem.moons.titan.blocks
 import galaxyspace.core.GSFluids
 import galaxyspace.core.configs.GSConfigCore
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.util.DamageSource
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.BlockFluidClassic
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class BlockLiquidEthaneMethane constructor() :
@@ -55,14 +55,14 @@ open class BlockLiquidEthaneMethane constructor() :
         if (entity is EntityLivingBase) entity.attackEntityFrom(DamageSource.GENERIC, 0.5f)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun randomDisplayTick(state: IBlockState, world: World, pos: BlockPos, rand: Random) {
-        if (world.isAirBlock(pos.up()) && GSConfigCore.enableMethaneParticle) {
+        if (world.isEmptyBlock(pos.above()) && GSConfigCore.enableMethaneParticle) {
             for (i: Int in 0..1) world.spawnParticle(
                 EnumParticleTypes.SMOKE_NORMAL,
-                pos.getX() + world.rand.nextDouble(),
+                pos.getX() + world.random.nextDouble(),
                 pos.getY() + 1.5,
-                pos.getZ() + world.rand.nextDouble(),
+                pos.getZ() + world.random.nextDouble(),
                 0.0,
                 0.0,
                 0.0

@@ -1,8 +1,11 @@
 package asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart
 
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.nbt.NBTTagCompound
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import java.lang.Exception
 
 open class DungeonConfiguration {
@@ -57,56 +60,56 @@ open class DungeonConfiguration {
     }
 
     open fun writeToNBT(tagCompound: NBTTagCompound): NBTTagCompound {
-        tagCompound.setString("brickBlock", Block.REGISTRY.getNameForObject(this.brickBlock!!.getBlock()).toString())
-        tagCompound.setInteger("brickBlockMeta", this.brickBlock!!.getBlock().getMetaFromState(this.brickBlock))
+        tagCompound.putString("brickBlock", Block.REGISTRY.getNameForObject(this.brickBlock!!.getBlock()).toString())
+        tagCompound.putInt("brickBlockMeta", this.brickBlock!!.getBlock().getMetaFromState(this.brickBlock))
 
         if (topBlock != null) {
-            tagCompound.setString("topBlock", Block.REGISTRY.getNameForObject(this.topBlock!!.getBlock()).toString())
-            tagCompound.setInteger("topBlockMeta", this.topBlock!!.getBlock().getMetaFromState(this.topBlock))
+            tagCompound.putString("topBlock", Block.REGISTRY.getNameForObject(this.topBlock!!.getBlock()).toString())
+            tagCompound.putInt("topBlockMeta", this.topBlock!!.getBlock().getMetaFromState(this.topBlock))
         }
         if (floorBlock != null) {
-            tagCompound.setString(
+            tagCompound.putString(
                 "floorBlock",
                 Block.REGISTRY.getNameForObject(this.floorBlock!!.getBlock()).toString()
             )
-            tagCompound.setInteger("floorBlockMeta", this.floorBlock!!.getBlock().getMetaFromState(this.floorBlock))
+            tagCompound.putInt("floorBlockMeta", this.floorBlock!!.getBlock().getMetaFromState(this.floorBlock))
         }
 
-        tagCompound.setInteger("yPosition", this.yPosition)
-        tagCompound.setInteger("hallwayLengthMin", this.hallwayLengthMin)
-        tagCompound.setInteger("hallwayLengthMax", this.hallwayLengthMax)
-        tagCompound.setInteger("hallwayHeight", this.hallwayHeight)
-        tagCompound.setInteger("roomHeight", this.roomHeight)
+        tagCompound.putInt("yPosition", this.yPosition)
+        tagCompound.putInt("hallwayLengthMin", this.hallwayLengthMin)
+        tagCompound.putInt("hallwayLengthMax", this.hallwayLengthMax)
+        tagCompound.putInt("hallwayHeight", this.hallwayHeight)
+        tagCompound.putInt("roomHeight", this.roomHeight)
 
-        if (this.corridor != null) tagCompound.setString("corridor", this.corridor!!.getName())
-        if (this.emptyRoom != null) tagCompound.setString("emptyRoom", this.emptyRoom!!.getName())
-        if (this.spawnerRoom != null) tagCompound.setString("spawnerRoom", this.spawnerRoom!!.getName())
-        if (this.chestRoom != null) tagCompound.setString("chestRoom", this.chestRoom!!.getName())
+        if (this.corridor != null) tagCompound.putString("corridor", this.corridor!!.getName())
+        if (this.emptyRoom != null) tagCompound.putString("emptyRoom", this.emptyRoom!!.getName())
+        if (this.spawnerRoom != null) tagCompound.putString("spawnerRoom", this.spawnerRoom!!.getName())
+        if (this.chestRoom != null) tagCompound.putString("chestRoom", this.chestRoom!!.getName())
 
-        tagCompound.setString("bossRoom", this.bossRoom!!.getName())
-        tagCompound.setString("treasureRoom", this.treasureRoom!!.getName())
+        tagCompound.putString("bossRoom", this.bossRoom!!.getName())
+        tagCompound.putString("treasureRoom", this.treasureRoom!!.getName())
         return tagCompound
     }
 
     open fun readFromNBT(tagCompound: NBTTagCompound) {
         try {
-            this.brickBlock = Block.getBlockFromName(tagCompound.getString("brickBlock"))!!
-                .getStateFromMeta(tagCompound.getInteger("brickBlockMeta"))
-            if (topBlock != null) this.topBlock = Block.getBlockFromName(tagCompound.getString("topBlock"))!!
-                .getStateFromMeta(tagCompound.getInteger("topBlockMeta"))
-            if (floorBlock != null) this.floorBlock = Block.getBlockFromName(tagCompound.getString("floorBlock"))!!
-                .getStateFromMeta(tagCompound.getInteger("floorBlockMeta"))
-            this.yPosition = tagCompound.getInteger("yPosition")
-            this.hallwayLengthMin = tagCompound.getInteger("hallwayLengthMin")
-            this.hallwayLengthMax = tagCompound.getInteger("hallwayLengthMax")
-            this.hallwayHeight = tagCompound.getInteger("hallwayHeight")
-            this.roomHeight = tagCompound.getInteger("roomHeight")
-            if (this.corridor != null) this.corridor = Class.forName(tagCompound.getString("corridor"))
-            if (this.emptyRoom != null) this.emptyRoom = Class.forName(tagCompound.getString("emptyRoom"))
-            if (this.spawnerRoom != null) this.spawnerRoom = Class.forName(tagCompound.getString("spawnerRoom"))
-            if (this.chestRoom != null) this.chestRoom = Class.forName(tagCompound.getString("chestRoom"))
-            this.bossRoom = Class.forName(tagCompound.getString("bossRoom"))
-            this.treasureRoom = Class.forName(tagCompound.getString("treasureRoom"))
+            this.brickBlock = Block.getBlockFromName(tagCompound.getStringOr("brickBlock", ""))!!
+                .getStateFromMeta(tagCompound.getIntOr("brickBlockMeta", 0))
+            if (topBlock != null) this.topBlock = Block.getBlockFromName(tagCompound.getStringOr("topBlock", ""))!!
+                .getStateFromMeta(tagCompound.getIntOr("topBlockMeta", 0))
+            if (floorBlock != null) this.floorBlock = Block.getBlockFromName(tagCompound.getStringOr("floorBlock", ""))!!
+                .getStateFromMeta(tagCompound.getIntOr("floorBlockMeta", 0))
+            this.yPosition = tagCompound.getIntOr("yPosition", 0)
+            this.hallwayLengthMin = tagCompound.getIntOr("hallwayLengthMin", 0)
+            this.hallwayLengthMax = tagCompound.getIntOr("hallwayLengthMax", 0)
+            this.hallwayHeight = tagCompound.getIntOr("hallwayHeight", 0)
+            this.roomHeight = tagCompound.getIntOr("roomHeight", 0)
+            if (this.corridor != null) this.corridor = Class.forName(tagCompound.getStringOr("corridor", ""))
+            if (this.emptyRoom != null) this.emptyRoom = Class.forName(tagCompound.getStringOr("emptyRoom", ""))
+            if (this.spawnerRoom != null) this.spawnerRoom = Class.forName(tagCompound.getStringOr("spawnerRoom", ""))
+            if (this.chestRoom != null) this.chestRoom = Class.forName(tagCompound.getStringOr("chestRoom", ""))
+            this.bossRoom = Class.forName(tagCompound.getStringOr("bossRoom", ""))
+            this.treasureRoom = Class.forName(tagCompound.getStringOr("treasureRoom", ""))
         } catch (e: Exception) {
             System.err.println("Failed to read dungeon configuration from NBT")
             e.printStackTrace()

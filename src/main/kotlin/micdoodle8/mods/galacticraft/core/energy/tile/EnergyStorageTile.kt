@@ -10,9 +10,9 @@ import micdoodle8.mods.galacticraft.api.transmission.tile.IElectrical
 import micdoodle8.mods.galacticraft.core.tile.ReceiverMode
 import micdoodle8.mods.galacticraft.core.tile.TileEntityAdvanced
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraftforge.fml.LogicalSide as Side
 import kotlin.math.min
 
 abstract class EnergyStorageTile : TileEntityAdvanced(), IEnergyHandlerGC, IElectrical {

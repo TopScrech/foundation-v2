@@ -11,11 +11,11 @@ import micdoodle8.mods.galacticraft.api.vector.BlockVec3
 import micdoodle8.mods.galacticraft.core.energy.EnergyConfigHandler
 import micdoodle8.mods.galacticraft.core.energy.EnergyUtil
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.Mth as MathHelper
 import net.minecraftforge.common.capabilities.Capability
 import java.util.*
 import kotlin.math.min

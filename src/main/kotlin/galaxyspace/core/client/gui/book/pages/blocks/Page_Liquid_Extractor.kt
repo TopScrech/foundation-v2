@@ -5,8 +5,8 @@ import asmodeuscore.core.utils.BookUtils.Book_Cateroies
 import galaxyspace.api.IPage
 import galaxyspace.core.GSBlocks
 import net.minecraft.client.gui.FontRenderer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
 
 @IPage
 open class Page_Liquid_Extractor : Page_WithCraftMatrix() {

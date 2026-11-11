@@ -45,31 +45,30 @@ import net.minecraft.client.particle.Particle
 import net.minecraft.client.renderer.block.model.ModelBakery
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.client.event.ModelBakeEvent
 import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.client.model.ModelLoader
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.model.IModelState
 import net.minecraftforge.common.model.TRSRTransformation
-import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.client.registry.IRenderFactory
 import net.minecraftforge.fml.client.registry.RenderingRegistry
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class AsteroidsModuleClient : IPlanetsModuleClient {
-    override fun preInit(event: FMLPreInitializationEvent?) {
+    override fun preInit() {
         RenderingRegistry.registerEntityRenderingHandler<EntitySmallAsteroid>(
             EntitySmallAsteroid::class.java,
             IRenderFactory { manager: RenderManager? -> RenderSmallAsteroid((manager)!!) })
@@ -149,7 +148,7 @@ open class AsteroidsModuleClient : IPlanetsModuleClient {
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun onModelBakeEvent(event: ModelBakeEvent?) {
         replaceModelDefault(
             event,
@@ -234,7 +233,7 @@ open class AsteroidsModuleClient : IPlanetsModuleClient {
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun loadTextures(event: TextureStitchEvent.Pre) {
         registerTexture(event, "minerbase")
         registerTexture(event, "beam_reflector")
@@ -261,7 +260,7 @@ open class AsteroidsModuleClient : IPlanetsModuleClient {
 
     private fun registerTexture(event: TextureStitchEvent.Pre, texture: String) {
         event.getMap()
-            .registerSprite(ResourceLocation(GalacticraftPlanets.Companion.TEXTURE_PREFIX + "blocks/" + texture))
+            .registerSprite(ResourceLocation.parse(GalacticraftPlanets.Companion.TEXTURE_PREFIX + "blocks/" + texture))
     }
 
     override fun init(event: FMLInitializationEvent?) {
@@ -297,7 +296,7 @@ open class AsteroidsModuleClient : IPlanetsModuleClient {
     }
 
     private fun addPlanetVariants(name: String, vararg variants: String?) {
-        val itemBlockVariants: Item? = Item.REGISTRY.getObject(ResourceLocation(Constants.MOD_ID_PLANETS, name))
+        val itemBlockVariants: Item? = Item.REGISTRY.getObject(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_PLANETS, name))
         val variants0: Array<ResourceLocation?> = arrayOfNulls<ResourceLocation>(variants.size)
         for (i: Int in variants.indices) {
             variants0[i] = ResourceLocation(GalacticraftPlanets.Companion.TEXTURE_PREFIX + variants[i])
@@ -310,7 +309,7 @@ open class AsteroidsModuleClient : IPlanetsModuleClient {
     }
 
     override fun getGuiElement(side: Side?, ID: Int, player: EntityPlayer?, world: World?, x: Int, y: Int, z: Int): Any? {
-        val tile: TileEntity? = (world)!!.getTileEntity(BlockPos(x, y, z))
+        val tile: TileEntity? = (world)!!.getBlockEntity(BlockPos(x, y, z))
 
         when (ID) {
             GuiIdsPlanets.MACHINE_ASTEROIDS -> {
@@ -327,7 +326,7 @@ open class AsteroidsModuleClient : IPlanetsModuleClient {
     }
 
     override fun spawnParticle(particleID: String?, position: Vector3?, motion: Vector3?, vararg extraData: Any?) {
-        val mc: Minecraft? = FMLClientHandler.instance().getClient()
+        val mc: Minecraft? = Minecraft.getInstance()
 
         if (mc != null && mc.getRenderViewEntity() != null && mc.effectRenderer != null) {
             val dX: Double = mc.getRenderViewEntity()!!.posX - (position)!!.x

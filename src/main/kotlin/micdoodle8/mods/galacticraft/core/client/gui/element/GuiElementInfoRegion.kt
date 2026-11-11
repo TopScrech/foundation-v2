@@ -5,12 +5,12 @@ import micdoodle8.mods.galacticraft.core.util.ColorUtil
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL12
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiElementInfoRegion constructor(
     @JvmField var xPosition: Int,
     @JvmField var yPosition: Int,

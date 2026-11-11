@@ -1,11 +1,9 @@
 package galaxyspace.core.util
 
-import galaxyspace.core.util.GSDamageSource
-import net.minecraft.util.DamageSource
+import foundation.damage.FoundationDamageTypes
+import net.minecraft.resources.ResourceKey
+import net.minecraft.world.damagesource.DamageType
 
-open class GSDamageSource constructor(damageType: String) : DamageSource(damageType) {
-    companion object {
-        @JvmField
-        val acid: GSDamageSource = GSDamageSource("acid").setDamageIsAbsolute() as GSDamageSource
-    }
+object GSDamageSource {
+    @JvmField val acid: ResourceKey<DamageType> = FoundationDamageTypes.key("galaxyspace:acid")
 }

@@ -1,12 +1,14 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.blocks.BlockGlowstoneTorch
-import net.minecraft.init.Blocks
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.StructureComponent
 import net.minecraft.world.gen.structure.template.TemplateManager
 import java.util.Random
@@ -20,7 +22,7 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
         par1ComponentVillageStartPiece: StructureComponentVillageStartPiece?,
         par2: Int,
         par3Random: Random?,
-        par4StructureBoundingBox: StructureBoundingBox?,
+        par4StructureBoundingBox: BoundingBox?,
         par5: EnumFacing?
     ) : super(par1ComponentVillageStartPiece, par2) {
         this.setCoordBaseMode(par5)
@@ -30,13 +32,13 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
     override fun writeStructureToNBT(nbt: NBTTagCompound) {
         super.writeStructureToNBT(nbt)
 
-        nbt.setInteger("AvgGroundLevel", this.averageGroundLevel)
+        nbt.putInt("AvgGroundLevel", this.averageGroundLevel)
     }
 
     override fun readStructureFromNBT(nbt: NBTTagCompound, manager: TemplateManager) {
         super.readStructureFromNBT(nbt, manager)
 
-        this.averageGroundLevel = nbt.getInteger("AvgGroundLevel")
+        this.averageGroundLevel = nbt.getIntOr("AvgGroundLevel", 0)
     }
 
     /**
@@ -46,7 +48,7 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
     override fun addComponentParts(
         par1World: World,
         par2Random: Random,
-        par3StructureBoundingBox: StructureBoundingBox
+        par3StructureBoundingBox: BoundingBox
     ): Boolean {
         if (this.averageGroundLevel < 0) {
             this.averageGroundLevel = this.getAverageGroundLevel(par1World, par3StructureBoundingBox)
@@ -55,7 +57,7 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
                 return true
             }
 
-            this.boundingBox.offset(0, this.averageGroundLevel - this.boundingBox.maxY + 9 - 1, 0)
+            this.boundingBox.move(0, this.averageGroundLevel - this.boundingBox.maxY() + 9 - 1, 0)
         }
 
         this.fillWithAir(par1World, par3StructureBoundingBox, 3, 0, 3, 13, 9, 13)
@@ -164,7 +166,7 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
             )
             this.setBlockState(
                 par1World,
-                if (yLevel <= 1) (GCBlocks.basicBlock)!!.getStateFromMeta(4) else Blocks.AIR.getDefaultState(),
+                if (yLevel <= 1) (GCBlocks.basicBlock)!!.getStateFromMeta(4) else Blocks.AIR.defaultBlockState(),
                 1,
                 yLevel,
                 8,
@@ -254,7 +256,7 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
             )
             this.setBlockState(
                 par1World,
-                if (yLevel <= 1) (GCBlocks.basicBlock)!!.getStateFromMeta(4) else Blocks.AIR.getDefaultState(),
+                if (yLevel <= 1) (GCBlocks.basicBlock)!!.getStateFromMeta(4) else Blocks.AIR.defaultBlockState(),
                 8,
                 yLevel,
                 15,
@@ -344,7 +346,7 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
             )
             this.setBlockState(
                 par1World,
-                if (yLevel <= 1) (GCBlocks.basicBlock)!!.getStateFromMeta(4) else Blocks.AIR.getDefaultState(),
+                if (yLevel <= 1) (GCBlocks.basicBlock)!!.getStateFromMeta(4) else Blocks.AIR.defaultBlockState(),
                 15,
                 yLevel,
                 8,
@@ -434,7 +436,7 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
             )
             this.setBlockState(
                 par1World,
-                if (yLevel <= 1) (GCBlocks.basicBlock)!!.getStateFromMeta(4) else Blocks.AIR.getDefaultState(),
+                if (yLevel <= 1) (GCBlocks.basicBlock)!!.getStateFromMeta(4) else Blocks.AIR.defaultBlockState(),
                 8,
                 yLevel,
                 1,
@@ -519,8 +521,8 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
 
         this.setBlockState(
             par1World,
-            (GCBlocks.glowstoneTorch)!!.getDefaultState()
-                .withProperty(micdoodle8.mods.galacticraft.core.blocks.BlockTorchBase.FACING, this.getCoordBaseMode()),
+            (GCBlocks.glowstoneTorch)!!.defaultBlockState()
+                .setValue(micdoodle8.mods.galacticraft.core.blocks.BlockTorchBase.FACING, this.getCoordBaseMode()),
             8,
             yLevel,
             2,
@@ -528,7 +530,7 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
         )
         this.setBlockState(
             par1World,
-            (GCBlocks.glowstoneTorch)!!.getDefaultState().withProperty(
+            (GCBlocks.glowstoneTorch)!!.defaultBlockState().setValue(
                 micdoodle8.mods.galacticraft.core.blocks.BlockTorchBase.FACING,
                 this.getCoordBaseMode()!!.rotateY()
             ),
@@ -539,7 +541,7 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
         )
         this.setBlockState(
             par1World,
-            (GCBlocks.glowstoneTorch)!!.getDefaultState().withProperty(
+            (GCBlocks.glowstoneTorch)!!.defaultBlockState().setValue(
                 micdoodle8.mods.galacticraft.core.blocks.BlockTorchBase.FACING,
                 this.getCoordBaseMode()!!.getOpposite()
             ),
@@ -550,7 +552,7 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
         )
         this.setBlockState(
             par1World,
-            (GCBlocks.glowstoneTorch)!!.getDefaultState().withProperty(
+            (GCBlocks.glowstoneTorch)!!.defaultBlockState().setValue(
                 micdoodle8.mods.galacticraft.core.blocks.BlockTorchBase.FACING,
                 this.getCoordBaseMode()!!.rotateYCCW()
             ),
@@ -798,7 +800,7 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
                     if (i >= 7 && i <= 9 && j >= 7 && j <= 9) {
                         this.setBlockState(
                             par1World,
-                            Blocks.GLASS.getDefaultState(),
+                            Blocks.GLASS.defaultBlockState(),
                             i,
                             yLevel,
                             j,
@@ -834,8 +836,8 @@ open class StructureComponentVillageHouse : StructureComponentVillage {
             par6: EnumFacing,
             par7: Int
         ): StructureComponentVillageHouse? {
-            val var8: StructureBoundingBox =
-                StructureBoundingBox.getComponentToAddBoundingBox(par3, par4, par5, 0, 0, 0, 17, 9, 17, par6)
+            val var8: BoundingBox =
+                BoundingBox.orientBox(par3, par4, par5, 0, 0, 0, 17, 9, 17, par6)
             return if (findIntersecting(par1List, var8) == null) StructureComponentVillageHouse(
                 par0ComponentVillageStartPiece,
                 par7,

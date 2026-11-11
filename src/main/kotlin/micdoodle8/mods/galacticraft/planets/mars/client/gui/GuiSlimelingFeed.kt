@@ -8,8 +8,8 @@ import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.mars.entities.EntitySlimeling
 import micdoodle8.mods.galacticraft.planets.mars.network.PacketSimpleMars
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.util.ResourceLocation
+import net.minecraft.client.gui.screens.Screen as GuiScreen
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 import java.io.IOException
 import kotlin.math.floor
@@ -136,6 +136,6 @@ open class GuiSlimelingFeed constructor(private val slimeling: EntitySlimeling) 
 
     companion object {
         private val slimelingPanelGui =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/slimeling_panel1.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/slimeling_panel1.png")
     }
 }

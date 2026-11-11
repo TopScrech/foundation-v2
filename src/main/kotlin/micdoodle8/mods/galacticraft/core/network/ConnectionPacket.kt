@@ -9,16 +9,16 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.network.NetHandlerPlayServer
 import net.minecraft.network.NetworkManager
 import net.minecraft.network.PacketBuffer
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.network.FMLEventChannel
 import net.minecraftforge.fml.common.network.FMLNetworkEvent
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.lang.RuntimeException
 import java.util.ArrayList
@@ -70,11 +70,11 @@ open class ConnectionPacket {
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun onPacketData(event: FMLNetworkEvent.ClientCustomPacketEvent) {
         val pkt: FMLProxyPacket = event.getPacket()
 
-        onFMLProxyPacketData(event.getManager(), pkt, Minecraft.getMinecraft().player)
+        onFMLProxyPacketData(event.getManager(), pkt, Minecraft.getInstance().player)
     }
 
     @SubscribeEvent

@@ -6,12 +6,12 @@ import micdoodle8.mods.galacticraft.core.client.model.ModelAlienVillager
 import micdoodle8.mods.galacticraft.core.entities.EntityAlienVillager
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderAlienVillager constructor(manager: RenderManager) :
     RenderLiving<EntityAlienVillager>(manager, ModelAlienVillager(0.0f), 0.5f) {
     private var texSwitch = false
@@ -61,6 +61,6 @@ open class RenderAlienVillager constructor(manager: RenderManager) :
     }
 
     companion object {
-        private val villagerTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/villager.png")
+        private val villagerTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/villager.png")
     }
 }

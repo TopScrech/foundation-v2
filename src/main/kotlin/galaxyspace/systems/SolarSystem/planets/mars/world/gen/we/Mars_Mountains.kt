@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.mars.world.gen.we
 
+import foundation.block.getStateFromMeta
+
 import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_BiomeLayer
 import galaxyspace.systems.SolarSystem.planets.mars.world.gen.we.Mars_Mountains
 import galaxyspace.core.prefab.entities.EntityEvolvedColdBlaze
@@ -9,7 +11,7 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSkeleton
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSpider
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedZombie
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
-import net.minecraft.init.Blocks
+import net.minecraft.world.level.block.Blocks
 
 open class Mars_Mountains constructor(min: Double, max: Double) :
     WE_Biome(BiomeProperties("mars_mountains"), intArrayOf(0x00CC00, 0xFFFFFF, 0x00CC00)) {
@@ -52,7 +54,7 @@ open class Mars_Mountains constructor(min: Double, max: Double) :
             -1,
             true
         )
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         createChunkGen_InXZ_List.add(standardBiomeLayers)
     }
 }

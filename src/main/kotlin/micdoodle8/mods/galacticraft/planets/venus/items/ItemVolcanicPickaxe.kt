@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.planets.venus.items
 
+import foundation.item.legacyItemValue
+
+import foundation.level.offset
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.items.ISortableItem
@@ -7,29 +11,29 @@ import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.venus.VenusItems
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockCommandBlock
 import net.minecraft.block.BlockStructure
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.settings.GameSettings
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.item.EnumRarity
 import net.minecraft.item.ItemPickaxe
-import net.minecraft.item.ItemStack
-import net.minecraft.network.Packet
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.item.ItemStack
+import net.minecraft.network.protocol.Packet
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.world.BlockEvent
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.input.Keyboard
 
 open class ItemVolcanicPickaxe constructor(assetName: String?) : ItemPickaxe(VenusItems.TOOL_VOLCANIC),
@@ -38,13 +42,13 @@ open class ItemVolcanicPickaxe constructor(assetName: String?) : ItemPickaxe(Ven
         this.setTranslationKey(assetName)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(stack: ItemStack, worldIn: World?, info: MutableList<String?>, flagIn: ITooltipFlag) {
-        if (this.showDescription(stack.getItemDamage())) {
+        if (this.showDescription(stack.legacyItemValue)) {
             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
                 info.addAll(
                     FMLClientHandler.instance().getClient().fontRenderer.listFormattedStringToWidth(
-                        this.getShiftDescription(stack.getItemDamage()),
+                        this.getShiftDescription(stack.legacyItemValue),
                         150
                     )
                 )
@@ -65,7 +69,7 @@ open class ItemVolcanicPickaxe constructor(assetName: String?) : ItemPickaxe(Ven
         return GalacticraftCore.galacticraftItemsTab
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
@@ -83,16 +87,16 @@ open class ItemVolcanicPickaxe constructor(assetName: String?) : ItemPickaxe(Ven
     ): Boolean {
         val ret: Boolean = super.onBlockDestroyed(stack, worldIn, state, pos, entityLiving)
 
-        if (entityLiving !is EntityPlayer || worldIn.isRemote) {
+        if (entityLiving !is EntityPlayer || worldIn.isClientSide) {
             return ret
         }
 
         val player: EntityPlayer = entityLiving
         var facing: EnumFacing = entityLiving.getHorizontalFacing()
 
-        if (entityLiving.rotationPitch < -45.0f) {
+        if (entityLiving.xRot < -45.0f) {
             facing = EnumFacing.UP
-        } else if (entityLiving.rotationPitch > 45.0f) {
+        } else if (entityLiving.xRot > 45.0f) {
             facing = EnumFacing.DOWN
         }
 
@@ -109,11 +113,11 @@ open class ItemVolcanicPickaxe constructor(assetName: String?) : ItemPickaxe(Ven
 
                 val pos1: BlockPos
                 if (yAxis) {
-                    pos1 = pos.add(i, 0, j)
+                    pos1 = pos.offset(i, 0, j)
                 } else if (xAxis) {
-                    pos1 = pos.add(0, i, j)
+                    pos1 = pos.offset(0, i, j)
                 } else {
-                    pos1 = pos.add(i, j, 0)
+                    pos1 = pos.offset(i, j, 0)
                 }
 
                 //:Replicate logic of PlayerInteractionManager.tryHarvestBlock(pos1)
@@ -125,11 +129,11 @@ open class ItemVolcanicPickaxe constructor(assetName: String?) : ItemPickaxe(Ven
                     if (!event.isCanceled()) {
                         val block: Block = state1.getBlock()
                         if ((block is BlockCommandBlock || block is BlockStructure) && !player.canUseCommandBlock()) {
-                            worldIn.notifyBlockUpdate(pos1, state1, state1, 3)
+                            worldIn.sendBlockUpdated(pos1, state1, state1, 3)
                             ++j
                             continue
                         }
-                        val tileentity: TileEntity? = worldIn.getTileEntity(pos1)
+                        val tileentity: TileEntity? = worldIn.getBlockEntity(pos1)
                         if (tileentity != null) {
                             val pkt: Packet<*>? = tileentity.getUpdatePacket()
                             if (pkt != null) {

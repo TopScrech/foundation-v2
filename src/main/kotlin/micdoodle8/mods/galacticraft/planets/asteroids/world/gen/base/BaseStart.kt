@@ -1,8 +1,8 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.world.gen.base
 
 import com.google.common.collect.Lists
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.StructureComponent
 import java.util.Random
 
@@ -11,7 +11,7 @@ open class BaseStart : BaseDeck {
     var attachedComponents: MutableList<StructureComponent?> = Lists.newArrayList<StructureComponent?>()
 
     @JvmField
-    var componentBounds: MutableList<StructureBoundingBox?> = Lists.newArrayList<StructureBoundingBox?>()
+    var componentBounds: MutableList<BoundingBox?> = Lists.newArrayList<BoundingBox?>()
 
     constructor()
 

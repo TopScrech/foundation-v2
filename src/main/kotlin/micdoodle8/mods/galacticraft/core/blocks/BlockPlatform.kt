@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
 import micdoodle8.mods.galacticraft.api.world.IZeroGDimension
 import micdoodle8.mods.galacticraft.core.GCBlocks
@@ -8,29 +10,29 @@ import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.tile.TileEntityPlatform
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.BlockRenderLayer
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class BlockPlatform constructor(assetName: String?) : BlockAdvancedTile(Material.IRON), IPartialSealableBlock,
-    IShiftDescription, ISortableBlock {
+    IShiftDescription, ISortableBlock, LegacyBlockMetadata {
     enum class EnumCorner(private val meta: Int, private val serializedName: String) : IStringSerializable {
         NONE(0, "none"),
         NW(1, "sw"),
@@ -45,7 +47,9 @@ open class BlockPlatform constructor(assetName: String?) : BlockAdvancedTile(Mat
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -65,7 +69,7 @@ open class BlockPlatform constructor(assetName: String?) : BlockAdvancedTile(Mat
         this.setSoundType(SoundType.METAL)
         this.setTranslationKey(assetName)
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(CORNER, EnumCorner.NONE)
+            this.blockState.getBaseState().setValue(CORNER, EnumCorner.NONE)
         )
     }
 
@@ -118,7 +122,7 @@ open class BlockPlatform constructor(assetName: String?) : BlockAdvancedTile(Mat
         return BlockFaceShape.UNDEFINED
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun shouldSideBeRendered(
         blockState: IBlockState,
         blockAccess: IBlockAccess,
@@ -137,7 +141,7 @@ open class BlockPlatform constructor(assetName: String?) : BlockAdvancedTile(Mat
         return false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT
     }
@@ -155,7 +159,7 @@ open class BlockPlatform constructor(assetName: String?) : BlockAdvancedTile(Mat
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val var9: TileEntity? = worldIn.getTileEntity(pos)
+        val var9: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (var9 is TileEntityPlatform) {
             var9.onDestroy(var9)
@@ -181,8 +185,8 @@ open class BlockPlatform constructor(assetName: String?) : BlockAdvancedTile(Mat
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(CORNER, (EnumCorner.Companion.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(CORNER, (EnumCorner.Companion.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -207,7 +211,7 @@ open class BlockPlatform constructor(assetName: String?) : BlockAdvancedTile(Mat
         p_185477_7_: Boolean
     ) {
         if (ignoreCollisionTests) return
-        val te: TileEntity? = worldIn.getTileEntity(pos)
+        val te: TileEntity? = worldIn.getBlockEntity(pos)
         if (te is TileEntityPlatform) {
             if (te.noCollide()) return
         }
@@ -223,9 +227,9 @@ open class BlockPlatform constructor(assetName: String?) : BlockAdvancedTile(Mat
         return BOUNDING_BOX
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSelectedBoundingBox(bs: IBlockState, worldIn: World, pos: BlockPos): AxisAlignedBB {
-        val te: TileEntity? = worldIn.getTileEntity(pos)
+        val te: TileEntity? = worldIn.getBlockEntity(pos)
         if (te is TileEntityPlatform) {
             if (te.noCollide()) {
                 if (bs.getBlock() === this && bs.getValue(CORNER) == EnumCorner.SE) return AxisAlignedBB(

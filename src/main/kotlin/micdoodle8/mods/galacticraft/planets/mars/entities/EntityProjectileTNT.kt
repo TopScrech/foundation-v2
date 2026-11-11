@@ -1,15 +1,15 @@
 package micdoodle8.mods.galacticraft.planets.mars.entities
 
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.monster.EntityCreeper
 import net.minecraft.entity.projectile.EntityFireball
-import net.minecraft.util.DamageSource
+import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.EnumDifficulty
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.Difficulty as EnumDifficulty
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class EntityProjectileTNT : EntityFireball {
     constructor(par1World: World) : super(par1World) {
@@ -26,7 +26,7 @@ open class EntityProjectileTNT : EntityFireball {
         this.setSize(1.0f, 1.0f)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     constructor(
         par1World: World,
         par2: Double,

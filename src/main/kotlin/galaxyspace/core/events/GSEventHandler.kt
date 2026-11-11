@@ -1,5 +1,17 @@
 package galaxyspace.core.events
 
+import net.minecraft.network.chat.Component
+
+import foundation.item.legacyItemValue
+
+import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
+
+import foundation.inventory.armorItems
+import foundation.inventory.mainItems
+import foundation.level.offset
+
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerHandler.EnumModelPacketType
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerHandler.ThermalArmorEvent
 import net.minecraftforge.common.config.Config.Type
@@ -9,7 +21,6 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent
 
 import asmodeuscore.api.dimension.IAdvancedSpace
 import asmodeuscore.api.dimension.IProviderFreeze
-import asmodeuscore.api.item.IItemSpaceFood
 import asmodeuscore.core.configs.AsmodeusConfig
 import asmodeuscore.core.event.PressureEvent
 import asmodeuscore.core.event.RadiationEvent
@@ -71,41 +82,40 @@ import micdoodle8.mods.galacticraft.planets.asteroids.items.ItemTier3Rocket
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
 import micdoodle8.mods.galacticraft.planets.mars.dimension.WorldProviderMars
 import micdoodle8.mods.galacticraft.planets.mars.items.ItemTier2Rocket
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockBush
 import net.minecraft.block.BlockLeaves
 import net.minecraft.block.BlockLiquid
-import net.minecraft.block.state.IBlockState
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.passive.EntityWolf
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.init.MobEffects
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.Item
-import net.minecraft.item.ItemFood
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.potion.PotionEffect
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.ChunkPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.DimensionType
-import net.minecraft.world.World
-import net.minecraft.world.WorldServer
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+
+import net.minecraft.world.level.dimension.DimensionType
+import net.minecraft.world.level.Level as World
+import net.minecraft.server.level.ServerLevel as WorldServer
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.gen.feature.WorldGenerator
 import net.minecraftforge.common.config.Config
 import net.minecraftforge.common.config.ConfigManager
@@ -120,16 +130,22 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.fluids.capability.IFluidHandler
 import net.minecraftforge.fml.client.event.ConfigChangedEvent
 import net.minecraftforge.fml.common.eventhandler.Event
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.registry.EntityEntry
 import net.minecraftforge.fml.common.registry.EntityRegistry
-import net.minecraftforge.fml.common.registry.ForgeRegistries
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.registries.ForgeRegistries
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.oredict.OreDictionary
 import kotlin.math.min
 
 open class GSEventHandler {
+    init {
+        GCCoreOxygenSuffocationEvent.Pre.BUS.addListener(java.util.function.Predicate(::onSuffocationEvent))
+        ZeroGravityEvent.InFreefall.BUS.addListener(java.util.function.Predicate(::onZeroGravity))
+        GCCoreEventPopulate.Post.BUS.addListener(::onPlanetDecorated)
+    }
+
     @SubscribeEvent
     open fun onConfigChanged(event: ConfigChangedEvent.OnConfigChangedEvent) {
         if (event.getModID() == GalaxySpace.MODID) {
@@ -164,12 +180,12 @@ open class GSEventHandler {
                 GSCapabilityStatsHandler.GS_PLAYER_PROPERTIES,
                 GSCapabilityProviderStats(event.getObject() as EntityPlayerMP?)
             )
-        } else if (event.getObject() is EntityPlayer && (event.getObject() as EntityPlayer).world.isRemote) {
+        } else if (event.getObject() is EntityPlayer && (event.getObject() as EntityPlayer).level().isRemote) {
             this.onAttachCapabilityClient(event)
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private fun onAttachCapabilityClient(event: AttachCapabilitiesEvent<Entity?>) {
         if (event.getObject() is EntityPlayerSP) {
             event.addCapability(
@@ -185,7 +201,7 @@ open class GSEventHandler {
         val newStats: StatsCapability = (galaxyspace.core.handler.capabilities.StatsCapability.get(event.getEntityPlayer()))!!
         newStats.copyFrom(
             oldStats,
-            !event.isWasDeath() || event.getOriginal().world.getGameRules().getBoolean("keepInventory")
+            !event.isWasDeath() || event.getOriginal().level().getGameRules().getBoolean("keepInventory")
         )
     }
 
@@ -232,12 +248,12 @@ open class GSEventHandler {
         if (e.getSource().getTrueSource() is EntityPlayerMP) {
             val player: EntityPlayerMP? = e.getSource().getTrueSource() as EntityPlayerMP?
 
-            val stack: ItemStack = player!!.getHeldItemMainhand()
+            val stack: ItemStack = player!!.getMainHandItem()
 
             if (stack.getItem() is ItemPlasmaSword && stack.getTagCompound()!!
                     .getFloat(ItemPlasmaSword.heat) >= 10.0f
             ) {
-                player.sendMessage(TextComponentString(EnumColor.DARK_RED.toString() + GCCoreUtil.translate("gui.message.overheat")))
+                player.sendSystemMessage(Component.literal(EnumColor.DARK_RED.toString() + GCCoreUtil.translate("gui.message.overheat")))
 
                 e.setCanceled(true)
             }
@@ -245,14 +261,14 @@ open class GSEventHandler {
 
         if (e.getEntityLiving() is EntityPlayerMP) {
             val player: EntityPlayerMP = e.getEntityLiving() as EntityPlayerMP
-            val world: World = player.getEntityWorld()
-            if (!world.isRemote) {
+            val world: World = player.level()
+            if (!world.isClientSide) {
                 var protect: Float = 0.0f
 
-                for (s: ItemStack in player.inventory.armorInventory) {
+                for (s: ItemStack in player.inventory.armorItems) {
                     if (s.getItem() is ItemSpaceSuit && s.hasTagCompound()) {
                         if ((s.getItem() as ItemSpaceSuit).getElectricityStored(s) > 5 && s.getTagCompound()!!
-                                .hasKey("protection")
+                                .containsTag("protection")
                         ) protect += 0.1f
                     }
                 }
@@ -264,9 +280,9 @@ open class GSEventHandler {
 
     @SubscribeEvent
     open fun onSetBlock(e: SetBlockEvent) {
-        if (e.world != null && !e.world.isRemote && e.world.provider is IGalacticraftWorldProvider && e.pos != null && e.block != null) {
+        if (e.world != null && !e.world.isClientSide && e.world.provider is IGalacticraftWorldProvider && e.pos != null && e.block != null) {
             val thermal: Float = (e.world.provider as IGalacticraftWorldProvider).getThermalLevelModifier()
-            val bb: AxisAlignedBB = AxisAlignedBB(e.pos.up())
+            val bb: AxisAlignedBB = AxisAlignedBB(e.pos.above())
 
             for (block: BlockToChange in block_to_change) {
                 if (block.only_gs_dim && e.world.provider !is IProviderFreeze) continue
@@ -278,16 +294,16 @@ open class GSEventHandler {
                 if (block.need_check_temp) {
                     if ((e.block === block.state || e.block.getMaterial() === block.state.getMaterial())) {
                         if (thermal <= cool_temp * block.getTempModificator()) {
-                            e.world.setBlockState(e.pos, block.cold_replaced)
+                            e.world.setBlockAndUpdate(e.pos, block.cold_replaced)
                             e.setCanceled(true)
                         } else if (thermal >= warn_temp * block.getTempModificator()) {
-                            e.world.setBlockState(e.pos, block.hot_replaced)
+                            e.world.setBlockAndUpdate(e.pos, block.hot_replaced)
                             block.spawnParticleHotTemp(e.world, e.pos)
                             e.setCanceled(true)
                         }
                     }
                 } else {
-                    e.world.setBlockState(e.pos, block.cold_replaced)
+                    e.world.setBlockAndUpdate(e.pos, block.cold_replaced)
                     block.spawnParticleHotTemp(e.world, e.pos)
                     e.setCanceled(true)
                 }
@@ -299,8 +315,8 @@ open class GSEventHandler {
     open fun onTickBlock(e: LivingEvent.LivingUpdateEvent) {
         if (e.getEntityLiving() is EntityPlayerMP) {
             val player: EntityPlayerMP = e.getEntityLiving() as EntityPlayerMP
-            val world: World = player.getEntityWorld()
-            if (!world.isRemote && world.provider is IGalacticraftWorldProvider) {
+            val world: World = player.level()
+            if (!world.isClientSide && world.provider is IGalacticraftWorldProvider) {
                 if ((world.provider as IGalacticraftWorldProvider).hasBreathableAtmosphere()) return
                 if (((world.provider as IGalacticraftWorldProvider).getCelestialBody())!!.atmosphere.isGasPresent(
                         EnumAtmosphericGas.OXYGEN
@@ -324,9 +340,9 @@ open class GSEventHandler {
 
                     var pos: BlockPos = chunk.getPrecipitationHeight(
                         BlockPos(
-                            x + world.rand.nextInt(16),
+                            x + world.random.nextInt(16),
                             0,
-                            z + world.rand.nextInt(16)
+                            z + world.random.nextInt(16)
                         )
                     )
 
@@ -337,8 +353,8 @@ open class GSEventHandler {
 
                     var y: Int = 0
                     while (y < pos.getY()) {
-                        if (world.isAirBlock(pos)) {
-                            if (world.rand.nextInt(8) == 0) pos = pos.down(1)
+                        if (world.isEmptyBlock(pos)) {
+                            if (world.random.nextInt(8) == 0) pos = pos.below(1)
                             y++
                             continue
                         }
@@ -349,22 +365,22 @@ open class GSEventHandler {
 
                         if (block is BlockLeaves) {
                             if (!OxygenUtil.isAABBInBreathableAirBlock(world, bb, thermal_check)) {
-                                world.setBlockState(pos, GSBlocks.DRY_LEAVES.getDefaultState(), 3)
+                                world.setBlock(pos, GSBlocks.DRY_LEAVES.defaultBlockState(), 3)
                             }
                         }
 
                         if (block is BlockBush && block !== Blocks.DEADBUSH) {
                             if (!OxygenUtil.isAABBInBreathableAirBlock(world, bb, thermal_check)) {
-                                if (world.getBlockState(pos.down()).isBlockNormalCube()) world.setBlockState(
+                                if (world.getBlockState(pos.below()).isBlockNormalCube()) world.setBlock(
                                     pos,
-                                    Blocks.DEADBUSH.getDefaultState(),
+                                    Blocks.DEADBUSH.defaultBlockState(),
                                     3
                                 )
-                                else world.setBlockToAir(pos)
+                                else world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                             }
                         }
 
-                        pos = pos.down(1)
+                        pos = pos.below(1)
                         y++
                     }
                 }
@@ -394,14 +410,14 @@ open class GSEventHandler {
                 if (!OxygenUtil.isAABBInBreathableAirBlock(e.world, bb, thermal_check) && GSConfigCore.enableOxygenForPlantsAndFoods) {
 
                     if (block instanceof BlockLeaves) {
-                        e.world.setBlockState(e.pos, GSBlocks.DRY_LEAVES.getDefaultState(), 3);
+                        e.world.setBlock(e.pos, GSBlocks.DRY_LEAVES.defaultBlockState(), 3);
                         e.setCanceled(true);
                     }
 
                     if (block instanceof BlockBush && block != Blocks.DEADBUSH) {
                         if (e.world.getBlockState(e.pos.down()).isBlockNormalCube())
-                            e.world.setBlockState(e.pos, Blocks.DEADBUSH.getDefaultState(), 3);
-                        else e.world.setBlockToAir(e.pos);
+                            e.world.setBlock(e.pos, Blocks.DEADBUSH.defaultBlockState(), 3);
+                        else e.world.setBlockAndUpdate(e.pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
 
                         e.setCanceled(true);
                     }
@@ -420,13 +436,13 @@ open class GSEventHandler {
         val pos: BlockPos = e.getTarget()!!.getBlockPos()
 
         if (e.getEmptyBucket()
-                .getItem() === Items.BUCKET && world.getBlockState(pos) === Blocks.ICE.getDefaultState()
+                .getItem() === Items.BUCKET && world.getBlockState(pos) === Blocks.ICE.defaultBlockState()
         ) {
             val ice_bucket: ItemStack = ItemStack(GSItems.BASIC, 1, BasicItems.ICE_BUCKET.getMeta())
             if (!ice_bucket.hasTagCompound()) ice_bucket.setTagCompound(NBTTagCompound())
             ice_bucket.getTagCompound()!!
-                .setString("current_block", world.getBlockState(pos).getBlock().getRegistryName().toString())
-            world.setBlockToAir(pos)
+                .putString("current_block", world.getBlockState(pos).getBlock().getRegistryName().toString())
+            world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
             e.setFilledBucket(ice_bucket)
             e.setResult(Event.Result.ALLOW)
         }
@@ -468,16 +484,16 @@ open class GSEventHandler {
         val stack: ItemStack = event.getItemStack()
         val player: EntityPlayer = event.getEntityPlayer()
 
-        if (!world.isRemote && !block.hasTileEntity(state)) {
+        if (!world.isClientSide && !block.hasTileEntity(state)) {
             if (world.provider is IGalacticraftWorldProvider) {
-                val bb: AxisAlignedBB = AxisAlignedBB(event.getPos().up())
+                val bb: AxisAlignedBB = AxisAlignedBB(event.getPos().above())
                 val thermal: Float = (world.provider as IGalacticraftWorldProvider).getThermalLevelModifier()
 
                 for (ore: ItemsToChange in items_to_change) {
                     if (stack.getItem() == ore.itemstack.getItem() && !(world.provider as IGalacticraftWorldProvider).hasBreathableAtmosphere()) {
-                        if (FluidUtil.isFilledContainer(stack) && world.getTileEntity(event.getPos()) != null) if (world.getTileEntity(
+                        if (FluidUtil.isFilledContainer(stack) && world.getBlockEntity(event.getPos()) != null) if (world.getBlockEntity(
                                 event.getPos()
-                            ) is IFluidHandlerWrapper || world.getTileEntity(event.getPos()) is IFluidHandler
+                            ) is IFluidHandlerWrapper || world.getBlockEntity(event.getPos()) is IFluidHandler
                         ) return
 
                         if (ore.need_check_oxygen) {
@@ -487,8 +503,8 @@ open class GSEventHandler {
                                     ore.need_check_temp && (thermal > 2.0f || thermal < -2.0f)
                                 )
                             ) {
-                                player.sendMessage(
-                                    TextComponentString(
+                                player.sendSystemMessage(
+                                    Component.literal(
                                         EnumColor.DARK_RED.toString() + GCCoreUtil.translate(
                                             "gui.message.needoxygen"
                                         )
@@ -501,11 +517,11 @@ open class GSEventHandler {
                         if (ore.need_check_temp) {
                             if (!GSUtils.getThermalControl(
                                     world,
-                                    event.getPos().up()
+                                    event.getPos().above()
                                 ) && (thermal > 2.0f || thermal < -2.0f)
                             ) {
-                                player.sendMessage(
-                                    TextComponentString(
+                                player.sendSystemMessage(
+                                    Component.literal(
                                         EnumColor.DARK_RED.toString() + GCCoreUtil.translate(
                                             "gui.message.needthermal"
                                         )
@@ -515,10 +531,10 @@ open class GSEventHandler {
                             }
                         }
 
-                        if (ore.replaced !== Blocks.AIR.getDefaultState()) if (world.getBlockState(event.getPos())
+                        if (ore.replaced !== Blocks.AIR.defaultBlockState()) if (world.getBlockState(event.getPos())
                                 .getBlock().isReplaceable(world, event.getPos())
-                        ) world.setBlockState(event.getPos(), ore.replaced)
-                        else world.setBlockState(event.getPos().up(), ore.replaced)
+                        ) world.setBlockAndUpdate(event.getPos(), ore.replaced)
+                        else world.setBlockAndUpdate(event.getPos().above(), ore.replaced)
                         break
                     }
                 }
@@ -573,7 +589,7 @@ open class GSEventHandler {
         val player: EntityPlayer = event.getEntityPlayer()
         val i: ItemStack = event.getItemStack()
 
-        if (!world.isRemote && GalaxySpace.debug) (GalaxySpace.instance)!!.debug(
+        if (!world.isClientSide && GalaxySpace.debug) (GalaxySpace.instance)!!.debug(
             Item.REGISTRY.getNameForObject(i.getItem())
                 .toString() + " | " + i.getTranslationKey() + " | " + Biome.getBiome(
                 Biome.getIdForBiome(
@@ -585,10 +601,10 @@ open class GSEventHandler {
         )
 
 
-        if (!world.isRemote && GSConfigCore.Companion.enableOxygenForPlantsAndFoods && !player.capabilities.isCreativeMode) {
+        if (!world.isClientSide && GSConfigCore.Companion.enableOxygenForPlantsAndFoods && !player.capabilities.isCreativeMode) {
             if (world.provider is IGalacticraftWorldProvider && !(world.provider as IGalacticraftWorldProvider).hasBreathableAtmosphere()) {
                 if (!OxygenUtil.isAABBInBreathableAirBlock(player, false) && checkFood(i)) {
-                    player.sendMessage(TextComponentString(EnumColor.DARK_RED.toString() + GCCoreUtil.translate("gui.message.needoxygen.food")))
+                    player.sendSystemMessage(Component.literal(EnumColor.DARK_RED.toString() + GCCoreUtil.translate("gui.message.needoxygen.food")))
                     event.setCancellationResult(EnumActionResult.FAIL)
                     event.setCanceled(true)
                 }
@@ -597,7 +613,7 @@ open class GSEventHandler {
     }
 
     private fun checkFood(s: ItemStack): Boolean {
-        return !s.isEmpty() && s.getItem() is ItemFood && (s.getItem() !is micdoodle8.mods.galacticraft.core.items.ItemFood) && (s.getItem() !is IItemSpaceFood)
+        return foundation.item.FoundationFoods.requiresBreathableAir(s)
     }
 
     /*
@@ -612,24 +628,17 @@ open class GSEventHandler {
         }
     }
     */
-    @SubscribeEvent
-    open fun onSuffocationEvent(e: GCCoreOxygenSuffocationEvent.Pre) {
-        val living: EntityLivingBase = e.getEntityLiving()
-
-        val list: MutableSet<EntityEntry?> = HashSet<EntityEntry?>()
-        for (string in (GSConfigCore.Companion.unsuffocation_entity)!!) {
-            val meta: Array<String?> = (string)!!.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            val entity: EntityEntry? = ForgeRegistries.ENTITIES.getValue(ResourceLocation(meta[0], meta[1]))
-            if (entity != null) list.add(entity)
-        }
-
-        e.setCanceled(list.contains(EntityRegistry.getEntry(living.javaClass)))
+    open fun onSuffocationEvent(event: GCCoreOxygenSuffocationEvent.Pre): Boolean {
+        val id = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(event.getEntity().type)
+        return GSConfigCore.unsuffocation_entity?.any { configured ->
+            configured != null && ResourceLocation.tryParse(configured) == id
+        } == true
     }
 
     @SubscribeEvent
     open fun onEntityUpdate(event: LivingEvent.LivingUpdateEvent) {
         val living: EntityLivingBase = event.getEntityLiving()
-        val world: World = living.world
+        val world: World = living.level()
 
         if (living is EntityPlayer) {
             val player: EntityPlayer = living
@@ -639,7 +648,7 @@ open class GSEventHandler {
                 if ((chest.getItem() as IJetpackArmor).canFly(
                         chest,
                         living
-                    ) && (chest.getItem() as IJetpackArmor).isActivated(chest) && living.posY < 256
+                    ) && (chest.getItem() as IJetpackArmor).isActivated(chest) && living.y < 256
                 ) {
                     living.fallDistance = 0.0f
                     living.distanceWalkedModified = 0.6f
@@ -651,7 +660,7 @@ open class GSEventHandler {
             }
 
             if (!player.capabilities.isCreativeMode) {
-                val held: ItemStack = player.getHeldItemMainhand()
+                val held: ItemStack = player.getMainHandItem()
 
                 if (held.getItem() is ItemTier1Rocket
                     || held.getItem() is ItemTier2Rocket
@@ -660,7 +669,7 @@ open class GSEventHandler {
                     || held.getItem() is ItemTier5Rocket
                     || held.getItem() is ItemTier6Rocket
                 ) {
-                    player.addPotionEffect(PotionEffect(MobEffects.SLOWNESS, 10, 4))
+                    player.addEffect(PotionEffect(MobEffects.SLOWNESS, 10, 4))
                 }
             }
         }
@@ -674,7 +683,7 @@ open class GSEventHandler {
             LightningStormHandler.spawnLightning(player)
 
             // Added code
-            if (!world.isRemote) {
+            if (!world.isClientSide) {
                 MultiSeatRocketDriverTracker.get().update()
             }
 
@@ -687,36 +696,36 @@ open class GSEventHandler {
             //{
             //GalaxySpace.debug(gs_stats.getKnowledgeResearch()[0] + "");
             //}
-            //GalaxySpace.instance.debug(GSFluids.NaturalGas.getBlock().getDefaultState().getMaterial() + "");
-            if (AsmodeusConfig.enableWeatherDamage && world.getTotalWorldTime() % 15 == 0L && !getProtectArmor(player) && world.provider is WorldProviderTitan && world.isRaining()) {
+            //GalaxySpace.instance.debug(GSFluids.NaturalGas.getBlock().defaultBlockState().getMaterial() + "");
+            if (AsmodeusConfig.enableWeatherDamage && world.getGameTime() % 15 == 0L && !getProtectArmor(player) && world.provider is WorldProviderTitan && world.isRaining()) {
                 var flag: Boolean = true
                 for (y: Int in 256 downTo player.getPosition().getY() + 1) {
-                    if (!world.isAirBlock(BlockPos(player.getPosition().getX(), y, player.getPosition().getZ()))) {
+                    if (!world.isEmptyBlock(BlockPos(player.getPosition().getX(), y, player.getPosition().getZ()))) {
                         flag = false
                         break
                     }
                 }
-                if (flag) player.attackEntityFrom(GSDamageSource.acid, 0.5f * AsmodeusConfig.toxicRainDamageRate)
+                if (flag) foundation.damage.FoundationDamageTypes.hurt(player, GSDamageSource.acid, 0.5f * AsmodeusConfig.toxicRainDamageRate)
             }
 
-            if (player.world.provider is WorldProviderKuiperBelt && player.posY <= -20) {
+            if (player.level().provider is WorldProviderKuiperBelt && player.y <= -20) {
                 player.connection.setPlayerLocation(
-                    player.posX,
+                    player.x,
                     188.0,
-                    player.posZ,
-                    player.rotationYaw,
-                    player.rotationPitch
+                    player.z,
+                    player.yRot,
+                    player.xRot
                 )
             }
 
             if (!player.capabilities.isCreativeMode && player.getHealth() <= 5.0f) {
-                for (stack: ItemStack in player.inventory.mainInventory) {
-                    if (stack.getItem() === GSItems.BASIC && stack.getItemDamage() == 18) {
+                for (stack: ItemStack in player.inventory.mainItems) {
+                    if (stack.getItem() === GSItems.BASIC && stack.legacyItemValue == 18) {
                         if (stack.hasTagCompound() && stack.getTagCompound()!!.getBoolean("turnonoff")) {
                             val pos: IntArray = stack.getTagCompound()!!.getIntArray("position")
-                            if (pos != null && pos.size >= 3 && player.world.provider.getDimension() == pos[3]) {
-                                player.sendMessage(
-                                    TextComponentString(
+                            if (pos != null && pos.size >= 3 && player.level().provider.getDimension() == pos[3]) {
+                                player.sendSystemMessage(
+                                    Component.literal(
                                         EnumColor.AQUA.toString() + GCCoreUtil.translateWithFormat(
                                             "gui.message.emergency_teleport"
                                         ) + " x:" + pos[0] + " y:" + pos[1] + " z:" + pos[2]
@@ -727,8 +736,8 @@ open class GSEventHandler {
                                     pos[0].toDouble(),
                                     pos[1].toDouble(),
                                     pos[2].toDouble(),
-                                    player.rotationYaw,
-                                    player.rotationPitch
+                                    player.yRot,
+                                    player.xRot
                                 )
                                 stack.shrink(1)
                             }
@@ -743,18 +752,18 @@ open class GSEventHandler {
             if ((stats.getShieldControllerInSlot())!!.isItemEqual(ItemStack(GSItems.BASIC, 1, 16))) {
                 val shield: ItemStack = (stats.getShieldControllerInSlot())!!
                 if (shield.hasTagCompound()) {
-                    var shieldtime: Int = shield.getTagCompound()!!.getInteger("shieldtime")
+                    var shieldtime: Int = shield.getTagCompound()!!.getIntOr("shieldtime", 0)
 
-                    if (!player.capabilities.isCreativeMode && player.world.provider is IGalacticraftWorldProvider && ((player.world.provider as IGalacticraftWorldProvider).getCelestialBody())!!.atmosphere.isCorrosive()) {
+                    if (!player.capabilities.isCreativeMode && player.level().provider is IGalacticraftWorldProvider && ((player.level().provider as IGalacticraftWorldProvider).getCelestialBody())!!.atmosphere.isCorrosive()) {
                         if (shieldtime >= 1) {
-                            if (player.ticksExisted % 20 == 0) {
+                            if (player.tickCount % 20 == 0) {
                                 shieldtime -= 1
-                                shield.getTagCompound()!!.setInteger("shieldtime", shieldtime)
+                                shield.getTagCompound()!!.putInt("shieldtime", shieldtime)
                             }
                         } else {
                             shield.shrink(1)
-                            player.sendMessage(
-                                TextComponentString(
+                            player.sendSystemMessage(
+                                Component.literal(
                                     EnumColor.DARK_RED.toString() + GCCoreUtil.translateWithFormat(
                                         "gui.message.now_noshield"
                                     )
@@ -764,7 +773,7 @@ open class GSEventHandler {
                     }
                 } else {
                     shield.setTagCompound(NBTTagCompound())
-                    shield.getTagCompound()!!.setInteger("shieldtime", ItemBasicGS.SHIELD_TIME)
+                    shield.getTagCompound()!!.putInt("shieldtime", ItemBasicGS.SHIELD_TIME)
                 }
                 val gearID: Int = GalacticraftRegistry.findMatchingGearID(
                     (stats.getShieldControllerInSlot())!!,
@@ -783,24 +792,24 @@ open class GSEventHandler {
 
 
             //stats.setLastShieldControllerInSlot(stats.getShieldControllerInSlot());
-            val stack: ItemStack = player.inventory.armorInventory.get(3)
+            val stack: ItemStack = player.inventory.armorItems.get(3)
             val inv: IInventoryGC? = AccessInventoryGC.getGCInventoryForPlayer(player)
             if (!stack.isEmpty()) {
                 if (stack.getItem() is ItemSpaceSuit && player.isInWater() && stack.hasTagCompound() && stack.getTagCompound()!!
-                        .hasKey("water_breathing")
+                        .containsTag("water_breathing")
                 ) {
                     val count: Int = 300
                     val air: Int = player.getAir()
                     for (i: Int in 2..3) {
-                        if (!inv!!.getStackInSlot(i).isEmpty() && inv.getStackInSlot(i)
-                                .getItemDamage() != inv.getStackInSlot(i).getMaxDamage()
+                        if (!inv!!.getItem(i).isEmpty() && inv.getItem(i)
+                                .legacyItemValue != inv.getItem(i).getMaxDamage()
                         ) {
                             if (air < count) {
                                 player.setAir(count)
 
-                                if (inv.getStackInSlot(i)
+                                if (inv.getItem(i)
                                         .getItem() !== GCItems.oxygenCanisterInfinite
-                                ) inv.getStackInSlot(i).setItemDamage(inv.getStackInSlot(i).getItemDamage() + 1)
+                                ) inv.getItem(i).setItemDamage(inv.getItem(i).legacyItemValue + 1)
                             }
                             break
                         }
@@ -808,15 +817,15 @@ open class GSEventHandler {
                 }
             }
 
-            if (OxygenUtil.isAABBInBreathableAirBlock(player) || player.world.provider.getDimensionType() == DimensionType.OVERWORLD) {
-                for (i: Int in 2..3) if (!inv!!.getStackInSlot(i).isEmpty() && (inv.getStackInSlot(i)
-                        .getItem() === GSItems.OXYGENTANK_TIER_EPP || inv.getStackInSlot(i)
-                        .hasTagCompound() && inv.getStackInSlot(i).getTagCompound()!!.hasKey("epp"))
+            if (OxygenUtil.isAABBInBreathableAirBlock(player) || player.level().provider.getDimensionType() == DimensionType.OVERWORLD) {
+                for (i: Int in 2..3) if (!inv!!.getItem(i).isEmpty() && (inv.getItem(i)
+                        .getItem() === GSItems.OXYGENTANK_TIER_EPP || inv.getItem(i)
+                        .hasTagCompound() && inv.getItem(i).getTagCompound()!!.containsTag("epp"))
                 ) {
-                    val tank: ItemStack = inv.getStackInSlot(i)
-                    if (tank.getItemDamage() != 0) {
-                        if (player.ticksExisted % 10 == 0) {
-                            tank.setItemDamage(tank.getItemDamage() - GSConfigCore.Companion.rechargeOxygenTankTierEPP)
+                    val tank: ItemStack = inv.getItem(i)
+                    if (ItemOxygenTank.used(tank) != 0) {
+                        if (player.tickCount % 10 == 0) {
+                            ItemOxygenTank.setUsed(tank, ItemOxygenTank.used(tank) - GSConfigCore.Companion.rechargeOxygenTankTierEPP)
                         }
                     }
                 }
@@ -831,7 +840,7 @@ open class GSEventHandler {
             event.setArmorAddResult(GCPlayerHandler.ThermalArmorEvent.ArmorAddResult.REMOVE)
             return
         }
-        if ((event.armorStack)!!.getItem() is ItemThermalPaddingBase && (event.armorStack)!!.getItemDamage() == event.armorIndex) {
+        if ((event.armorStack)!!.getItem() is ItemThermalPaddingBase && (event.armorStack)!!.legacyItemValue == event.armorIndex) {
             event.setArmorAddResult(GCPlayerHandler.ThermalArmorEvent.ArmorAddResult.ADD)
             return
         }
@@ -839,7 +848,6 @@ open class GSEventHandler {
         event.setArmorAddResult(GCPlayerHandler.ThermalArmorEvent.ArmorAddResult.NOTHING)
     }
 
-    @SubscribeEvent
     open fun onPlanetDecorated(event: GCCoreEventPopulate.Post) {
         if (GSConfigWorld.Companion.enableMarsNewOres && ((event.world)!!.provider is WorldProviderMars || (event.world)!!.provider is WorldProviderMars_WE)) {
             genOre(
@@ -910,9 +918,9 @@ open class GSEventHandler {
                 val minY: Int = line[9]!!.toInt()
                 val maxY: Int = line[10]!!.toInt()
 
-                val block: Block? = ForgeRegistries.BLOCKS.getValue(ResourceLocation(blockModId + ":" + blockName))
+                val block: Block? = ForgeRegistries.BLOCKS.getValue(ResourceLocation.parse(blockModId + ":" + blockName))
                 val replaceBlock: Block? =
-                    ForgeRegistries.BLOCKS.getValue(ResourceLocation(replaceBlockModId + ":" + replaceBlockName))
+                    ForgeRegistries.BLOCKS.getValue(ResourceLocation.parse(replaceBlockModId + ":" + replaceBlockName))
 
                 if ((event.world)!!.provider.getDimension() == dimId) {
                     genOre(
@@ -930,15 +938,14 @@ open class GSEventHandler {
 
     open fun genOre(world: World, pos: BlockPos, wg: WorldGenerator, amountPerChunk: Int, minY: Int, maxY: Int) {
         val pos1: BlockPos =
-            pos.add(world.rand.nextInt(16), world.rand.nextInt(maxY - minY) + minY, world.rand.nextInt(16))
+            pos.offset(world.random.nextInt(16), world.random.nextInt(maxY - minY) + minY, world.random.nextInt(16))
 
-        for (i: Int in 0..<amountPerChunk) wg.generate(world, world.rand, pos1)
+        for (i: Int in 0..<amountPerChunk) wg.generate(world, world.random, pos1)
     }
 
-    @SubscribeEvent
-    open fun onZeroGravity(event: ZeroGravityEvent.InFreefall) {
-        val entity: EntityLivingBase = event.getEntityLiving()
-        if (inGravityZone(entity.getEntityWorld(), entity, false)) event.setCanceled(true)
+    open fun onZeroGravity(event: ZeroGravityEvent.InFreefall): Boolean {
+        val entity = event.getEntity()
+        return inGravityZone(entity.level(), entity, false)
     }
 
     @SubscribeEvent
@@ -951,7 +958,7 @@ open class GSEventHandler {
 
             var checkAirLock: Boolean = false
             for (y: Int in 0..254) {
-                if (player.world.getBlockState(player.getPosition().up(y)).getBlock() === GCBlocks.airLockSeal) {
+                if (player.level().getBlockState(player.getPosition().up(y)).getBlock() === GCBlocks.airLockSeal) {
                     checkAirLock = true
                     break
                 }
@@ -959,9 +966,9 @@ open class GSEventHandler {
             if (!player.capabilities.isCreativeMode) event.setCanceled(
                 checkAirLock
                         || !GSConfigCore.Companion.enableRadiationSystem || getProtectArmor(player)
-                        || player.getRidingEntity() is EntityLanderBase
-                        || player.getRidingEntity() is EntityTieredRocket
-                        || inRadiationBubble(player.getEntityWorld(), player.posX, player.posY, player.posZ)
+                        || player.getVehicle() is EntityLanderBase
+                        || player.getVehicle() is EntityTieredRocket
+                        || inRadiationBubble(player.level(), player.x, player.y, player.z)
                         || !(GSConfigCore.Companion.enableRadiationEffectForAndroid && CompatibilityManager.isAndroid(
                     player
                 ))
@@ -975,14 +982,14 @@ open class GSEventHandler {
 
         if (living is EntityPlayerMP) {
             val player: EntityPlayerMP = living
-            val world: World = player.getEntityWorld()
+            val world: World = player.level()
             val level: Float = event.getPressureLevel().toFloat()
 
             if (!player.capabilities.isCreativeMode) event.setCanceled(
                 !GSConfigCore.Companion.enablePressureSystem || getProtectArmor(player)
                         || inGravityZone(world, player, true)
-                        || player.getRidingEntity() is EntityLanderBase
-                        || player.getRidingEntity() is EntityTieredRocket
+                        || player.getVehicle() is EntityLanderBase
+                        || player.getVehicle() is EntityTieredRocket
                         || !(GSConfigCore.Companion.enablePressureEffectForAndroid && CompatibilityManager.isAndroid(
                     player
                 ))
@@ -1017,39 +1024,39 @@ open class GSEventHandler {
     }
 
     protected open fun throwMeteors(player: EntityPlayerMP) {
-        val world: World = player.world
-        if (world.provider is IAdvancedSpace && !world.isRemote) {
+        val world: World = player.level()
+        if (world.provider is IAdvancedSpace && !world.isClientSide) {
             if ((world.provider as IGalacticraftWorldProvider).getMeteorFrequency() > 0 && ConfigManagerCore.meteorSpawnMod > 0.0) {
                 // final int f = (int) (((IGalacticraftWorldProvider) world.provider).getMeteorFrequency() * 1000D * (1.0 / ConfigManagerCore.meteorSpawnMod));
                 val f: Int = 1
-                if (world.rand.nextInt(f) == 0)  /*&& world.getWorldTime() > 6000L && world.getWorldTime() < 9000L)*/ {
-                    val closestPlayer: EntityPlayer? = world.getClosestPlayerToEntity(player, 100.0)
+                if (world.random.nextInt(f) == 0)  /*&& world.getWorldTime() > 6000L && world.getWorldTime() < 9000L)*/ {
+                    val closestPlayer: EntityPlayer? = world.getNearestPlayer(player, 100.0)
 
-                    if (closestPlayer == null || closestPlayer.getEntityId() <= player.getEntityId()) {
+                    if (closestPlayer == null || closestPlayer.getId() <= player.getId()) {
                         val x: Int
                         val y: Int
                         val z: Int
                         val motX: Double
                         val motZ: Double
-                        x = world.rand.nextInt(1) - 4
-                        y = world.rand.nextInt(20) + 200
-                        z = world.rand.nextInt(1) - 4
-                        motX = world.rand.nextDouble() * 1
-                        motZ = world.rand.nextDouble() * 1
+                        x = world.random.nextInt(1) - 4
+                        y = world.random.nextInt(20) + 200
+                        z = world.random.nextInt(1) - 4
+                        motX = world.random.nextDouble() * 1
+                        motZ = world.random.nextDouble() * 1
 
                         val meteor: EntityMeteor = EntityMeteor(
                             world,
-                            player.posX + x,
-                            player.posY + y,
-                            player.posZ + z,
+                            player.x + x,
+                            player.y + y,
+                            player.z + z,
                             motX - 0.5,
                             0.0,
                             motZ - 0.5,
                             1
                         )
 
-                        if (!world.isRemote) {
-                            world.spawnEntity(meteor)
+                        if (!world.isClientSide) {
+                            world.addFreshEntity(meteor)
                         }
                     }
                 }
@@ -1091,9 +1098,9 @@ open class GSEventHandler {
             if (!particle_name.isEmpty()) for (i: Int in 0..4) (GalaxySpace.proxy)!!.spawnParticle(
                 particle_name,
                 Vector3(
-                    pos.getX() + world.rand.nextDouble(),
-                    pos.getY() + 1.0 + world.rand.nextDouble(),
-                    pos.getZ() + world.rand.nextDouble()
+                    pos.getX() + world.random.nextDouble(),
+                    pos.getY() + 1.0 + world.random.nextDouble(),
+                    pos.getZ() + world.random.nextDouble()
                 ),
                 Vector3(0.0, 0.001, 0.0),
                 (arrayOf<Any>(10, 5, false, Vector3(1.0, 1.0, 1.0), 1.0) as Array<Any?>?)
@@ -1140,25 +1147,25 @@ open class GSEventHandler {
 
         init {
             items_to_change.add(
-                ItemsToChange(ItemStack(Blocks.FURNACE), Blocks.AIR.getDefaultState()).setOxygenCheck(
+                ItemsToChange(ItemStack(Blocks.FURNACE), Blocks.AIR.defaultBlockState()).setOxygenCheck(
                     true
                 )
             )
-            //block_to_change.add(new BlockToChange(Blocks.WATER.getDefaultState().withProperty(BlockLiquid.LEVEL, 0), Blocks.AIR.getDefaultState(), Blocks.ICE.getDefaultState(), 0.0F, true).setParticle("waterbubbles").setOxygenCheck(false));
+            //block_to_change.add(new BlockToChange(Blocks.WATER.defaultBlockState().setValue(BlockLiquid.LEVEL, 0), Blocks.AIR.defaultBlockState(), Blocks.ICE.defaultBlockState(), 0.0F, true).setParticle("waterbubbles").setOxygenCheck(false));
             block_to_change.add(
                 BlockToChange(
-                    (GSFluids.BLOCK_LEMETHANE)!!.getDefaultState().withProperty(BlockLiquid.LEVEL, 0),
-                    Blocks.FIRE.getDefaultState(),
-                    Blocks.AIR.getDefaultState(),
+                    (GSFluids.BLOCK_LEMETHANE)!!.defaultBlockState().setValue(BlockLiquid.LEVEL, 0),
+                    Blocks.FIRE.defaultBlockState(),
+                    Blocks.AIR.defaultBlockState(),
                     3.0f,
                     true
                 ).setParticle("waterbubbles").setOxygenCheck(false)
             )
             block_to_change.add(
                 BlockToChange(
-                    (GSFluids.BLOCK_HELIUM_HYDROGEN)!!.getDefaultState().withProperty(BlockLiquid.LEVEL, 0),
-                    Blocks.FIRE.getDefaultState(),
-                    Blocks.AIR.getDefaultState(),
+                    (GSFluids.BLOCK_HELIUM_HYDROGEN)!!.defaultBlockState().setValue(BlockLiquid.LEVEL, 0),
+                    Blocks.FIRE.defaultBlockState(),
+                    Blocks.AIR.defaultBlockState(),
                     3.0f,
                     true
                 ).setParticle("waterbubbles").setOxygenCheck(false)
@@ -1168,11 +1175,11 @@ open class GSEventHandler {
         @JvmStatic
         fun consumeOxygenFromTank(player: EntityPlayerMP, consume_count: Int) {
             val inv: IInventoryGC? = AccessInventoryGC.getGCInventoryForPlayer(player)
-            for (i: Int in 2..3) if (!inv!!.getStackInSlot(i).isEmpty()) {
-                val tank: ItemStack = inv.getStackInSlot(i)
-                if (tank.getItemDamage() != tank.getMaxDamage()) {
-                    if (player.ticksExisted % 10 == 0) {
-                        tank.setItemDamage(tank.getItemDamage() + consume_count)
+            for (i: Int in 2..3) if (!inv!!.getItem(i).isEmpty()) {
+                val tank: ItemStack = inv.getItem(i)
+                if (ItemOxygenTank.used(tank) != ItemOxygenTank.capacityOf(tank)) {
+                    if (player.tickCount % 10 == 0) {
+                        ItemOxygenTank.setUsed(tank, ItemOxygenTank.used(tank) + consume_count)
                     }
                     break
                 }
@@ -1183,9 +1190,9 @@ open class GSEventHandler {
         fun isValidOxygenTanks(player: EntityPlayerMP?): Boolean {
             var valid: Boolean = false
             val inv: IInventoryGC? = AccessInventoryGC.getGCInventoryForPlayer(player)
-            for (i: Int in 2..3) if (!inv!!.getStackInSlot(i).isEmpty()) {
-                val tank: ItemStack = inv.getStackInSlot(i)
-                if (tank.getItemDamage() != tank.getMaxDamage()) {
+            for (i: Int in 2..3) if (!inv!!.getItem(i).isEmpty()) {
+                val tank: ItemStack = inv.getItem(i)
+                if (ItemOxygenTank.used(tank) != ItemOxygenTank.capacityOf(tank)) {
                     valid = true
                     break
                 }
@@ -1201,19 +1208,19 @@ open class GSEventHandler {
             //boolean flag = false;
             for (string in (GSConfigCore.Companion.radiation_armor)!!) {
                 val meta: Array<String?> = (string)!!.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                val item: Item? = ForgeRegistries.ITEMS.getValue(ResourceLocation(string))
+                val item: Item? = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(string))
 
                 if (item == null) continue
 
                 if (meta.size > 2) {
-                    for (i: Int in player.inventory.armorInventory.indices) {
+                    for (i: Int in player.inventory.armorItems.indices) {
                         val itemstack: ItemStack = ItemStack(item, 1, meta[2]!!.toInt())
-                        check[i] = !player.inventory.armorInventory.get(i)
-                            .isEmpty() && player.inventory.armorInventory.get(i) == itemstack
+                        check[i] = !player.inventory.armorItems.get(i)
+                            .isEmpty() && player.inventory.armorItems.get(i) == itemstack
                     }
                 } else for (i: Int in 0..3) {
                     check[i] =
-                        !player.inventory.armorInventory.get(i).isEmpty() && player.inventory.armorInventory.get(i)
+                        !player.inventory.armorItems.get(i).isEmpty() && player.inventory.armorItems.get(i)
                             .getItem() === item
                 }
 
@@ -1229,14 +1236,14 @@ open class GSEventHandler {
         fun inGravityZone(world: World, player: EntityLivingBase, checkStabilisationModule: Boolean): Boolean {
             for (blockVec: BlockVec3Dim? in TileEntityGravitationModule.loadedTiles) {
                 if (blockVec != null && blockVec.dim == world.provider.getDimension()) {
-                    val tile: TileEntity? = world.getTileEntity(blockVec.toBlockPos())
+                    val tile: TileEntity? = world.getBlockEntity(blockVec.toBlockPos())
 
                     if (tile is TileEntityGravitationModule) {
                         val gravity: TileEntityGravitationModule = tile
 
                         if (!gravity.disabled && gravity.hasEnoughEnergyToRun && gravity.inGravityZone(world, player)) {
                             if (checkStabilisationModule) {
-                                for (i: Int in 0..3) if (gravity.getStackInSlot(i + 1)
+                                for (i: Int in 0..3) if (gravity.getItem(i + 1)
                                         .isItemEqual(ItemStack(GSItems.UPGRADES, 1, 1))
                                 ) return true
 
@@ -1254,7 +1261,7 @@ open class GSEventHandler {
         fun inRadiationBubble(world: World, avgX: Double, avgY: Double, avgZ: Double): Boolean {
             for (blockVec: BlockVec3Dim? in TileEntityRadiationStabiliser.loadedTiles) {
                 if (blockVec != null && blockVec.dim == world.provider.getDimension()) {
-                    val tile: TileEntity? = world.getTileEntity(blockVec.toBlockPos())
+                    val tile: TileEntity? = world.getBlockEntity(blockVec.toBlockPos())
                     if (tile is TileEntityRadiationStabiliser) {
                         if (tile.inBubble(avgX, avgY, avgZ)) return true
                     }
@@ -1268,7 +1275,7 @@ open class GSEventHandler {
         fun inShieldBubble(world: World, avgX: Double, avgY: Double, avgZ: Double): Boolean {
             for (blockVec: BlockVec3Dim? in TileEntityPlanetShield.loadedTiles) {
                 if (blockVec != null && blockVec.dim == world.provider.getDimension()) {
-                    val tile: TileEntity? = world.getTileEntity(blockVec.toBlockPos())
+                    val tile: TileEntity? = world.getBlockEntity(blockVec.toBlockPos())
                     if (tile is TileEntityPlanetShield) {
                         if (tile.inBubble(avgX, avgY, avgZ)) return true
                     }
@@ -1282,13 +1289,13 @@ open class GSEventHandler {
         fun consumeItemStack(inventory: IInventory, stack: ItemStack): Boolean {
             //GalaxySpace.debug(getAmount(inventory, stack) + "");
             if (getAmount(inventory, stack) >= stack.getCount()) {
-                for (i: Int in 0..<inventory.getSizeInventory()) {
-                    if (isItemStackEqual(inventory.getStackInSlot(i), stack)) {
-                        val amount: Int = min(stack.getCount(), inventory.getStackInSlot(i).getCount())
+                for (i: Int in 0..<inventory.getContainerSize()) {
+                    if (isItemStackEqual(inventory.getItem(i), stack)) {
+                        val amount: Int = min(stack.getCount(), inventory.getItem(i).getCount())
                         if (amount > 0) {
-                            inventory.getStackInSlot(i).shrink(amount)
-                            if (inventory.getStackInSlot(i).getCount() <= 0) {
-                                inventory.setInventorySlotContents(i, ItemStack.EMPTY)
+                            inventory.getItem(i).shrink(amount)
+                            if (inventory.getItem(i).getCount() <= 0) {
+                                inventory.setItem(i, ItemStack.EMPTY)
                             }
                             stack.shrink(amount)
                         }
@@ -1304,9 +1311,9 @@ open class GSEventHandler {
         @JvmStatic
         fun getAmount(inventory: IInventory, stack: ItemStack): Int {
             var amount: Int = 0
-            for (i: Int in 0..<inventory.getSizeInventory()) {
-                if (isItemStackEqual(inventory.getStackInSlot(i), stack)) {
-                    amount += inventory.getStackInSlot(i).getCount()
+            for (i: Int in 0..<inventory.getContainerSize()) {
+                if (isItemStackEqual(inventory.getItem(i), stack)) {
+                    amount += inventory.getItem(i).getCount()
                 }
             }
             return amount
@@ -1314,7 +1321,7 @@ open class GSEventHandler {
 
         @JvmStatic
         fun isItemStackEqual(stack1: ItemStack, stack2: ItemStack): Boolean {
-            return (!stack1.isEmpty() && stack1.getItem() === stack2.getItem() && (stack1.getItemDamage() == stack2.getItemDamage() || stack2.getItemDamage() == OreDictionary.WILDCARD_VALUE))
+            return (!stack1.isEmpty() && stack1.getItem() === stack2.getItem() && (stack1.legacyItemValue == stack2.legacyItemValue || stack2.legacyItemValue == OreDictionary.WILDCARD_VALUE))
         }
 
         @JvmStatic

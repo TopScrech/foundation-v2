@@ -6,19 +6,19 @@ import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.blocks.BlockPlatform
 import micdoodle8.mods.galacticraft.core.tile.TileEntityPlatform
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.model.ModelBase
 import net.minecraft.client.model.ModelRenderer
 import net.minecraft.client.renderer.*
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import kotlin.math.abs
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class TileEntityPlatformRenderer : TileEntitySpecialRenderer<TileEntityPlatform>() {
     open inner class ModelPlatform @JvmOverloads constructor(var1: Float = 0.0f) : ModelBase() {
         @JvmField
@@ -260,10 +260,10 @@ open class TileEntityPlatformRenderer : TileEntitySpecialRenderer<TileEntityPlat
     companion object {
         @JvmField
         val platformTexture: ResourceLocation =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/model/platform_moving.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/platform_moving.png")
 
         @JvmField
-        val lightTexture: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "textures/misc/light.png")
+        val lightTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/misc/light.png")
         private val lastYMap: MutableMap<Int,Float> = HashMap<Int,Float>()
         private var lastPartialTicks = -1f
     }

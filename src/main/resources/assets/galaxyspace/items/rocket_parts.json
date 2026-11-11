@@ -1,0 +1,153 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:component",
+    "component": "foundation:legacy_metadata",
+    "cases": [
+      {
+        "when": 0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_cone_tier_3"
+        }
+      },
+      {
+        "when": 1,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_body_tier_3"
+        }
+      },
+      {
+        "when": 2,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_engine_tier_3"
+        }
+      },
+      {
+        "when": 3,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_booster_tier_3"
+        }
+      },
+      {
+        "when": 4,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_stabiliser_tier_3"
+        }
+      },
+      {
+        "when": 5,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_cone_tier_4"
+        }
+      },
+      {
+        "when": 6,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_body_tier_4"
+        }
+      },
+      {
+        "when": 7,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_engine_tier_4"
+        }
+      },
+      {
+        "when": 8,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_booster_tier_4"
+        }
+      },
+      {
+        "when": 9,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_stabiliser_tier_4"
+        }
+      },
+      {
+        "when": 10,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_cone_tier_5"
+        }
+      },
+      {
+        "when": 11,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_body_tier_5"
+        }
+      },
+      {
+        "when": 12,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_engine_tier_5"
+        }
+      },
+      {
+        "when": 13,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_booster_tier_5"
+        }
+      },
+      {
+        "when": 14,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_stabiliser_tier_5"
+        }
+      },
+      {
+        "when": 15,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_cone_tier_6"
+        }
+      },
+      {
+        "when": 16,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_body_tier_6"
+        }
+      },
+      {
+        "when": 17,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_engine_tier_6"
+        }
+      },
+      {
+        "when": 18,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_booster_tier_6"
+        }
+      },
+      {
+        "when": 19,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_parts/rocket_stabiliser_tier_6"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "galaxyspace:item/rocket_parts/rocket_cone_tier_3"
+    }
+  }
+}

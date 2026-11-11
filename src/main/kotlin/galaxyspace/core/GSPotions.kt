@@ -1,22 +1,30 @@
 package galaxyspace.core
 
 import galaxyspace.core.prefab.potions.AntiRadiation
-import galaxyspace.core.util.GSUtils
-import net.minecraftforge.fml.common.registry.ForgeRegistries
+import net.minecraft.core.Holder
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.registries.Registries
+import net.minecraft.resources.Identifier
+import net.minecraft.world.effect.MobEffect
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
+import net.minecraftforge.registries.IForgeRegistry
+import net.minecraftforge.registries.RegisterEvent
 
 object GSPotions {
-    @JvmField
-    var antiradiation: AntiRadiation? = null
+    @JvmField val antiradiation: AntiRadiation = AntiRadiation(true, 167709284)
+    val events: Map<Identifier, MobEffect> = mapOf(
+        Identifier.parse("galaxyspace:antiradiation") to antiradiation
+    )
 
-    @JvmStatic
-    fun initialize() {
-        initPotions()
+    fun holder(effect: MobEffect): Holder<MobEffect> = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect)
+
+    fun install(context: FMLJavaModLoadingContext) {
+        RegisterEvent.getBus(context.modBusGroup).addListener { event ->
+            for ((id, effect) in events) event.register(Registries.MOB_EFFECT, id) { effect }
+        }
     }
 
-    @JvmStatic
-    private fun initPotions() {
-        antiradiation = AntiRadiation(true, GSUtils.getColor(255, 10, 100, 10))
-
-        ForgeRegistries.POTIONS.register(antiradiation)
+    fun register(registry: IForgeRegistry<MobEffect>) {
+        for ((id, effect) in events) registry.register(id, effect)
     }
 }

@@ -1,39 +1,43 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.tile.TileEntityArclamp
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.RedstoneUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyDirection
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 
 open class BlockBrightLamp constructor(assetName: String?) : BlockAdvanced(Material.GLASS), IShiftDescription,
-    ITileEntityProvider, ISortableBlock {
+    ITileEntityProvider, ISortableBlock, LegacyBlockMetadata {
     //Metadata: bits 0-2 are the side of the base plate using standard side convention (0-5)
     init {
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(FACING, EnumFacing.UP)
-        ) //.withProperty(ACTIVE, true));
+            this.blockState.getBaseState().setValue(FACING, EnumFacing.UP)
+        ) //.setValue(ACTIVE, true));
         this.setHardness(0.1f)
         this.setSoundType(SoundType.METAL)
         this.setTranslationKey(assetName)
@@ -107,7 +111,7 @@ open class BlockBrightLamp constructor(assetName: String?) : BlockAdvanced(Mater
     }
 
     override fun canPlaceBlockAt(worldIn: World, pos: BlockPos): Boolean {
-        for (side: EnumFacing in EnumFacing.VALUES) {
+        for (side: EnumFacing in EnumFacing.values()) {
             val offsetPos: BlockPos = pos.offset(side)
             val state: IBlockState = worldIn.getBlockState(offsetPos)
             if (state.getBlock().isSideSolid(state, worldIn, offsetPos, side.getOpposite())) {
@@ -142,10 +146,10 @@ open class BlockBrightLamp constructor(assetName: String?) : BlockAdvanced(Mater
         val offsetPos: BlockPos = pos.offset(opposite)
         val state: IBlockState = world.getBlockState(offsetPos)
         if (state.getBlock().isSideSolid(state, world, offsetPos, facing)) {
-            return this.getDefaultState().withProperty(FACING, opposite)
+            return this.defaultBlockState().setValue(FACING, opposite)
         }
 
-        return this.getDefaultState().withProperty(FACING, facing)
+        return this.defaultBlockState().setValue(FACING, facing)
     }
 
     /**
@@ -158,12 +162,12 @@ open class BlockBrightLamp constructor(assetName: String?) : BlockAdvanced(Mater
 
         val offsetPos: BlockPos = pos.offset(side)
         val state1: IBlockState = worldIn.getBlockState(offsetPos)
-        if (state1.getBlock().isSideSolid(state1, worldIn, offsetPos, EnumFacing.byIndex(side.getIndex() xor 1))) {
+        if (state1.getBlock().isSideSolid(state1, worldIn, offsetPos, EnumFacing.from3DDataValue(side.getIndex() xor 1))) {
             return
         }
 
         this.dropBlockAsItem(worldIn, pos, state, 0)
-        worldIn.setBlockToAir(pos)
+        worldIn.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
     }
 
     //    @Override
@@ -210,8 +214,8 @@ open class BlockBrightLamp constructor(assetName: String?) : BlockAdvanced(Mater
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        if (!(world)!!.isRemote) {
-            val tile: TileEntity? = (world)!!.getTileEntity(pos)
+        if (!(world)!!.isClientSide) {
+            val tile: TileEntity? = (world)!!.getBlockEntity(pos)
             if (tile is TileEntityArclamp) {
                 tile.facingChanged()
             }
@@ -236,8 +240,8 @@ open class BlockBrightLamp constructor(assetName: String?) : BlockAdvanced(Mater
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        val enumfacing: EnumFacing = EnumFacing.byIndex(meta)
-        return this.getDefaultState().withProperty(FACING, enumfacing)
+        val enumfacing: EnumFacing = EnumFacing.from3DDataValue(meta)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -251,7 +255,7 @@ open class BlockBrightLamp constructor(assetName: String?) : BlockAdvanced(Mater
     //    @Override
     //    public IBlockState getActualState(IBlockState state, IBlockAccess worldIn, BlockPos pos)
     //    {
-    //        return state.withProperty(ACTIVE, ((TileEntityArclamp) worldIn.getTileEntity(pos)).getEnabled());
+    //        return state.setValue(ACTIVE, ((TileEntityArclamp) worldIn.getBlockEntity(pos)).getEnabled());
     //    }
     //
     override fun getCategory(meta: Int): EnumSortCategoryBlock {
@@ -264,7 +268,7 @@ open class BlockBrightLamp constructor(assetName: String?) : BlockAdvanced(Mater
 
     companion object {
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing")
+        val FACING: EnumProperty<Direction> = BlockStateProperties.FACING
 
         //    public static final PropertyBool ACTIVE = PropertyBool.create("active");
         @JvmField

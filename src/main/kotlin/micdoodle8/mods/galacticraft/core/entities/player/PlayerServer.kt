@@ -11,15 +11,15 @@ import micdoodle8.mods.galacticraft.core.util.DamageSourceGC
 import micdoodle8.mods.galacticraft.planets.asteroids.dimension.WorldProviderAsteroids
 import micdoodle8.mods.galacticraft.planets.asteroids.items.ItemArmorAsteroids
 import micdoodle8.mods.galacticraft.planets.mars.items.ItemArmorMars
-import net.minecraft.entity.Entity
-import net.minecraft.entity.MoverType
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.MoverType
 import net.minecraft.entity.SharedMonsterAttributes
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.util.DamageSource
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraftforge.common.MinecraftForge
 import java.util.*
 
@@ -34,12 +34,12 @@ open class PlayerServer : IPlayerServer {
     }
 
     override fun dismountEntity(player: EntityPlayerMP?, par1Entity: Entity?): Boolean {
-        return updatingRidden && (player)!!.getRidingEntity() is IIgnoreShift && ((player)!!.getRidingEntity() as IIgnoreShift).shouldIgnoreShiftExit()
+        return updatingRidden && (player)!!.getVehicle() is IIgnoreShift && ((player)!!.getVehicle() as IIgnoreShift).shouldIgnoreShiftExit()
     }
 
     override fun move(player: EntityPlayerMP?, type: MoverType?, x: Double, y: Double, z: Double) {
         // If the player is on the moon, not airbourne and not riding anything
-        if ((player)!!.world.provider is WorldProviderMoon && !(player)!!.world.isRemote && (player)!!.getRidingEntity() == null) {
+        if ((player)!!.level().provider is WorldProviderMoon && !(player)!!.level().isRemote && (player)!!.getVehicle() == null) {
             GCPlayerHandler.updateFeet((player)!!, x, z)
         }
     }
@@ -67,21 +67,21 @@ open class PlayerServer : IPlayerServer {
     override fun attackEntityFrom(player: EntityPlayerMP?, par1DamageSource: DamageSource?, par2: Float): Float {
         //No damage while in Celestial Selection screen
         var par2: Float = par2
-        if ((player)!!.getRidingEntity() is EntityCelestialFake) {
+        if ((player)!!.getVehicle() is EntityCelestialFake) {
             return -1f
         }
 
         if (GalacticraftCore.isPlanetsLoaded) {
             if (par1DamageSource === DamageSource.OUT_OF_WORLD) {
-                if ((player)!!.world.provider is WorldProviderAsteroids) {
-                    if ((player)!!.posY > -120.0) {
+                if ((player)!!.level().provider is WorldProviderAsteroids) {
+                    if ((player)!!.y > -120.0) {
                         return -1f
                     }
-                    if ((player)!!.posY > -180.0) {
+                    if ((player)!!.y > -180.0) {
                         par2 /= 2f
                     }
                 }
-            } else if (par1DamageSource === DamageSource.FALL || par1DamageSource === DamageSourceGC.spaceshipCrash) {
+            } else if (par1DamageSource === DamageSource.FALL || par1DamageSource?.`is`(DamageSourceGC.spaceshipCrash) == true) {
                 var titaniumCount: Int = 0
                 if ((player)!!.inventory != null) {
                     for (armorPiece: ItemStack? in (player)!!.getArmorInventoryList()) {
@@ -118,7 +118,7 @@ open class PlayerServer : IPlayerServer {
             }
         }
 
-        if ((player)!!.getRNG().nextDouble() >= (player)!!.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
+        if ((player)!!.getRandom().nextDouble() >= (player)!!.getEntityAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE)
                 .getAttributeValue()
         ) {
             (player)!!.isAirBorne = deshCount < 2
@@ -132,7 +132,7 @@ open class PlayerServer : IPlayerServer {
             (player)!!.motionY += f2.toDouble()
             (player)!!.motionZ -= f2 * impulseZ / f1
 
-            if ((player)!!.motionY > 0.4) {
+            if ((player)!!.deltaMovement.y > 0.4) {
                 (player)!!.motionY = 0.4
             }
         }

@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.api.block
 
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 
 interface ITerraformableBlock {
     /**

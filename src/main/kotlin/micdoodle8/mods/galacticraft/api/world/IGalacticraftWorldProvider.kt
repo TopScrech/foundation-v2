@@ -3,8 +3,8 @@ package micdoodle8.mods.galacticraft.api.world
 import micdoodle8.mods.galacticraft.api.entity.IRocketType
 
 import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody
-import net.minecraft.block.Block
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.level.block.Block
+import net.minecraft.resources.Identifier as ResourceLocation
 
 interface IGalacticraftWorldProvider {
     /**

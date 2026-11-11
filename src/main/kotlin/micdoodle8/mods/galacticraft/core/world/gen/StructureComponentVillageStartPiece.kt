@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.world.biome.BiomeProvider
 import net.minecraft.world.gen.structure.template.TemplateManager
 import java.util.ArrayList
@@ -45,13 +45,13 @@ open class StructureComponentVillageStartPiece : StructureComponentVillageWell {
     override fun writeStructureToNBT(nbt: NBTTagCompound) {
         super.writeStructureToNBT(nbt)
 
-        nbt.setInteger("TerrainType", this.terrainType)
+        nbt.putInt("TerrainType", this.terrainType)
     }
 
     override fun readStructureFromNBT(nbt: NBTTagCompound, manager: TemplateManager) {
         super.readStructureFromNBT(nbt, manager)
 
-        this.terrainType = nbt.getInteger("TerrainType")
+        this.terrainType = nbt.getIntOr("TerrainType", 0)
     }
 
     open fun getBiomeProvider(): BiomeProvider? {

@@ -3,13 +3,13 @@ package galaxyspace.systems.SolarSystem.moons.europa.world.gen
 import galaxyspace.core.GSBlocks
 import galaxyspace.systems.SolarSystem.moons.europa.world.gen.MapGenRavineEuropa
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.chunk.ChunkPrimer
 import java.util.Random
 
@@ -224,7 +224,7 @@ open class MapGenRavineEuropa : MapGenBaseMeta() {
             data.setBlockState(x, y, z, AIR)
 
             if (foundTop && data.getBlockState(x, y - 1, z).getBlock() === filler.getBlock()) {
-                data.setBlockState(x, y - 1, z, top.getBlock().getDefaultState())
+                data.setBlockState(x, y - 1, z, top.getBlock().defaultBlockState())
             }
             //}
         }
@@ -232,9 +232,9 @@ open class MapGenRavineEuropa : MapGenBaseMeta() {
 
     companion object {
         @JvmField
-        protected val FLOWING_LAVA: IBlockState = Blocks.FLOWING_LAVA.getDefaultState()
+        protected val FLOWING_LAVA: IBlockState = Blocks.FLOWING_LAVA.defaultBlockState()
 
         @JvmField
-        protected val AIR: IBlockState = Blocks.AIR.getDefaultState()
+        protected val AIR: IBlockState = Blocks.AIR.defaultBlockState()
     }
 }

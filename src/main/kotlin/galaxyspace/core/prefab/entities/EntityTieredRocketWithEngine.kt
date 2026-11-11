@@ -15,17 +15,17 @@ import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.NonNullList
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.min
@@ -50,7 +50,7 @@ abstract class EntityTieredRocketWithEngine : EntityTieredRocket, ICustomEngine 
     ) : super(par1World, par2, par4, par6) {
         this.rocketType = rocketType
         this.tier = tier
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
     }
 
     override fun entityInit() {
@@ -201,8 +201,8 @@ abstract class EntityTieredRocketWithEngine : EntityTieredRocket, ICustomEngine 
             if (engine_type != Engine_Type.FUEL_ENGINE) {
                 val withengine: ItemStack = getPickedResult(null)
                 if (!withengine.hasTagCompound()) withengine.setTagCompound(NBTTagCompound())
-                withengine.getTagCompound()!!.setBoolean(engine_type.getName(), true)
-                withengine.getTagCompound()!!.setInteger(ItemSpaceSuit.mod_count, 0)
+                withengine.getTagCompound()!!.putBoolean(engine_type.getName(), true)
+                withengine.getTagCompound()!!.putInt(ItemSpaceSuit.mod_count, 0)
 
                 for (i: Int in (stats.getRocketStacks())!!.indices) {
                     val stack: ItemStack = (stats.getRocketStacks())!!.get(i)
@@ -221,18 +221,18 @@ abstract class EntityTieredRocketWithEngine : EntityTieredRocket, ICustomEngine 
 
     protected abstract fun spawnParticles(launched: Boolean)
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
         return !this.isDead && par1EntityPlayer.getDistanceSq(this) <= 64.0
     }
 
     override fun writeEntityToNBT(par1NBTTagCompound: NBTTagCompound) {
         super.writeEntityToNBT(par1NBTTagCompound)
-        par1NBTTagCompound.setInteger("engine_type", engine_type.getID())
+        par1NBTTagCompound.putInt("engine_type", engine_type.getID())
     }
 
     override fun readEntityFromNBT(par1NBTTagCompound: NBTTagCompound) {
         super.readEntityFromNBT(par1NBTTagCompound)
-        this.engine_type = (Engine_Type.byID(par1NBTTagCompound.getInteger("engine_type")))!!
+        this.engine_type = (Engine_Type.byID(par1NBTTagCompound.getIntOr("engine_type", 0)))!!
     }
 
     override fun getRocketTier(): Int {
@@ -255,9 +255,9 @@ abstract class EntityTieredRocketWithEngine : EntityTieredRocket, ICustomEngine 
         super.getItemsDropped(droppedItems)
         val rocket: ItemStack = getPickedResult(null)
         rocket.setTagCompound(NBTTagCompound())
-        rocket.getTagCompound()!!.setInteger("RocketFuel", this.fuelTank.getFluidAmount())
-        rocket.getTagCompound()!!.setBoolean(engine_type.getName(), true)
-        if (engine_type != Engine_Type.FUEL_ENGINE) rocket.getTagCompound()!!.setInteger(ItemSpaceSuit.mod_count, 0)
+        rocket.getTagCompound()!!.putInt("RocketFuel", this.fuelTank.getFluidAmount())
+        rocket.getTagCompound()!!.putBoolean(engine_type.getName(), true)
+        if (engine_type != Engine_Type.FUEL_ENGINE) rocket.getTagCompound()!!.putInt(ItemSpaceSuit.mod_count, 0)
         (droppedItems)!!.add(rocket)
         return ((droppedItems as MutableList<ItemStack>?))!!
     }

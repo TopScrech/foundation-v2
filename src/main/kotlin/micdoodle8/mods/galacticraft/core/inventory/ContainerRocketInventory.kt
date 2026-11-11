@@ -3,11 +3,11 @@ package micdoodle8.mods.galacticraft.core.inventory
 import micdoodle8.mods.galacticraft.api.entity.IRocketType.EnumRocketType
 
 import micdoodle8.mods.galacticraft.api.entity.IRocketType
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
 
 open class ContainerRocketInventory constructor(
     private val lowerChestInventory: IInventory,
@@ -34,7 +34,7 @@ open class ContainerRocketInventory constructor(
         while (var4 < 3) {
             var5 = 0
             while (var5 < 9) {
-                this.addSlotToContainer(
+                this.addSlot(
                     Slot(
                         this.lowerChestInventory,
                         var5 + (var4 + 1) * 9,
@@ -49,7 +49,7 @@ open class ContainerRocketInventory constructor(
 
         var4 = 0
         while (var4 < 9) {
-            this.addSlotToContainer(Slot(this.lowerChestInventory, var4, 8 + var4 * 18, 142 - 34))
+            this.addSlot(Slot(this.lowerChestInventory, var4, 8 + var4 * 18, 142 - 34))
             ++var4
         }
     }
@@ -64,7 +64,7 @@ open class ContainerRocketInventory constructor(
         while (var4 < lastRow) {
             var5 = 0
             while (var5 < 9) {
-                this.addSlotToContainer(Slot(this.spaceshipInv, var5 + var4 * 9, 8 + var5 * 18, 50 + var4 * 18))
+                this.addSlot(Slot(this.spaceshipInv, var5 + var4 * 9, 8 + var5 * 18, 50 + var4 * 18))
                 ++var5
             }
             ++var4
@@ -74,7 +74,7 @@ open class ContainerRocketInventory constructor(
         while (var4 < 3) {
             var5 = 0
             while (var5 < 9) {
-                this.addSlotToContainer(
+                this.addSlot(
                     Slot(
                         this.lowerChestInventory,
                         var5 + var4 * 9 + 9,
@@ -89,36 +89,36 @@ open class ContainerRocketInventory constructor(
 
         var4 = 0
         while (var4 < 9) {
-            this.addSlotToContainer(Slot(this.lowerChestInventory, var4, 8 + var4 * 18, ySize - 24))
+            this.addSlot(Slot(this.lowerChestInventory, var4, 8 + var4 * 18, ySize - 24))
             ++var4
         }
     }
 
-    override fun canInteractWith(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.spaceshipInv.isUsableByPlayer(par1EntityPlayer)
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.spaceshipInv.stillValid(par1EntityPlayer)
     }
 
-    override fun transferStackInSlot(par1EntityPlayer: EntityPlayer, par2: Int): ItemStack {
+    override fun quickMoveStack(par1EntityPlayer: EntityPlayer, par2: Int): ItemStack {
         var var3: ItemStack = ItemStack.EMPTY
         val var4: Slot? = this.inventorySlots.get(par2)
         val b: Int = this.inventorySlots.size - 36
 
-        if (var4 != null && var4.getHasStack()) {
-            val var5: ItemStack = var4.getStack()
+        if (var4 != null && var4.hasItem()) {
+            val var5: ItemStack = var4.getItem()
             var3 = var5.copy()
 
             if (par2 < b) {
-                if (!this.mergeItemStack(var5, b, b + 36, true)) {
+                if (!this.moveItemStackTo(var5, b, b + 36, true)) {
                     return ItemStack.EMPTY
                 }
-            } else if (!this.mergeItemStack(var5, 0, b, false)) {
+            } else if (!this.moveItemStackTo(var5, 0, b, false)) {
                 return ItemStack.EMPTY
             }
 
             if (var5.getCount() == 0) {
-                var4.putStack(ItemStack.EMPTY)
+                var4.set(ItemStack.EMPTY)
             } else {
-                var4.onSlotChanged()
+                var4.setChanged()
             }
         }
 
@@ -128,8 +128,8 @@ open class ContainerRocketInventory constructor(
     /**
      * Callback for when the crafting gui is closed.
      */
-    override fun onContainerClosed(par1EntityPlayer: EntityPlayer) {
-        super.onContainerClosed(par1EntityPlayer)
+    override fun removed(par1EntityPlayer: EntityPlayer) {
+        super.removed(par1EntityPlayer)
         this.lowerChestInventory.closeInventory(par1EntityPlayer)
     }
 

@@ -1,5 +1,10 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+
+import foundation.level.offset
+
 import java.util.Set
 
 import java.util.EnumSet
@@ -9,43 +14,43 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.JavaUtil
 import micdoodle8.mods.galacticraft.core.util.PropertyObject
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockDoor
 import net.minecraft.block.BlockDynamicLiquid
 import net.minecraft.block.BlockLiquid
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.EnumPushReaction
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.IProperty
+import net.minecraft.world.level.block.state.properties.Property as IProperty
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.renderer.block.statemap.StateMapperBase
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.text.translation.I18n
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraft.world.WorldServer
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraftforge.client.model.ModelLoader
 import net.minecraftforge.common.property.IExtendedBlockState
 import net.minecraftforge.common.property.IUnlistedProperty
 import net.minecraftforge.event.ForgeEventFactory
 import net.minecraftforge.fluids.BlockFluidBase
 import net.minecraftforge.fluids.BlockFluidClassic
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.registries.IForgeRegistry
 import java.lang.Exception
 import java.lang.reflect.Field
@@ -54,7 +59,7 @@ import java.util.ArrayList
 import java.util.Random
 import java.util.function.Supplier
 
-open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
+open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock, LegacyBlockMetadata {
     private var adjacentSourceBlocks = 0
     private val liquidEquivalentDynamic: IBlockState?
     private val liquidEquivalentStatic: IBlockState?
@@ -65,12 +70,12 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
 
     constructor(assetName: String?, material: Material) : super(material) {
         if (this.material === Material.LAVA) {
-            this.liquidEquivalentStatic = Blocks.LAVA.getDefaultState()
-            this.liquidEquivalentDynamic = Blocks.FLOWING_LAVA.getDefaultState()
+            this.liquidEquivalentStatic = Blocks.LAVA.defaultBlockState()
+            this.liquidEquivalentDynamic = Blocks.FLOWING_LAVA.defaultBlockState()
             this.setTickRandomly(true)
         } else if (this.material === Material.WATER) {
-            this.liquidEquivalentStatic = Blocks.WATER.getDefaultState()
-            this.liquidEquivalentDynamic = Blocks.FLOWING_WATER.getDefaultState()
+            this.liquidEquivalentStatic = Blocks.WATER.defaultBlockState()
+            this.liquidEquivalentDynamic = Blocks.FLOWING_WATER.defaultBlockState()
             this.setTickRandomly(true)
         } else {
             this.liquidEquivalentStatic = null
@@ -82,7 +87,7 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
         this.setTranslationKey(assetName)
     }
 
-    constructor(forge: Block) : super(forge.getMaterial(forge.getDefaultState())) {
+    constructor(forge: Block) : super(forge.getMaterial(forge.defaultBlockState())) {
         this.forgeFluid = true
         this.forgeBlock = forge as BlockFluidBase
         this.liquidEquivalentStatic = null
@@ -131,7 +136,7 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
         return false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun shouldSideBeRendered(
         blockState: IBlockState,
         blockAccess: IBlockAccess,
@@ -141,7 +146,7 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
         return true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT
     }
@@ -185,8 +190,8 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(BlockLiquid.LEVEL, meta)
-            .withProperty(BlockFluidBase.LEVEL, meta)
+        return this.defaultBlockState().setValue(BlockLiquid.LEVEL, meta)
+            .setValue(BlockFluidBase.LEVEL, meta)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -196,16 +201,16 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
     override fun getExtendedState(state: IBlockState, world: IBlockAccess, pos: BlockPos): IBlockState {
         savedBlockAccess = world
         savedPos = pos
-        return (state as IExtendedBlockState).withProperty(BASE_STATE, this.getLiquidBlock(state))
+        return (state as IExtendedBlockState).setValue(BASE_STATE, this.getLiquidBlock(state))
     }
 
     open fun getLiquidBlock(state: IBlockState): IBlockState? {
         if (this.forgeFluid && state.getPropertyKeys().contains(BlockFluidBase.LEVEL)) {
             val level: Int = state.getValue(BlockFluidBase.LEVEL)
-            return this.forgeBlock!!.getDefaultState().withProperty(BlockFluidBase.LEVEL, level)
+            return this.forgeBlock!!.defaultBlockState().setValue(BlockFluidBase.LEVEL, level)
         } else if (this.material === Material.WATER || this.material === Material.LAVA) {
             val level: Int = state.getValue(BlockLiquid.LEVEL)
-            return this.liquidEquivalentStatic!!.withProperty(BlockLiquid.LEVEL, level)
+            return this.liquidEquivalentStatic!!.setValue(BlockLiquid.LEVEL, level)
         }
 
         return null
@@ -217,7 +222,7 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
             return
         }
         if (Blocks.AIR === newBlock.getBlock() && this !== GCBlocks.grating) {
-            world.setBlockState(pos, this.getLiquidBlock(state))
+            world.setBlockAndUpdate(pos, this.getLiquidBlock(state))
             this.dropBlockAsItem(world, pos, state, 0)
         }
         if (this.replaceWithFluidIntended.get()) {
@@ -229,9 +234,9 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
             for (b: BlockGrating in forgeBlocks) {
                 if (newBlock.getBlock() === b.forgeBlock) {
                     val level: Int = newBlock.getValue(BlockFluidBase.LEVEL)
-                    val bs: IBlockState = b.getDefaultState().withProperty(BlockFluidBase.LEVEL, level)
-                        .withProperty(BlockLiquid.LEVEL, level)
-                    world.setBlockState(pos, bs)
+                    val bs: IBlockState = b.defaultBlockState().setValue(BlockFluidBase.LEVEL, level)
+                        .setValue(BlockLiquid.LEVEL, level)
+                    world.setBlockAndUpdate(pos, bs)
                     return
                 }
             }
@@ -243,13 +248,13 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
             if (newBlock.getMaterial() === Material.WATER) {
                 val level: Int = newBlock.getValue(BlockLiquid.LEVEL)
                 val bs: IBlockState =
-                    (GCBlocks.gratingWater)!!.getDefaultState().withProperty(BlockLiquid.LEVEL, level)
-                world.setBlockState(pos, bs)
+                    (GCBlocks.gratingWater)!!.defaultBlockState().setValue(BlockLiquid.LEVEL, level)
+                world.setBlockAndUpdate(pos, bs)
             } else if (newBlock.getMaterial() === Material.LAVA) {
                 val level: Int = newBlock.getValue(BlockLiquid.LEVEL)
                 val bs: IBlockState =
-                    (GCBlocks.gratingLava)!!.getDefaultState().withProperty(BlockLiquid.LEVEL, level)
-                world.setBlockState(pos, bs)
+                    (GCBlocks.gratingLava)!!.defaultBlockState().setValue(BlockLiquid.LEVEL, level)
+                world.setBlockAndUpdate(pos, bs)
             }
         }
     }
@@ -263,10 +268,10 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
     ): Boolean {
         this.onBlockHarvested(world, pos, state, player)
         if (this === GCBlocks.grating) {
-            return world.setBlockState(pos, Blocks.AIR.getDefaultState(), if (world.isRemote) 11 else 3)
+            return world.setBlock(pos, Blocks.AIR.defaultBlockState(), if (world.isClientSide) 11 else 3)
         }
         this.replaceWithFluidIntended.set(true)
-        return world.setBlockState(pos, this.getLiquidBlock(state), if (world.isRemote) 11 else 3)
+        return world.setBlock(pos, this.getLiquidBlock(state), if (world.isClientSide) 11 else 3)
     }
 
     override fun getStateForPlacement(
@@ -288,17 +293,17 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
             for (b: BlockGrating in forgeBlocks) {
                 if (oldBlock.getBlock() === b.forgeBlock) {
                     val level: Int = oldBlock.getValue(BlockFluidBase.LEVEL)
-                    return b.getDefaultState().withProperty(BlockFluidBase.LEVEL, level)
-                        .withProperty(BlockLiquid.LEVEL, level)
+                    return b.defaultBlockState().setValue(BlockFluidBase.LEVEL, level)
+                        .setValue(BlockLiquid.LEVEL, level)
                 }
             }
         } else if (oldBlock.getBlock() is BlockLiquid) {
             if (oldBlock.getMaterial() === Material.WATER) {
                 val level: Int = oldBlock.getValue(BlockLiquid.LEVEL)
-                return (GCBlocks.gratingWater)!!.getDefaultState().withProperty(BlockLiquid.LEVEL, level)
+                return (GCBlocks.gratingWater)!!.defaultBlockState().setValue(BlockLiquid.LEVEL, level)
             } else if (oldBlock.getMaterial() === Material.LAVA) {
                 val level: Int = oldBlock.getValue(BlockLiquid.LEVEL)
-                return (GCBlocks.gratingLava)!!.getDefaultState().withProperty(BlockLiquid.LEVEL, level)
+                return (GCBlocks.gratingLava)!!.defaultBlockState().setValue(BlockLiquid.LEVEL, level)
             }
         }
         return this.getStateFromMeta(meta)
@@ -372,7 +377,7 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
                 i1 = -1
             }
 
-            val j1: Int = this.getDepth(worldIn.getBlockState(pos.up()))
+            val j1: Int = this.getDepth(worldIn.getBlockState(pos.above()))
 
             if (j1 >= 0) {
                 if (j1 >= 8) {
@@ -389,7 +394,7 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
                     this.material === Material.WATER
                 )
             ) {
-                val iblockstate: IBlockState = worldIn.getBlockState(pos.down())
+                val iblockstate: IBlockState = worldIn.getBlockState(pos.below())
 
                 if (iblockstate.getMaterial().isSolid()) {
                     i1 = 0
@@ -408,10 +413,10 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
                 i = i1
 
                 if (i1 < 0) {
-                    worldIn.setBlockState(pos, (GCBlocks.grating)!!.getDefaultState(), 3)
+                    worldIn.setBlock(pos, (GCBlocks.grating)!!.defaultBlockState(), 3)
                 } else {
-                    state = state.withProperty(BlockLiquid.LEVEL, i1)
-                    worldIn.setBlockState(pos, state, 2)
+                    state = state.setValue(BlockLiquid.LEVEL, i1)
+                    worldIn.setBlock(pos, state, 2)
                     worldIn.scheduleUpdate(pos, this, k)
                     worldIn.notifyNeighborsOfStateChange(pos, this, false)
                 }
@@ -420,12 +425,12 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
 //            this.placeStaticBlock(worldIn, pos, state);
         }
 
-        val down: BlockPos = pos.down()
+        val down: BlockPos = pos.below()
         val iblockstate1: IBlockState = worldIn.getBlockState(down)
 
         if (this.canFlowInto(worldIn, down, iblockstate1)) {
             if (this.material === Material.LAVA && iblockstate1.getMaterial() === Material.WATER && (iblockstate1.getBlock() !is BlockGrating)) {
-                worldIn.setBlockState(down, Blocks.STONE.getDefaultState())
+                worldIn.setBlockAndUpdate(down, Blocks.STONE.defaultBlockState())
                 return
             }
 
@@ -461,9 +466,9 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
                 }
             }
 
-            worldIn.setBlockState(
+            worldIn.setBlock(
                 pos,
-                this.liquidEquivalentDynamic!!.withProperty(BlockLiquid.LEVEL, level),
+                this.liquidEquivalentDynamic!!.setValue(BlockLiquid.LEVEL, level),
                 3
             )
         }
@@ -483,7 +488,7 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
                         iblockstate
                     ) && (iblockstate.getMaterial() !== this.material || (iblockstate.getValue(BlockLiquid.LEVEL) as Int) > 0)
                 ) {
-                    if (!this.isBlocked(worldIn, blockpos.down(), iblockstate)) {
+                    if (!this.isBlocked(worldIn, blockpos.below(), iblockstate)) {
                         return distance
                     }
 
@@ -524,7 +529,7 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
             ) {
                 val j: Int
 
-                if (this.isBlocked(worldIn, blockpos.down(), worldIn.getBlockState(blockpos.down()))) {
+                if (this.isBlocked(worldIn, blockpos.below(), worldIn.getBlockState(blockpos.below()))) {
                     j = this.getSlopeDistance(worldIn, blockpos, 1, enumfacing.getOpposite())
                 } else {
                     j = 0
@@ -610,7 +615,7 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
 //                    (isSourceBlock(world, pos.east()) ? 1 : 0) +
 //                    (isSourceBlock(world, pos.west()) ? 1 : 0);
 //            if (adjacentSourceBlocks >= 2 && (world.getBlockState(pos.down(1)).getMaterial().isSolid() || isSourceBlock(world, pos.down(1))))
-//                world.setBlockState(pos, state.withProperty(BlockFluidBase.LEVEL, 0));
+//                world.setBlockAndUpdate(pos, state.setValue(BlockFluidBase.LEVEL, 0));
 //        }
 
         var quantaPerBlock: Int = 8
@@ -624,19 +629,19 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
 
         // check adjacent block levels if non-source
         if (quantaRemaining < quantaPerBlock) {
-            if (testSame(world, pos.add(0, 1, 0)) ||
-                testSame(world, pos.add(-1, 1, 0)) ||
-                testSame(world, pos.add(1, 1, 0)) ||
-                testSame(world, pos.add(0, 1, -1)) ||
-                testSame(world, pos.add(0, 1, 1))
+            if (testSame(world, pos.offset(0, 1, 0)) ||
+                testSame(world, pos.offset(-1, 1, 0)) ||
+                testSame(world, pos.offset(1, 1, 0)) ||
+                testSame(world, pos.offset(0, 1, -1)) ||
+                testSame(world, pos.offset(0, 1, 1))
             ) {
                 expQuanta = quantaPerBlock - 1
             } else {
                 var maxQuanta: Int = -100
-                maxQuanta = getLargerQuanta(world, pos.add(-1, 0, 0), maxQuanta)
-                maxQuanta = getLargerQuanta(world, pos.add(1, 0, 0), maxQuanta)
-                maxQuanta = getLargerQuanta(world, pos.add(0, 0, -1), maxQuanta)
-                maxQuanta = getLargerQuanta(world, pos.add(0, 0, 1), maxQuanta)
+                maxQuanta = getLargerQuanta(world, pos.offset(-1, 0, 0), maxQuanta)
+                maxQuanta = getLargerQuanta(world, pos.offset(1, 0, 0), maxQuanta)
+                maxQuanta = getLargerQuanta(world, pos.offset(0, 0, -1), maxQuanta)
+                maxQuanta = getLargerQuanta(world, pos.offset(0, 0, 1), maxQuanta)
 
                 expQuanta = maxQuanta - 1
             }
@@ -646,11 +651,11 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
                 quantaRemaining = expQuanta
 
                 if (expQuanta <= 0) {
-                    world.setBlockState(pos, (GCBlocks.grating)!!.getDefaultState(), 3)
+                    world.setBlock(pos, (GCBlocks.grating)!!.defaultBlockState(), 3)
                 } else {
-                    world.setBlockState(
+                    world.setBlock(
                         pos,
-                        state.withProperty(BlockFluidBase.LEVEL, quantaPerBlock - expQuanta),
+                        state.setValue(BlockFluidBase.LEVEL, quantaPerBlock - expQuanta),
                         2
                     )
                     world.scheduleUpdate(pos, this, tickRate)
@@ -658,12 +663,12 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
                 }
             }
         } else if (quantaRemaining >= quantaPerBlock) {
-            world.setBlockState(pos, this.getDefaultState(), 2)
+            world.setBlock(pos, this.defaultBlockState(), 2)
         }
 
         // Flow vertically if possible
-        if (this.forgeBlock!!.canDisplace(world, pos.down(1))) {
-            flowIntoBlock(world, pos.down(1), 1)
+        if (this.forgeBlock!!.canDisplace(world, pos.below(1))) {
+            flowIntoBlock(world, pos.below(1), 1)
             return
         }
 
@@ -674,7 +679,7 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
         }
 
         if (isSourceBlock(world, pos) || !(this.forgeBlock as BlockFluidClassic).isFlowingVertically(world, pos)) {
-            val test: Block = world.getBlockState(pos.up(1)).getBlock()
+            val test: Block = world.getBlockState(pos.above(1)).getBlock()
             if (test === this || test === this.forgeBlock) {
                 flowMeta = 1
             }
@@ -683,10 +688,10 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
             try {
                 flowTo = gofd!!.invoke(this.forgeBlock, world, pos) as BooleanArray?
 
-                if (flowTo!![0]) flowIntoBlock(world, pos.add(-1, 0, 0), flowMeta)
-                if (flowTo[1]) flowIntoBlock(world, pos.add(1, 0, 0), flowMeta)
-                if (flowTo[2]) flowIntoBlock(world, pos.add(0, 0, -1), flowMeta)
-                if (flowTo[3]) flowIntoBlock(world, pos.add(0, 0, 1), flowMeta)
+                if (flowTo!![0]) flowIntoBlock(world, pos.offset(-1, 0, 0), flowMeta)
+                if (flowTo[1]) flowIntoBlock(world, pos.offset(1, 0, 0), flowMeta)
+                if (flowTo[2]) flowIntoBlock(world, pos.offset(0, 0, -1), flowMeta)
+                if (flowTo[3]) flowIntoBlock(world, pos.offset(0, 0, 1), flowMeta)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -714,9 +719,9 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
     protected open fun flowIntoBlock(world: World, pos: BlockPos, meta: Int) {
         if (meta < 0) return
         if (this.forgeBlock!!.displaceIfPossible(world, pos)) {
-            world.setBlockState(
+            world.setBlock(
                 pos,
-                this.forgeBlock!!.getBlockState().getBaseState().withProperty(BlockFluidBase.LEVEL, meta),
+                this.forgeBlock!!.getBlockState().getBaseState().setValue(BlockFluidBase.LEVEL, meta),
                 3
             )
         }
@@ -767,7 +772,7 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
         fun createForgeFluidVersion(b: Block?, blockRegistry: IForgeRegistry<Block?>) {
             if (b is BlockFluidBase) {
                 val grating: BlockGrating = BlockGrating(b)
-                grating.setLightLevel(b.getLightValue(b.getDefaultState()) / 15f)
+                grating.setLightLevel(b.getLightValue(b.defaultBlockState()) / 15f)
                 forgeBlocks.add(grating)
                 GCBlocks.registerBlock(grating, null)
                 blockRegistry.register(grating)
@@ -793,7 +798,7 @@ open class BlockGrating : Block, ISortableBlock, IPartialSealableBlock {
         }
 
         @JvmStatic
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         fun remapVariant(grating: Block) {
             ModelLoader.setCustomStateMapper(grating, object : StateMapperBase() {
                 override fun getModelResourceLocation(ignore: IBlockState): ModelResourceLocation {

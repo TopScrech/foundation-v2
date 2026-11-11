@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.planets.venus.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import com.google.common.base.Predicate
 import micdoodle8.mods.galacticraft.api.block.IDetectableResource
 import micdoodle8.mods.galacticraft.api.block.IPlantableBlock
@@ -10,40 +13,40 @@ import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
 import micdoodle8.mods.galacticraft.planets.venus.VenusItems
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.enchantment.EnchantmentHelper
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.init.Enchantments
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.enchantment.Enchantments
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.stats.StatList
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.Explosion
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.Explosion
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.IPlantable
 import net.minecraftforge.event.ForgeEventFactory
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.Random
 
 open class BlockBasicVenus constructor(assetName: String?) : Block(Material.ROCK), IDetectableResource,
-    IPlantableBlock, ITerraformableBlock, ISortableBlock {
+    IPlantableBlock, ITerraformableBlock, ISortableBlock, LegacyBlockMetadata {
     enum class EnumBlockBasicVenus(private val meta: Int, private val serializedName: String) : IStringSerializable {
         ROCK_SOFT(0, "venus_rock_0"),
         ROCK_HARD(1, "venus_rock_1"),
@@ -64,7 +67,9 @@ open class BlockBasicVenus constructor(assetName: String?) : Block(Material.ROCK
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -86,7 +91,7 @@ open class BlockBasicVenus constructor(assetName: String?) : Block(Material.ROCK
         this.blockHardness = 2.2f
         this.blockResistance = 2.5f
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(
+            this.blockState.getBaseState().setValue(
                 BASIC_TYPE_VENUS,
                 EnumBlockBasicVenus.ROCK_SOFT
             )
@@ -94,7 +99,7 @@ open class BlockBasicVenus constructor(assetName: String?) : Block(Material.ROCK
         this.setTranslationKey(assetName)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
@@ -140,7 +145,7 @@ open class BlockBasicVenus constructor(assetName: String?) : Block(Material.ROCK
             this.dropBlockAsItem(worldIn, pos, state, i)
             harvesters.set(null)
             if (state.getValue(BASIC_TYPE_VENUS) as EnumBlockBasicVenus == EnumBlockBasicVenus.ROCK_MAGMA) {
-                worldIn.setBlockState(pos, Blocks.FLOWING_LAVA.getDefaultState())
+                worldIn.setBlockAndUpdate(pos, Blocks.FLOWING_LAVA.defaultBlockState())
             }
         }
     }
@@ -225,7 +230,7 @@ open class BlockBasicVenus constructor(assetName: String?) : Block(Material.ROCK
 
     override fun getExpDrop(state: IBlockState, world: IBlockAccess, pos: BlockPos, fortune: Int): Int {
         val type: EnumBlockBasicVenus = (state.getValue(BASIC_TYPE_VENUS) as EnumBlockBasicVenus)
-        val rand: Random = if (world is World) world.rand else Random()
+        val rand: Random = if (world is World) world.random else Random()
         if (this.getItemDropped(state, rand, fortune) !== Item.getItemFromBlock(this)) {
             val i: Int
 
@@ -249,7 +254,7 @@ open class BlockBasicVenus constructor(assetName: String?) : Block(Material.ROCK
         return ItemStack(Item.getItemFromBlock(this), 1, this.getMetaFromState(state))
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (type: EnumBlockBasicVenus in EnumBlockBasicVenus.entries) {
             list.add(ItemStack(this, 1, type.getMeta()))
@@ -307,7 +312,7 @@ open class BlockBasicVenus constructor(assetName: String?) : Block(Material.ROCK
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(
+        return this.defaultBlockState().setValue(
             BASIC_TYPE_VENUS,
             (EnumBlockBasicVenus.Companion.byMetadata(meta))!!
         )

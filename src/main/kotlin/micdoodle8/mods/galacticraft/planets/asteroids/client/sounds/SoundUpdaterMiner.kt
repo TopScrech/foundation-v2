@@ -2,10 +2,11 @@ package micdoodle8.mods.galacticraft.planets.asteroids.client.sounds
 
 import micdoodle8.mods.galacticraft.core.client.sounds.GCSounds
 import micdoodle8.mods.galacticraft.planets.asteroids.entities.EntityAstroMiner
-import net.minecraft.client.audio.MovingSound
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.Entity
-import net.minecraft.util.SoundCategory
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance
+import net.minecraft.client.resources.sounds.SoundInstance
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.Entity
+import net.minecraft.sounds.SoundSource as SoundCategory
 
 /**
  * This file is part of the Galacticraft project
@@ -15,7 +16,7 @@ import net.minecraft.util.SoundCategory
 open class SoundUpdaterMiner constructor(
     private val thePlayer: EntityPlayerSP?,
     private val theRocket: EntityAstroMiner
-) : MovingSound(GCSounds.astroMiner, SoundCategory.AMBIENT) {
+) : AbstractTickableSoundInstance(GCSounds.astroMiner, SoundCategory.AMBIENT, SoundInstance.createUnseededRandom()) {
     private var soundStopped = false
     private var targetVolume: Float
     private var targetPitch: Float
@@ -25,16 +26,16 @@ open class SoundUpdaterMiner constructor(
         this.targetVolume = 0.6f
         this.targetPitch = 1.0f
         this.pitch = 1.0f //pitch
-        this.repeat = true
-        this.repeatDelay = 0 //repeat delay
+        this.looping = true
+        this.delay = 0 //repeat delay
         this.updateSoundLocation(theRocket)
     }
 
     /**
      * Updates the JList with a new model.
      */
-    override fun update() {
-        if (!this.theRocket.isDead) {
+    override fun tick() {
+        if (!this.theRocket.isRemoved) {
             if (this.theRocket.AIstate == EntityAstroMiner.Companion.AISTATE_ATBASE || this.theRocket.AIstate == EntityAstroMiner.Companion.AISTATE_DOCKING) {
                 this.targetVolume = 0.6f
                 this.targetPitch = 0.1f
@@ -66,18 +67,18 @@ open class SoundUpdaterMiner constructor(
             }
             this.updateSoundLocation(this.theRocket)
         } else {
-            this.donePlaying = true
+            this.stop()
         }
     }
 
     open fun stopRocketSound() {
-        this.donePlaying = true
+        this.stop()
         this.soundStopped = true
     }
 
     open fun updateSoundLocation(e: Entity) {
-        this.xPosF = e.posX.toFloat()
-        this.yPosF = e.posY.toFloat()
-        this.zPosF = e.posZ.toFloat()
+        this.x = e.x
+        this.y = e.y
+        this.z = e.z
     }
 }

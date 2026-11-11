@@ -1,5 +1,11 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.world.gen.base
 
+import foundation.item.FoundationItemVariants
+import foundation.block.LegacyVanillaBlockStates
+import foundation.block.LegacyVanillaBlockIds
+
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.planets.asteroids.world.gen.base.BaseDeck.EnumBaseType
 
 import micdoodle8.mods.galacticraft.core.GCBlocks
@@ -18,21 +24,21 @@ import micdoodle8.mods.galacticraft.planets.mars.MarsModule
 import micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMars
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
 import net.minecraft.init.PotionTypes
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.potion.PotionUtils
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.tileentity.TileEntityBrewingStand
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.template.TemplateManager
 import net.minecraftforge.fluids.FluidStack
 import java.lang.Exception
@@ -68,7 +74,7 @@ open class BaseRoom : SizedPiece {
         this.farEnd = far
         this.deckTier = deckTier
 
-        this.boundingBox = StructureBoundingBox(
+        this.boundingBox = BoundingBox(
             blockPosX,
             yPos,
             blockPosZ,
@@ -82,19 +88,19 @@ open class BaseRoom : SizedPiece {
         super.writeStructureToNBT(tagCompound)
 
         val details: Int = this.deckTier + (if (this.nearEnd) 16 else 0) + (if (this.farEnd) 32 else 0)
-        tagCompound.setInteger("brT", type!!.ordinal)
-        tagCompound.setInteger("brD", details)
+        tagCompound.putInt("brT", type!!.ordinal)
+        tagCompound.putInt("brD", details)
     }
 
     override fun readStructureFromNBT(tagCompound: NBTTagCompound, manager: TemplateManager) {
         super.readStructureFromNBT(tagCompound, manager)
         try {
-            val typeNo: Int = tagCompound.getInteger("brT")
+            val typeNo: Int = tagCompound.getIntOr("brT", 0)
             if (typeNo < EnumRoomType.entries.size) {
                 this.type = EnumRoomType.entries[typeNo]
             } else this.type = EnumRoomType.EMPTY
 
-            val details: Int = tagCompound.getInteger("brD")
+            val details: Int = tagCompound.getIntOr("brD", 0)
             this.deckTier = details and 15
             this.nearEnd = (details and 16) == 16
             this.farEnd = (details and 32) == 32
@@ -104,8 +110,8 @@ open class BaseRoom : SizedPiece {
         }
     }
 
-    override fun addComponentParts(worldIn: World, random: Random, chunkBoundary: StructureBoundingBox): Boolean {
-        val blockAir: IBlockState = Blocks.AIR.getDefaultState()
+    override fun addComponentParts(worldIn: World, random: Random, chunkBoundary: BoundingBox): Boolean {
+        val blockAir: IBlockState = Blocks.AIR.defaultBlockState()
         val blockStair: Block = (GCBlocks.moonStoneStairs)!!
 
         val axisEW: Boolean = (getDirection())!!.getAxis() == EnumFacing.Axis.X
@@ -152,7 +158,7 @@ open class BaseRoom : SizedPiece {
                                 this.getYWithOffset(yy),
                                 this.getZWithOffset(xx, zz)
                             )
-                            if (chunkBoundary.isVecInside(blockpos)) {
+                            if (chunkBoundary.isInside(blockpos)) {
                                 this.buildRoomContents(worldIn, xx, yy, zz, maxX - 1, maxZ - 1, blockpos, randomInt)
                             }
                         } else if ((this.configuration)!!.getDeckType() == BaseDeck.EnumBaseType.TUNNELER && (yy == 1 || yy == this.sizeY - 1)) {
@@ -202,7 +208,7 @@ open class BaseRoom : SizedPiece {
         blockpos: BlockPos,
         randomInt: Int
     ) {
-        var state: IBlockState = Blocks.AIR.getDefaultState()
+        var state: IBlockState = Blocks.AIR.defaultBlockState()
         val semirand: Int = ((blockpos.getY() * 379 + blockpos.getX()) * 373 + blockpos.getZ()) * 7 and 15
 
         var facing: Int = 0
@@ -264,7 +270,7 @@ when (this.type) {
             EnumRoomType.STORE -> if (maxX >= 6 && y == 1 && maxZ >= 5) {
                 //An actual landing pad (indoors!)
                 if (xx >= 3 && xx <= 5 && z >= 2 && z <= 4) {
-                    state = (GCBlocks.landingPad)!!.getDefaultState()
+                    state = (GCBlocks.landingPad)!!.defaultBlockState()
                 } else if (xx == 2) {
                     //Cargo loaders and unloaders, these will contain treasure items but only accessible when powered
                     when (z) {
@@ -288,10 +294,10 @@ when (this.type) {
                             if (xx == 3) state = (GCBlocks.machineTiered)!!.getStateFromMeta(0 + facing)
                             else if (xx > 3 && x < maxX - 2) state = (GCBlocks.aluminumWire)!!.getStateFromMeta(0)
                             else if (x == maxX - 2) state = (GCBlocks.aluminumWire)!!.getStateFromMeta(2)
-                            else if ((xx == 3 || x == maxX - 1)) state = (AsteroidBlocks.blockMinerBase)!!.getDefaultState()
+                            else if ((xx == 3 || x == maxX - 1)) state = (AsteroidBlocks.blockMinerBase)!!.defaultBlockState()
                         } else if (z == 3 && x == maxX - 2) state = (GCBlocks.aluminumWire)!!.getStateFromMeta(0)
                         else if (z == 4 && (xx == 3 || x == maxX - 1)) state =
-                            (AsteroidBlocks.blockMinerBase)!!.getDefaultState()
+                            (AsteroidBlocks.blockMinerBase)!!.defaultBlockState()
 
                     3 ->                 //Layer 3: tier 2 storage and alu wire
                         if (z == 2 && xx == 4) state = (GCBlocks.aluminumWire)!!.getStateFromMeta(0)
@@ -300,21 +306,21 @@ when (this.type) {
                         else if (z == 3 && x == maxX - 1) state = (GCBlocks.aluminumWire)!!.getStateFromMeta(1)
                         else if (z == 3 && xx >= 4 && x < maxX - 2) state = (GCBlocks.aluminumWire)!!.getStateFromMeta(0)
                         else if ((z == 2 || z == 4) && (xx == 3 || x == maxX - 1)) state =
-                            (AsteroidBlocks.blockMinerBase)!!.getDefaultState()
+                            (AsteroidBlocks.blockMinerBase)!!.defaultBlockState()
 
                     4 ->                 //Layer 4: tier 2 storage and alu wire
                         if (z == 3) {
                             if (x == maxX - 3) state = (GCBlocks.machineTiered)!!.getStateFromMeta(8 + facing)
                             else if (x == maxX - 1 || x == maxX - 2) state = (GCBlocks.aluminumWire)!!.getStateFromMeta(1)
                         } else if ((z == 2 || z == 4) && xx >= 3 && x < maxX) state =
-                            (AsteroidBlocks.blockMinerBase)!!.getDefaultState()
+                            (AsteroidBlocks.blockMinerBase)!!.defaultBlockState()
                 }
             }
 
             EnumRoomType.ENGINEERING -> if (y == 1) {
                 val closerz: Int = if (maxZ <= 5) 2 else 3
                 if ((z == maxZ - 2 && x == maxX / 2 + 1 || (z == closerz && (x == 2 || x == maxX - 1) && maxX > 5)) && maxZ > 3) {
-                    state = (GCBlocks.nasaWorkbench)!!.getDefaultState()
+                    state = (GCBlocks.nasaWorkbench)!!.defaultBlockState()
                 } else {
                     state = (AsteroidBlocks.blockBasic)!!.getStateFromMeta(6)
                 }
@@ -341,15 +347,15 @@ when (this.type) {
                     if (z == zTable && x <= maxX - 1 && x >= maxX - 3) {
                         state = (GCBlocks.crafting)!!.getStateFromMeta(1)
                     } else  //Tiled floor
-                        state = Blocks.IRON_TRAPDOOR.getDefaultState()
+                        state = Blocks.IRON_TRAPDOOR.defaultBlockState()
                 } else if (y == 2 || y == 3) {
                     //Operating table at y == 2
                     if (y == 2 && z == zTable && x <= maxX - 1 && x >= maxX - 3) {
-                        state = (GCBlocks.landingPad)!!.getDefaultState()
+                        state = (GCBlocks.landingPad)!!.defaultBlockState()
                     } else if (z == zTank) {
                         //Fluid tanks, 2 tanks high - these will be filled with Bacterial Sludge below
                         if ((maxX - x) % 2 == 1) {
-                            state = (GCBlocks.fluidTank)!!.getDefaultState()
+                            state = (GCBlocks.fluidTank)!!.defaultBlockState()
                         }
                     }
                 } else if ((y == 4 || y == 5) && (z == zLight || z == zLight - 1)) {
@@ -366,12 +372,12 @@ when (this.type) {
                         state = (GCBlocks.wallGC)!!.getStateFromMeta(if (z == 1) 3 else 2)
                     }
                 } else {
-                    state = Blocks.CARPET.getStateFromMeta(7)
+                    state = LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.CARPET, 7)
                 }
             } else if (y == 2) {
                 if (x == 2 || x == maxX - 1) {
                     if (z == 1) {
-                        state = Blocks.BREWING_STAND.getDefaultState()
+                        state = Blocks.BREWING_STAND.defaultBlockState()
                     } else if (z > 2 && z < maxZ) {
                         state = (GCBlocks.landingPad)!!.getStateFromMeta(1)
                     }
@@ -386,7 +392,7 @@ when (this.type) {
                 }
             } else if (y <= 3) {
                 if ((x == 1 || x == maxX) && !(z == 0 || z == maxZ)) {
-                    state = (GCBlocks.telemetry)!!.getDefaultState()
+                    state = (GCBlocks.telemetry)!!.defaultBlockState()
                 } else if ((x == 2 || x == maxX - 1) && !(z == 0 || z == maxZ)) {
                     state = (GCBlocks.screen)!!.getStateFromMeta((if (x == 2) facingLamp else facingLamp xor 1))
                 } else if (z == maxZ && x > 2 && x < maxX - 1) {
@@ -435,18 +441,18 @@ when (this.type) {
         }
 } while (false)
 
-        worldIn.setBlockState(blockpos, state, 2)
+        worldIn.setBlock(blockpos, state, 2)
         if (state.getBlock() is ITileEntityProvider) {
-            val tile: TileEntity? = worldIn.getTileEntity(blockpos)
+            val tile: TileEntity? = worldIn.getBlockEntity(blockpos)
 
             if (tile is IMultiBlock) {
                 val positions: MutableList<BlockPos> = LinkedList<BlockPos>()
                 (tile as IMultiBlock).getPositions(blockpos, (positions as MutableList<BlockPos?>?))
                 for (pos: BlockPos in positions) {
-                    worldIn.setBlockState(
+                    worldIn.setBlock(
                         pos,
-                        (GCBlocks.fakeBlock)!!.getDefaultState()
-                            .withProperty(
+                        (GCBlocks.fakeBlock)!!.defaultBlockState()
+                            .setValue(
                                 BlockMulti.MULTI_TYPE,
                                 ((tile as IMultiBlock).getMultiType())!!
                             ),
@@ -467,8 +473,8 @@ when (this.type) {
                 loader.addCargo(ItemStack(Items.POISONOUS_POTATO, 64, 0), true)
                 loader.addCargo(ItemStack(Items.ROTTEN_FLESH, 64, 0), true)
                 loader.addCargo(ItemStack(GCItems.flagPole, semirand % 31 + 2, 0), true)
-                loader.addCargo(ItemStack(MarsItems.marsItemBasic, semirand % 2 + 1, 4), true) //Slimeling Inventory Bag
-                loader.addCargo(ItemStack(AsteroidsItems.basicItem, semirand % 23 + 41, 7), true) //Thermal cloth
+                loader.addCargo(FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), semirand % 2 + 1, 4), true) //Slimeling Inventory Bag
+                loader.addCargo(FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), semirand % 23 + 41, 7), true) //Thermal cloth
                 loader.addCargo(ItemStack(GCItems.oilCanister, 1, ItemCanisterGeneric.EMPTY), true)
                 loader.addCargo(ItemStack(GCItems.oilCanister, 1, ItemCanisterGeneric.EMPTY), true)
                 loader.addCargo(ItemStack(GCItems.oilCanister, 1, ItemCanisterGeneric.EMPTY), true)
@@ -517,7 +523,7 @@ when (this.type) {
             } else if (tile is TileEntityEnergyStorageModule) {
                 val store: TileEntityEnergyStorageModule = tile
                 if (semirand % 3 == 1) {
-                    store.setInventorySlotContents(1, ItemStack(GCItems.battery, 1, 100))
+                    store.setItem(1, ItemStack(GCItems.battery, 1, 100))
                 }
             }
         }
@@ -531,8 +537,7 @@ when (this.type) {
             val entityhanging: EntityHangingSchematic =
                 EntityHangingSchematic(worldIn, blockpos, (hangingDirection)!!, x / 3 - 1)
             if (entityhanging != null) {
-                worldIn.spawnEntity(entityhanging)
-                entityhanging.setSendToClient()
+                worldIn.addFreshEntity(entityhanging)
             }
         }
     }
@@ -548,7 +553,7 @@ when (this.type) {
         POWER(null, null, false),
         STORE(null, null, false),
         EMPTY(null, null, false),
-        MEDICAL(Blocks.IRON_TRAPDOOR.getDefaultState(), Blocks.IRON_TRAPDOOR.getStateFromMeta(8), false),
+        MEDICAL(Blocks.IRON_TRAPDOOR.defaultBlockState(), LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.IRON_TRAPDOOR, 8), false),
         CREW(null, null, false),
         CRYO((AsteroidBlocks.blockBasic)!!.getStateFromMeta(6), (AsteroidBlocks.blockBasic)!!.getStateFromMeta(6), true),
         CONTROL((GCBlocks.slabGCHalf)!!.getStateFromMeta(6), (AsteroidBlocks.blockBasic)!!.getStateFromMeta(6), false);

@@ -2,10 +2,10 @@ package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
 import galaxyspace.core.prefab.tile.TileEntityInventoryAdvanced
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
 
 open class TileEntityResearchTable constructor() : TileEntityInventoryAdvanced("tile.research_table.name") {
     init {
@@ -27,7 +27,7 @@ open class TileEntityResearchTable constructor() : TileEntityInventoryAdvanced("
         return 1
     }
 
-    public override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    public override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf(0)
     }
 

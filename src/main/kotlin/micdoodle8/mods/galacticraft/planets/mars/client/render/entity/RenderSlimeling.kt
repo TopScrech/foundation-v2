@@ -6,12 +6,12 @@ import micdoodle8.mods.galacticraft.planets.mars.client.model.ModelSlimeling
 import micdoodle8.mods.galacticraft.planets.mars.entities.EntitySlimeling
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderSlimeling constructor(renderManager: RenderManager) :
     RenderLiving<EntitySlimeling>(renderManager, ModelSlimeling(16f), 0.5f) {
     private var texSwitch = false
@@ -178,6 +178,6 @@ open class RenderSlimeling constructor(renderManager: RenderManager) :
 
     companion object {
         private val landerTexture =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/model/slimeling/green.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/model/slimeling/green.png")
     }
 }

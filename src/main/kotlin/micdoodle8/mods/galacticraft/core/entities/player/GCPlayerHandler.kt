@@ -1,5 +1,13 @@
 package micdoodle8.mods.galacticraft.core.entities.player
 
+import net.minecraft.network.chat.Component
+
+import foundation.item.legacyItemValue
+
+import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
+
+import foundation.item.FoundationItemVariants
+import foundation.inventory.mainItems
 import micdoodle8.mods.galacticraft.core.network.PacketSimple.EnumSimplePacket
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint
@@ -51,36 +59,36 @@ import micdoodle8.mods.galacticraft.core.wrappers.Footprint
 import micdoodle8.mods.galacticraft.planets.asteroids.dimension.WorldProviderAsteroids
 import micdoodle8.mods.galacticraft.planets.asteroids.items.ItemArmorAsteroids
 import micdoodle8.mods.galacticraft.planets.venus.VenusItems
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.MobEffects
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.EnumDyeColor
-import net.minecraft.item.Item
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.DyeColor as EnumDyeColor
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemArmor
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraft.network.play.server.SPacketRespawn
-import net.minecraft.potion.PotionEffect
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
-import net.minecraft.world.WorldServer
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.util.Mth as MathHelper
+
+import net.minecraft.world.level.Level as World
+import net.minecraft.server.level.ServerLevel as WorldServer
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.AttachCapabilitiesEvent
 import net.minecraftforge.fml.common.eventhandler.Event
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.PlayerEvent
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.server.permission.PermissionAPI
 import java.lang.Exception
 import java.lang.StringBuilder
@@ -128,7 +136,7 @@ open class GCPlayerHandler {
         val newStats: GCPlayerStats = (GCPlayerStats.Companion.get(event.getEntityPlayer()))!!
         newStats.copyFrom(
             oldStats,
-            !event.isWasDeath() || event.getOriginal().world.getGameRules().getBoolean("keepInventory")
+            !event.isWasDeath() || event.getOriginal().level().getGameRules().getBoolean("keepInventory")
         )
         if (event.getOriginal() is EntityPlayerMP && event.getEntityPlayer() is EntityPlayerMP) {
             TileEntityTelemetry.updateLinkedPlayer(
@@ -138,7 +146,7 @@ open class GCPlayerHandler {
         }
         if (event.isWasDeath() && event.getOriginal() is EntityPlayerMP) {
             val uu: UUID = event.getOriginal().getPersistentID()
-            if (event.getOriginal().world.provider is IGalacticraftWorldProvider) {
+            if (event.getOriginal().level().provider is IGalacticraftWorldProvider) {
                 val timeA: Int? = deathTimes.get(uu)
                 val bb: Int = (event.getOriginal() as EntityPlayerMP).server.getTickCounter()
                 if (timeA != null && (bb - timeA) < 1500) {
@@ -146,7 +154,7 @@ open class GCPlayerHandler {
                         EnumColor.YELLOW.toString() + GCCoreUtil.translate("commands.gchouston.help.1") + " " + EnumColor.WHITE + GCCoreUtil.translate(
                             "commands.gchouston.help.2"
                         )
-                    event.getOriginal().sendMessage(TextComponentString(msg))
+                    event.getOriginal().sendSystemMessage(Component.literal(msg))
                 }
                 deathTimes.put(uu, bb)
             } else {
@@ -162,12 +170,12 @@ open class GCPlayerHandler {
                 GCCapabilities.GC_PLAYER_PROP,
                 CapabilityProviderStats(event.getObject() as EntityPlayerMP?)
             )
-        } else if (event.getObject() is EntityPlayer && (event.getObject() as EntityPlayer).world.isRemote) {
+        } else if (event.getObject() is EntityPlayer && (event.getObject() as EntityPlayer).level().isRemote) {
             this.onAttachCapabilityClient(event)
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private fun onAttachCapabilityClient(event: AttachCapabilitiesEvent<Entity?>) {
         if (event.getObject() is EntityPlayerSP) {
             event.addCapability(
@@ -191,7 +199,7 @@ open class GCPlayerHandler {
     //        }
     //    }
     //
-    //    @SideOnly(Side.CLIENT)
+    //    @OnlyIn(Dist.CLIENT)
     //    public void onEntityConstructingClient(EntityEvent.EntityConstructing event)
     //    {
     //        if (event.getEntity() instanceof EntityPlayerSP)
@@ -201,7 +209,7 @@ open class GCPlayerHandler {
     //                GCPlayerStatsClient.register((EntityPlayerSP) event.getEntity());
     //            }
     //
-    //            Minecraft.getMinecraft().gameSettings.sendSettingsToServer();
+    //            Minecraft.getInstance().gameSettings.sendSettingsToServer();
     //        }
     //    }
     private fun onPlayerLogin(player: EntityPlayerMP) {
@@ -216,7 +224,7 @@ open class GCPlayerHandler {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimple(
                 PacketSimple.EnumSimplePacket.C_GET_CELESTIAL_BODY_LIST,
-                GCCoreUtil.getDimensionID(player.world),
+                GCCoreUtil.getDimensionID(player.level()),
                 arrayOf<Any?>()
             ), player
         )
@@ -227,7 +235,7 @@ open class GCPlayerHandler {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimple(
                 PacketSimple.EnumSimplePacket.C_UPDATE_STATS,
-                GCCoreUtil.getDimensionID(player.world),
+                GCCoreUtil.getDimensionID(player.level()),
                 (stats.getMiscNetworkedStats())!!
             ), player
         )
@@ -235,7 +243,7 @@ open class GCPlayerHandler {
     }
 
     protected open fun checkThermalStatus(player: EntityPlayerMP, playerStats: GCPlayerStats) {
-        if (player.world.provider is IGalacticraftWorldProvider && !player.capabilities.isCreativeMode && !CompatibilityManager.isAndroid(
+        if (player.level().provider is IGalacticraftWorldProvider && !player.capabilities.isCreativeMode && !CompatibilityManager.isAndroid(
                 player
             )
         ) {
@@ -265,7 +273,7 @@ open class GCPlayerHandler {
                 lowestThermalStrength = abs(lowestThermalStrength) //It shouldn't be negative, but just in case!
             }
 
-            val provider: IGalacticraftWorldProvider = player.world.provider as IGalacticraftWorldProvider
+            val provider: IGalacticraftWorldProvider = player.level().provider as IGalacticraftWorldProvider
             var thermalLevelMod: Float = provider.getThermalLevelModifier()
             var absThermalLevelMod: Float = abs(thermalLevelMod)
 
@@ -286,7 +294,7 @@ open class GCPlayerHandler {
                         normaliseCooldown = 1 //Prevent divide by zero errors
                     }
                     // Player is wearing all required thermal padding items
-                    if ((player.ticksExisted - 1) % normaliseCooldown == 0) {
+                    if ((player.tickCount - 1) % normaliseCooldown == 0) {
                         this.normaliseThermalLevel(player, playerStats, 1)
                     }
                     thermalLevelMod /= max(1.0f, lowestThermalStrength / 2.0f)
@@ -322,7 +330,7 @@ open class GCPlayerHandler {
                     thermalLevelTickCooldownSingle = 1 //Prevent divide by zero errors
                 }
 
-                if ((player.ticksExisted - 1) % thermalLevelTickCooldownSingle == 0) {
+                if ((player.tickCount - 1) % thermalLevelTickCooldownSingle == 0) {
                     val last: Int = playerStats.getThermalLevel()
                     playerStats.setThermalLevel(min(max(last + (if (thermalLevelMod < 0) -1 else 1), -22), 22))
 
@@ -335,18 +343,18 @@ open class GCPlayerHandler {
                 playerStats.setThermalLevelNormalising(thermalLevelTickCooldownSingle > normaliseCooldown && !thermalPaddingHelm.isEmpty() && !thermalPaddingChestplate.isEmpty() && !thermalPaddingLeggings.isEmpty() && !thermalPaddingBoots.isEmpty())
 
                 if (!playerStats.isThermalLevelNormalising()) {
-                    if ((player.ticksExisted - 1) % thermalLevelTickCooldown == 0) {
+                    if ((player.tickCount - 1) % thermalLevelTickCooldown == 0) {
                         if (abs(playerStats.getThermalLevel()) >= 22) {
-                            player.attackEntityFrom(DamageSourceGC.thermal, 1.5f)
+                            foundation.damage.FoundationDamageTypes.hurt(player, DamageSourceGC.thermal, 1.5f)
                         }
                     }
 
                     if (playerStats.getThermalLevel() < -15) {
-                        player.addPotionEffect(PotionEffect(MobEffects.SLOWNESS, 5, 2, true, true))
+                        player.addEffect(PotionEffect(MobEffects.SLOWNESS, 5, 2, true, true))
                     }
 
                     if (playerStats.getThermalLevel() > 15) {
-                        player.addPotionEffect(PotionEffect(MobEffects.NAUSEA, 5, 2, true, true))
+                        player.addEffect(PotionEffect(MobEffects.NAUSEA, 5, 2, true, true))
                     }
                 }
             } else  //Normalise thermal level if on Space Station or non-modifier planet
@@ -376,8 +384,8 @@ open class GCPlayerHandler {
     }
 
     protected open fun checkShield(playerMP: EntityPlayerMP, playerStats: GCPlayerStats) {
-        if (playerMP.ticksExisted % 20 == 0 && playerMP.world.provider is IGalacticraftWorldProvider) {
-            if ((playerMP.world.provider as IGalacticraftWorldProvider).shouldCorrodeArmor()) {
+        if (playerMP.tickCount % 20 == 0 && playerMP.level().provider is IGalacticraftWorldProvider) {
+            if ((playerMP.level().provider as IGalacticraftWorldProvider).shouldCorrodeArmor()) {
                 val shieldController: ItemStack = (playerStats.getExtendedInventory())!!.getStackInSlot(10)
                 var valid: Boolean = false
 
@@ -404,7 +412,7 @@ open class GCPlayerHandler {
     }
 
     protected open fun checkOxygen(player: EntityPlayerMP, stats: GCPlayerStats) {
-        if ((player.dimension == 0 || player.world.provider is IGalacticraftWorldProvider) && (!(player.dimension == 0 || (player.world.provider as IGalacticraftWorldProvider).hasBreathableAtmosphere()) || player.posY > OXYGENHEIGHTLIMIT) && !player.capabilities.isCreativeMode && (player.getRidingEntity() !is EntityLanderBase) && (player.getRidingEntity() !is EntityAutoRocket) && (player.getRidingEntity() !is EntityCelestialFake) && !CompatibilityManager.isAndroid(
+        if ((player.dimension == 0 || player.level().provider is IGalacticraftWorldProvider) && (!(player.dimension == 0 || (player.level().provider as IGalacticraftWorldProvider).hasBreathableAtmosphere()) || player.y > OXYGENHEIGHTLIMIT) && !player.capabilities.isCreativeMode && (player.getVehicle() !is EntityLanderBase) && (player.getVehicle() !is EntityAutoRocket) && (player.getVehicle() !is EntityCelestialFake) && !CompatibilityManager.isAndroid(
                 player
             )
         ) {
@@ -416,40 +424,40 @@ open class GCPlayerHandler {
             if (tankInSlot.isEmpty()) {
                 stats.setAirRemaining(0)
             } else {
-                stats.setAirRemaining(tankInSlot.getMaxDamage() - tankInSlot.getItemDamage())
+                stats.setAirRemaining(ItemOxygenTank.capacityOf(tankInSlot) - ItemOxygenTank.used(tankInSlot))
             }
 
             if (tankInSlot2.isEmpty()) {
                 stats.setAirRemaining2(0)
             } else {
-                stats.setAirRemaining2(tankInSlot2.getMaxDamage() - tankInSlot2.getItemDamage())
+                stats.setAirRemaining2(ItemOxygenTank.capacityOf(tankInSlot2) - ItemOxygenTank.used(tankInSlot2))
             }
 
             if (drainSpacing > 0) {
-                if ((player.ticksExisted - 1) % drainSpacing == 0 && !OxygenUtil.isAABBInBreathableAirBlock(player) && !stats.isUsingPlanetSelectionGui()) {
+                if ((player.tickCount - 1) % drainSpacing == 0 && !OxygenUtil.isAABBInBreathableAirBlock(player) && !stats.isUsingPlanetSelectionGui()) {
                     var toTake: Int = 1
                     //Take 1 oxygen from Tank 1
                     if (stats.getAirRemaining() > 0) {
-                        tankInSlot.damageItem(1, player)
+                        ItemOxygenTank.setUsed(tankInSlot, ItemOxygenTank.used(tankInSlot) + 1)
                         stats.setAirRemaining(stats.getAirRemaining() - 1)
                         toTake = 0
                     }
 
                     //Alternatively, take 1 oxygen from Tank 2
                     if (toTake > 0 && stats.getAirRemaining2() > 0) {
-                        tankInSlot2.damageItem(1, player)
+                        ItemOxygenTank.setUsed(tankInSlot2, ItemOxygenTank.used(tankInSlot2) + 1)
                         stats.setAirRemaining2(stats.getAirRemaining2() - 1)
                         toTake = 0
                     }
                 }
             } else {
-                if ((player.ticksExisted - 1) % 60 == 0) {
+                if ((player.tickCount - 1) % 60 == 0) {
                     if (OxygenUtil.isAABBInBreathableAirBlock(player)) {
                         if (stats.getAirRemaining() < 90 && !tankInSlot.isEmpty()) {
                             stats.setAirRemaining(
                                 min(
                                     stats.getAirRemaining() + 1,
-                                    tankInSlot.getMaxDamage() - tankInSlot.getItemDamage()
+                                    ItemOxygenTank.capacityOf(tankInSlot) - ItemOxygenTank.used(tankInSlot)
                                 )
                             )
                         }
@@ -458,7 +466,7 @@ open class GCPlayerHandler {
                             stats.setAirRemaining2(
                                 min(
                                     stats.getAirRemaining2() + 1,
-                                    tankInSlot2.getMaxDamage() - tankInSlot2.getItemDamage()
+                                    ItemOxygenTank.capacityOf(tankInSlot2) - ItemOxygenTank.used(tankInSlot2)
                                 )
                             )
                         }
@@ -486,29 +494,28 @@ open class GCPlayerHandler {
                 )
             }
 
-            if (!player.world.isRemote && player.isEntityAlive()) {
+            if (!player.level().isRemote && player.isAlive()) {
                 if (!stats.isOxygenSetupValid()) {
                     val suffocationEvent: GCCoreOxygenSuffocationEvent = GCCoreOxygenSuffocationEvent.Pre(player)
-                    MinecraftForge.EVENT_BUS.post(suffocationEvent)
+                    val suffocationCancelled = suffocationEvent.post()
 
-                    if (!suffocationEvent.isCanceled()) {
+                    if (!suffocationCancelled) {
                         if (stats.getDamageCounter() == 0) {
                             stats.setDamageCounter(ConfigManagerCore.suffocationCooldown)
 
-                            player.attackEntityFrom(
-                                DamageSourceGC.oxygenSuffocation,
+                            foundation.damage.FoundationDamageTypes.hurt(player, DamageSourceGC.oxygenSuffocation,
                                 (ConfigManagerCore.suffocationDamage * (2 + stats.getIncrementalDamage()) / 2).toFloat()
                             )
                             if (ConfigManagerCore.hardMode) stats.setIncrementalDamage(stats.getIncrementalDamage() + 1)
 
                             val suffocationEventPost: GCCoreOxygenSuffocationEvent =
                                 GCCoreOxygenSuffocationEvent.Post(player)
-                            MinecraftForge.EVENT_BUS.post(suffocationEventPost)
+                            suffocationEventPost.post()
                         }
                     } else stats.setOxygenSetupValid(true)
                 } else stats.setIncrementalDamage(0)
             }
-        } else if ((player.ticksExisted - 1) % 20 == 0 && !player.capabilities.isCreativeMode && stats.getAirRemaining() < 90) {
+        } else if ((player.tickCount - 1) % 20 == 0 && !player.capabilities.isCreativeMode && stats.getAirRemaining() < 90) {
             stats.setAirRemaining(stats.getAirRemaining() + 1)
             stats.setAirRemaining2(stats.getAirRemaining2() + 1)
         } else if (player.capabilities.isCreativeMode) {
@@ -520,62 +527,62 @@ open class GCPlayerHandler {
     }
 
     protected open fun throwMeteors(player: EntityPlayerMP) {
-        val world: World = player.world
-        if (world.provider is IGalacticraftWorldProvider && !world.isRemote) {
+        val world: World = player.level()
+        if (world.provider is IGalacticraftWorldProvider && !world.isClientSide) {
             if ((world.provider as IGalacticraftWorldProvider).getMeteorFrequency() > 0 && ConfigManagerCore.meteorSpawnMod > 0.0) {
                 val f: Int =
                     ((world.provider as IGalacticraftWorldProvider).getMeteorFrequency() * 750.0 * (1.0 / ConfigManagerCore.meteorSpawnMod)).toInt()
 
-                if (world.rand.nextInt(f) == 0) {
-                    val closestPlayer: EntityPlayer? = world.getClosestPlayerToEntity(player, 100.0)
+                if (world.random.nextInt(f) == 0) {
+                    val closestPlayer: EntityPlayer? = world.getNearestPlayer(player, 100.0)
 
-                    if (closestPlayer == null || closestPlayer.getEntityId() <= player.getEntityId()) {
+                    if (closestPlayer == null || closestPlayer.getId() <= player.getId()) {
                         val r: Int = world.getMinecraftServer()!!.getPlayerList().getViewDistance()
                         var x: Int
                         val z: Int
                         val motX: Double
                         val motZ: Double
-                        x = world.rand.nextInt(20) + 160
-                        z = world.rand.nextInt(20) - 10
-                        motX = world.rand.nextDouble() * 2 - 2.5
-                        motZ = world.rand.nextDouble() * 5 - 2.5
-                        val px: Int = MathHelper.floor(player.posX)
+                        x = world.random.nextInt(20) + 160
+                        z = world.random.nextInt(20) - 10
+                        motX = world.random.nextDouble() * 2 - 2.5
+                        motZ = world.random.nextDouble() * 5 - 2.5
+                        val px: Int = MathHelper.floor(player.x)
                         if ((x + px shr 4) - (px shr 4) >= r) {
                             x = ((px shr 4) + r shl 4) - 1 - px
                         }
 
                         val meteor: EntityMeteor =
-                            EntityMeteor(world, player.posX + x, 355.0, player.posZ + z, motX, 0.0, motZ, 1)
+                            EntityMeteor(world, player.x + x, 355.0, player.z + z, motX, 0.0, motZ, 1)
 
-                        if (!world.isRemote) {
-                            world.spawnEntity(meteor)
+                        if (!world.isClientSide) {
+                            world.addFreshEntity(meteor)
                         }
                     }
                 }
 
-                if (world.rand.nextInt(f * 3) == 0) {
-                    val closestPlayer: EntityPlayer? = world.getClosestPlayerToEntity(player, 100.0)
+                if (world.random.nextInt(f * 3) == 0) {
+                    val closestPlayer: EntityPlayer? = world.getNearestPlayer(player, 100.0)
 
-                    if (closestPlayer == null || closestPlayer.getEntityId() <= player.getEntityId()) {
+                    if (closestPlayer == null || closestPlayer.getId() <= player.getId()) {
                         val r: Int = world.getMinecraftServer()!!.getPlayerList().getViewDistance()
                         var x: Int
                         val z: Int
                         val motX: Double
                         val motZ: Double
-                        x = world.rand.nextInt(20) + 160
-                        z = world.rand.nextInt(20) - 10
-                        motX = world.rand.nextDouble() * 2 - 2.5
-                        motZ = world.rand.nextDouble() * 5 - 2.5
-                        val px: Int = MathHelper.floor(player.posX)
+                        x = world.random.nextInt(20) + 160
+                        z = world.random.nextInt(20) - 10
+                        motX = world.random.nextDouble() * 2 - 2.5
+                        motZ = world.random.nextDouble() * 5 - 2.5
+                        val px: Int = MathHelper.floor(player.x)
                         if ((x + px shr 4) - (px shr 4) >= r) {
                             x = ((px shr 4) + r shl 4) - 1 - px
                         }
 
                         val meteor: EntityMeteor =
-                            EntityMeteor(world, player.posX + x, 355.0, player.posZ + z, motX, 0.0, motZ, 6)
+                            EntityMeteor(world, player.x + x, 355.0, player.z + z, motX, 0.0, motZ, 6)
 
-                        if (!world.isRemote) {
-                            world.spawnEntity(meteor)
+                        if (!world.isClientSide) {
+                            world.addFreshEntity(meteor)
                         }
                     }
                 }
@@ -584,29 +591,29 @@ open class GCPlayerHandler {
     }
 
     protected open fun checkCurrentItem(player: EntityPlayerMP) {
-        val theCurrentItem: ItemStack = player.inventory.getCurrentItem()
-        val offHandItem: ItemStack = player.getHeldItemOffhand()
+        val theCurrentItem: ItemStack = player.inventory.getSelectedItem()
+        val offHandItem: ItemStack = player.getOffhandItem()
 
         if (!theCurrentItem.isEmpty()) {
             var postChangeItem: Int = 0
             for (i: ItemStack in itemChangesPre) {
-                if (i.getItem() === theCurrentItem.getItem() && i.getItemDamage() == theCurrentItem.getItemDamage()) {
+                if (i.getItem() === theCurrentItem.getItem() && i.legacyItemValue == theCurrentItem.legacyItemValue) {
                     val postChange: ItemStack = itemChangesPost.get(postChangeItem)!!.copy()
                     postChange.setCount(theCurrentItem.getCount())
-                    player.inventory.mainInventory.set(player.inventory.currentItem, postChange)
+                    player.inventory.mainItems.set(player.inventory.selectedSlot, postChange)
                     break
                 }
                 postChangeItem++
             }
-            if (OxygenUtil.noAtmosphericCombustion(player.world.provider)) {
+            if (OxygenUtil.noAtmosphericCombustion(player.level().provider)) {
                 //Is it a type of overworld torch?
                 if (torchItemsRegular.contains(theCurrentItem.getItem())) {
                     //Get space torch for this overworld torch
                     var torchItem: Int = 0
                     for (i: Item? in torchItemsRegular) {
                         if (i === theCurrentItem.getItem()) {
-                            player.inventory.mainInventory.set(
-                                player.inventory.currentItem,
+                            player.inventory.mainItems.set(
+                                player.inventory.selectedSlot,
                                 ItemStack(torchItemsSpace.get(torchItem), theCurrentItem.getCount(), 0)
                             )
                             break
@@ -621,8 +628,8 @@ open class GCPlayerHandler {
                     var torchItem: Int = 0
                     for (i: Item? in torchItemsSpace) {
                         if (i === theCurrentItem.getItem()) {
-                            player.inventory.mainInventory.set(
-                                player.inventory.currentItem,
+                            player.inventory.mainItems.set(
+                                player.inventory.selectedSlot,
                                 ItemStack(torchItemsRegular.get(torchItem), theCurrentItem.getCount(), 0)
                             )
                             break
@@ -635,12 +642,12 @@ open class GCPlayerHandler {
             // If the player is holding a two-handed item in both hands, switch the off-hand item out, or drop if necessary
             if (!offHandItem.isEmpty()) {
                 if (theCurrentItem.getItem() is IHoldableItem && offHandItem.getItem() is IHoldableItem) {
-                    val emptyStack: Int = player.inventory.getFirstEmptyStack()
+                    val emptyStack: Int = player.inventory.getFreeSlot()
 
                     if (emptyStack >= 0) {
                         val copyOffHandItem: ItemStack = offHandItem.copy()
                         copyOffHandItem.setAnimationsToGo(5)
-                        player.inventory.mainInventory.set(emptyStack, copyOffHandItem)
+                        player.inventory.mainItems.set(emptyStack, copyOffHandItem)
                     } else {
                         player.dropItem(offHandItem, false)
                     }
@@ -676,7 +683,7 @@ open class GCPlayerHandler {
 
         Collections.sort<ISchematicPage>((stats.getUnlockedSchematics())!!)
 
-        if (player.connection != null && ((stats.getUnlockedSchematics())!!.size != (stats.getLastUnlockedSchematics())!!.size || (player.ticksExisted - 1) % 100 == 0)) {
+        if (player.connection != null && ((stats.getUnlockedSchematics())!!.size != (stats.getLastUnlockedSchematics())!!.size || (player.tickCount - 1) % 100 == 0)) {
             val iArray: Array<Int> = (arrayOfNulls<Int>((stats.getUnlockedSchematics())!!.size) as Array<Int>)
 
             for (i: Int in iArray.indices) {
@@ -690,7 +697,7 @@ open class GCPlayerHandler {
             (GalacticraftCore.packetPipeline)!!.sendTo(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.C_UPDATE_SCHEMATIC_LIST,
-                    GCCoreUtil.getDimensionID(player.world),
+                    GCCoreUtil.getDimensionID(player.level()),
                     objList
                 ), player
             )
@@ -716,7 +723,7 @@ open class GCPlayerHandler {
 
     protected open fun sendPlanetList(player: EntityPlayerMP, stats: GCPlayerStats) {
         val map: HashMap<String?,Int>
-        if (player.ticksExisted % 50 == 0)  //Check for genuine update - e.g. maybe some other player created a space station or changed permissions
+        if (player.tickCount % 50 == 0)  //Check for genuine update - e.g. maybe some other player created a space station or changed permissions
         //CAUTION: possible server load due to dimension loading, if any planets or moons were (contrary to GC default) set to hotload
         {
             map = WorldUtil.getArrayOfPossibleDimensions(stats.getSpaceshipTier(), player)
@@ -732,12 +739,12 @@ open class GCPlayerHandler {
             count++
         }
 
-        if (temp != stats.getSavedPlanetList() || (player.ticksExisted % 100 == 0)) {
+        if (temp != stats.getSavedPlanetList() || (player.tickCount % 100 == 0)) {
             val canCreateStations: Boolean = PermissionAPI.hasPermission(player, Constants.PERMISSION_CREATE_STATION)
             (GalacticraftCore.packetPipeline)!!.sendTo(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.C_UPDATE_DIMENSION_LIST,
-                    GCCoreUtil.getDimensionID(player.world),
+                    GCCoreUtil.getDimensionID(player.level()),
                     arrayOf<Any?>(PlayerUtil.getName(player), temp, canCreateStations)
                 ), player
             )
@@ -750,7 +757,7 @@ open class GCPlayerHandler {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimple(
                 PacketSimple.EnumSimplePacket.C_UPDATE_THERMAL_LEVEL,
-                GCCoreUtil.getDimensionID(player.world),
+                GCCoreUtil.getDimensionID(player.level()),
                 arrayOf<Any>(stats.getThermalLevel(), stats.isThermalLevelNormalising())
             ), player
         )
@@ -760,12 +767,12 @@ open class GCPlayerHandler {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimple(
                 PacketSimple.EnumSimplePacket.C_UPDATE_DUNGEON_DIRECTION,
-                GCCoreUtil.getDimensionID(player.world),
+                GCCoreUtil.getDimensionID(player.level()),
                 arrayOf<Any>(
                     MapGenDungeon.directionToNearestDungeon(
-                        player.world,
-                        player.posX + player.motionX,
-                        player.posZ + player.motionZ
+                        player.level(),
+                        player.x + player.deltaMovement.x,
+                        player.z + player.deltaMovement.z
                     )
                 )
             ), player
@@ -778,7 +785,7 @@ open class GCPlayerHandler {
     }
 
     open fun onPlayerUpdate(player: EntityPlayerMP) {
-        val tick: Int = player.ticksExisted - 1
+        val tick: Int = player.tickCount - 1
 
         //This will speed things up a little
         val stats: GCPlayerStats = (GCPlayerStats.Companion.get(player))!!
@@ -788,12 +795,12 @@ open class GCPlayerHandler {
                 stats.setStartDimension("")
             } else {
                 //PlayerAPI is installed
-                val worldOld: WorldServer = player.world as WorldServer
+                val worldOld: WorldServer = player.level() as WorldServer
                 try {
                     worldOld.getPlayerChunkMap().removePlayer(player)
                 } catch (e: Exception) {
                 }
-                worldOld.playerEntities.remove(player)
+                worldOld.players().remove(player)
                 worldOld.updateAllPlayersSleepingFlag()
                 worldOld.loadedEntityList.remove(player)
                 worldOld.onEntityRemoved(player)
@@ -813,8 +820,8 @@ open class GCPlayerHandler {
                 player.connection.sendPacket(
                     SPacketRespawn(
                         dimID,
-                        player.world.getDifficulty(),
-                        player.world.getWorldInfo().getTerrainType(),
+                        player.level().getDifficulty(),
+                        player.level().getWorldInfo().getTerrainType(),
                         player.interactionManager.getGameType()
                     )
                 )
@@ -823,35 +830,35 @@ open class GCPlayerHandler {
                     (GalacticraftCore.packetPipeline)!!.sendTo(
                         PacketSimple(
                             PacketSimple.EnumSimplePacket.C_RESET_THIRD_PERSON,
-                            GCCoreUtil.getDimensionID(player.world),
+                            GCCoreUtil.getDimensionID(player.level()),
                             arrayOf<Any?>()
                         ), player
                     )
                 }
-                worldNew.spawnEntity(player)
+                worldNew.addFreshEntity(player)
                 player.setWorld(worldNew)
                 player.server.getPlayerList().preparePlayer(player, worldOld)
             }
 
             //This is a mini version of the code at WorldUtil.teleportEntity
-            player.interactionManager.setWorld(player.world as WorldServer?)
-            val type: ITeleportType = (GalacticraftRegistry.getTeleportTypeForDimension(player.world.provider.javaClass))!!
-            val spawnPos: Vector3 = (type.getPlayerSpawnLocation(player.world as WorldServer?, player))!!
+            player.interactionManager.setWorld(player.level() as WorldServer?)
+            val type: ITeleportType = (GalacticraftRegistry.getTeleportTypeForDimension(player.level().provider.javaClass))!!
+            val spawnPos: Vector3 = (type.getPlayerSpawnLocation(player.level() as WorldServer?, player))!!
             val pair: ChunkPos =
-                player.world.getChunk(spawnPos.intX() shr 4, spawnPos.intZ() shr 4).getPos()
+                player.level().getChunk(spawnPos.intX() shr 4, spawnPos.intZ() shr 4).getPos()
             GCLog.debug("Loading first chunk in new dimension.")
-            (player.world as WorldServer).getChunkProvider().loadChunk(pair.x, pair.z)
-            player.setLocationAndAngles(spawnPos.x, spawnPos.y, spawnPos.z, player.rotationYaw, player.rotationPitch)
+            (player.level() as WorldServer).getChunkProvider().loadChunk(pair.x, pair.z)
+            player.setLocationAndAngles(spawnPos.x, spawnPos.y, spawnPos.z, player.yRot, player.xRot)
             type.setupAdventureSpawn(player)
-            type.onSpaceDimensionChanged(player.world, player, false)
+            type.onSpaceDimensionChanged(player.level(), player, false)
             player.setSpawnChunk(
                 BlockPos(spawnPos.intX(), spawnPos.intY(), spawnPos.intZ()),
                 true,
-                GCCoreUtil.getDimensionID(player.world)
+                GCCoreUtil.getDimensionID(player.level())
             )
             stats.setNewAdventureSpawn(true)
         }
-        val isInGCDimension: Boolean = player.world.provider is IGalacticraftWorldProvider
+        val isInGCDimension: Boolean = player.level().provider is IGalacticraftWorldProvider
 
         if (tick >= 25) {
             if (ConfigManagerCore.enableSpaceRaceManagerPopup && !stats.hasOpenedSpaceRaceManager()) {
@@ -861,7 +868,7 @@ open class GCPlayerHandler {
                     (GalacticraftCore.packetPipeline)!!.sendTo(
                         PacketSimple(
                             PacketSimple.EnumSimplePacket.C_OPEN_SPACE_RACE_GUI,
-                            GCCoreUtil.getDimensionID(player.world),
+                            GCCoreUtil.getDimensionID(player.level()),
                             arrayOf<Any?>()
                         ), player
                     )
@@ -873,7 +880,7 @@ open class GCPlayerHandler {
                 (GalacticraftCore.packetPipeline)!!.sendTo(
                     PacketSimple(
                         PacketSimple.EnumSimplePacket.C_UPDATE_STATS,
-                        GCCoreUtil.getDimensionID(player.world),
+                        GCCoreUtil.getDimensionID(player.level()),
                         (stats.getMiscNetworkedStats())!!
                     ), player
                 )
@@ -935,7 +942,7 @@ open class GCPlayerHandler {
         if (isInGCDimension) {
             if (tick % 10 == 0) {
                 var doneDungeon: Boolean = false
-                val current: ItemStack = player.inventory.getCurrentItem()
+                val current: ItemStack = player.inventory.getSelectedItem()
                 if (current != null && current.getItem() === GCItems.dungeonFinder) {
                     this.sendDungeonDirectionPacket(player, stats)
                     doneDungeon = true
@@ -945,7 +952,7 @@ open class GCPlayerHandler {
                     this.sendThermalLevelPacket(player, stats)
 
                     if (!doneDungeon) {
-                        for (stack: ItemStack? in player.inventory.mainInventory) {
+                        for (stack: ItemStack? in player.inventory.mainItems) {
                             if (stack != null && stack.getItem() === GCItems.dungeonFinder) {
                                 this.sendDungeonDirectionPacket(player, stats)
                                 break
@@ -955,7 +962,7 @@ open class GCPlayerHandler {
                 }
             }
 
-            if (player.getRidingEntity() is EntityLanderBase) {
+            if (player.getVehicle() is EntityLanderBase) {
                 stats.setInLander(true)
                 stats.setJustLanded(false)
             } else {
@@ -969,29 +976,29 @@ open class GCPlayerHandler {
                 stats.setJustLanded(false)
 
                 //Set spawn point here if just descended from a lander for the first time
-                if (player.getBedLocation(GCCoreUtil.getDimensionID(player.world)) == null || stats.isNewAdventureSpawn()) {
+                if (player.getBedLocation(GCCoreUtil.getDimensionID(player.level())) == null || stats.isNewAdventureSpawn()) {
                     val i: Int = 30000000
-                    val j: Int = min(i, max(-i, MathHelper.floor(player.posX + 0.5)))
-                    val k: Int = min(256, max(0, MathHelper.floor(player.posY + 1.5)))
-                    val l: Int = min(i, max(-i, MathHelper.floor(player.posZ + 0.5)))
+                    val j: Int = min(i, max(-i, MathHelper.floor(player.x + 0.5)))
+                    val k: Int = min(256, max(0, MathHelper.floor(player.y + 1.5)))
+                    val l: Int = min(i, max(-i, MathHelper.floor(player.z + 0.5)))
                     val coords: BlockPos = BlockPos(j, k, l)
-                    player.setSpawnChunk(coords, true, GCCoreUtil.getDimensionID(player.world))
+                    player.setSpawnChunk(coords, true, GCCoreUtil.getDimensionID(player.level()))
                     stats.setNewAdventureSpawn(false)
                 }
 
                 (GalacticraftCore.packetPipeline)!!.sendTo(
                     PacketSimple(
                         PacketSimple.EnumSimplePacket.C_RESET_THIRD_PERSON,
-                        GCCoreUtil.getDimensionID(player.world),
+                        GCCoreUtil.getDimensionID(player.level()),
                         arrayOf<Any?>()
                     ), player
                 )
             }
 
-            if (player.world.provider is WorldProviderSpaceStation || player.world.provider is IZeroGDimension || GalacticraftCore.isPlanetsLoaded && player.world.provider is WorldProviderAsteroids) {
+            if (player.level().provider is WorldProviderSpaceStation || player.level().provider is IZeroGDimension || GalacticraftCore.isPlanetsLoaded && player.level().provider is WorldProviderAsteroids) {
                 this.preventFlyingKicks(player)
-                if (player.world.provider is WorldProviderSpaceStation && stats.isNewInOrbit()) {
-                    (player.world.provider as WorldProviderSpaceStation).getSpinManager().sendPackets(player)
+                if (player.level().provider is WorldProviderSpaceStation && stats.isNewInOrbit()) {
+                    (player.level().provider as WorldProviderSpaceStation).getSpinManager().sendPackets(player)
                     stats.setNewInOrbit(false)
                 }
             } else {
@@ -1009,7 +1016,7 @@ open class GCPlayerHandler {
             if (stats.getChestSpawnCooldown() == 180) {
                 if (stats.getChestSpawnVector() != null) {
                     val chest: EntityParachest =
-                        EntityParachest(player.world, (stats.getRocketStacks())!!, stats.getFuelLevel())
+                        EntityParachest(player.level(), (stats.getRocketStacks())!!, stats.getFuelLevel())
 
                     chest.setPosition(
                         ((stats.getChestSpawnVector())!!.x)!!,
@@ -1019,18 +1026,18 @@ open class GCPlayerHandler {
                     chest.color = if ((stats.getParachuteInSlot())!!
                             .isEmpty()
                     ) EnumDyeColor.WHITE else ItemParaChute.getDyeEnumFromParachuteDamage(
-                        (stats.getParachuteInSlot())!!.getItemDamage()
+                        FoundationItemVariants.metadata((stats.getParachuteInSlot())!!)
                     )
 
-                    if (!player.world.isRemote) {
-                        player.world.spawnEntity(chest)
+                    if (!player.level().isRemote) {
+                        player.level().spawnEntity(chest)
                     }
                 }
             }
         }
 
         //
-        if (stats.getLaunchAttempts() > 0 && player.getRidingEntity() == null) {
+        if (stats.getLaunchAttempts() > 0 && player.getVehicle() == null) {
             stats.setLaunchAttempts(0)
         }
 
@@ -1042,7 +1049,7 @@ open class GCPlayerHandler {
             (GalacticraftCore.packetPipeline)!!.sendTo(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.C_UPDATE_OXYGEN_VALIDITY,
-                    player.world.provider.getDimension(),
+                    player.level().provider.getDimension(),
                     arrayOf<Any>(stats.isOxygenSetupValid())
                 ), player
             )
@@ -1053,7 +1060,7 @@ open class GCPlayerHandler {
         this.updateSchematics(player, stats)
 
         if (tick % 250 == 0 && (stats.getFrequencyModuleInSlot())!!
-                .isEmpty() && !stats.hasReceivedSoundWarning() && isInGCDimension && player.onGround && tick > 0 && (player.world.provider as IGalacticraftWorldProvider).getSoundVolReductionAmount() > 1.0f
+                .isEmpty() && !stats.hasReceivedSoundWarning() && isInGCDimension && player.onGround && tick > 0 && (player.level().provider as IGalacticraftWorldProvider).getSoundVolReductionAmount() > 1.0f
         ) {
             val string2: Array<String?> =
                 GCCoreUtil.translate("gui.frequencymodule.warning1").split(" ".toRegex()).dropLastWhile { it.isEmpty() }
@@ -1062,10 +1069,10 @@ open class GCPlayerHandler {
             for (aString2: String? in string2) {
                 sb.append(" ").append(EnumColor.YELLOW).append(aString2)
             }
-            player.sendMessage(
-                TextComponentString(
+            player.sendSystemMessage(
+                Component.literal(
                     EnumColor.YELLOW.toString() + GCCoreUtil.translate("gui.frequencymodule.warning0") + " " + EnumColor.AQUA + (GCItems.basicItem)!!.getItemStackDisplayName(
-                        ItemStack(GCItems.basicItem, 1, 19)
+                        FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 19)
                     ) + sb.toString()
                 )
             )
@@ -1244,7 +1251,7 @@ open class GCPlayerHandler {
                     }
                     if (!(stats.getMaskInSlot())!!.isEmpty() && !(stats.getGearInSlot())!!.isEmpty()) {
                         stats.setAirRemaining(
-                            (stats.getTankInSlot1())!!.getMaxDamage() - (stats.getTankInSlot1())!!.getItemDamage()
+                            ItemOxygenTank.capacityOf((stats.getTankInSlot1())!!) - ItemOxygenTank.used((stats.getTankInSlot1())!!)
                         )
                         sendAirRemainingPacket(player, stats)
                     }
@@ -1264,7 +1271,7 @@ open class GCPlayerHandler {
                     }
                     if (!(stats.getMaskInSlot())!!.isEmpty() && !(stats.getGearInSlot())!!.isEmpty()) {
                         stats.setAirRemaining(
-                            (stats.getTankInSlot1())!!.getMaxDamage() - (stats.getTankInSlot1())!!.getItemDamage()
+                            ItemOxygenTank.capacityOf((stats.getTankInSlot1())!!) - ItemOxygenTank.used((stats.getTankInSlot1())!!)
                         )
                         sendAirRemainingPacket(player, stats)
                     }
@@ -1295,7 +1302,7 @@ open class GCPlayerHandler {
                     }
                     if (!(stats.getMaskInSlot())!!.isEmpty() && !(stats.getGearInSlot())!!.isEmpty()) {
                         stats.setAirRemaining2(
-                            (stats.getTankInSlot2())!!.getMaxDamage() - (stats.getTankInSlot2())!!.getItemDamage()
+                            ItemOxygenTank.capacityOf((stats.getTankInSlot2())!!) - ItemOxygenTank.used((stats.getTankInSlot2())!!)
                         )
                         sendAirRemainingPacket(player, stats)
                     }
@@ -1315,7 +1322,7 @@ open class GCPlayerHandler {
                     }
                     if (!(stats.getMaskInSlot())!!.isEmpty() && !(stats.getGearInSlot())!!.isEmpty()) {
                         stats.setAirRemaining2(
-                            (stats.getTankInSlot2())!!.getMaxDamage() - (stats.getTankInSlot2())!!.getItemDamage()
+                            ItemOxygenTank.capacityOf((stats.getTankInSlot2())!!) - ItemOxygenTank.used((stats.getTankInSlot2())!!)
                         )
                         sendAirRemainingPacket(player, stats)
                     }
@@ -1329,8 +1336,7 @@ open class GCPlayerHandler {
                 if (stats.isUsingParachute()) {
                     if ((stats.getParachuteInSlot())!!.isEmpty()) {
                         sendGearUpdatePacket(player, EnumModelPacketType.REMOVE, EnumExtendedInventorySlot.PARACHUTE)
-                    } else if (forceSend || (stats.getLastParachuteInSlot())!!.isEmpty() || (stats.getParachuteInSlot())!!
-                            .getItemDamage() != (stats.getLastParachuteInSlot())!!.getItemDamage()
+                    } else if (forceSend || (stats.getLastParachuteInSlot())!!.isEmpty() || FoundationItemVariants.metadata((stats.getParachuteInSlot())!!) != FoundationItemVariants.metadata((stats.getLastParachuteInSlot())!!)
                     ) {
                         val gearID: Int = GalacticraftRegistry.findMatchingGearID(
                             (stats.getParachuteInSlot())!!,
@@ -1342,7 +1348,7 @@ open class GCPlayerHandler {
                                 player,
                                 EnumModelPacketType.ADD,
                                 EnumExtendedInventorySlot.PARACHUTE,
-                                (stats.getParachuteInSlot())!!.getItemDamage()
+                                FoundationItemVariants.metadata((stats.getParachuteInSlot())!!)
                             )
                         }
                     }
@@ -1530,7 +1536,7 @@ open class GCPlayerHandler {
                 var subtype: Int = GEAR_NOT_PRESENT
 
                 if (!(playerStats.getParachuteInSlot())!!.isEmpty()) {
-                    subtype = (playerStats.getParachuteInSlot())!!.getItemDamage()
+                    subtype = FoundationItemVariants.metadata((playerStats.getParachuteInSlot())!!)
                 }
 
                 sendGearUpdatePacket(player, EnumModelPacketType.ADD, EnumExtendedInventorySlot.PARACHUTE, subtype)
@@ -1543,12 +1549,12 @@ open class GCPlayerHandler {
         fun updateFeet(player: EntityPlayerMP, motionX: Double, motionZ: Double) {
             val motionSqrd: Double = motionX * motionX + motionZ * motionZ
             if (motionSqrd > 0.001 && !player.capabilities.isFlying) {
-                val iPosX: Int = MathHelper.floor(player.posX)
-                val iPosY: Int = MathHelper.floor(player.posY - 0.05)
-                val iPosZ: Int = MathHelper.floor(player.posZ)
+                val iPosX: Int = MathHelper.floor(player.x)
+                val iPosY: Int = MathHelper.floor(player.y - 0.05)
+                val iPosZ: Int = MathHelper.floor(player.z)
 
                 // If the block below is the moon block
-                val state: IBlockState = player.world.getBlockState(BlockPos(iPosX, iPosY, iPosZ))
+                val state: IBlockState = player.level().getBlockState(BlockPos(iPosX, iPosY, iPosZ))
                 if (state.getBlock() === GCBlocks.blockMoon) {
                     // And is the correct metadata (moon turf)
                     if (state.getValue(BlockBasicMoon.BASIC_TYPE_MOON) == BlockBasicMoon.EnumBlockBasicMoon.MOON_TURF) {
@@ -1558,13 +1564,13 @@ open class GCPlayerHandler {
                             var pos: Vector3 = Vector3(player)
                             // Set the footprint position to the block below and add random number to stop z-fighting
                             pos.y =
-                                (MathHelper.floor(player.posY - 1.0) + player.world.rand.nextFloat() / 100.0f).toDouble()
+                                (MathHelper.floor(player.y - 1.0) + player.level().rand.nextFloat() / 100.0f).toDouble()
 
                             // Adjust footprint to left or right depending on step count
                             var a: Float = 0f
 when (stats.getLastStep()) {
                                 0 -> {
-                                    a = (-player.rotationYaw + 90f) / Constants.RADIANS_TO_DEGREES
+                                    a = (-player.yRot + 90f) / Constants.RADIANS_TO_DEGREES
                                     pos.translate(
                                         Vector3(
                                             (MathHelper.sin(a) * 0.25f).toDouble(),
@@ -1575,19 +1581,19 @@ when (stats.getLastStep()) {
                                 }
 
                                 1 -> {
-                                    a = (-player.rotationYaw - 90f) / Constants.RADIANS_TO_DEGREES
+                                    a = (-player.yRot - 90f) / Constants.RADIANS_TO_DEGREES
                                     pos.translate(Vector3(MathHelper.sin(a) * 0.25, 0.0, MathHelper.cos(a) * 0.25))
                                 }
                             }
 
-                            val rotation: Float = player.rotationYaw - 180
-                            pos = WorldUtil.getFootprintPosition(player.world, rotation, pos, BlockVec3(player))
+                            val rotation: Float = player.yRot - 180
+                            pos = WorldUtil.getFootprintPosition(player.level(), rotation, pos, BlockVec3(player))
 
                             val chunkKey: Long = ChunkPos.asLong(pos.intX() shr 4, pos.intZ() shr 4)
                             TickHandlerServer.addFootprint(
                                 chunkKey,
-                                Footprint(GCCoreUtil.getDimensionID(player.world), pos, rotation, player.getName(), -1),
-                                GCCoreUtil.getDimensionID(player.world)
+                                Footprint(GCCoreUtil.getDimensionID(player.level()), pos, rotation, player.getName(), -1),
+                                GCCoreUtil.getDimensionID(player.level())
                             )
 
                             // Increment and cap step counter at 1
@@ -1604,13 +1610,13 @@ when (stats.getLastStep()) {
         @JvmStatic
         protected fun sendAirRemainingPacket(player: EntityPlayerMP, stats: GCPlayerStats) {
             val f1: Float =
-                if ((stats.getTankInSlot1())!!.isEmpty()) 0.0f else (stats.getTankInSlot1())!!.getMaxDamage() / 90.0f
+                if ((stats.getTankInSlot1())!!.isEmpty()) 0.0f else ItemOxygenTank.capacityOf((stats.getTankInSlot1())!!) / 90.0f
             val f2: Float =
-                if ((stats.getTankInSlot2())!!.isEmpty()) 0.0f else (stats.getTankInSlot2())!!.getMaxDamage() / 90.0f
+                if ((stats.getTankInSlot2())!!.isEmpty()) 0.0f else ItemOxygenTank.capacityOf((stats.getTankInSlot2())!!) / 90.0f
             (GalacticraftCore.packetPipeline)!!.sendTo(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.C_AIR_REMAINING,
-                    GCCoreUtil.getDimensionID(player.world),
+                    GCCoreUtil.getDimensionID(player.level()),
                     arrayOf<Any?>(
                         MathHelper.floor(stats.getAirRemaining() / f1),
                         MathHelper.floor(stats.getAirRemaining2() / f2),
@@ -1645,14 +1651,14 @@ when (stats.getLastStep()) {
                 (GalacticraftCore.packetPipeline)!!.sendToAllAround(
                     PacketSimple(
                         PacketSimple.EnumSimplePacket.C_UPDATE_GEAR_SLOT,
-                        GCCoreUtil.getDimensionID(player.world),
+                        GCCoreUtil.getDimensionID(player.level()),
                         arrayOf<Any?>(PlayerUtil.getName(player), packetType.ordinal, gearType.ordinal, gearID)
                     ),
                     NetworkRegistry.TargetPoint(
-                        GCCoreUtil.getDimensionID(player.world),
-                        player.posX,
-                        player.posY,
-                        player.posZ,
+                        GCCoreUtil.getDimensionID(player.level()),
+                        player.x,
+                        player.y,
+                        player.z,
                         50.0
                     )
                 )

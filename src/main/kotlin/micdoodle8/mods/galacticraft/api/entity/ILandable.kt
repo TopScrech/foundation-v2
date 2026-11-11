@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.api.entity
 
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.BlockPos
 
 /**
  * An entity which requires a hook into landing pad events should implement this interface

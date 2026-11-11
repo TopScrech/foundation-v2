@@ -2,17 +2,17 @@ package micdoodle8.mods.galacticraft.core.inventory
 
 import micdoodle8.mods.galacticraft.api.GalacticraftRegistry
 import micdoodle8.mods.galacticraft.api.item.EnumExtendedInventorySlot
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
 
 open class SlotExtendedInventory constructor(par2IInventory: IInventory, par3: Int, par4: Int, par5: Int) :
     Slot(par2IInventory, par3, par4, par5) {
-    override fun getSlotStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 1
     }
 
-    override fun isItemValid(itemstack: ItemStack): Boolean {
+    override fun mayPlace(itemstack: ItemStack): Boolean {
         val gearID: Int = GalacticraftRegistry.findMatchingGearID(itemstack, getTypeFromSlot())
 
         if (gearID >= 0) {

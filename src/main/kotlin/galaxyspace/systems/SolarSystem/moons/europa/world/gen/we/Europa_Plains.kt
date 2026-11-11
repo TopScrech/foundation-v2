@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.moons.europa.world.gen.we
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import galaxyspace.systems.SolarSystem.moons.enceladus.blocks.EnceladusBlocks.EnumEnceladusBlocks
 import galaxyspace.systems.SolarSystem.moons.enceladus.blocks.EnceladusCrystal
@@ -8,9 +10,9 @@ import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_BiomeLayer
 import galaxyspace.systems.SolarSystem.moons.europa.world.gen.we.Europa_Plains
 import asmodeuscore.core.utils.worldengine.WE_Biome
 import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_TerrainGenerator
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class Europa_Plains constructor(tg: WE_TerrainGenerator, value: Double) :
@@ -35,12 +37,12 @@ open class Europa_Plains constructor(tg: WE_TerrainGenerator, value: Double) :
 
         val layer: WE_BiomeLayer = WE_BiomeLayer()
 
-        layer.add(Blocks.PACKED_ICE.getDefaultState(), tg.worldStoneBlock, -256, 0, -55, -1, true)
+        layer.add(Blocks.PACKED_ICE.defaultBlockState(), tg.worldStoneBlock, -256, 0, -55, -1, true)
 
-        layer.add(GSBlocks.SURFACE_ICE.getStateFromMeta(4), Blocks.PACKED_ICE.getDefaultState(), -256, 0, -2, -1, true)
+        layer.add(GSBlocks.SURFACE_ICE.getStateFromMeta(4), Blocks.PACKED_ICE.defaultBlockState(), -256, 0, -2, -1, true)
 
-        layer.add(Blocks.WATER.getDefaultState(), tg.worldStoneBlock, -256, 0, -100, 0, true)
-        layer.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        layer.add(Blocks.WATER.defaultBlockState(), tg.worldStoneBlock, -256, 0, -100, 0, true)
+        layer.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
 
 
         createChunkGen_InXZ_List.add(layer)
@@ -59,14 +61,14 @@ open class Europa_Plains constructor(tg: WE_TerrainGenerator, value: Double) :
             val pos: BlockPos = BlockPos(randPosX, randPosY, randPosZ)
 
 
-            /*  if (world.getBlockState(pos.down()) == GSBlocks.ENCELADUS_BLOCKS.getStateFromMeta(EnumEnceladusBlocks.ENCELADUS_GRUNT.getMeta()) && world.isAirBlock(pos))
+            /*  if (world.getBlockState(pos.down()) == GSBlocks.ENCELADUS_BLOCKS.getStateFromMeta(EnumEnceladusBlocks.ENCELADUS_GRUNT.getMeta()) && world.isEmptyBlock(pos))
 	        {	        	
-	        	world.setBlockState(pos, GSBlocks.ENCELADUS_CRYSTAL.getDefaultState().withProperty(EnceladusCrystal.FACING, EnumFacing.HORIZONTALS[rand.nextInt(4)]));	  
+                world.setBlockAndUpdate(pos, GSBlocks.ENCELADUS_CRYSTAL.defaultBlockState().setValue(EnceladusCrystal.FACING, EnumFacing.HORIZONTALS[rand.nextInt(4)]));
 	        }
 	        
-	        if (world.getBlockState(pos.up()) == GSBlocks.ENCELADUS_BLOCKS.getStateFromMeta(EnumEnceladusBlocks.ENCELADUS_GRUNT.getMeta()) && world.isAirBlock(pos))
+	        if (world.getBlockState(pos.up()) == GSBlocks.ENCELADUS_BLOCKS.getStateFromMeta(EnumEnceladusBlocks.ENCELADUS_GRUNT.getMeta()) && world.isEmptyBlock(pos))
 	        {	        	
-	        	world.setBlockState(pos, GSBlocks.ENCELADUS_CRYSTAL.getDefaultState().withProperty(EnceladusCrystal.FACING, EnumFacing.HORIZONTALS[rand.nextInt(4)]));	  
+                world.setBlockAndUpdate(pos, GSBlocks.ENCELADUS_CRYSTAL.defaultBlockState().setValue(EnceladusCrystal.FACING, EnumFacing.HORIZONTALS[rand.nextInt(4)]));
 	        	
 	        	
 	        }*/

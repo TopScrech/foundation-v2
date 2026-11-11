@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.level.offset
+
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
 import micdoodle8.mods.galacticraft.api.recipe.SchematicRegistry
 import micdoodle8.mods.galacticraft.core.GCBlocks
@@ -9,24 +11,24 @@ import micdoodle8.mods.galacticraft.core.tile.IMultiBlock
 import micdoodle8.mods.galacticraft.core.tile.TileEntityNasaWorkbench
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockContainer
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import kotlin.math.abs
 
 open class BlockNasaWorkbench constructor(assetName: String?) : BlockContainer(Material.IRON), ITileEntityProvider,
@@ -106,7 +108,7 @@ open class BlockNasaWorkbench constructor(assetName: String?) : BlockContainer(M
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val var9: TileEntity? = worldIn.getTileEntity(pos)
+        val var9: TileEntity? = worldIn.getBlockEntity(pos)
 
         var fakeBlockCount: Int = 0
 
@@ -115,7 +117,7 @@ open class BlockNasaWorkbench constructor(assetName: String?) : BlockContainer(M
                 for (z: Int in -1..1) {
                     if (!(x == 0 && y == 0 && z == 0)) {
                         if (abs(x) != 1 || abs(z) != 1) {
-                            val block: Block = worldIn.getBlockState(pos.add(x, y, z)).getBlock()
+                            val block: Block = worldIn.getBlockState(pos.offset(x, y, z)).getBlock()
 
                             if ((y == 0 || y == 3) && x == 0 && z == 0) {
                                 if (block === GCBlocks.fakeBlock) {

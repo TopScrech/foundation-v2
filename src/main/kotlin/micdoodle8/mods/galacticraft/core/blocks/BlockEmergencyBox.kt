@@ -1,42 +1,45 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.tile.TileEntityEmergencyBox
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyBool
+import net.minecraft.world.level.block.state.properties.BooleanProperty as PropertyBool
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.BlockRenderLayer
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class BlockEmergencyBox constructor(assetName: String?) : BlockAdvancedTile(Material.IRON), IShiftDescription,
-    ISortableBlock, IPartialSealableBlock {
+    ISortableBlock, IPartialSealableBlock, LegacyBlockMetadata {
     init {
         this.setHardness(4.0f)
         this.setResistance(70f)
         this.setSoundType(SoundType.METAL)
         this.setLightLevel(1.0f)
         this.setTranslationKey(assetName)
-        this.setDefaultState(this.blockState.getBaseState().withProperty(KIT, false))
+        this.setDefaultState(this.blockState.getBaseState().setValue(KIT, false))
     }
 
     override fun createBlockState(): BlockStateContainer {
@@ -44,14 +47,14 @@ open class BlockEmergencyBox constructor(assetName: String?) : BlockAdvancedTile
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(KIT, meta % 2 == 1)
+        return this.defaultBlockState().setValue(KIT, meta % 2 == 1)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
         return (if (state.getValue(KIT)) 1 else 0)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         list.add(ItemStack(this, 1, 0))
         list.add(ItemStack(this, 1, 1))
@@ -71,7 +74,7 @@ open class BlockEmergencyBox constructor(assetName: String?) : BlockAdvancedTile
         return ItemStack(this, 1, this.getMetaFromState(state))
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT
     }
@@ -117,9 +120,9 @@ open class BlockEmergencyBox constructor(assetName: String?) : BlockAdvancedTile
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val tile: TileEntity? = (world)!!.getTileEntity(pos)
+        val tile: TileEntity? = (world)!!.getBlockEntity(pos)
         if (tile is TileEntityEmergencyBox) {
-            if (!(world)!!.isRemote) {
+            if (!(world)!!.isClientSide) {
                 tile.click((player)!!, (side)!!, (state)!!.getValue(KIT))
             }
             return true

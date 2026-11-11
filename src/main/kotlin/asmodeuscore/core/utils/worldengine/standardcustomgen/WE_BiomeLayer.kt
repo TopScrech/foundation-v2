@@ -5,8 +5,8 @@ import java.util.ArrayList
 import asmodeuscore.core.utils.worldengine.additions.WE_CreateChunkGen_InXZ
 import asmodeuscore.core.utils.worldengine.additions.WE_GeneratorData
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
 import kotlin.math.abs
 
 open class WE_BiomeLayer : WE_CreateChunkGen_InXZ() {
@@ -103,7 +103,7 @@ open class WE_BiomeLayer : WE_CreateChunkGen_InXZ() {
             if (!this.layerUnderWaterGen.get(i)!! && this.getBlock(
                     (data)!!,
                     startPoint + 1
-                ) !== Blocks.AIR.getDefaultState() && this.getBlock((data)!!, startPoint + 1).getMaterial().isLiquid()
+                ) !== Blocks.AIR.defaultBlockState() && this.getBlock((data)!!, startPoint + 1).getMaterial().isLiquid()
             ) {
                 return
             }

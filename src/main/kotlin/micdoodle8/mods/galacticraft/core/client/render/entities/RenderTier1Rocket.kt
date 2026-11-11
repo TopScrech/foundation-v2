@@ -5,15 +5,15 @@ import net.minecraft.client.model.ModelBase
 import net.minecraft.client.renderer.culling.ICamera
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.entity.Entity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.MathHelper
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.Entity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.util.Mth as MathHelper
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderTier1Rocket private constructor(
     manager: RenderManager,
     private val spaceshipTexture: ResourceLocation
@@ -26,7 +26,7 @@ open class RenderTier1Rocket private constructor(
         spaceshipModel: ModelBase?,
         textureDomain: String,
         texture: String?
-    ) : this(manager, ResourceLocation(textureDomain, "textures/model/" + texture + ".png")) {
+    ) : this(manager, ResourceLocation.fromNamespaceAndPath(textureDomain, "textures/model/" + texture + ".png")) {
         this.modelSpaceship = spaceshipModel
     }
 

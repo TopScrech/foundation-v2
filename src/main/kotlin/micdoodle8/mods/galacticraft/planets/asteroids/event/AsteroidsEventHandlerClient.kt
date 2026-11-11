@@ -16,20 +16,19 @@ import micdoodle8.mods.galacticraft.planets.asteroids.client.SkyProviderAsteroid
 import micdoodle8.mods.galacticraft.planets.asteroids.client.render.NetworkRenderer
 import micdoodle8.mods.galacticraft.planets.asteroids.dimension.WorldProviderAsteroids
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.client.multiplayer.WorldClient
-import net.minecraft.util.math.MathHelper
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraft.client.gui.screens.Screen as GuiScreen
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
+import net.minecraft.util.Mth as MathHelper
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class AsteroidsEventHandlerClient {
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onClientTick(event: TickEvent.ClientTickEvent?) {
-        val minecraft: Minecraft = Minecraft.getMinecraft()
+        val minecraft: Minecraft = Minecraft.getInstance()
         val world: WorldClient? = minecraft.world
 
         if (world != null) {
@@ -45,12 +44,12 @@ open class AsteroidsEventHandlerClient {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onRingRender(renderEvent: CelestialBodyRenderEvent.CelestialRingRenderEvent.Pre) {
         if (renderEvent.celestialBody == AsteroidsModule.planetAsteroids) {
             var alpha: Float = 1.0f
-            val screen: GuiScreen? = FMLClientHandler.instance().getClient().currentScreen
+            val screen: GuiScreen? = Minecraft.getInstance().gui.screen()
             if (screen is GuiCelestialSelection) {
                 alpha = screen.getAlpha(renderEvent.celestialBody)
                 GL11.glColor4f(0.7f, 0.0f, 0.0f, alpha / 2.0f)
@@ -121,7 +120,7 @@ open class AsteroidsEventHandlerClient {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onBodyRender(renderEvent: CelestialBodyRenderEvent.Pre) {
         if (renderEvent.celestialBody == AsteroidsModule.planetAsteroids) {
@@ -129,9 +128,9 @@ open class AsteroidsEventHandlerClient {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onSpecialRender(event: ClientProxyCore.EventSpecialRender) {
-        NetworkRenderer.renderNetworks(FMLClientHandler.instance().getClient().world, event.partialTicks)
+        NetworkRenderer.renderNetworks(Minecraft.getInstance().level, event.partialTicks)
     }
 }

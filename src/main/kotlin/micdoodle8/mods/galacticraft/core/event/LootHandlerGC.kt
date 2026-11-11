@@ -2,7 +2,7 @@ package micdoodle8.mods.galacticraft.core.event
 
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraft.world.storage.loot.LootTableList
 
 object LootHandlerGC {
@@ -16,6 +16,6 @@ object LootHandlerGC {
 
     @JvmStatic
     private fun register(table: String): ResourceLocation {
-        return LootTableList.register(ResourceLocation(Constants.MOD_ID_CORE, table))
+        return LootTableList.register(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, table))
     }
 }

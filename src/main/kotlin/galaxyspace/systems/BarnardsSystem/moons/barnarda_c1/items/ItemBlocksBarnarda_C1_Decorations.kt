@@ -1,12 +1,14 @@
 package galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.items
 
+import foundation.item.legacyItemValue
+
 import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.blocks.Barnarda_C1_Decorations
 
 import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.blocks.Barnarda_C1_Decorations.EnumBlockBarnardaC1Decoration
 import galaxyspace.core.prefab.items.GSItemBlockDesc
 import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.items.ItemBlocksBarnarda_C1_Decorations
-import net.minecraft.block.Block
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.ItemStack
 
 open class ItemBlocksBarnarda_C1_Decorations constructor(block: Block?) : GSItemBlockDesc((block)!!) {
     init {
@@ -19,7 +21,7 @@ open class ItemBlocksBarnarda_C1_Decorations constructor(block: Block?) : GSItem
     }
 
     override fun getTranslationKey(`is`: ItemStack): String {
-        val metadata: Int = `is`.getItemDamage()
+        val metadata: Int = `is`.legacyItemValue
 
         if (metadata > EnumBlockBarnardaC1Decoration.entries.size) return "tile." + (EnumBlockBarnardaC1Decoration.Companion.byMetadata(
             0

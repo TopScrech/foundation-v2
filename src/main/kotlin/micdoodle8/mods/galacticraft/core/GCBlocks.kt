@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.core
 
+import foundation.item.legacyItemValue
+
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.core.blocks.BlockBasicMoon.EnumBlockBasicMoon
 import micdoodle8.mods.galacticraft.core.blocks.BlockSpaceGlass.GlassFrame
 import micdoodle8.mods.galacticraft.core.blocks.BlockSpaceGlass.GlassType
@@ -93,15 +97,15 @@ import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.StackSorted
-import net.minecraft.block.Block
-import net.minecraft.block.material.MapColor
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.material.MapColor
 import net.minecraft.block.material.Material
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.item.Item
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemBlock
-import net.minecraft.item.ItemStack
-import net.minecraft.util.NonNullList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.NonNullList
 import net.minecraftforge.oredict.OreDictionary
 import net.minecraftforge.registries.IForgeRegistry
 import java.lang.Exception
@@ -426,30 +430,30 @@ object GCBlocks {
         slabGCDouble = BlockDoubleSlabGC("slab_gc_double", Material.ROCK)
         tinStairs1 = BlockStairsGC(
             "tin_stairs_1",
-            basicBlock!!.getDefaultState().withProperty(
+            basicBlock!!.defaultBlockState().setValue(
                 BlockBasic.Companion.BASIC_TYPE,
                 BlockBasic.EnumBlockBasic.ALUMINUM_DECORATION_BLOCK_0
             )
         ).setHardness(2.0f)
         tinStairs2 = BlockStairsGC(
             "tin_stairs_2",
-            basicBlock!!.getDefaultState().withProperty(
+            basicBlock!!.defaultBlockState().setValue(
                 BlockBasic.Companion.BASIC_TYPE,
                 BlockBasic.EnumBlockBasic.ALUMINUM_DECORATION_BLOCK_1
             )
         ).setHardness(2.0f)
         moonStoneStairs = BlockStairsGC(
             "moon_stairs_stone",
-            blockMoon!!.getDefaultState()
-                .withProperty(
+            blockMoon!!.defaultBlockState()
+                .setValue(
                     BlockBasicMoon.Companion.BASIC_TYPE_MOON,
                     BlockBasicMoon.EnumBlockBasicMoon.MOON_STONE
                 )
         ).setHardness(1.5f)
         moonBricksStairs = BlockStairsGC(
             "moon_stairs_brick",
-            blockMoon!!.getDefaultState()
-                .withProperty(
+            blockMoon!!.defaultBlockState()
+                .setValue(
                     BlockBasicMoon.Companion.BASIC_TYPE_MOON,
                     BlockBasicMoon.EnumBlockBasicMoon.MOON_DUNGEON_BRICK
                 )
@@ -521,7 +525,7 @@ object GCBlocks {
             .onResultOf<ItemStack?>(Function { input: ItemStack? ->
                 StackSorted(
                     input!!.getItem(),
-                    input.getItemDamage()
+                    input.legacyItemValue
                 )
             })
         (GalacticraftCore.Companion.galacticraftBlocksTab)!!.setTabSorter(tabSorterBlocks)
@@ -689,11 +693,11 @@ object GCBlocks {
                 blocks.add(ItemStack(block))
             }
             for (stack: ItemStack in blocks) {
-                val categoryBlock: EnumSortCategoryBlock? = sortableBlock.getCategory(stack.getItemDamage())
+                val categoryBlock: EnumSortCategoryBlock? = sortableBlock.getCategory(stack.legacyItemValue)
                 if (!sortMapBlocks.containsKey(categoryBlock)) {
                     sortMapBlocks.put((categoryBlock)!!, ArrayList<StackSorted?>())
                 }
-                sortMapBlocks.get(categoryBlock)!!.add(StackSorted(stack.getItem(), stack.getItemDamage()))
+                sortMapBlocks.get(categoryBlock)!!.add(StackSorted(stack.getItem(), stack.legacyItemValue))
             }
         } else if (block.getCreativeTab() === GalacticraftCore.Companion.galacticraftBlocksTab) {
             throw RuntimeException(block.javaClass.toString() + " must inherit " + ISortableBlock::class.java.getSimpleName() + "!")

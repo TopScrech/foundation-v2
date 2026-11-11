@@ -6,8 +6,8 @@ import galaxyspace.api.IPage
 import galaxyspace.core.GSBlocks
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.gui.FontRenderer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
 
 @IPage
 open class Page_Assembly_Machine : Page_WithCraftMatrix() {

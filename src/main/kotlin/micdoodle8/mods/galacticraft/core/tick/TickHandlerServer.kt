@@ -36,24 +36,24 @@ import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import micdoodle8.mods.galacticraft.core.wrappers.Footprint
 import micdoodle8.mods.galacticraft.core.wrappers.ScheduledBlockChange
 import micdoodle8.mods.galacticraft.core.wrappers.ScheduledDimensionChange
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockAir
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
+import net.minecraft.world.entity.Entity
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.server.MinecraftServer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.WorldServer
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.server.level.ServerLevel as WorldServer
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.gen.ChunkProviderServer
 import net.minecraftforge.common.DimensionManager
 import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.common.network.NetworkRegistry
 import java.io.File
@@ -99,8 +99,8 @@ open class TickHandlerServer {
                         val dim: Int = GCCoreUtil.getDimensionID(provider)
                         GCLog.info("Found matching world (" + dim.toString() + ") for name: " + change.getDimensionName())
 
-                        if ((change.getPlayer())!!.world is WorldServer) {
-                            val world: WorldServer? = (change.getPlayer())!!.world as WorldServer?
+                        if ((change.getPlayer())!!.level() is WorldServer) {
+                            val world: WorldServer? = (change.getPlayer())!!.level() as WorldServer?
 
                             WorldUtil.transferEntityToDimension((change.getPlayer())!!, dim, (world)!!)
                         }
@@ -112,7 +112,7 @@ open class TickHandlerServer {
                     (GalacticraftCore.packetPipeline)!!.sendTo(
                         PacketSimple(
                             PacketSimple.EnumSimplePacket.C_CLOSE_GUI,
-                            GCCoreUtil.getDimensionID((change.getPlayer())!!.world),
+                            GCCoreUtil.getDimensionID((change.getPlayer())!!.level()),
                             arrayOf<Any?>()
                         ), change.getPlayer()
                     )
@@ -360,7 +360,7 @@ open class TickHandlerServer {
                             val block: Block = world.getBlockState(changePosition).getBlock()
                             //Only replace blocks of type BlockAir or fire - this is to prevent accidents where other mods have moved blocks
                             if (changePosition != null && (block is BlockAir || block === Blocks.FIRE)) {
-                                world.setBlockState(
+                                world.setBlock(
                                     changePosition,
                                     change.getChangeState(),
                                     change.getChangeUpdateFlag()
@@ -389,7 +389,7 @@ open class TickHandlerServer {
                         val pos: BlockPos = BlockPos(torch.x, torch.y, torch.z)
                         val b: Block = world.getBlockState(pos).getBlock()
                         if (b is BlockUnlitTorch) {
-                            world.scheduleUpdate(pos, b, 2 + world.rand.nextInt(30))
+                            world.scheduleUpdate(pos, b, 2 + world.random.nextInt(30))
                         }
                     }
                 }
@@ -406,7 +406,7 @@ open class TickHandlerServer {
 
                     val entityList: Array<Entity> = ((world.loadedEntityList.toTypedArray<Entity?>() as Array<Entity>?))!!
                     for (e: Entity in entityList) {
-                        if (e.posY <= minY && e.world === world) {
+                        if (e.y <= minY && e.level() === world) {
                             WorldUtil.transferEntityToDimension(e, dim, world, false, null)
                         }
                     }

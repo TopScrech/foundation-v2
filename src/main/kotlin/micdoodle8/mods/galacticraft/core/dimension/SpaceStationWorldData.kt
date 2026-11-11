@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.core.dimension
 
+import foundation.persistence.containsTag
+import foundation.persistence.listOfType
+
 import java.util.ArrayList
 
 import micdoodle8.mods.galacticraft.api.galaxies.GalaxyRegistry
@@ -10,12 +13,12 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.world.DimensionType
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
+import net.minecraft.world.level.dimension.DimensionType
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.storage.WorldSavedData
 import net.minecraftforge.common.DimensionManager
 
@@ -99,44 +102,44 @@ open class SpaceStationWorldData constructor(par1Str: String) : WorldSavedData(p
     }
 
     override fun readFromNBT(nbttagcompound: NBTTagCompound) {
-        this.owner = nbttagcompound.getString("owner").replace(".", "")
-        this.spaceStationName = nbttagcompound.getString("spaceStationName")
+        this.owner = nbttagcompound.getStringOr("owner", "").replace(".", "")
+        this.spaceStationName = nbttagcompound.getStringOr("spaceStationName", "")
 
-        if (nbttagcompound.hasKey("dataCompound")) {
-            this.dataCompound = nbttagcompound.getCompoundTag("dataCompound")
+        if (nbttagcompound.containsTag("dataCompound")) {
+            this.dataCompound = nbttagcompound.getCompoundOrEmpty("dataCompound")
         } else {
             this.dataCompound = NBTTagCompound()
         }
 
-        if (nbttagcompound.hasKey("homePlanet")) {
-            this.homePlanet = nbttagcompound.getInteger("homePlanet")
+        if (nbttagcompound.containsTag("homePlanet")) {
+            this.homePlanet = nbttagcompound.getIntOr("homePlanet", 0)
         } else {
             GCLog.info("Home planet data not found in space station save file for \"" + this.spaceStationName + "\". Using default overworld.")
             this.homePlanet = 0 // Overworld dimension ID
         }
 
-        if (nbttagcompound.hasKey("dimensionIdStatic")) {
-            this.dimensionIdStatic = nbttagcompound.getInteger("dimensionIdStatic")
+        if (nbttagcompound.containsTag("dimensionIdStatic")) {
+            this.dimensionIdStatic = nbttagcompound.getIntOr("dimensionIdStatic", 0)
         } else {
             GCLog.info("Static dimension ID not found in space station save file for \"" + this.spaceStationName + "\". Using default overworld.")
             this.dimensionIdStatic = ConfigManagerCore.idDimensionOverworldOrbitStatic
         }
 
-        if (nbttagcompound.hasKey("dimensionIdDynamic")) {
-            this.dimensionIdDynamic = nbttagcompound.getInteger("dimensionIdDynamic")
+        if (nbttagcompound.containsTag("dimensionIdDynamic")) {
+            this.dimensionIdDynamic = nbttagcompound.getIntOr("dimensionIdDynamic", 0)
         } else {
             GCLog.info("Dynamic dimension ID not found in space station save file for \"" + this.spaceStationName + "\". Using default overworld.")
             this.dimensionIdDynamic = ConfigManagerCore.idDimensionOverworldOrbit
         }
 
-        this.allowAllPlayers = nbttagcompound.getBoolean("allowedAll")
+        this.allowAllPlayers = nbttagcompound.getBooleanOr("allowedAll", false)
 
-        val var2: NBTTagList = nbttagcompound.getTagList("allowedPlayers", 10)
+        val var2: NBTTagList = nbttagcompound.listOfType("allowedPlayers", 10)
         this.allowedPlayers.clear()
 
-        for (var3: Int in 0..<var2.tagCount()) {
-            val var4: NBTTagCompound = var2.getCompoundTagAt(var3)
-            val var5: String = var4.getString("allowedPlayer")
+        for (var3: Int in 0..<var2.size) {
+            val var4: NBTTagCompound = var2.getCompoundOrEmpty(var3)
+            val var5: String = var4.getStringOr("allowedPlayer", "")
 
             if (!this.allowedPlayers.contains(var5)) {
                 this.allowedPlayers.add(var5)
@@ -145,13 +148,13 @@ open class SpaceStationWorldData constructor(par1Str: String) : WorldSavedData(p
     }
 
     override fun writeToNBT(nbttagcompound: NBTTagCompound): NBTTagCompound {
-        nbttagcompound.setString("owner", this.owner)
-        nbttagcompound.setString("spaceStationName", this.spaceStationName)
-        nbttagcompound.setInteger("homePlanet", this.homePlanet)
-        nbttagcompound.setInteger("dimensionIdDynamic", this.dimensionIdDynamic)
-        nbttagcompound.setInteger("dimensionIdStatic", this.dimensionIdStatic)
-        nbttagcompound.setTag("dataCompound", this.dataCompound)
-        nbttagcompound.setBoolean("allowedAll", this.allowAllPlayers)
+        nbttagcompound.putString("owner", this.owner)
+        nbttagcompound.putString("spaceStationName", this.spaceStationName)
+        nbttagcompound.putInt("homePlanet", this.homePlanet)
+        nbttagcompound.putInt("dimensionIdDynamic", this.dimensionIdDynamic)
+        nbttagcompound.putInt("dimensionIdStatic", this.dimensionIdStatic)
+        nbttagcompound.put("dataCompound", this.dataCompound)
+        nbttagcompound.putBoolean("allowedAll", this.allowAllPlayers)
 
         val var2: NBTTagList = NBTTagList()
 
@@ -160,12 +163,12 @@ open class SpaceStationWorldData constructor(par1Str: String) : WorldSavedData(p
 
             if (player != null) {
                 val var4: NBTTagCompound = NBTTagCompound()
-                var4.setString("allowedPlayer", player)
-                var2.appendTag(var4)
+                var4.putString("allowedPlayer", player)
+                var2.add(var4)
             }
         }
 
-        nbttagcompound.setTag("allowedPlayers", var2)
+        nbttagcompound.put("allowedPlayers", var2)
         return nbttagcompound
     }
 

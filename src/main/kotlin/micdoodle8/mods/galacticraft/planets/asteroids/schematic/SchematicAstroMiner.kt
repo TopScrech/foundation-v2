@@ -7,13 +7,13 @@ import micdoodle8.mods.galacticraft.planets.asteroids.ConfigManagerAsteroids
 import micdoodle8.mods.galacticraft.planets.asteroids.client.gui.GuiSchematicAstroMiner
 import micdoodle8.mods.galacticraft.planets.asteroids.inventory.ContainerSchematicAstroMiner
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.client.gui.screens.Screen as GuiScreen
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class SchematicAstroMiner : ISchematicPage {
     override fun getPageID(): Int {
@@ -25,10 +25,10 @@ open class SchematicAstroMiner : ISchematicPage {
     }
 
     override fun getRequiredItem(): ItemStack {
-        return ItemStack(MarsItems.schematic, 1, 2)
+        return foundation.item.FoundationItemVariants.stack(requireNotNull(MarsItems.schematic), 1, 2)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getResultScreen(player: EntityPlayer?, pos: BlockPos?): GuiScreen {
         return GuiSchematicAstroMiner((player)!!.inventory, (pos)!!)
     }

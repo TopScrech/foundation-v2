@@ -11,26 +11,26 @@ import micdoodle8.mods.galacticraft.core.dimension.WorldProviderSpaceStation
 import micdoodle8.mods.galacticraft.core.entities.EntityLanderBase
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCLog
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockLiquid
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.Entity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityFlying
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.MoverType
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.MoverType
 import net.minecraft.entity.item.EntityFallingBlock
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
 import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class FreefallHandler
 constructor(private val stats: GCPlayerStatsClient) {
@@ -53,39 +53,39 @@ constructor(private val stats: GCPlayerStatsClient) {
 
     open fun testFreefall(player: EntityPlayer): Boolean {
         val zeroGEvent: ZeroGravityEvent = ZeroGravityEvent.InFreefall(player)
-        MinecraftForge.EVENT_BUS.post(zeroGEvent)
-        if (zeroGEvent.isCanceled()) {
+        val zeroGravityCancelled = zeroGEvent.post()
+        if (zeroGravityCancelled) {
             return false
         }
 
 
         //Test whether feet are on a block, also stops the login glitch
-        val playerFeetOnY: Int = (player.getEntityBoundingBox().minY - 0.01).toInt()
-        val xx: Int = MathHelper.floor(player.posX)
-        val zz: Int = MathHelper.floor(player.posZ)
+        val playerFeetOnY: Int = (player.getBoundingBox().minY - 0.01).toInt()
+        val xx: Int = MathHelper.floor(player.x)
+        val zz: Int = MathHelper.floor(player.z)
         val pos: BlockPos = BlockPos(xx, playerFeetOnY, zz)
-        val state: IBlockState = player.world.getBlockState(pos)
+        val state: IBlockState = player.level().getBlockState(pos)
         val b: Block = state.getBlock()
         if (b.getMaterial(state) !== Material.AIR && b !is BlockLiquid) {
             val blockYmax: Double
             if (b === GCBlocks.platform) blockYmax = playerFeetOnY + 1.0
-            else blockYmax = playerFeetOnY + b.getBoundingBox(state, player.world, pos).maxY
-            if (player.getEntityBoundingBox().minY - blockYmax < 0.01 && player.getEntityBoundingBox().minY - blockYmax > -0.5) {
+            else blockYmax = playerFeetOnY + b.getBoundingBox(state, player.level(), pos).maxY
+            if (player.getBoundingBox().minY - blockYmax < 0.01 && player.getBoundingBox().minY - blockYmax > -0.5) {
                 player.onGround = true
-                if (player.getEntityBoundingBox().minY - blockYmax > 0.0) {
-                    player.posY -= player.getEntityBoundingBox().minY - blockYmax
-                    player.setEntityBoundingBox(
-                        player.getEntityBoundingBox().offset(0.0, blockYmax - player.getEntityBoundingBox().minY, 0.0)
+                if (player.getBoundingBox().minY - blockYmax > 0.0) {
+                    player.posY -= player.getBoundingBox().minY - blockYmax
+                    player.setBoundingBox(
+                        player.getBoundingBox().offset(0.0, blockYmax - player.getBoundingBox().minY, 0.0)
                     )
-                } else if (b.canCollideCheck(player.world.getBlockState(BlockPos(xx, playerFeetOnY, zz)), false)) {
+                } else if (b.canCollideCheck(player.level().getBlockState(BlockPos(xx, playerFeetOnY, zz)), false)) {
                     val offsetPos: BlockPos = BlockPos(xx, playerFeetOnY, zz)
                     val collisionBox: AxisAlignedBB? =
-                        b.getCollisionBoundingBox(player.world.getBlockState(offsetPos), player.world, offsetPos)
-                    if (collisionBox != null && collisionBox.intersects(player.getEntityBoundingBox())) {
-                        player.posY -= player.getEntityBoundingBox().minY - blockYmax
-                        player.setEntityBoundingBox(
-                            player.getEntityBoundingBox()
-                                .offset(0.0, blockYmax - player.getEntityBoundingBox().minY, 0.0)
+                        b.getCollisionBoundingBox(player.level().getBlockState(offsetPos), player.level(), offsetPos)
+                    if (collisionBox != null && collisionBox.intersects(player.getBoundingBox())) {
+                        player.posY -= player.getBoundingBox().minY - blockYmax
+                        player.setBoundingBox(
+                            player.getBoundingBox()
+                                .offset(0.0, blockYmax - player.getBoundingBox().minY, 0.0)
                         )
                     }
                 }
@@ -95,24 +95,24 @@ constructor(private val stats: GCPlayerStatsClient) {
         return true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private fun testFreefall(p: EntityPlayerSP, flag: Boolean): Boolean {
-        val world: World = p.world
+        val world: World = p.level()
         val worldProvider: WorldProvider? = world.provider
         if (worldProvider !is IZeroGDimension) {
             return false
         }
         val zeroGEvent: ZeroGravityEvent = ZeroGravityEvent.InFreefall(p)
-        MinecraftForge.EVENT_BUS.post(zeroGEvent)
-        if (zeroGEvent.isCanceled()) {
+        val zeroGravityCancelled = zeroGEvent.post()
+        if (zeroGravityCancelled) {
             return false
         }
         if (this.pjumpticks > 0 || (stats.isSsOnGroundLast() && p.movementInput.jump)) {
             return false
         }
 
-        if (p.getRidingEntity() != null) {
-            val e: Entity? = p.getRidingEntity()
+        if (p.getVehicle() != null) {
+            val e: Entity? = p.getVehicle()
             if (e is EntitySpaceshipBase) {
                 return e.getLaunched()
             }
@@ -127,7 +127,7 @@ constructor(private val stats: GCPlayerStatsClient) {
         if (!flag) {
             return false
         } else {
-            val rY: Float = p.rotationYaw % 360f
+            val rY: Float = p.yRot % 360f
             var zreach: Double = 0.0
             var xreach: Double = 0.0
             if (rY < 80f || rY > 280f) {
@@ -142,7 +142,7 @@ constructor(private val stats: GCPlayerStatsClient) {
             if (rY < 350f && rY > 190f) {
                 xreach = -0.2
             }
-            val playerReach: AxisAlignedBB = p.getEntityBoundingBox().expand(xreach, 0.0, zreach)
+            val playerReach: AxisAlignedBB = p.getBoundingBox().expand(xreach, 0.0, zreach)
 
             val checkBlockWithinReach: Boolean
             if (worldProvider is WorldProviderSpaceStation) {
@@ -249,37 +249,37 @@ constructor(private val stats: GCPlayerStatsClient) {
         return true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun setupFreefallPre(p: EntityPlayerSP) {
-        val dY: Double = p.motionY - pPrevMotionY
+        val dY: Double = p.deltaMovement.y - pPrevMotionY
         jetpackBoost = 0f
         pPrevdY = dY
-        pPrevMotionX = p.motionX
-        pPrevMotionY = p.motionY
-        pPrevMotionZ = p.motionZ
+        pPrevMotionX = p.deltaMovement.x
+        pPrevMotionY = p.deltaMovement.y
+        pPrevMotionZ = p.deltaMovement.z
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun freefallMotion(p: EntityPlayerSP) {
         var jetpackUsed: Boolean = false
-        val dX: Double = p.motionX - pPrevMotionX
-        val dY: Double = p.motionY - pPrevMotionY
-        val dZ: Double = p.motionZ - pPrevMotionZ
+        val dX: Double = p.deltaMovement.x - pPrevMotionX
+        val dY: Double = p.deltaMovement.y - pPrevMotionY
+        val dZ: Double = p.deltaMovement.z - pPrevMotionZ
 
-        val posOffsetX: Double = -p.motionX
-        var posOffsetY: Double = -p.motionY
+        val posOffsetX: Double = -p.deltaMovement.x
+        var posOffsetY: Double = -p.deltaMovement.y
         if (posOffsetY == -TransformerHooks.getGravityForEntity(p)) posOffsetY = 0.0
-        val posOffsetZ: Double = -p.motionZ
+        val posOffsetZ: Double = -p.deltaMovement.z
 
         //if (p.capabilities.isFlying)
         val stats: GCPlayerStatsClient = (GCPlayerStatsClient.Companion.get(p))!!
         /**Undo whatever vanilla tried to do to our y motion */
-        if (dY < 0.0 && p.motionY != 0.0) {
+        if (dY < 0.0 && p.deltaMovement.y != 0.0) {
             p.motionY = pPrevMotionY
         } else if (dY > 0.01 && stats.isInFreefallLast()) {
             //Impulse upwards - it's probably a jetpack from another mod
             if (dX < 0.01 && dZ < 0.01) {
-                val pitch: Float = p.rotationPitch / Constants.RADIANS_TO_DEGREES
+                val pitch: Float = p.xRot / Constants.RADIANS_TO_DEGREES
                 jetpackBoost = dY.toFloat() * MathHelper.cos(pitch) * 0.1f
                 val factor: Float = 1 + MathHelper.sin(pitch) / 5
                 p.motionY -= dY * factor
@@ -294,13 +294,13 @@ constructor(private val stats: GCPlayerStatsClient) {
         p.motionZ -= dZ
 
         if (p.movementInput.moveForward != 0f) {
-            p.motionX -= (p.movementInput.moveForward * MathHelper.sin(p.rotationYaw / Constants.RADIANS_TO_DEGREES) / (if (ConfigManagerCore.hardMode) 600f else 200f)).toDouble()
-            p.motionZ += (p.movementInput.moveForward * MathHelper.cos(p.rotationYaw / Constants.RADIANS_TO_DEGREES) / (if (ConfigManagerCore.hardMode) 600f else 200f)).toDouble()
+            p.motionX -= (p.movementInput.moveForward * MathHelper.sin(p.yRot / Constants.RADIANS_TO_DEGREES) / (if (ConfigManagerCore.hardMode) 600f else 200f)).toDouble()
+            p.motionZ += (p.movementInput.moveForward * MathHelper.cos(p.yRot / Constants.RADIANS_TO_DEGREES) / (if (ConfigManagerCore.hardMode) 600f else 200f)).toDouble()
         }
 
         if (jetpackBoost != 0f) {
-            p.motionX -= (jetpackBoost * MathHelper.sin(p.rotationYaw / Constants.RADIANS_TO_DEGREES)).toDouble()
-            p.motionZ += (jetpackBoost * MathHelper.cos(p.rotationYaw / Constants.RADIANS_TO_DEGREES)).toDouble()
+            p.motionX -= (jetpackBoost * MathHelper.sin(p.yRot / Constants.RADIANS_TO_DEGREES)).toDouble()
+            p.motionZ += (jetpackBoost * MathHelper.cos(p.yRot / Constants.RADIANS_TO_DEGREES)).toDouble()
         }
 
         if (p.movementInput.sneak) {
@@ -320,28 +320,28 @@ constructor(private val stats: GCPlayerStatsClient) {
 
         val speedLimit: Float = if (ConfigManagerCore.hardMode) 0.9f else 0.7f
 
-        if (p.motionX > speedLimit) {
+        if (p.deltaMovement.x > speedLimit) {
             p.motionX = speedLimit.toDouble()
         }
-        if (p.motionX < -speedLimit) {
+        if (p.deltaMovement.x < -speedLimit) {
             p.motionX = -speedLimit.toDouble()
         }
-        if (p.motionY > speedLimit) {
+        if (p.deltaMovement.y > speedLimit) {
             p.motionY = speedLimit.toDouble()
         }
-        if (p.motionY < -speedLimit) {
+        if (p.deltaMovement.y < -speedLimit) {
             p.motionY = -speedLimit.toDouble()
         }
-        if (p.motionZ > speedLimit) {
+        if (p.deltaMovement.z > speedLimit) {
             p.motionZ = speedLimit.toDouble()
         }
-        if (p.motionZ < -speedLimit) {
+        if (p.deltaMovement.z < -speedLimit) {
             p.motionZ = -speedLimit.toDouble()
         }
-        pPrevMotionX = p.motionX
-        pPrevMotionY = p.motionY
-        pPrevMotionZ = p.motionZ
-        p.move(MoverType.SELF, p.motionX + posOffsetX, p.motionY + posOffsetY, p.motionZ + posOffsetZ)
+        pPrevMotionX = p.deltaMovement.x
+        pPrevMotionY = p.deltaMovement.y
+        pPrevMotionZ = p.deltaMovement.z
+        p.move(MoverType.SELF, p.deltaMovement.x + posOffsetX, p.deltaMovement.y + posOffsetY, p.deltaMovement.z + posOffsetZ)
     }
 
 
@@ -367,27 +367,27 @@ constructor(private val stats: GCPlayerStatsClient) {
     }
 */
     open fun updateFreefall(p: EntityPlayer) {
-        pPrevMotionX = p.motionX
-        pPrevMotionY = p.motionY
-        pPrevMotionZ = p.motionZ
+        pPrevMotionX = p.deltaMovement.x
+        pPrevMotionY = p.deltaMovement.y
+        pPrevMotionZ = p.deltaMovement.z
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun preVanillaMotion(p: EntityPlayerSP) {
         this.setupFreefallPre(p)
         stats.setSsOnGroundLast(p.onGround)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun postVanillaMotion(p: EntityPlayerSP) {
-        val world: World = p.world
+        val world: World = p.level()
         val worldProvider: WorldProvider? = world.provider
         if (worldProvider !is IZeroGDimension) {
             return
         }
         val zeroGEvent: ZeroGravityEvent = ZeroGravityEvent.Motion(p)
-        MinecraftForge.EVENT_BUS.post(zeroGEvent)
-        if (zeroGEvent.isCanceled()) {
+        val zeroGravityCancelled = zeroGEvent.post()
+        if (zeroGravityCancelled) {
             return
         }
 
@@ -419,29 +419,29 @@ constructor(private val stats: GCPlayerStatsClient) {
             } else {
                 p.capabilities.isFlying = true
                 //Half the normal acceleration in Creative mode
-                val dx: Double = p.motionX - this.pPrevMotionX
-                val dy: Double = p.motionY - this.pPrevMotionY
-                val dz: Double = p.motionZ - this.pPrevMotionZ
+                val dx: Double = p.deltaMovement.x - this.pPrevMotionX
+                val dy: Double = p.deltaMovement.y - this.pPrevMotionY
+                val dz: Double = p.deltaMovement.z - this.pPrevMotionZ
                 p.motionX -= dx / 2
                 p.motionY -= dy / 2
                 p.motionZ -= dz / 2
 
-                if (p.motionX > 1.2f) {
+                if (p.deltaMovement.x > 1.2f) {
                     p.motionX = 1.2
                 }
-                if (p.motionX < -1.2f) {
+                if (p.deltaMovement.x < -1.2f) {
                     p.motionX = -1.2
                 }
-                if (p.motionY > 0.7f) {
+                if (p.deltaMovement.y > 0.7f) {
                     p.motionY = 0.7
                 }
-                if (p.motionY < -0.7f) {
+                if (p.deltaMovement.y < -0.7f) {
                     p.motionY = -0.7
                 }
-                if (p.motionZ > 1.2f) {
+                if (p.deltaMovement.z > 1.2f) {
                     p.motionZ = 1.2
                 }
-                if (p.motionZ < -1.2f) {
+                if (p.deltaMovement.z < -1.2f) {
                     p.motionZ = -1.2
                 }
             }
@@ -452,7 +452,7 @@ constructor(private val stats: GCPlayerStatsClient) {
             //Arm and leg movements could start tumbling the player?
         } else  //Not freefall - within arm's length of something or jumping
         {
-            val dy: Double = p.motionY - this.pPrevMotionY
+            val dy: Double = p.deltaMovement.y - this.pPrevMotionY
             //if (p.motionY < 0 && this.pPrevMotionY >= 0) p.posY -= p.motionY;
             //if (p.motionY != 0) p.motionY = this.pPrevMotionY;
             if (p.movementInput.jump) {
@@ -481,9 +481,9 @@ constructor(private val stats: GCPlayerStatsClient) {
             spinManager!!.applyCentrifugalForce(p)
         }
 
-        this.pPrevMotionX = p.motionX
-        this.pPrevMotionY = p.motionY
-        this.pPrevMotionZ = p.motionZ
+        this.pPrevMotionX = p.deltaMovement.x
+        this.pPrevMotionY = p.deltaMovement.y
+        this.pPrevMotionZ = p.deltaMovement.z
     }
 
     companion object {
@@ -529,37 +529,37 @@ constructor(private val stats: GCPlayerStatsClient) {
          */
         @JvmStatic
         fun tickFreefallEntity(e: Entity) {
-            if (e.world.provider is IZeroGDimension) (e.world.provider as IZeroGDimension).setInFreefall(e)
+            if (e.level().provider is IZeroGDimension) (e.level().provider as IZeroGDimension).setInFreefall(e)
 
 
             //Undo deceleration applied at the end of the previous tick
             var warnLog: Boolean = false
             if (e is EntityLivingBase) {
                 val zeroGEvent: ZeroGravityEvent = ZeroGravityEvent.InFreefall(e)
-                MinecraftForge.EVENT_BUS.post(zeroGEvent)
-                if (!zeroGEvent.isCanceled()) {
+                val zeroGravityCancelled = zeroGEvent.post()
+                if (!zeroGravityCancelled) {
                     e.motionX /= 0.91 //0.91F;
                     e.motionZ /= 0.91 //0.91F;
                     e.motionY /= if (e is EntityFlying) 0.91 else 0.9800000190734863
 
-                    if (e.motionX > 10.0) {
+                    if (e.deltaMovement.x > 10.0) {
                         warnLog = true
                         e.motionX = 10.0
-                    } else if (e.motionX < -10.0) {
+                    } else if (e.deltaMovement.x < -10.0) {
                         warnLog = true
                         e.motionX = -10.0
                     }
-                    if (e.motionY > 10.0) {
+                    if (e.deltaMovement.y > 10.0) {
                         warnLog = true
                         e.motionY = 10.0
-                    } else if (e.motionY < -10.0) {
+                    } else if (e.deltaMovement.y < -10.0) {
                         warnLog = true
                         e.motionY = -10.0
                     }
-                    if (e.motionZ > 10.0) {
+                    if (e.deltaMovement.z > 10.0) {
                         warnLog = true
                         e.motionZ = 10.0
-                    } else if (e.motionZ < -10.0) {
+                    } else if (e.deltaMovement.z < -10.0) {
                         warnLog = true
                         e.motionZ = -10.0
                     }
@@ -569,10 +569,10 @@ constructor(private val stats: GCPlayerStatsClient) {
                 //e.motionY += 0.03999999910593033D;
                 //e.posY += 0.03999999910593033D;
                 //e.lastTickPosY += 0.03999999910593033D;
-                if (e.motionY > 10.0) {
+                if (e.deltaMovement.y > 10.0) {
                     warnLog = true
                     e.motionY = 10.0
-                } else if (e.motionY < -10.0) {
+                } else if (e.deltaMovement.y < -10.0) {
                     warnLog = true
                     e.motionY = -10.0
                 }
@@ -581,24 +581,24 @@ constructor(private val stats: GCPlayerStatsClient) {
                 e.motionY /= 0.9800000190734863
                 e.motionZ /= 0.9800000190734863
 
-                if (e.motionX > 10.0) {
+                if (e.deltaMovement.x > 10.0) {
                     warnLog = true
                     e.motionX = 10.0
-                } else if (e.motionX < -10.0) {
+                } else if (e.deltaMovement.x < -10.0) {
                     warnLog = true
                     e.motionX = -10.0
                 }
-                if (e.motionY > 10.0) {
+                if (e.deltaMovement.y > 10.0) {
                     warnLog = true
                     e.motionY = 10.0
-                } else if (e.motionY < -10.0) {
+                } else if (e.deltaMovement.y < -10.0) {
                     warnLog = true
                     e.motionY = -10.0
                 }
-                if (e.motionZ > 10.0) {
+                if (e.deltaMovement.z > 10.0) {
                     warnLog = true
                     e.motionZ = 10.0
-                } else if (e.motionZ < -10.0) {
+                } else if (e.deltaMovement.z < -10.0) {
                     warnLog = true
                     e.motionZ = -10.0
                 }

@@ -1,80 +1,42 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.items
 
-import com.google.common.collect.Multimap
-import micdoodle8.mods.galacticraft.core.GalacticraftCore
+import foundation.item.FoundationItemProperties
+import foundation.item.FoundationTitaniumTools
 import micdoodle8.mods.galacticraft.core.items.ISortableItem
-import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
-import net.minecraft.block.state.IBlockState
-import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.SharedMonsterAttributes
-import net.minecraft.entity.ai.attributes.AttributeModifier
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.EnumRarity
-import net.minecraft.item.ItemStack
-import net.minecraft.item.ItemSword
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.BlockPos
+import net.minecraft.core.component.DataComponents
+import net.minecraft.network.chat.Component
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Rarity
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.state.BlockState
 
-open class ItemSwordAsteroids constructor(assetName: String?) : ItemSword(AsteroidsItems.TOOL_TITANIUM),
-    ISortableItem {
-    private val attackDamageD: Double
+open class ItemSwordAsteroids(properties: Item.Properties) : Item(properties), ISortableItem {
+    constructor(assetName: String?) : this(
+        FoundationItemProperties.named("galacticraftplanets", requireNotNull(assetName))
+            .sword(FoundationTitaniumTools.BASE_MATERIAL, 3f, -2.4f).rarity(Rarity.RARE)
+            .overrideDescription("item.$assetName.name")
+    )
 
-    init {
-        this.setTranslationKey(assetName)
-        this.attackDamageD = 9.0
-        //this.setTextureName(GalacticraftPlanets.TEXTURE_PREFIX + assetName);
-    }
+    override fun getCategory(meta: Int): EnumSortCategoryItem = EnumSortCategoryItem.TOOLS
+    // Legacy public accessor differed from the effective attack modifier used by the engine
+    fun getAttackDamage(): Float = 6f
 
-    override fun getAttackDamage(): Float {
-        return 6.0f
-    }
-
-    override fun getCreativeTab(): CreativeTabs? {
-        return GalacticraftCore.galacticraftItemsTab
-    }
-
-    @SideOnly(Side.CLIENT)
-    override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
-        return (ClientProxyCore.galacticraftItem)!!
-    }
-
-    override fun getCategory(meta: Int): EnumSortCategoryItem {
-        return EnumSortCategoryItem.TOOLS
-    }
-
-    override fun getItemAttributeModifiers(equipmentSlot: EntityEquipmentSlot): Multimap<String?, AttributeModifier?> {
-        val multimap: Multimap<String?, AttributeModifier?> = super.getItemAttributeModifiers(equipmentSlot)
-
-        if (equipmentSlot == EntityEquipmentSlot.MAINHAND) {
-            multimap.put(
-                SharedMonsterAttributes.ATTACK_DAMAGE.getName(),
-                AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier", this.attackDamageD, 0)
-            )
-            multimap.put(
-                SharedMonsterAttributes.ATTACK_SPEED.getName(),
-                AttributeModifier(ATTACK_SPEED_MODIFIER, "Weapon modifier", -2.8, 0)
-            )
-        }
-
-        return multimap
-    }
-
-    override fun onBlockDestroyed(
-        stack: ItemStack,
-        worldIn: World,
-        state: IBlockState,
-        pos: BlockPos,
-        entityLiving: EntityLivingBase
-    ): Boolean {
-        val hardness: Float = state.getBlockHardness(worldIn, pos)
-        if (hardness > 0f) {
-            stack.damageItem(if (hardness > 0.2001f) 2 else 1, entityLiving)
-        }
-
+    override fun mineBlock(stack: ItemStack, level: Level, state: BlockState, pos: BlockPos, owner: LivingEntity): Boolean {
+        val damage = blockDamage(state.getDestroySpeed(level, pos))
+        if (!level.isClientSide && damage > 0) stack.hurtAndBreak(damage, owner, EquipmentSlot.MAINHAND)
         return true
+    }
+
+    companion object {
+        @JvmStatic fun blockDamage(hardness: Float): Int = when {
+            hardness <= 0f || hardness.isNaN() -> 0
+            hardness > 0.2001f -> 2
+            else -> 1
+        }
     }
 }

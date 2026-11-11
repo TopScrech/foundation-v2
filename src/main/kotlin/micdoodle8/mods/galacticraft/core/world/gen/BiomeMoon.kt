@@ -1,8 +1,8 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
 import micdoodle8.mods.galacticraft.api.world.BiomeGenBaseGC
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.biome.BiomeDecorator
 import net.minecraft.world.chunk.ChunkPrimer
 import java.util.Random

@@ -5,8 +5,9 @@ import micdoodle8.mods.galacticraft.core.client.gui.screen.GuiMissingCore
 import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.Loader
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ThreadRequirementMissing constructor(threadSide: Side?) :
     Thread("Galacticraft Requirement Check Thread") {
@@ -43,7 +44,7 @@ open class ThreadRequirementMissing constructor(threadSide: Side?) :
         }
 
         @JvmStatic
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         private fun openGuiClient() {
             FMLClientHandler.instance().getClient().displayGuiScreen(GuiMissingCore())
         }

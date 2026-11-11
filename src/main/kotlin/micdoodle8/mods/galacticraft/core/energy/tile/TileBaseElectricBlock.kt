@@ -10,11 +10,11 @@ import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.RedstoneUtil
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.*
 import kotlin.math.floor
 
@@ -130,7 +130,7 @@ abstract class TileBaseElectricBlock : TileBaseUniversalElectrical(), IDisableab
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
 
-        nbt.setBoolean("isDisabled", this.getDisabled(0))
+        nbt.putBoolean("isDisabled", this.getDisabled(0))
         return nbt
     }
 
@@ -141,7 +141,7 @@ abstract class TileBaseElectricBlock : TileBaseUniversalElectrical(), IDisableab
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
 
-        this.setDisabled(0, nbt.getBoolean("isDisabled"))
+        this.setDisabled(0, nbt.getBooleanOr("isDisabled", false))
     }
 
     override fun setDisabled(index: Int, disabled: Boolean) {

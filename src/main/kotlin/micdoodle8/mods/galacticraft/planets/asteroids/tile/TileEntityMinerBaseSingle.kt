@@ -1,11 +1,11 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.tile
 
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.state.IBlockState
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.ITickable
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.ArrayList
 
 open class TileEntityMinerBaseSingle : TileEntity(), ITickable {
@@ -25,7 +25,7 @@ open class TileEntityMinerBaseSingle : TileEntity(), ITickable {
                     for (z: Int in 0..1) {
                         val pos: BlockPos = BlockPos(x + thisX, y + thisY, z + thisZ)
                         val tile: TileEntity? =
-                            if (this.world.isBlockLoaded(pos, false)) this.world.getTileEntity(pos) else null
+                            if (this.world.isBlockLoaded(pos, false)) this.world.getBlockEntity(pos) else null
 
                         if (tile is TileEntityMinerBaseSingle && !tile.isInvalid() && tile.corner == 0) {
                             attachedBaseBlocks.add(tile)
@@ -41,7 +41,7 @@ open class TileEntityMinerBaseSingle : TileEntity(), ITickable {
                 TileEntityMinerBase.Companion.addNewMinerBase(GCCoreUtil.getDimensionID(this), this.getPos())
                 for (tile: TileEntity in attachedBaseBlocks) {
                     (tile as TileEntityMinerBaseSingle).corner = 1
-                    this.world.setBlockToAir(this.getPos())
+                    this.world.setBlockAndUpdate(this.getPos(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                 }
                 //Don't try setting a new block with a TileEntity, because new tiles can
                 //get removed after the end of this tileEntity.update() tick - setting a new block

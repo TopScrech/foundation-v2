@@ -1,10 +1,10 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.client
 
 import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 object FluidTexturesGC {
     @JvmStatic
     fun init() {

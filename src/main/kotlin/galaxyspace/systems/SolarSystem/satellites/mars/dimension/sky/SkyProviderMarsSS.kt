@@ -12,8 +12,8 @@ import micdoodle8.mods.galacticraft.core.Constants
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.Vec3 as Vec3d
 
 open class SkyProviderMarsSS : SkyProviderBase() {
     @JvmField
@@ -63,7 +63,7 @@ open class SkyProviderMarsSS : SkyProviderBase() {
 		tessellator.draw();
 		 	*/
         val mod: Double = ((this.mc.world.provider as WorldProviderSpace).getDayLength() / 24000).toDouble()
-        val time: Long = (this.mc.player.getEntityWorld().getWorldTime()
+        val time: Long = (this.mc.player.level().getWorldTime()
                 % (this.mc.world.provider as WorldProviderSpace).getDayLength())
         var k: Double = (time / 8) / mod
 
@@ -118,7 +118,7 @@ open class SkyProviderMarsSS : SkyProviderBase() {
     }
 
     override fun sunImage(): ResourceLocation {
-        return ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
+        return ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
     }
 
     override fun enableStar(): Boolean {
@@ -142,12 +142,12 @@ open class SkyProviderMarsSS : SkyProviderBase() {
     }
 
     companion object {
-        private val marsTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/mars.png")
+        private val marsTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/mars.png")
         private val phobosTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/moons/phobos.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/moons/phobos.png")
         private val deimosTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/moons/deimos.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/moons/deimos.png")
         private val overworldTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png")
     }
 }

@@ -13,8 +13,8 @@ import micdoodle8.mods.galacticraft.planets.mars.MarsModule
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
 import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
 import micdoodle8.mods.galacticraft.planets.venus.VenusModule
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
 
 @IPage
 open class Page_SolarSystem constructor() : Page_Systems((GalacticraftCore.solarSystemSol)!!) {

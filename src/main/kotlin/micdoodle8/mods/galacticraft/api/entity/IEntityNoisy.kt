@@ -1,19 +1,19 @@
 package micdoodle8.mods.galacticraft.api.entity
 
-import net.minecraft.client.audio.ISound
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.util.ITickable
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.client.resources.sounds.SoundInstance as ISound
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.client.resources.sounds.TickableSoundInstance as ITickable
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 
 /**
  * Implement into entities that make a sound all the time, like rockets
  */
 interface IEntityNoisy {
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getSoundUpdater(): ITickable?
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun setSoundUpdater(player: EntityPlayerSP?): ISound?
 }

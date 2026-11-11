@@ -4,8 +4,8 @@ import micdoodle8.mods.galacticraft.core.tile.IMachineSides.Face
 
 import com.google.common.base.Predicate
 import com.google.common.base.Predicates
-import net.minecraft.block.properties.PropertyEnum
-import net.minecraft.util.IStringSerializable
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
+import net.minecraft.util.StringRepresentable as IStringSerializable
 
 /**
  * Used to create the blockState property corresponding to the machine sides,
@@ -67,7 +67,9 @@ constructor(private val filter: Predicate<MachineSidesModel>, private val toFace
         BOTTOM3("db"),
         BOTTOM4("du");
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 

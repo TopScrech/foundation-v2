@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.inventory
 
+import foundation.item.legacyItemValue
+
 import java.util.ArrayList
 import java.util.LinkedList
 
@@ -8,16 +10,16 @@ import micdoodle8.mods.galacticraft.api.recipe.CircuitFabricatorRecipes
 import micdoodle8.mods.galacticraft.core.energy.EnergyUtil
 import micdoodle8.mods.galacticraft.core.tile.TileEntityCircuitFabricator
 import micdoodle8.mods.galacticraft.core.util.GCLog
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.Slot
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.inventory.Slot
 import net.minecraft.inventory.SlotFurnaceOutput
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import java.util.*
 
 open class ContainerCircuitFabricator constructor(
@@ -26,83 +28,83 @@ open class ContainerCircuitFabricator constructor(
 ) : Container() {
     init {
         // Energy slot
-        this.addSlotToContainer(SlotSpecific(tileEntity, 0, 6, 69, IItemElectric::class.java))
+        this.addSlot(SlotSpecific(tileEntity, 0, 6, 69, IItemElectric::class.java))
 
         // Diamond
         var slotContentsList: ArrayList<ItemStack?> = CircuitFabricatorRecipes.slotValidItems.get(0)
-        this.addSlotToContainer(SlotSpecific(tileEntity, 1, 15, 17, *slotContentsList.toTypedArray<ItemStack?>()))
+        this.addSlot(SlotSpecific(tileEntity, 1, 15, 17, *slotContentsList.toTypedArray<ItemStack?>()))
 
         // Silicon
         slotContentsList = CircuitFabricatorRecipes.slotValidItems.get(1)
-        this.addSlotToContainer(SlotSpecific(tileEntity, 2, 74, 46, *slotContentsList.toTypedArray<ItemStack?>()))
+        this.addSlot(SlotSpecific(tileEntity, 2, 74, 46, *slotContentsList.toTypedArray<ItemStack?>()))
         slotContentsList = CircuitFabricatorRecipes.slotValidItems.get(2)
-        this.addSlotToContainer(SlotSpecific(tileEntity, 3, 74, 64, *slotContentsList.toTypedArray<ItemStack?>()))
+        this.addSlot(SlotSpecific(tileEntity, 3, 74, 64, *slotContentsList.toTypedArray<ItemStack?>()))
 
         // Redstone
         slotContentsList = CircuitFabricatorRecipes.slotValidItems.get(3)
-        this.addSlotToContainer(SlotSpecific(tileEntity, 4, 122, 46, *slotContentsList.toTypedArray<ItemStack?>()))
+        this.addSlot(SlotSpecific(tileEntity, 4, 122, 46, *slotContentsList.toTypedArray<ItemStack?>()))
 
         // Optional
         slotContentsList = CircuitFabricatorRecipes.slotValidItems.get(4)
-        this.addSlotToContainer(SlotSpecific(tileEntity, 5, 145, 20, *slotContentsList.toTypedArray<ItemStack?>()))
+        this.addSlot(SlotSpecific(tileEntity, 5, 145, 20, *slotContentsList.toTypedArray<ItemStack?>()))
 
         // Smelting result
-        this.addSlotToContainer(SlotFurnaceOutput(playerInv.player, tileEntity, 6, 152, 86))
+        this.addSlot(SlotFurnaceOutput(playerInv.player, tileEntity, 6, 152, 86))
 
         var slot: Int
 
         slot = 0
         while (slot < 3) {
             for (var4: Int in 0..8) {
-                this.addSlotToContainer(Slot(playerInv, var4 + slot * 9 + 9, 8 + var4 * 18, 110 + slot * 18))
+                this.addSlot(Slot(playerInv, var4 + slot * 9 + 9, 8 + var4 * 18, 110 + slot * 18))
             }
             ++slot
         }
 
         slot = 0
         while (slot < 9) {
-            this.addSlotToContainer(Slot(playerInv, slot, 8 + slot * 18, 168))
+            this.addSlot(Slot(playerInv, slot, 8 + slot * 18, 168))
             ++slot
         }
     }
 
-    override fun canInteractWith(par1EntityPlayer: EntityPlayer): Boolean {
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
         return this.tileEntity.isUsableByPlayer(par1EntityPlayer)
     }
 
-    override fun onCraftMatrixChanged(par1IInventory: IInventory) {
-        super.onCraftMatrixChanged(par1IInventory)
+    override fun slotsChanged(par1IInventory: IInventory) {
+        super.slotsChanged(par1IInventory)
     }
 
     /**
      * Called to transfer a stack from one inventory to the other eg. when shift
      * clicking.
      */
-    override fun transferStackInSlot(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
+    override fun quickMoveStack(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
         var var2: ItemStack = ItemStack.EMPTY
         val slot: Slot? = this.inventorySlots.get(par1)
         val b: Int = this.inventorySlots.size
 
-        if (slot != null && slot.getHasStack()) {
-            val var4: ItemStack = slot.getStack()
+        if (slot != null && slot.hasItem()) {
+            val var4: ItemStack = slot.getItem()
             var2 = var4.copy()
 
             if (par1 < b - 36) {
-                if (!this.mergeItemStack(var4, b - 36, b, true)) {
+                if (!this.moveItemStackTo(var4, b - 36, b, true)) {
                     return ItemStack.EMPTY
                 }
 
                 if (par1 == 6) {
-                    slot.onSlotChange(var4, var2)
+                    slot.onQuickCraft(var4, var2)
                 }
             } else {
                 val i: Item = var4.getItem()
                 if (EnergyUtil.isElectricItem(i)) {
-                    if (!this.mergeItemStack(var4, 0, 1, false)) {
+                    if (!this.moveItemStackTo(var4, 0, 1, false)) {
                         return ItemStack.EMPTY
                     }
                 } else if (i === Items.DIAMOND) {
-                    if (!this.mergeItemStack(var4, 1, 2, false)) {
+                    if (!this.moveItemStackTo(var4, 1, 2, false)) {
                         return ItemStack.EMPTY
                     }
                 } else if (this.isSilicon(var4)) {
@@ -110,29 +112,29 @@ open class ContainerCircuitFabricator constructor(
                         return ItemStack.EMPTY
                     }
                 } else if (i === Items.REDSTONE) {
-                    if (!this.mergeItemStack(var4, 4, 5, false)) {
+                    if (!this.moveItemStackTo(var4, 4, 5, false)) {
                         return ItemStack.EMPTY
                     }
                 } else if (i === Items.REPEATER || i === ItemStack(Blocks.REDSTONE_TORCH).getItem() || i === Items.DYE && i.getDamage(
                         var4
                     ) == 4
                 ) {
-                    if (!this.mergeItemStack(var4, 5, 6, false)) {
+                    if (!this.moveItemStackTo(var4, 5, 6, false)) {
                         return ItemStack.EMPTY
                     }
                 } else if (par1 < b - 9) {
-                    if (!this.mergeItemStack(var4, b - 9, b, false)) {
+                    if (!this.moveItemStackTo(var4, b - 9, b, false)) {
                         return ItemStack.EMPTY
                     }
-                } else if (!this.mergeItemStack(var4, b - 36, b - 9, false)) {
+                } else if (!this.moveItemStackTo(var4, b - 36, b - 9, false)) {
                     return ItemStack.EMPTY
                 }
             }
 
             if (var4.getCount() == 0) {
-                slot.putStack(ItemStack.EMPTY)
+                slot.set(ItemStack.EMPTY)
             } else {
-                slot.onSlotChanged()
+                slot.setChanged()
             }
 
             if (var4.getCount() == var2.getCount()) {
@@ -154,7 +156,7 @@ open class ContainerCircuitFabricator constructor(
             val slot: Slot? = this.inventorySlots.get(i)
 
             if (slot != null) {
-                val target: ItemStack = slot.getStack()
+                val target: ItemStack = slot.getItem()
                 if (matchingStacks(stack, target)) {
                     acceptSlots.add(slot)
                     val availSpace: Int = stack.getMaxStackSize() - target.getCount()
@@ -166,11 +168,11 @@ open class ContainerCircuitFabricator constructor(
         }
 
         for (slot: Slot in acceptSlots) {
-            var target: ItemStack = slot.getStack()
+            var target: ItemStack = slot.getItem()
             if (target.isEmpty()) {
                 target = stack.copy()
                 target.setCount(1)
-                slot.putStack(target)
+                slot.set(target)
                 stack.shrink(1)
                 if (stack.isEmpty()) {
                     return false
@@ -184,10 +186,10 @@ open class ContainerCircuitFabricator constructor(
             if (acceptTotal == 0) return false
 
             for (slot: Slot in acceptSlots) {
-                val target: ItemStack = slot.getStack()
+                val target: ItemStack = slot.getItem()
                 stack.shrink(target.getMaxStackSize() - target.getCount())
                 target.setCount(target.getMaxStackSize())
-                slot.onSlotChanged()
+                slot.setChanged()
             }
             return true
         }
@@ -204,17 +206,17 @@ open class ContainerCircuitFabricator constructor(
                 var neediest: Slot? = null
                 var smallestStack: Int = 64
                 for (slot: Slot in acceptSlots) {
-                    val target: ItemStack = slot.getStack()
+                    val target: ItemStack = slot.getItem()
                     if (target.getCount() < smallestStack) {
                         smallestStack = target.getCount()
                         neediest = slot
                     }
                 }
-                neediest!!.getStack().grow(1)
+                neediest!!.getItem().grow(1)
                 stack.shrink(1)
             } while (!stack.isEmpty())
             for (slot: Slot in acceptSlots) {
-                slot.onSlotChanged()
+                slot.setChanged()
             }
             return true
         }
@@ -223,11 +225,11 @@ open class ContainerCircuitFabricator constructor(
         if (uneven > 0) {
             val targetSize: Int = stack.getMaxStackSize() - minQuantity
             for (slot: Slot in acceptSlots) {
-                val target: ItemStack = slot.getStack()
+                val target: ItemStack = slot.getItem()
                 stack.shrink(targetSize - target.getCount())
                 acceptTotal -= targetSize - target.getCount()
                 target.setCount(targetSize)
-                slot.onSlotChanged()
+                slot.setChanged()
             }
         }
 
@@ -237,7 +239,7 @@ open class ContainerCircuitFabricator constructor(
         var modulus: Int = stack.getCount() - average * acceptSlots.size
         for (slot: Slot? in acceptSlots) {
             if (slot != null) {
-                val target: ItemStack = slot.getStack()
+                val target: ItemStack = slot.getItem()
                 var transfer: Int = average
                 if (modulus > 0) {
                     transfer++
@@ -247,11 +249,11 @@ open class ContainerCircuitFabricator constructor(
                 stack.shrink(transfer)
                 target.grow(transfer)
                 if (target.getCount() > target.getMaxStackSize()) {
-                    GCLog.info("Shift clicking - slot " + slot.slotNumber + " wanted more than it could accept:" + target.getCount())
+                    GCLog.info("Shift clicking - slot " + slot.index + " wanted more than it could accept:" + target.getCount())
                     stack.grow(target.getCount() - target.getMaxStackSize())
                     target.setCount(target.getMaxStackSize())
                 }
-                slot.onSlotChanged()
+                slot.setChanged()
                 if (stack.isEmpty()) break
             }
         }
@@ -267,7 +269,7 @@ open class ContainerCircuitFabricator constructor(
     }
 
     private fun matchingStacks(stack: ItemStack, target: ItemStack): Boolean {
-        return target.isEmpty() || target.getItem() === stack.getItem() && (!stack.getHasSubtypes() || stack.getMetadata() == target.getMetadata()) && ItemStack.areItemStackTagsEqual(
+        return target.isEmpty() || target.getItem() === stack.getItem() && (!stack.getHasSubtypes() || stack.legacyItemValue == target.legacyItemValue) && ItemStack.areItemStackTagsEqual(
             stack,
             target
         ) && (target.isStackable() && target.getCount() < target.getMaxStackSize())

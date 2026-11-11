@@ -3,8 +3,8 @@ package asmodeuscore.core.utils.worldengine.standardcustomgen
 import asmodeuscore.core.utils.worldengine.additions.WE_CreateChunkGen_InXZ
 import asmodeuscore.core.utils.worldengine.additions.WE_GeneratorData
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
 
 open class WE_SnowGen : WE_CreateChunkGen_InXZ() {
     @JvmField
@@ -14,13 +14,13 @@ open class WE_SnowGen : WE_CreateChunkGen_InXZ() {
     var randomSnowPoint: Int = 2
 
     @JvmField
-    var snowBlock: IBlockState = Blocks.SNOW_LAYER.getDefaultState()
+    var snowBlock: IBlockState = Blocks.SNOW_LAYER.defaultBlockState()
 
     @JvmField
     var genSnow: Boolean = true
 
     @JvmField
-    var iceBlock: IBlockState = Blocks.ICE.getDefaultState()
+    var iceBlock: IBlockState = Blocks.ICE.defaultBlockState()
 
     @JvmField
     var freezeMaterial: Material? = Material.WATER

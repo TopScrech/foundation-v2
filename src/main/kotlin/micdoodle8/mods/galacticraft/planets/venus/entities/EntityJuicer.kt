@@ -5,10 +5,10 @@ import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
 import micdoodle8.mods.galacticraft.planets.venus.blocks.BlockBasicVenus
 import micdoodle8.mods.galacticraft.planets.venus.entities.ai.EntityMoveHelperCeiling
 import micdoodle8.mods.galacticraft.planets.venus.entities.ai.PathNavigateCeiling
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.entity.EnumCreatureAttribute
-import net.minecraft.entity.MoverType
+import net.minecraft.world.entity.MoverType
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.EntityAIAttackMelee
 import net.minecraft.entity.ai.EntityAIHurtByTarget
@@ -17,23 +17,23 @@ import net.minecraft.entity.ai.EntityAINearestAttackableTarget
 import net.minecraft.entity.ai.EntityAIWander
 import net.minecraft.entity.ai.EntityAIWatchClosest
 import net.minecraft.entity.monster.EntityMob
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.Item
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.Item
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
 import net.minecraft.pathfinding.PathNavigate
-import net.minecraft.util.DamageSource
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.SoundEvent
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.Level as World
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -259,26 +259,26 @@ open class EntityJuicer constructor(world: World) : EntityMob(world), IEntityBre
     override fun writeEntityToNBT(tagCompound: NBTTagCompound) {
         super.writeEntityToNBT(tagCompound)
 
-        tagCompound.setInteger("timeSinceLastJump", this.timeSinceLastJump)
-        tagCompound.setBoolean("jumpTargetNull", this.jumpTarget == null)
+        tagCompound.putInt("timeSinceLastJump", this.timeSinceLastJump)
+        tagCompound.putBoolean("jumpTargetNull", this.jumpTarget == null)
         if (this.jumpTarget != null) {
-            tagCompound.setInteger("jumpTargetX", this.jumpTarget!!.getX())
-            tagCompound.setInteger("jumpTargetY", this.jumpTarget!!.getY())
-            tagCompound.setInteger("jumpTargetZ", this.jumpTarget!!.getZ())
+            tagCompound.putInt("jumpTargetX", this.jumpTarget!!.getX())
+            tagCompound.putInt("jumpTargetY", this.jumpTarget!!.getY())
+            tagCompound.putInt("jumpTargetZ", this.jumpTarget!!.getZ())
         }
     }
 
     override fun readEntityFromNBT(tagCompund: NBTTagCompound) {
         super.readEntityFromNBT(tagCompund)
 
-        this.timeSinceLastJump = tagCompund.getInteger("timeSinceLastJump")
-        if (tagCompund.getBoolean("jumpTargetNull")) {
+        this.timeSinceLastJump = tagCompund.getIntOr("timeSinceLastJump", 0)
+        if (tagCompund.getBooleanOr("jumpTargetNull", false)) {
             this.jumpTarget = null
         } else {
             this.jumpTarget = BlockPos(
-                tagCompund.getInteger("jumpTargetX"),
-                tagCompund.getInteger("jumpTargetY"),
-                tagCompund.getInteger("jumpTargetZ")
+                tagCompund.getIntOr("jumpTargetX", 0),
+                tagCompund.getIntOr("jumpTargetY", 0),
+                tagCompund.getIntOr("jumpTargetZ", 0)
             )
         }
 

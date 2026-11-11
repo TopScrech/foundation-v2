@@ -13,7 +13,7 @@ import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.client.jei.RecipeCategories
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class BuggyRecipeCategory constructor(guiHelper: IGuiHelper) : IRecipeCategory<IRecipeWrapper> {
     @Nonnull
@@ -75,6 +75,6 @@ open class BuggyRecipeCategory constructor(guiHelper: IGuiHelper) : IRecipeCateg
     }
 
     companion object {
-        private val buggyGuiTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/buggybench.png")
+        private val buggyGuiTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/buggybench.png")
     }
 }

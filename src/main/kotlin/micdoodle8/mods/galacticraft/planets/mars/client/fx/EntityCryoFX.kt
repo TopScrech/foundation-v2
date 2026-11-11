@@ -3,14 +3,14 @@ package micdoodle8.mods.galacticraft.planets.mars.client.fx
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import net.minecraft.client.particle.Particle
 import net.minecraft.client.renderer.BufferBuilder
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class EntityCryoFX constructor(worldIn: World, position: Vector3, motion: Vector3) :
     Particle(worldIn, position.x, position.y, position.z, 0.0, 0.0, 0.0) {
     @JvmField
@@ -84,9 +84,9 @@ open class EntityCryoFX constructor(worldIn: World, position: Vector3, motion: V
         this.motionZ *= 0.9599999785423279
         val entityplayer: EntityPlayer? = this.world.getClosestPlayer(this.posX, this.posY, this.posZ, 2.0, false)
 
-        if (entityplayer != null && this.posY > entityplayer.getEntityBoundingBox().minY) {
-            this.posY += (entityplayer.getEntityBoundingBox().minY - this.posY) * 0.2
-            this.motionY += (entityplayer.motionY - this.motionY) * 0.2
+        if (entityplayer != null && this.posY > entityplayer.getBoundingBox().minY) {
+            this.posY += (entityplayer.getBoundingBox().minY - this.posY) * 0.2
+            this.motionY += (entityplayer.deltaMovement.y - this.motionY) * 0.2
             this.setPosition(this.posX, this.posY, this.posZ)
         }
 

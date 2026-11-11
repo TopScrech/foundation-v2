@@ -12,14 +12,13 @@ import net.minecraft.client.renderer.culling.ICamera
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.renderer.texture.TextureMap
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderCargoRockets constructor(renderManager: RenderManager, model: String?) :
     Render<EntityCustomCargoRocket>(renderManager) {
     private var rocketModel: ItemModelCargoRocket? = null
@@ -35,7 +34,7 @@ open class RenderCargoRockets constructor(renderManager: RenderManager, model: S
             val modelResourceLocation: ModelResourceLocation =
                 ModelResourceLocation(GalaxySpace.TEXTURE_PREFIX + this.model, "inventory")
             this.rocketModel =
-                FMLClientHandler.instance().getClient().getRenderItem().getItemModelMesher().getModelManager()
+                Minecraft.getInstance().getRenderItem().getItemModelMesher().getModelManager()
                     .getModel(modelResourceLocation) as ItemModelCargoRocket
         }
     }

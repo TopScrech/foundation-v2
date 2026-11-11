@@ -10,15 +10,15 @@ import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.NonNullList
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max
@@ -38,7 +38,7 @@ open class EntityTier3Rocket : EntityTieredRocket {
         rocketType: IRocketType.EnumRocketType?
     ) : super(par1World, par2, par4, par6) {
         this.rocketType = rocketType
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
     }
 
     constructor(
@@ -290,7 +290,7 @@ open class EntityTier3Rocket : EntityTieredRocket {
         )
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
         return !this.isDead && par1EntityPlayer.getDistanceSq(this) <= 64.0
     }
 
@@ -326,7 +326,7 @@ open class EntityTier3Rocket : EntityTieredRocket {
         super.getItemsDropped(droppedItems)
         val rocket: ItemStack = ItemStack(AsteroidsItems.tier3Rocket, 1, (this.rocketType)!!.getIndex())
         rocket.setTagCompound(NBTTagCompound())
-        rocket.getTagCompound()!!.setInteger("RocketFuel", this.fuelTank.getFluidAmount())
+        rocket.getTagCompound()!!.putInt("RocketFuel", this.fuelTank.getFluidAmount())
         (droppedItems)!!.add(rocket)
         return ((droppedItems as MutableList<ItemStack>?))!!
     }

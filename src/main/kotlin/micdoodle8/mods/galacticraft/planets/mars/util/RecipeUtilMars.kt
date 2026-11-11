@@ -8,7 +8,7 @@ import micdoodle8.mods.galacticraft.planets.asteroids.inventory.InventorySchemat
 import micdoodle8.mods.galacticraft.planets.asteroids.inventory.InventorySchematicTier3Rocket
 import micdoodle8.mods.galacticraft.planets.mars.inventory.InventorySchematicCargoRocket
 import micdoodle8.mods.galacticraft.planets.mars.inventory.InventorySchematicTier2Rocket
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 object RecipeUtilMars {
     @JvmStatic

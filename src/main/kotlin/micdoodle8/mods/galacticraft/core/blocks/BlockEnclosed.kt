@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import appeng.api.parts.IPartHelper
 import appeng.api.AEApi
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
@@ -14,31 +17,31 @@ import micdoodle8.mods.galacticraft.core.tile.TileEntityNull
 import micdoodle8.mods.galacticraft.core.util.CompatibilityManager
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.lang.reflect.Method
 
 open class BlockEnclosed constructor(assetName: String?) : Block(Material.CLAY), IPartialSealableBlock,
-    ITileEntityProvider, IShiftDescription, ISortableBlock {
+    ITileEntityProvider, IShiftDescription, ISortableBlock, LegacyBlockMetadata {
     enum class EnumEnclosedBlockType // Legacy variants retain their metadata for existing saves
         (private val meta: Int, private val serializedName: String) : IStringSerializable {
         //        copper(1, 1, 0.25F, 0.2D, 128),
@@ -69,7 +72,9 @@ open class BlockEnclosed constructor(assetName: String?) : Block(Material.CLAY),
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -90,7 +95,7 @@ open class BlockEnclosed constructor(assetName: String?) : Block(Material.CLAY),
         this.setTranslationKey(assetName)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         list.add(ItemStack(this, 1, EnumEnclosedBlockType.ALUMINUM_WIRE.getMeta()))
         list.add(ItemStack(this, 1, EnumEnclosedBlockType.ALUMINUM_WIRE_HEAVY.getMeta()))
@@ -111,7 +116,7 @@ open class BlockEnclosed constructor(assetName: String?) : Block(Material.CLAY),
 
     override fun neighborChanged(state: IBlockState, worldIn: World, pos: BlockPos, blockIn: Block, fromPos: BlockPos) {
         val metadata: Int = state.getBlock().getMetaFromState(state)
-        val tileEntity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileEntity: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (metadata == EnumEnclosedBlockType.TE_CONDUIT.getMeta()) {
             super.neighborChanged(state, worldIn, pos, blockIn, fromPos)
@@ -185,7 +190,7 @@ open class BlockEnclosed constructor(assetName: String?) : Block(Material.CLAY),
 
     override fun getStateFromMeta(meta: Int): IBlockState {
         val type: EnumEnclosedBlockType = EnumEnclosedBlockType.Companion.byMetadata(meta)
-        return this.getDefaultState().withProperty(TYPE, type)
+        return this.defaultBlockState().setValue(TYPE, type)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {

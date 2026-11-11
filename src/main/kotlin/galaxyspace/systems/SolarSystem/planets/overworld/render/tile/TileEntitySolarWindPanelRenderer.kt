@@ -7,7 +7,7 @@ import galaxyspace.systems.SolarSystem.planets.overworld.models.ModelSolarWindPa
 import galaxyspace.systems.SolarSystem.planets.overworld.render.tile.TileEntitySolarWindPanelRenderer
 import org.lwjgl.opengl.GL12
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class TileEntitySolarWindPanelRenderer : TileEntitySpecialRenderer<TileEntityWindSolarPanel>() {
     @JvmField
@@ -50,6 +50,6 @@ open class TileEntitySolarWindPanelRenderer : TileEntitySpecialRenderer<TileEnti
 
     companion object {
         private val solarwindpanelTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/model/solarwind_panel.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/model/solarwind_panel.png")
     }
 }

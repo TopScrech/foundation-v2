@@ -1,5 +1,10 @@
 package galaxyspace.core.prefab.blocks
 
+import net.minecraft.network.chat.Component
+
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.prefab.blocks.GSBlockMulti
 import galaxyspace.core.GSBlocks
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
@@ -9,38 +14,38 @@ import micdoodle8.mods.galacticraft.core.tile.IMultiBlock
 import micdoodle8.mods.galacticraft.core.tile.TileEntityMulti
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
-import net.minecraft.block.properties.PropertyEnum
-import net.minecraft.block.properties.PropertyInteger
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
+import net.minecraft.world.level.block.state.properties.IntegerProperty as PropertyInteger
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.particle.ParticleManager
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.Explosion
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+
+import net.minecraft.world.level.Explosion
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import java.util.LinkedList
 import java.util.Random
 
 open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartialSealableBlock,
-    ITileEntityProvider {
+    ITileEntityProvider, LegacyBlockMetadata {
     enum class EnumBlockMultiType(private val meta: Int, private val serializedName: String) : IStringSerializable {
         ADVANCED_ROCKET_PAD(0, "advanced_rocket_pad"),
         ADVANCED_ROCKET_PAD_1(1, "advanced_rocket_pad_1");
@@ -49,7 +54,9 @@ open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartia
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -94,7 +101,7 @@ open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartia
 
     @Deprecated("")
     open fun makeFakeBlock(worldObj: World, pos: BlockPos, mainBlock: BlockPos?, meta: Int) {
-        worldObj.setBlockState(pos, GSBlocks.FAKE_BLOCK.getStateFromMeta(meta), 0)
+        worldObj.setBlock(pos, GSBlocks.FAKE_BLOCK.getStateFromMeta(meta), 0)
         worldObj.setTileEntity(pos, TileEntityMulti(mainBlock))
     }
 
@@ -105,9 +112,9 @@ open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartia
         type: EnumBlockMultiType
     ) {
         for (pos: BlockPos in posList) {
-            worldObj.setBlockState(
+            worldObj.setBlock(
                 pos,
-                this.getDefaultState().withProperty(MULTI_TYPE, type),
+                this.defaultBlockState().setValue(MULTI_TYPE, type),
                 0
             )
             worldObj.setTileEntity(pos, TileEntityMulti(mainBlock))
@@ -115,7 +122,7 @@ open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartia
     }
 
     override fun getBlockHardness(blockState: IBlockState, worldIn: World, pos: BlockPos): Float {
-        val tileEntity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileEntity: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tileEntity is TileEntityMulti) {
             val mainBlockPosition: BlockPos? = tileEntity.mainBlockPosition
@@ -145,7 +152,7 @@ open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartia
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val tileEntity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileEntity: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tileEntity is TileEntityMulti) {
             tileEntity.onBlockRemoval()
@@ -166,7 +173,7 @@ open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartia
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val tileEntity: TileEntityMulti? = (worldIn)!!.getTileEntity(pos) as TileEntityMulti?
+        val tileEntity: TileEntityMulti? = (worldIn)!!.getBlockEntity(pos) as TileEntityMulti?
         if (tileEntity == null) {
             return false
         }
@@ -184,7 +191,7 @@ open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartia
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val tileEntity: TileEntityMulti? = (world)!!.getTileEntity(pos) as TileEntityMulti?
+        val tileEntity: TileEntityMulti? = (world)!!.getBlockEntity(pos) as TileEntityMulti?
         return tileEntity!!.onBlockWrenched(world, pos, (entityPlayer)!!, (hand)!!, (side)!!, hitX, hitY, hitZ)
     }
 
@@ -214,7 +221,7 @@ open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartia
         pos: BlockPos,
         player: EntityPlayer
     ): ItemStack {
-        val tileEntity: TileEntity? = world.getTileEntity(pos)
+        val tileEntity: TileEntity? = world.getBlockEntity(pos)
         if (tileEntity is TileEntityMulti) {
             val mainBlockPosition: BlockPos? = tileEntity.mainBlockPosition
 
@@ -237,7 +244,7 @@ open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartia
         target: RayTraceResult,
         manager: ParticleManager
     ): Boolean {
-        val tileEntity: TileEntity? = worldObj.getTileEntity(target.getBlockPos())
+        val tileEntity: TileEntity? = worldObj.getBlockEntity(target.getBlockPos())
 
         if (tileEntity is TileEntityMulti) {
             val mainBlockPosition: BlockPos? = tileEntity.mainBlockPosition
@@ -251,7 +258,7 @@ open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartia
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(
+        return this.defaultBlockState().setValue(
             MULTI_TYPE,
             (EnumBlockMultiType.Companion.byMetadata(meta))!!
         )
@@ -273,7 +280,7 @@ open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartia
             else -> {}
         }
 
-        return state.withProperty(RENDER_TYPE, renderType)
+        return state.setValue(RENDER_TYPE, renderType)
     }
 
     companion object {
@@ -289,14 +296,14 @@ open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartia
 
         @JvmStatic
         private fun hasRoomForPlayer(worldIn: World, pos: BlockPos): Boolean {
-            return worldIn.getBlockState(pos.down())
-                .isSideSolid(worldIn, pos.down(), EnumFacing.UP) && !worldIn.getBlockState(pos).getMaterial()
-                .isSolid() && !worldIn.getBlockState(pos.up()).getMaterial().isSolid()
+            return worldIn.getBlockState(pos.below())
+                .isSideSolid(worldIn, pos.below(), EnumFacing.UP) && !worldIn.getBlockState(pos).getMaterial()
+                .isSolid() && !worldIn.getBlockState(pos.above()).getMaterial().isSolid()
         }
 
         @JvmStatic
         fun onPlacement(worldIn: World, pos: BlockPos, placer: EntityLivingBase?, callingBlock: Block) {
-            val tile: TileEntity? = worldIn.getTileEntity(pos)
+            val tile: TileEntity? = worldIn.getBlockEntity(pos)
 
             if (tile is IMultiBlock) {
                 var validSpot: Boolean = true
@@ -311,11 +318,11 @@ open class GSBlockMulti constructor() : BlockAdvanced(GCBlocks.machine), IPartia
                 }
 
                 if (!validSpot) {
-                    worldIn.setBlockToAir(pos)
+                    worldIn.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
 
-                    if (!worldIn.isRemote && placer is EntityPlayerMP) {
+                    if (!worldIn.isClientSide && placer is EntityPlayerMP) {
                         val player: EntityPlayerMP = placer
-                        player.sendMessage(TextComponentString(EnumColor.RED.toString() + GCCoreUtil.translate("gui.warning.noroom")))
+                        player.sendSystemMessage(Component.literal(EnumColor.RED.toString() + GCCoreUtil.translate("gui.warning.noroom")))
                         if (!player.capabilities.isCreativeMode) {
                             val nasaWorkbench: ItemStack = ItemStack(callingBlock, 1, 0)
                             val entityitem: EntityItem? = player.dropItem(nasaWorkbench, false)

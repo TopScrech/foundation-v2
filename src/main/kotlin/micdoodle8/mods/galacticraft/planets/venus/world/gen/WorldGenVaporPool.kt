@@ -4,10 +4,10 @@ import java.util.Random
 
 import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
 import micdoodle8.mods.galacticraft.planets.venus.blocks.BlockBasicVenus
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 import java.util.*
 
@@ -17,8 +17,8 @@ open class WorldGenVaporPool constructor() : WorldGenerator() {
             return false
         }
 
-        val venusSoft: IBlockState = (VenusBlocks.venusBlock)!!.getDefaultState()
-            .withProperty(
+        val venusSoft: IBlockState = (VenusBlocks.venusBlock)!!.defaultBlockState()
+            .setValue(
                 BlockBasicVenus.BASIC_TYPE_VENUS,
                 BlockBasicVenus.EnumBlockBasicVenus.ROCK_SOFT
             )
@@ -33,9 +33,9 @@ open class WorldGenVaporPool constructor() : WorldGenerator() {
                     if (distance <= radiusSq) {
                         val pos: BlockPos =
                             BlockPos(poolX + position.getX(), poolY + position.getY(), poolZ + position.getZ())
-                        worldIn.setBlockState(
+                        worldIn.setBlock(
                             pos,
-                            if (distance >= radiusSq - 16) venusSoft else (if (poolY <= 0) (VenusBlocks.sulphuricAcid)!!.getDefaultState() else Blocks.AIR.getDefaultState()),
+                            if (distance >= radiusSq - 16) venusSoft else (if (poolY <= 0) (VenusBlocks.sulphuricAcid)!!.defaultBlockState() else Blocks.AIR.defaultBlockState()),
                             if (distance == radiusSq) 3 else 2
                         )
                     }
@@ -48,10 +48,10 @@ open class WorldGenVaporPool constructor() : WorldGenerator() {
             val pos: BlockPos = BlockPos(position.getX(), i, position.getZ())
             if (worldIn.getBlockState(pos).getBlock() !== Blocks.AIR) {
                 if (!firstSet) {
-                    worldIn.setBlockState(pos, (VenusBlocks.spout)!!.getDefaultState(), 3)
+                    worldIn.setBlock(pos, (VenusBlocks.spout)!!.defaultBlockState(), 3)
                     firstSet = true
                 } else {
-                    worldIn.setBlockState(pos, Blocks.AIR.getDefaultState(), 2)
+                    worldIn.setBlock(pos, Blocks.AIR.defaultBlockState(), 2)
                 }
             }
         }

@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.planets.venus
 
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.items.ItemBlockDesc
 import micdoodle8.mods.galacticraft.core.items.ItemBlockGC
@@ -15,7 +17,7 @@ import micdoodle8.mods.galacticraft.planets.venus.blocks.BlockTier3TreasureChest
 import micdoodle8.mods.galacticraft.planets.venus.blocks.BlockTorchWeb
 import micdoodle8.mods.galacticraft.planets.venus.items.ItemBlockBasicVenus
 import micdoodle8.mods.galacticraft.planets.venus.items.ItemBlockTorchWeb
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.item.ItemBlock
 import net.minecraftforge.oredict.OreDictionary
 

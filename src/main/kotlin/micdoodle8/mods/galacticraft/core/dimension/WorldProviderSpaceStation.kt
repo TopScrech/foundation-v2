@@ -3,8 +3,8 @@ package micdoodle8.mods.galacticraft.core.dimension
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.WorldProviderSpace
 import micdoodle8.mods.galacticraft.core.world.gen.ChunkProviderOrbit
 import net.minecraft.world.gen.IChunkGenerator
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 /***
  * Properties of a WorldProviderSpaceStation
@@ -44,12 +44,12 @@ abstract class WorldProviderSpaceStation : WorldProviderSpace() {
         spinManager.updateSpin()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     abstract fun setSpinDeltaPerTick(angle: Float)
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     abstract fun getSkyRotation(): Float
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     abstract fun createSkyProvider()
 }

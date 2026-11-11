@@ -1,7 +1,7 @@
 package asmodeuscore.core.astronomy.dimension.world.gen
 
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 import java.util.Random
 

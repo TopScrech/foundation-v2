@@ -4,17 +4,17 @@ import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.venus.VenusModule
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
-import net.minecraft.init.SoundEvents
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.BlockFluidClassic
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class BlockSulphuricAcid constructor(assetName: String?) :
@@ -52,7 +52,7 @@ open class BlockSulphuricAcid constructor(assetName: String?) :
         return super.displaceIfPossible(world, pos)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun randomDisplayTick(stateIn: IBlockState, worldIn: World, pos: BlockPos, rand: Random) {
         super.randomDisplayTick(stateIn, worldIn, pos, rand)
 
@@ -69,10 +69,10 @@ open class BlockSulphuricAcid constructor(assetName: String?) :
             )
         }
         if (rand.nextInt(10) == 0) {
-            val below: BlockPos = pos.down()
+            val below: BlockPos = pos.below()
             val state: IBlockState = worldIn.getBlockState(below)
             if (state.getBlock()
-                    .isSideSolid(state, worldIn, below, EnumFacing.UP) && !worldIn.getBlockState(pos.down(2))
+                    .isSideSolid(state, worldIn, below, EnumFacing.UP) && !worldIn.getBlockState(pos.below(2))
                     .getMaterial().blocksMovement()
             ) {
                 GalacticraftPlanets.spawnParticle(

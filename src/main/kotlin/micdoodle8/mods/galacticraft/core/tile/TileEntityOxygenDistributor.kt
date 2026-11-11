@@ -1,5 +1,10 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import foundation.item.legacyItemValue
+
+import net.minecraft.world.ContainerHelper
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import java.util.EnumSet
@@ -17,20 +22,21 @@ import micdoodle8.mods.galacticraft.core.inventory.IInventoryDefaults
 import micdoodle8.mods.galacticraft.core.util.FluidUtil
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.HashSet
 import kotlin.math.floor
 import kotlin.math.max
@@ -38,7 +44,7 @@ import kotlin.math.min
 
 open class TileEntityOxygenDistributor constructor() : TileEntityOxygen(6000, 8), IInventoryDefaults,
     ISidedInventory, IBubbleProviderColored {
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent? = super<TileEntityOxygen>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = super<TileEntityOxygen>.getDisplayName()
 
     @JvmField
     var active: Boolean = false
@@ -133,7 +139,7 @@ open class TileEntityOxygenDistributor constructor() : TileEntityOxygen(6000, 8)
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         return AxisAlignedBB(
             (this.getPos().getX() - this.bubbleSize).toDouble(),
@@ -145,7 +151,7 @@ open class TileEntityOxygenDistributor constructor() : TileEntityOxygen(6000, 8)
         )
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return Constants.RENDERDISTANCE_LONG
     }
@@ -183,7 +189,7 @@ open class TileEntityOxygenDistributor constructor() : TileEntityOxygen(6000, 8)
 
     override fun update() {
         if (!this.world.isRemote) {
-            val oxygenItemStack: ItemStack = this.getStackInSlot(1)
+            val oxygenItemStack: ItemStack = this.getItem(1)
             if (oxygenItemStack != null && oxygenItemStack.getItem() is IItemOxygenSupply) {
                 val oxygenItem: IItemOxygenSupply = oxygenItemStack.getItem() as IItemOxygenSupply
                 val oxygenDraw: Int = floor(
@@ -255,63 +261,63 @@ open class TileEntityOxygenDistributor constructor() : TileEntityOxygen(6000, 8)
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
 
-        if (nbt.hasKey("bubbleVisible")) {
-            this.setBubbleVisible(nbt.getBoolean("bubbleVisible"))
+        if (nbt.containsTag("bubbleVisible")) {
+            this.setBubbleVisible(nbt.getBooleanOr("bubbleVisible", false))
         }
 
-        if (nbt.hasKey("bubbleSize")) {
-            this.bubbleSize = nbt.getFloat("bubbleSize")
+        if (nbt.containsTag("bubbleSize")) {
+            this.bubbleSize = nbt.getFloatOr("bubbleSize", 0f)
         }
 
-        //        this.hasValidBubble = nbt.getBoolean("hasValidBubble");
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        //        this.hasValidBubble = nbt.getBooleanOr("hasValidBubble", false);
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, this.stacks)
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
 
-        nbt.setBoolean("bubbleVisible", this.shouldRenderBubble)
-        nbt.setFloat("bubbleSize", this.bubbleSize)
-        //        nbt.setBoolean("hasValidBubble", this.hasValidBubble);
+        nbt.putBoolean("bubbleVisible", this.shouldRenderBubble)
+        nbt.putFloat("bubbleSize", this.bubbleSize)
+        //        nbt.putBoolean("hasValidBubble", this.hasValidBubble);
         ItemStackHelper.saveAllItems(nbt, this.stacks)
         return nbt
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.stacks.size
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack {
+    override fun getItem(var1: Int): ItemStack {
         return this.stacks.get(var1)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        val oldstack: ItemStack = ItemStackHelper.getAndRemove(this.stacks, index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        val oldstack: ItemStack = ContainerHelper.takeItem(this.stacks, index)
         if (!oldstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
         return oldstack
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.stacks.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
     override fun isEmpty(): Boolean {
@@ -324,16 +330,16 @@ open class TileEntityOxygenDistributor constructor() : TileEntityOxygen(6000, 8)
         return true
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.oxygendistributor.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.oxygendistributor.name")
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
     }
@@ -343,18 +349,18 @@ open class TileEntityOxygenDistributor constructor() : TileEntityOxygen(6000, 8)
         return intArrayOf(0, 1)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
-        if (this.isItemValidForSlot(slotID, itemstack)) {
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        if (this.canPlaceItem(slotID, itemstack)) {
             when (slotID) {
                 0 -> return ItemElectricBase.isElectricItemCharged(itemstack)
-                1 -> return itemstack.getItemDamage() < itemstack.getItem().getMaxDamage()
+                1 -> return itemstack.legacyItemValue < itemstack.getItem().getMaxDamage()
                 else -> return false
             }
         }
         return false
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         when (slotID) {
             0 -> return ItemElectricBase.isElectricItemEmpty(itemstack)
             1 -> return FluidUtil.isEmptyContainer(itemstack)
@@ -366,7 +372,7 @@ open class TileEntityOxygenDistributor constructor() : TileEntityOxygen(6000, 8)
         return true
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         if (itemstack.isEmpty()) {
             return false
         }
@@ -396,7 +402,7 @@ open class TileEntityOxygenDistributor constructor() : TileEntityOxygen(6000, 8)
     }
 
     override fun getBatteryInSlot(): ItemStack {
-        return this.getStackInSlot(0)
+        return this.getItem(0)
     }
 
     override fun shouldUseOxygen(): Boolean {

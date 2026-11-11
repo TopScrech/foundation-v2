@@ -1,5 +1,9 @@
 package galaxyspace.core.prefab.items
 
+import foundation.item.legacyItemValue
+
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.util.GSCreativeTabs
 import asmodeuscore.api.item.IShiftDescription
 import galaxyspace.core.prefab.items.GSItemBlockDesc
@@ -8,19 +12,19 @@ import micdoodle8.mods.galacticraft.core.blocks.BlockTileGC
 import micdoodle8.mods.galacticraft.core.energy.EnergyDisplayHelper
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseElectricBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.client.settings.GameSettings
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.item.ItemBlock
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.text.TextFormatting
-import net.minecraft.world.World
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.ChatFormatting as TextFormatting
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.input.Keyboard
 
 open class GSItemBlockDesc constructor(block: Block) : ItemBlock(block) {
@@ -29,18 +33,18 @@ open class GSItemBlockDesc constructor(block: Block) : ItemBlock(block) {
     }
 
     override fun onCreated(stack: ItemStack, world: World, player: EntityPlayer) {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             return
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(stack: ItemStack, worldIn: World?, info: MutableList<String?>, flagIn: ITooltipFlag) {
-        if (this.getBlock() is IShiftDescription && (this.getBlock() as IShiftDescription).showDescription(stack.getItemDamage())) {
-            if ((this.getBlock() as IShiftDescription).getDescription(stack.getItemDamage()) != null) info.addAll(
+        if (this.getBlock() is IShiftDescription && (this.getBlock() as IShiftDescription).showDescription(stack.legacyItemValue)) {
+            if ((this.getBlock() as IShiftDescription).getDescription(stack.legacyItemValue) != null) info.addAll(
                 FMLClientHandler.instance().getClient().fontRenderer.listFormattedStringToWidth(
                     (this.getBlock() as IShiftDescription).getDescription(
-                        stack.getItemDamage()
+                        stack.legacyItemValue
                     ), 150
                 )
             )
@@ -49,7 +53,7 @@ open class GSItemBlockDesc constructor(block: Block) : ItemBlock(block) {
                 info.addAll(
                     FMLClientHandler.instance().getClient().fontRenderer.listFormattedStringToWidth(
                         (this.getBlock() as IShiftDescription).getShiftDescription(
-                            stack.getItemDamage()
+                            stack.legacyItemValue
                         ), 150
                     )
                 )
@@ -57,7 +61,7 @@ open class GSItemBlockDesc constructor(block: Block) : ItemBlock(block) {
                 if (worldIn != null && this.getBlock() is BlockTileGC) {
                     val te: TileEntity? = (this.getBlock() as BlockTileGC).createTileEntity(
                         worldIn,
-                        getBlock().getStateFromMeta(stack.getItemDamage() and 12)
+                        getBlock().getStateFromMeta(stack.legacyItemValue and 12)
                     )
                     if (te is TileBaseElectricBlock) {
                         val powerDrawn: Float = te.storage.getMaxExtract()
@@ -73,7 +77,7 @@ open class GSItemBlockDesc constructor(block: Block) : ItemBlock(block) {
                 } else if (worldIn != null && this.getBlock() is BlockAdvancedTile) {
                     val te: TileEntity? = (this.getBlock() as BlockAdvancedTile).createTileEntity(
                         worldIn,
-                        getBlock().getStateFromMeta(stack.getItemDamage() and 12)
+                        getBlock().getStateFromMeta(stack.legacyItemValue and 12)
                     )
                     if (te is TileBaseElectricBlock) {
                         val powerDrawn: Float = te.storage.getMaxExtract()

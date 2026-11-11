@@ -21,14 +21,13 @@ import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.core.wrappers.FlagData
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.client.FMLClientHandler
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.GL11
 import java.io.File
@@ -89,7 +88,7 @@ open class GuiNewSpaceRace constructor(private val thePlayer: EntityPlayer) : Gu
     private var selectionMinY = 0
     private var selectionMaxY = 0
 
-    private val dummyFlag = EntityFlag(FMLClientHandler.instance().getClient().world)
+    private val dummyFlag = EntityFlag(Minecraft.getInstance().level)
     private val dummyModel = ModelFlag()
 
     private var spaceRaceData: SpaceRace? = null
@@ -112,7 +111,7 @@ open class GuiNewSpaceRace constructor(private val thePlayer: EntityPlayer) : Gu
             this.spaceRaceData = SpaceRace(playerList, SpaceRace.DEFAULT_NAME, FlagData(48, 32), Vector3(1.0, 1.0, 1.0))
         }
 
-        this.mc = FMLClientHandler.instance().getClient()
+        this.mc = Minecraft.getInstance()
         this.canEdit = canPlayerEdit()
     }
 
@@ -603,8 +602,8 @@ when (this.currentState) {
         if (this.currentState == EnumSpaceRaceGui.ADD_PLAYER && this.gradientListAddPlayers != null && this.ticksPassed % 20 == 0) {
             val playerNames: MutableList<GuiElementGradientList.ListElement?> =
                 ArrayList<GuiElementGradientList.ListElement?>()
-            for (i: Int in this.thePlayer.world.playerEntities.indices) {
-                val player: EntityPlayer = this.thePlayer.world.playerEntities.get(i) as EntityPlayer
+            for (i: Int in this.thePlayer.level().playerEntities.indices) {
+                val player: EntityPlayer = this.thePlayer.level().playerEntities.get(i) as EntityPlayer
 
                 if (player.getDistanceSq(this.thePlayer) <= 25 * 25) {
                     val username: String? = PlayerUtil.getName(player)
@@ -1439,7 +1438,7 @@ when (this.currentState) {
 
     private fun writeFlagToFile(): File? {
         try {
-            val dirName: String? = Minecraft.getMinecraft().gameDir.getAbsolutePath()
+            val dirName: String? = Minecraft.getInstance().gameDir.getAbsolutePath()
             var directory: File = File(dirName, "assets")
             var success: Boolean = true
             if (!directory.exists()) {
@@ -1466,6 +1465,6 @@ when (this.currentState) {
 
     companion object {
         @JvmField
-        protected val texture: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/gui.png")
+        protected val texture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/gui.png")
     }
 }

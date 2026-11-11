@@ -5,10 +5,10 @@ import org.spongepowered.asm.mixin.Shadow
 import org.spongepowered.asm.mixin.injection.Inject
 import org.spongepowered.asm.mixin.injection.At
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.profiler.Profiler
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
 import net.minecraft.world.storage.ISaveHandler
 import net.minecraft.world.storage.WorldInfo

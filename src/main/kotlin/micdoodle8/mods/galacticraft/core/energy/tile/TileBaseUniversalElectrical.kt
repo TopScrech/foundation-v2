@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.core.energy.tile
 
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.miccore.Annotations.RuntimeInterface
 import java.util.EnumSet
 
@@ -8,15 +11,15 @@ import micdoodle8.mods.galacticraft.api.item.IItemElectric
 import micdoodle8.mods.galacticraft.core.energy.EnergyConfigHandler
 import micdoodle8.mods.galacticraft.core.tile.ReceiverMode
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.energy.CapabilityEnergy
 import net.minecraftforge.energy.IEnergyStorage
@@ -127,12 +130,12 @@ abstract class TileBaseUniversalElectrical : EnergyStorageTile(), IEnergyStorage
     //	}
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        //		this.energyStored = nbt.getFloat("energyStored");
+        //		this.energyStored = nbt.getFloatOr("energyStored", 0f);
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        //		nbt.setFloat("energyStored", this.energyStored);
+        //		nbt.putFloat("energyStored", this.energyStored);
         return nbt
     }
 
@@ -271,9 +274,9 @@ abstract class TileBaseUniversalElectrical : EnergyStorageTile(), IEnergyStorage
             val metadata: Int = state.getBlock().getMetaFromState(world.getBlockState(pos))
             val change: Int = facing.rotateY().getHorizontalIndex()
 
-            world.setBlockState(pos, state.getBlock().getStateFromMeta(metadata - (metadata % 4) + change), 3)
+            world.setBlock(pos, state.getBlock().getStateFromMeta(metadata - (metadata % 4) + change), 3)
 
-            val te: TileEntity? = world.getTileEntity(pos)
+            val te: TileEntity? = world.getBlockEntity(pos)
             if (te is TileBaseUniversalElectrical) {
                 te.updateFacing()
             }

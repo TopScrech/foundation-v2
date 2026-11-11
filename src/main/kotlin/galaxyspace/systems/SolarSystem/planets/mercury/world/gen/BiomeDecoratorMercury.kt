@@ -4,8 +4,8 @@ import galaxyspace.core.GSBlocks
 import galaxyspace.core.configs.GSConfigWorld
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
 import micdoodle8.mods.galacticraft.core.world.gen.WorldGenMinableMeta
-import net.minecraft.init.Blocks
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 
 open class BiomeDecoratorMercury constructor() : BiomeDecoratorSpace() {

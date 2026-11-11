@@ -13,9 +13,9 @@ import micdoodle8.mods.galacticraft.core.client.sounds.GCSounds
 import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.enchantment.EnchantmentHelper
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.EnumCreatureAttribute
 import net.minecraft.entity.IRangedAttackMob
 import net.minecraft.entity.SharedMonsterAttributes
@@ -26,18 +26,18 @@ import net.minecraft.entity.ai.EntityAISwimming
 import net.minecraft.entity.ai.EntityAIWander
 import net.minecraft.entity.ai.EntityAIWatchClosest
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.entity.projectile.EntityTippedArrow
-import net.minecraft.init.Items
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.DamageSource
-import net.minecraft.util.SoundEvent
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.item.Items
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.world.BossInfo
-import net.minecraft.world.EnumDifficulty
-import net.minecraft.world.World
+import net.minecraft.world.Difficulty as EnumDifficulty
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.common.network.NetworkRegistry
 import java.util.Random
 import kotlin.math.atan2
@@ -226,10 +226,10 @@ else -> {}
         }
 
         if (this.thrownEntity != null && this.postThrowDelay == 18) {
-            var d0: Double = this.posX - this.thrownEntity!!.posX
+            var d0: Double = this.posX - this.thrownEntity!!.x
             var d1: Double
 
-            d1 = this.posZ - this.thrownEntity!!.posZ
+            d1 = this.posZ - this.thrownEntity!!.z
             while (d0 * d0 + d1 * d1 < 1.0E-4) {
                 d0 = (Math.random() - Math.random()) * 0.01
                 d1 = (Math.random() - Math.random()) * 0.01
@@ -265,7 +265,7 @@ else -> {}
             this.thrownEntity!!.motionY += f1.toDouble() / 5
             this.thrownEntity!!.motionZ -= d1 / f * f1
 
-            if (this.thrownEntity!!.motionY > 0.4000000059604645) {
+            if (this.thrownEntity!!.deltaMovement.y > 0.4000000059604645) {
                 this.thrownEntity!!.motionY = 0.4000000059604645
             }
         }
@@ -313,9 +313,9 @@ else -> {}
         }
 
         val arrow: EntityTippedArrow = EntityTippedArrow(this.world, this)
-        val d0: Double = target.posX - this.posX
-        val d1: Double = target.getEntityBoundingBox().minY + (target.height / 3.0f).toDouble() - arrow.posY
-        val d2: Double = target.posZ - this.posZ
+        val d0: Double = target.x - this.posX
+        val d1: Double = target.getBoundingBox().minY + (target.height / 3.0f).toDouble() - arrow.posY
+        val d2: Double = target.z - this.posZ
         val d3: Double = MathHelper.sqrt(d0 * d0 + d2 * d2).toDouble()
         arrow.shoot(
             d0,
@@ -343,7 +343,7 @@ else -> {}
     }
 
     override fun dropKey() {
-        this.entityDropItem(ItemStack(GCItems.key, 1, 0), 0.5f)
+        this.entityDropItem(ItemStack(requireNotNull(GCItems.key)), 0.5f)
     }
 
     override fun getHealthBarColor(): BossInfo.Color {

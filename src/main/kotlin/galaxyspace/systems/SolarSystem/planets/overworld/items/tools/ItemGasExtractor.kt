@@ -1,5 +1,10 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items.tools
 
+import foundation.item.legacyItemValue
+
+import foundation.inventory.mainItems
+import foundation.persistence.containsTag
+
 import galaxyspace.api.item.IModificationItem
 import galaxyspace.core.GSFluids
 import galaxyspace.core.GSItems
@@ -19,22 +24,22 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.settings.GameSettings
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.text.TextFormatting
-import net.minecraft.world.World
+import net.minecraft.ChatFormatting as TextFormatting
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.input.Keyboard
 
-open class ItemGasExtractor constructor() : ItemElectricBase(), ISortableItem, IModificationItem {
+open class ItemGasExtractor constructor() : ItemElectricBase(foundation.item.FoundationItemProperties.named("galaxyspace", "gas_extractor").stacksTo(1)), ISortableItem, IModificationItem {
     init {
         this.setTranslationKey("gas_extractor")
         this.setHasSubtypes(true)
@@ -45,8 +50,8 @@ open class ItemGasExtractor constructor() : ItemElectricBase(), ISortableItem, I
 
         if (!stack.hasTagCompound()) stack.setTagCompound(NBTTagCompound())
 
-        if (!stack.getTagCompound()!!.hasKey(ItemSpaceSuit.Companion.mod_count)) {
-            stack.getTagCompound()!!.setInteger(ItemSpaceSuit.Companion.mod_count, getModificationCount(stack))
+        if (!stack.getTagCompound()!!.containsTag(ItemSpaceSuit.Companion.mod_count)) {
+            stack.getTagCompound()!!.putInt(ItemSpaceSuit.Companion.mod_count, getModificationCount(stack))
         }
     }
 
@@ -72,13 +77,13 @@ open class ItemGasExtractor constructor() : ItemElectricBase(), ISortableItem, I
         tooltip.add("")
         tooltip.add(
             EnumColor.GREY.toString() + GCCoreUtil.translate("gui.module.available_modules") + " " + itemStack.getTagCompound()!!
-                .getInteger(ItemSpaceSuit.Companion.mod_count)
+                .getIntOr(ItemSpaceSuit.Companion.mod_count, 0)
         )
         tooltip.add("")
         tooltip.add(EnumColor.AQUA.toString() + GCCoreUtil.translate("gui.module.list"))
         if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
             for (s in (this.getAvailableModules())!!) {
-                if (itemStack.getTagCompound()!!.hasKey((s)!!.getName())) tooltip.addAll(
+                if (itemStack.getTagCompound()!!.containsTag((s)!!.getName())) tooltip.addAll(
                     FMLClientHandler.instance().getClient().fontRenderer.listFormattedStringToWidth(
                         this.check(
                             itemStack,
@@ -109,7 +114,7 @@ open class ItemGasExtractor constructor() : ItemElectricBase(), ISortableItem, I
     }
 
     override fun getMaxElectricityStored(stack: ItemStack?): Float {
-        val energy: Boolean = (stack)!!.hasTagCompound() && (stack)!!.getTagCompound()!!.hasKey("energy")
+        val energy: Boolean = (stack)!!.hasTagCompound() && (stack)!!.getTagCompound()!!.containsTag("energy")
         return if (energy) 18000.0f else 6000.0f
     }
 
@@ -118,13 +123,13 @@ open class ItemGasExtractor constructor() : ItemElectricBase(), ISortableItem, I
     }
 
     override fun onItemRightClick(world: World, player: EntityPlayer, hand: EnumHand): ActionResult<ItemStack?> {
-        val stack: ItemStack = player.getHeldItem(hand)
+        val stack: ItemStack = player.getItemInHand(hand)
 
-        if (world.isRemote) return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getHeldItem(hand))
+        if (world.isClientSide) return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getItemInHand(hand))
 
         if (this.getElectricityStored(stack) < DISCHARGE_COUNT) return ActionResult<ItemStack?>(
             EnumActionResult.PASS,
-            player.getHeldItem(hand)
+            player.getItemInHand(hand)
         )
 
         val result: RayTraceResult? = GSUtils.getRay(world, player, true)
@@ -133,39 +138,39 @@ open class ItemGasExtractor constructor() : ItemElectricBase(), ISortableItem, I
             if (world.getBlockState(result.getBlockPos()).getBlock() === GSFluids.BLOCK_NATURE_GAS) {
                 if (tryFillCanister(player, FluidStack(GSFluids.NatureGas, 200))) {
                     player.inventoryContainer.detectAndSendChanges()
-                    world.setBlockToAir(result.getBlockPos())
+                    world.setBlockAndUpdate(result.getBlockPos(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
 
                     if (!player.capabilities.isCreativeMode) this.discharge(stack, DISCHARGE_COUNT.toFloat(), true)
 
-                    return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getHeldItem(hand))
+                    return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getItemInHand(hand))
                 }
             }
         }
 
-        return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getHeldItem(hand))
+        return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getItemInHand(hand))
     }
 
     private fun tryFillCanister(player: EntityPlayer, fluid: FluidStack): Boolean {
-        for (i: Int in player.inventory.mainInventory.indices) {
-            var stack: ItemStack = player.inventory.mainInventory.get(i)
+        for (i: Int in player.inventory.mainItems.indices) {
+            var stack: ItemStack = player.inventory.mainItems.get(i)
 
             if (stack.getItem() is ItemCanisterGeneric) {
-                if (stack.getItem() === GSItems.NATURE_GAS_CANISTER && stack.getItemDamage() > 1) {
+                if (stack.getItem() === GSItems.NATURE_GAS_CANISTER && stack.legacyItemValue > 1) {
                     //                    if(stack.getItemDamage() + fluid.amount < stack.getMaxDamage())
 //                        stack.setItemDamage(stack.getItemDamage() - fluid.amount);
 //                    else
 //                        stack.setItemDamage(1);
 
-                    if (stack.getItemDamage() - fluid.amount > 1) stack.setItemDamage(stack.getItemDamage() - fluid.amount)
+                    if (stack.legacyItemValue - fluid.amount > 1) stack.setItemDamage(stack.legacyItemValue - fluid.amount)
                     else stack.setItemDamage(1)
 
-                    player.inventory.setInventorySlotContents(i, stack)
+                    player.inventory.setItem(i, stack)
                     return true
                 }
 
-                if (stack.getItem() === GCItems.oilCanister && stack.getItemDamage() == ItemCanisterGeneric.EMPTY) {
+                if (stack.getItem() === GCItems.oilCanister && stack.legacyItemValue == ItemCanisterGeneric.EMPTY) {
                     stack = ItemStack(GSItems.NATURE_GAS_CANISTER, 1, stack.getMaxDamage() - fluid.amount)
-                    player.inventory.setInventorySlotContents(i, stack)
+                    player.inventory.setItem(i, stack)
                     return true
                 }
             }

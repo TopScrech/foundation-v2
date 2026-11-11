@@ -11,15 +11,15 @@ import micdoodle8.mods.galacticraft.core.entities.EntityLanderBase
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.mars.util.MarsUtil
 import net.minecraft.client.particle.Particle
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.DamageSource
-import net.minecraft.util.EnumHand
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.*
 
 open class EntityLandingBalloons : EntityLanderBase, IIgnoreShift, ICameraZoomEntity {
@@ -69,16 +69,16 @@ open class EntityLandingBalloons : EntityLanderBase, IIgnoreShift, ICameraZoomEn
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
         super.readEntityFromNBT(nbt)
-        this.groundHitCount = nbt.getInteger("GroundHitCount")
+        this.groundHitCount = nbt.getIntOr("GroundHitCount", 0)
     }
 
     override fun writeEntityToNBT(nbt: NBTTagCompound) {
         super.writeEntityToNBT(nbt)
-        nbt.setInteger("GroundHitCount", this.groundHitCount)
+        nbt.putInt("GroundHitCount", this.groundHitCount)
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.mars_lander.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.mars_lander.name")
     }
 
     override fun hasCustomName(): Boolean {
@@ -152,7 +152,7 @@ open class EntityLandingBalloons : EntityLanderBase, IIgnoreShift, ICameraZoomEn
         return null
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getParticle(
         rand: Random?,
         x: Double,

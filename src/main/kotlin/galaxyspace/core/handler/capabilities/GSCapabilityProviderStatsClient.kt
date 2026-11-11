@@ -2,8 +2,8 @@ package galaxyspace.core.handler.capabilities
 
 import galaxyspace.core.handler.capabilities.GSCapabilityStatsHandler
 import galaxyspace.core.handler.capabilities.StatsCapabilityClient
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.util.EnumFacing
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 

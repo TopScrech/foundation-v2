@@ -4,7 +4,7 @@ import micdoodle8.mods.galacticraft.core.entities.EntityTier1Rocket
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import org.lwjgl.opengl.GL11
 import kotlin.math.floor
 
@@ -18,11 +18,11 @@ open class Overlay {
          */
         @JvmStatic
         protected fun getPlayerPositionY(player: EntityPlayer): Int {
-            if (player.getRidingEntity() != null && player.getRidingEntity() is EntityTier1Rocket) {
-                return floor((player.getRidingEntity() as EntityTier1Rocket).posY).toInt()
+            if (player.getVehicle() != null && player.getVehicle() is EntityTier1Rocket) {
+                return floor((player.getVehicle() as EntityTier1Rocket).posY).toInt()
             }
 
-            return floor(player.posY).toInt()
+            return floor(player.y).toInt()
         }
 
         /**

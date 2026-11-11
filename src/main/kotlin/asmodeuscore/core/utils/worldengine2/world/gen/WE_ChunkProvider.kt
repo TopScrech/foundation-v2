@@ -26,7 +26,7 @@
 package asmodeuscore.core.utils.worldengine2.world.gen
 
 import java.util.Arrays
-import net.minecraft.init.Blocks
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.biome.Biome.SpawnListEntry
 
 import asmodeuscore.core.utils.Utils
@@ -36,11 +36,11 @@ import asmodeuscore.core.utils.worldengine2.world.gen.custom.abstracts.WE_GenDat
 import asmodeuscore.core.utils.worldengine2.world.properties.WE_IWorldProperties
 import net.minecraft.block.BlockFalling
 import net.minecraft.entity.EnumCreatureType
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldEntitySpawner
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.common.MinecraftForge
@@ -125,7 +125,7 @@ open class WE_ChunkProvider//super(w, new WE_BiomeProvider(w, p), null);
                         for (k2: Int in 0..3) {
                             for (l2: Int in 0..3) {
                                 if (i2 * 8 + j2 < 64) {
-                                    //primer.setBlockState(i * 4 + k2, i2 * 8 + j2, l * 4 + l2, Blocks.WATER.getDefaultState());
+                                    //primer.setBlockState(i * 4 + k2, i2 * 8 + j2, l * 4 + l2, Blocks.WATER.defaultBlockState());
                                 }
                             }
                         }
@@ -142,9 +142,9 @@ open class WE_ChunkProvider//super(w, new WE_BiomeProvider(w, p), null);
         val z: Int = chunkZ shl 4
         //-//
         val flag: Boolean = false
-        world.rand.setSeed(chunkX.toLong() * 434673L * world.rand.nextLong() + chunkZ.toLong() * 585694L * world.rand.nextLong() + 745849494845L)
+        world.random.setSeed(chunkX.toLong() * 434673L * world.random.nextLong() + chunkZ.toLong() * 585694L * world.random.nextLong() + 745849494845L)
 
-        MinecraftForge.EVENT_BUS.post(PopulateChunkEvent.Pre(this, world, world.rand, chunkX, chunkZ, flag))
+        MinecraftForge.EVENT_BUS.post(PopulateChunkEvent.Pre(this, world, world.random, chunkX, chunkZ, flag))
 
 
         /////
@@ -157,19 +157,19 @@ open class WE_ChunkProvider//super(w, new WE_BiomeProvider(w, p), null);
             ((WE_BiomeProvider.Companion.smart)!!.get(chunkX.toLong() or xX.toLong(), chunkZ.toLong() or zZ.toLong()))!!
 
         for (i: Int in 0..<p.properties.sizeofDecorateChunkGen()) (p.properties.getDecorateChunkGen(i))!!
-            .generate(world.rand, x, z, world, this, world.getChunkProvider())
+            .generate(world.random, x, z, world, this, world.getChunkProvider())
 
-        val r: WE_Biome? = biomes[world.rand.nextInt(16)]!![world.rand.nextInt(16)]
+        val r: WE_Biome? = biomes[world.random.nextInt(16)]!![world.random.nextInt(16)]
         for (i: Int in 0..<r!!.properties.sizeofDecorateChunkGen()) (r.properties.getDecorateChunkGen(i))!!
-            .generate(world.rand, x, z, world, this, world.getChunkProvider())
+            .generate(world.random, x, z, world, this, world.getChunkProvider())
 
         /*
 		b.decorateBiome(worldObj, rand, x, z);
 		wp.onPopulate(chunkX, chunkZ);*/
-        WorldEntitySpawner.performWorldGenSpawning(this.world, r, x + 8, z + 8, 16, 16, world.rand)
+        WorldEntitySpawner.performWorldGenSpawning(this.world, r, x + 8, z + 8, 16, 16, world.random)
 
 
-        MinecraftForge.EVENT_BUS.post(PopulateChunkEvent.Post(this, world, world.rand, chunkX, chunkZ, flag))
+        MinecraftForge.EVENT_BUS.post(PopulateChunkEvent.Post(this, world, world.random, chunkX, chunkZ, flag))
         //-//
         BlockFalling.fallInstantly = false
     }

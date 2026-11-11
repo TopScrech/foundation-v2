@@ -5,12 +5,12 @@ import micdoodle8.mods.galacticraft.core.client.model.ModelMeteor
 import micdoodle8.mods.galacticraft.core.entities.EntityMeteor
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderMeteor constructor(manager: RenderManager) : Render<EntityMeteor>(manager) {
     private val modelMeteor: ModelMeteor
 
@@ -36,6 +36,6 @@ open class RenderMeteor constructor(manager: RenderManager) : Render<EntityMeteo
     }
 
     companion object {
-        private val meteorTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/meteor.png")
+        private val meteorTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/meteor.png")
     }
 }

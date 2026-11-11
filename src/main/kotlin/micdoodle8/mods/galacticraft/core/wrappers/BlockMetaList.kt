@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.core.wrappers
 
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import java.util.Arrays
 
 open class BlockMetaList

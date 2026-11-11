@@ -1,11 +1,10 @@
 package micdoodle8.mods.galacticraft.planets.asteroids
 
 import micdoodle8.mods.galacticraft.core.Constants
-import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.mars.ConfigManagerMars
-import net.minecraftforge.common.config.Configuration
-import net.minecraftforge.common.config.Property
-import net.minecraftforge.fml.common.FMLLog
+import foundation.config.FoundationConfiguration as Configuration
+import foundation.config.FoundationConfigProperty as Property
+import foundation.logging.FoundationLog as FMLLog
 import org.apache.logging.log4j.Level
 import java.io.File
 import java.lang.Exception
@@ -17,8 +16,11 @@ constructor(file: File) {
             if (file.exists()) {
                 config = Configuration(file)
                 syncConfig(true, true)
+                // Persist imported values before removing the old file
+                requireNotNull(ConfigManagerMars.config).save()
                 file.delete()
                 config = ConfigManagerMars.config
+                syncConfig(false, false)
             } else {
                 config = ConfigManagerMars.config
                 syncConfig(true, false)
@@ -84,7 +86,7 @@ constructor(file: File) {
                     propCopy.setRequiresMcRestart(prop.requiresMcRestart())
                 }
                 dimensionIDAsteroids = prop.getInt()
-                GalacticraftPlanets.Companion.finishProp(prop, Constants.CONFIG_CATEGORY_DIMENSIONS)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_DIMENSIONS)
 
                 //
                 prop = config!!.get(Constants.CONFIG_CATEGORY_SCHEMATIC, "idSchematicRocketT3", 4)
@@ -100,7 +102,7 @@ constructor(file: File) {
                     propCopy.setLanguageKey(prop.getLanguageKey())
                 }
                 idSchematicRocketT3 = prop.getInt(4)
-                GalacticraftPlanets.Companion.finishProp(prop, Constants.CONFIG_CATEGORY_SCHEMATIC)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_SCHEMATIC)
 
                 prop = config!!.get(Constants.CONFIG_CATEGORY_GENERAL, "disableGalacticraftHelium", false)
                 prop.setComment("Option to disable Helium gas in Galacticraft (because it will be registered by another mod eg GregTech).")
@@ -115,7 +117,7 @@ constructor(file: File) {
                     propCopy.setLanguageKey(prop.getLanguageKey())
                 }
                 disableGalacticraftHelium = prop.getBoolean(false)
-                GalacticraftPlanets.Companion.finishProp(prop, Constants.CONFIG_CATEGORY_GENERAL)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_GENERAL)
 
                 prop = config!!.get(Constants.CONFIG_CATEGORY_GENERAL, "maximumAstroMiners", 6)
                 prop.setComment("Maximum number of Astro Miners each player is allowed to have active (default 6).")
@@ -130,7 +132,7 @@ constructor(file: File) {
                     propCopy.setLanguageKey(prop.getLanguageKey())
                 }
                 astroMinerMax = prop.getInt(6)
-                GalacticraftPlanets.Companion.finishProp(prop, Constants.CONFIG_CATEGORY_GENERAL)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_GENERAL)
 
                 prop = config!!.get(
                     if (update) Constants.CONFIG_CATEGORY_GENERAL else Constants.CONFIG_CATEGORY_WORLDGEN,
@@ -149,7 +151,7 @@ constructor(file: File) {
                     propCopy.setLanguageKey(prop.getLanguageKey())
                 }
                 disableIronGen = prop.getBoolean(false)
-                GalacticraftPlanets.Companion.finishProp(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
 
                 prop = config!!.get(
                     if (update) Constants.CONFIG_CATEGORY_GENERAL else Constants.CONFIG_CATEGORY_WORLDGEN,
@@ -168,7 +170,7 @@ constructor(file: File) {
                     propCopy.setLanguageKey(prop.getLanguageKey())
                 }
                 disableAluminumGen = prop.getBoolean(false)
-                GalacticraftPlanets.Companion.finishProp(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
 
                 prop = config!!.get(
                     if (update) Constants.CONFIG_CATEGORY_GENERAL else Constants.CONFIG_CATEGORY_WORLDGEN,
@@ -187,9 +189,10 @@ constructor(file: File) {
                     propCopy.setLanguageKey(prop.getLanguageKey())
                 }
                 disableIlmeniteGen = prop.getBoolean(false)
-                GalacticraftPlanets.Companion.finishProp(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
+                foundation.config.FoundationPlanetConfigOrder.finish(prop, Constants.CONFIG_CATEGORY_WORLDGEN)
             } catch (e: Exception) {
                 FMLLog.log(Level.ERROR, e, "Galacticraft Asteroids (Planets) has a problem loading its config")
+                throw IllegalStateException("Could not apply planet configuration", e)
             }
         }
     }

@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    "asmodeuscore:solar",
+    "asmodeuscore:pressure",
+    "asmodeuscore:heat",
+    "asmodeuscore:cold",
+    "galacticraftcore:spaceship_crash",
+    "galacticraftcore:oxygen_suffocation",
+    "galacticraftcore:thermal"
+  ]
+}

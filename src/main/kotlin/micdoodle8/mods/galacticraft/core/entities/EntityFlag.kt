@@ -4,25 +4,25 @@ import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.util.ClientUtil
 import micdoodle8.mods.galacticraft.core.wrappers.FlagData
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockFence
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.Entity
-import net.minecraft.entity.MoverType
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.MoverType
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
-import net.minecraft.util.DamageSource
-import net.minecraft.util.EnumHand
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 
 open class EntityFlag constructor(world: World) : Entity(world) {
     @JvmField
@@ -134,24 +134,24 @@ open class EntityFlag constructor(world: World) : Entity(world) {
     }
 
     public override fun readEntityFromNBT(par1NBTTagCompound: NBTTagCompound) {
-        this.setOwner(par1NBTTagCompound.getString("Owner"))
-        this.setType(par1NBTTagCompound.getInteger("Type"))
-        this.indestructable = par1NBTTagCompound.getBoolean("Indestructable")
+        this.setOwner(par1NBTTagCompound.getStringOr("Owner", ""))
+        this.setType(par1NBTTagCompound.getIntOr("Type", 0))
+        this.indestructable = par1NBTTagCompound.getBooleanOr("Indestructable", false)
 
-        this.xPosition = par1NBTTagCompound.getDouble("TileX")
-        this.yPosition = par1NBTTagCompound.getDouble("TileY")
-        this.zPosition = par1NBTTagCompound.getDouble("TileZ")
-        this.setFacingAngle(par1NBTTagCompound.getInteger("AngleI"))
+        this.xPosition = par1NBTTagCompound.getDoubleOr("TileX", 0.0)
+        this.yPosition = par1NBTTagCompound.getDoubleOr("TileY", 0.0)
+        this.zPosition = par1NBTTagCompound.getDoubleOr("TileZ", 0.0)
+        this.setFacingAngle(par1NBTTagCompound.getIntOr("AngleI", 0))
     }
 
     override fun writeEntityToNBT(par1NBTTagCompound: NBTTagCompound) {
-        par1NBTTagCompound.setString("Owner", this.getOwner().toString())
-        par1NBTTagCompound.setInteger("Type", this.getType())
-        par1NBTTagCompound.setBoolean("Indestructable", this.indestructable)
-        par1NBTTagCompound.setInteger("AngleI", this.getFacingAngle())
-        par1NBTTagCompound.setDouble("TileX", this.xPosition)
-        par1NBTTagCompound.setDouble("TileY", this.yPosition)
-        par1NBTTagCompound.setDouble("TileZ", this.zPosition)
+        par1NBTTagCompound.putString("Owner", this.getOwner().toString())
+        par1NBTTagCompound.putInt("Type", this.getType())
+        par1NBTTagCompound.putBoolean("Indestructable", this.indestructable)
+        par1NBTTagCompound.putInt("AngleI", this.getFacingAngle())
+        par1NBTTagCompound.putDouble("TileX", this.xPosition)
+        par1NBTTagCompound.putDouble("TileY", this.yPosition)
+        par1NBTTagCompound.putDouble("TileZ", this.zPosition)
     }
 
     open fun dropItemStack() {
@@ -163,7 +163,7 @@ open class EntityFlag constructor(world: World) : Entity(world) {
 
         if ((this.ticksExisted - 1) % 20 == 0 && this.world.isRemote) {
             this.flagData =
-                ClientUtil.updateFlagData(this.getOwner(), Minecraft.getMinecraft().player.getDistance(this) < 50.0)
+                ClientUtil.updateFlagData(this.getOwner(), Minecraft.getInstance().player.getDistance(this) < 50.0)
         }
 
         var vec: Vector3 = Vector3(this.posX, this.posY, this.posZ)

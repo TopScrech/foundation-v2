@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import galaxyspace.core.GSItems
@@ -18,14 +20,14 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.wrappers.FluidHandlerWrapper
 import micdoodle8.mods.galacticraft.core.wrappers.IFluidHandlerWrapper
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Items
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.item.Items
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
@@ -34,7 +36,7 @@ import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.FluidUtil
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 
 open class TileEntityUniversalRecycler constructor() : TileEntityUpgradeMachine("tile.universal_recycler.name"),
     IFluidHandlerWrapper, ISidedInventory, IPacketReceiver {
@@ -172,7 +174,7 @@ open class TileEntityUniversalRecycler constructor() : TileEntityUpgradeMachine(
                     ) return false
 
                     val result: Int = this.getInventory().get(3).getCount() + (recipe.getOutput())!!.getCount()
-                    return result <= getInventoryStackLimit() && result <= this.getInventory().get(3).getMaxStackSize()
+                    return result <= getMaxStackSize() && result <= this.getInventory().get(3).getMaxStackSize()
                 }
 
                 if (!(recipe.getOutput_2())!!.isEmpty()) {
@@ -181,7 +183,7 @@ open class TileEntityUniversalRecycler constructor() : TileEntityUpgradeMachine(
                     ) return false
 
                     val result: Int = this.getInventory().get(4).getCount() + (recipe.getOutput_2())!!.getCount()
-                    return result <= getInventoryStackLimit() && result <= this.getInventory().get(4).getMaxStackSize()
+                    return result <= getMaxStackSize() && result <= this.getInventory().get(4).getMaxStackSize()
                 }
             } else return false
         }
@@ -246,53 +248,53 @@ open class TileEntityUniversalRecycler constructor() : TileEntityUpgradeMachine(
     override fun readFromNBT(par1NBTTagCompound: NBTTagCompound) {
         super.readFromNBT(par1NBTTagCompound)
 
-        this.processTicks = par1NBTTagCompound.getInteger("smeltingTicks")
-        this.inventory = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.processTicks = par1NBTTagCompound.getIntOr("smeltingTicks", 0)
+        this.inventory = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(par1NBTTagCompound, this.getInventory())
 
-        if (par1NBTTagCompound.hasKey("waterTank")) this.waterTank.readFromNBT(par1NBTTagCompound.getCompoundTag("waterTank"))
+        if (par1NBTTagCompound.containsTag("waterTank")) this.waterTank.readFromNBT(par1NBTTagCompound.getCompoundOrEmpty("waterTank"))
 
         /* 
-        if (par1NBTTagCompound.hasKey("waterTank1"))        
-        	this.waterTank1.readFromNBT(par1NBTTagCompound.getCompoundTag("waterTank1"));
+        if (par1NBTTagCompound.containsTag("waterTank1"))        
+        	this.waterTank1.readFromNBT(par1NBTTagCompound.getCompoundOrEmpty("waterTank1"));
         
-        if (par1NBTTagCompound.hasKey("waterTank2"))        
-        	this.waterTank2.readFromNBT(par1NBTTagCompound.getCompoundTag("waterTank2"));*/
+        if (par1NBTTagCompound.containsTag("waterTank2"))        
+        	this.waterTank2.readFromNBT(par1NBTTagCompound.getCompoundOrEmpty("waterTank2"));*/
     }
 
     override fun writeToNBT(par1NBTTagCompound: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(par1NBTTagCompound)
-        par1NBTTagCompound.setInteger("smeltingTicks", this.processTicks)
+        par1NBTTagCompound.putInt("smeltingTicks", this.processTicks)
         ItemStackHelper.saveAllItems(par1NBTTagCompound, this.getInventory())
 
-        if (this.waterTank.getFluid() != null) par1NBTTagCompound.setTag(
+        if (this.waterTank.getFluid() != null) par1NBTTagCompound.put(
             "waterTank",
             this.waterTank.writeToNBT(NBTTagCompound())
         )
 
 
         /*  if (this.waterTank1.getFluid() != null)        
-        	par1NBTTagCompound.setTag("waterTank1", this.waterTank1.writeToNBT(new NBTTagCompound()));
+        	par1NBTTagCompound.put("waterTank1", this.waterTank1.writeToNBT(new NBTTagCompound()));
         
         if (this.waterTank2.getFluid() != null)        
-        	par1NBTTagCompound.setTag("waterTank2", this.waterTank2.writeToNBT(new NBTTagCompound()));
+        	par1NBTTagCompound.put("waterTank2", this.waterTank2.writeToNBT(new NBTTagCompound()));
         */
         return par1NBTTagCompound
     }
 
-    override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf(0, 1, 3, 4)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
-        return this.isItemValidForSlot(slotID, itemstack)
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, itemstack)
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         return slotID == 3
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         when (slotID) {
             0 -> return ItemElectricBase.isElectricItem(itemstack.getItem())
             1 -> return true
@@ -306,7 +308,7 @@ open class TileEntityUniversalRecycler constructor() : TileEntityUpgradeMachine(
     }
 
     override fun getBatteryInSlot(): ItemStack? {
-        return this.getStackInSlot(0)
+        return this.getItem(0)
     }
 
     override fun fill(from: EnumFacing?, resource: FluidStack?, doFill: Boolean): Int {

@@ -17,9 +17,9 @@ import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.client.gui.screens.Screen as GuiScreen
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.input.Keyboard
 import java.io.IOException
 
@@ -322,6 +322,6 @@ open class GuiAirLockController constructor(private val controller: TileEntityAi
 
     companion object {
         private val airLockControllerGui =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/air_lock_controller.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/air_lock_controller.png")
     }
 }

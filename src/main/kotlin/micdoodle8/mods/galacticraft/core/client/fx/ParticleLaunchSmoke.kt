@@ -2,13 +2,13 @@ package micdoodle8.mods.galacticraft.core.client.fx
 
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import net.minecraft.client.renderer.BufferBuilder
-import net.minecraft.entity.Entity
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class ParticleLaunchSmoke constructor(
     par1World: World,
     position: Vector3,
@@ -38,9 +38,9 @@ open class ParticleLaunchSmoke constructor(
         if (launched) {
             this.particleMaxAge = (this.particleMaxAge * size).toInt() + 10
         } else {
-            this.motionX += par1World.rand.nextDouble() / 2 - 0.25
-            this.motionY += par1World.rand.nextDouble() / 20
-            this.motionZ += par1World.rand.nextDouble() / 2 - 0.25
+            this.motionX += par1World.random.nextDouble() / 2 - 0.25
+            this.motionY += par1World.random.nextDouble() / 20
+            this.motionZ += par1World.random.nextDouble() / 2 - 0.25
             this.particleMaxAge = 30 + this.particleMaxAge
         }
 

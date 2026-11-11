@@ -1,8 +1,11 @@
 package micdoodle8.mods.galacticraft.core.world.gen.dungeon
 
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.nbt.NBTTagCompound
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import java.lang.Exception
 
 open class DungeonConfiguration {
@@ -38,29 +41,29 @@ open class DungeonConfiguration {
     }
 
     open fun writeToNBT(tagCompound: NBTTagCompound): NBTTagCompound {
-        tagCompound.setString("brickBlock", Block.REGISTRY.getNameForObject(this.brickBlock!!.getBlock()).toString())
-        tagCompound.setInteger("brickBlockMeta", this.brickBlock!!.getBlock().getMetaFromState(this.brickBlock))
-        tagCompound.setInteger("yPosition", this.yPosition)
-        tagCompound.setInteger("hallwayLengthMin", this.hallwayLengthMin)
-        tagCompound.setInteger("hallwayLengthMax", this.hallwayLengthMax)
-        tagCompound.setInteger("hallwayHeight", this.hallwayHeight)
-        tagCompound.setInteger("roomHeight", this.roomHeight)
-        tagCompound.setString("bossRoom", this.bossRoom!!.getName())
-        tagCompound.setString("treasureRoom", this.treasureRoom!!.getName())
+        tagCompound.putString("brickBlock", Block.REGISTRY.getNameForObject(this.brickBlock!!.getBlock()).toString())
+        tagCompound.putInt("brickBlockMeta", this.brickBlock!!.getBlock().getMetaFromState(this.brickBlock))
+        tagCompound.putInt("yPosition", this.yPosition)
+        tagCompound.putInt("hallwayLengthMin", this.hallwayLengthMin)
+        tagCompound.putInt("hallwayLengthMax", this.hallwayLengthMax)
+        tagCompound.putInt("hallwayHeight", this.hallwayHeight)
+        tagCompound.putInt("roomHeight", this.roomHeight)
+        tagCompound.putString("bossRoom", this.bossRoom!!.getName())
+        tagCompound.putString("treasureRoom", this.treasureRoom!!.getName())
         return tagCompound
     }
 
     open fun readFromNBT(tagCompound: NBTTagCompound) {
         try {
-            this.brickBlock = Block.getBlockFromName(tagCompound.getString("brickBlock"))!!
-                .getStateFromMeta(tagCompound.getInteger("brickBlockMeta"))
-            this.yPosition = tagCompound.getInteger("yPosition")
-            this.hallwayLengthMin = tagCompound.getInteger("hallwayLengthMin")
-            this.hallwayLengthMax = tagCompound.getInteger("hallwayLengthMax")
-            this.hallwayHeight = tagCompound.getInteger("hallwayHeight")
-            this.roomHeight = tagCompound.getInteger("roomHeight")
-            this.bossRoom = Class.forName(tagCompound.getString("bossRoom"))
-            this.treasureRoom = Class.forName(tagCompound.getString("treasureRoom"))
+            this.brickBlock = Block.getBlockFromName(tagCompound.getStringOr("brickBlock", ""))!!
+                .getStateFromMeta(tagCompound.getIntOr("brickBlockMeta", 0))
+            this.yPosition = tagCompound.getIntOr("yPosition", 0)
+            this.hallwayLengthMin = tagCompound.getIntOr("hallwayLengthMin", 0)
+            this.hallwayLengthMax = tagCompound.getIntOr("hallwayLengthMax", 0)
+            this.hallwayHeight = tagCompound.getIntOr("hallwayHeight", 0)
+            this.roomHeight = tagCompound.getIntOr("roomHeight", 0)
+            this.bossRoom = Class.forName(tagCompound.getStringOr("bossRoom", ""))
+            this.treasureRoom = Class.forName(tagCompound.getStringOr("treasureRoom", ""))
         } catch (e: Exception) {
             System.err.println("Failed to read dungeon configuration from NBT")
             e.printStackTrace()

@@ -1,48 +1,36 @@
 package micdoodle8.mods.galacticraft.api.event
 
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.world.WorldProvider
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.level.Level
 import net.minecraftforge.event.entity.living.LivingEvent
-import net.minecraftforge.fml.common.eventhandler.Cancelable
+import net.minecraftforge.eventbus.api.bus.CancellableEventBus
+import net.minecraftforge.eventbus.api.event.MutableEvent
+import net.minecraftforge.eventbus.api.event.characteristic.Cancellable
 
-/**
- * Entity Living zero gravity events.
- *
- *
- * Cancel the event to disable zero gravity effects on this entity
- * If Zero Gravity is disabled, the entity will fall under dimension-set gravity (probably very low!)
- */
-abstract class ZeroGravityEvent(entity: EntityLivingBase) : LivingEvent(entity) {
-    @JvmField
-    val provider: WorldProvider?
+/** Return true from a listener to apply the dimension's normal gravity instead of freefall motion */
+abstract class ZeroGravityEvent(private val living: LivingEntity) : MutableEvent(), LivingEvent {
+    @JvmField val level: Level = living.level()
+    override fun getEntity(): LivingEntity = living
+    abstract fun post(): Boolean
 
-    init {
-        this.provider = entity.world.provider
+    class InFreefall(entity: LivingEntity) : ZeroGravityEvent(entity), Cancellable {
+        override fun post(): Boolean = BUS.post(this)
+        companion object {
+            @JvmField val BUS: CancellableEventBus<InFreefall> = CancellableEventBus.create(InFreefall::class.java)
+        }
     }
 
-    /**
-     * Cancel this to return false on all freefall tests
-     * "Freefall" = feet not on a block in a Zero G Dimension
-     */
-    @Cancelable
-    open class InFreefall constructor(entity: EntityLivingBase) : ZeroGravityEvent(entity)
+    class Motion(entity: LivingEntity) : ZeroGravityEvent(entity), Cancellable {
+        override fun post(): Boolean = BUS.post(this)
+        companion object {
+            @JvmField val BUS: CancellableEventBus<Motion> = CancellableEventBus.create(Motion::class.java)
+        }
+    }
 
-
-    /**
-     * Cancel this to block special Zero G dimension motion
-     * (moving on walls, and jumping and landing on blocks)
-     */
-    @Cancelable
-    open class Motion constructor(entity: EntityLivingBase) : ZeroGravityEvent(entity)
-
-
-    /**
-     * Cancel this to block the sneak override on Zero G dimensions
-     * when descending (no sneak) or landing (sneak during impact)
-     *
-     * (This sneaking will mostly be cancelled anyhow if the Motion
-     * event is cancelled)
-     */
-    @Cancelable
-    open class SneakOverride constructor(entity: EntityLivingBase) : ZeroGravityEvent(entity)
+    class SneakOverride(entity: LivingEntity) : ZeroGravityEvent(entity), Cancellable {
+        override fun post(): Boolean = BUS.post(this)
+        companion object {
+            @JvmField val BUS: CancellableEventBus<SneakOverride> = CancellableEventBus.create(SneakOverride::class.java)
+        }
+    }
 }

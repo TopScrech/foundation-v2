@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.util
 
+import foundation.level.offset
+
 import micdoodle8.mods.galacticraft.core.network.PacketSimple.EnumSimplePacket
 
 import com.google.common.collect.MapMaker
@@ -38,37 +40,37 @@ import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.tile.TileEntityTelemetry
 import micdoodle8.mods.galacticraft.planets.venus.dimension.WorldProviderVenus
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityList
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
 import net.minecraft.nbt.CompressedStreamTools
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.play.server.SPacketEntityEffect
 import net.minecraft.network.play.server.SPacketPlayerAbilities
 import net.minecraft.network.play.server.SPacketRespawn
 import net.minecraft.network.play.server.SPacketSetExperience
-import net.minecraft.potion.PotionEffect
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
-import net.minecraft.world.EnumDifficulty
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
+import net.minecraft.world.Difficulty as EnumDifficulty
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.WorldServer
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraft.world.WorldSettings
 import net.minecraft.world.WorldType
 import net.minecraftforge.common.DimensionManager
 import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.server.permission.PermissionAPI
 import org.apache.commons.lang3.ArrayUtils
 import java.io.File
@@ -104,8 +106,8 @@ object WorldUtil {
 
     @JvmStatic
     fun getGravityFactor(entity: Entity): Float {
-        if (entity.world.provider is IGalacticraftWorldProvider) {
-            val customProvider: IGalacticraftWorldProvider = entity.world.provider as IGalacticraftWorldProvider
+        if (entity.level().provider is IGalacticraftWorldProvider) {
+            val customProvider: IGalacticraftWorldProvider = entity.level().provider as IGalacticraftWorldProvider
             var returnValue: Float = MathHelper.sqrt(0.08f / (0.08f - customProvider.getGravity()))
             if (returnValue > 2.5f) {
                 returnValue = 2.5f
@@ -153,7 +155,7 @@ object WorldUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getProviderForNameClient(par1String: String): WorldProvider? {
         var nameToFind: String? = par1String
         if (par1String.contains("$")) {
@@ -216,7 +218,7 @@ object WorldUtil {
         }
 
         for (element: Int in registeredSpaceStations!!.keys) {
-            val data: SpaceStationWorldData = (SpaceStationWorldData.getStationData(playerBase!!.world, element, null))!!
+            val data: SpaceStationWorldData = (SpaceStationWorldData.getStationData(playerBase!!.level(), element, null))!!
 
             if (!ConfigManagerCore.spaceStationsRequirePermission || data.getAllowedAll() || data.getAllowedPlayers()
                     .contains(PlayerUtil.getName(playerBase)) || ArrayUtils.contains(
@@ -231,10 +233,10 @@ object WorldUtil {
                         temp.add(element)
                         continue
                     }
-                    if (playerBase.world.provider is IOrbitDimension) {
+                    if (playerBase.level().provider is IOrbitDimension) {
                         //Player is currently on another space station around the same planet
                         val dataCurrent: SpaceStationWorldData =
-                            (SpaceStationWorldData.getStationData(playerBase.world, playerBase.dimension, null))!!
+                            (SpaceStationWorldData.getStationData(playerBase.level(), playerBase.dimension, null))!!
                         if (dataCurrent.getHomePlanet() == data.getHomePlanet()) {
                             temp.add(element)
                             continue
@@ -330,7 +332,7 @@ object WorldUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getProviderForDimensionClient(id: Int): WorldProvider? {
         val ws: World? = ClientProxyCore.mc.world
         if (ws != null && GCCoreUtil.getDimensionID(ws) == id) {
@@ -361,7 +363,7 @@ object WorldUtil {
                 celestialBody = GalacticraftCore.satelliteSpaceStation
                 //This no longer checks whether a WorldProvider can be created, for performance reasons (that causes the dimension to load unnecessarily at map building stage)
                 if (playerBase != null) {
-                    val data: SpaceStationWorldData = (SpaceStationWorldData.getStationData(playerBase.world, id, null))!!
+                    val data: SpaceStationWorldData = (SpaceStationWorldData.getStationData(playerBase.level(), id, null))!!
                     map.put(
                         (celestialBody)!!.getName() + "$" + data.getOwner() + "$" + data.getSpaceStationName() + "$" + id + "$" + data.getHomePlanet(),
                         id
@@ -452,7 +454,7 @@ object WorldUtil {
                         val fileinputstream: FileInputStream = FileInputStream(var5)
                         val nbttagcompound: NBTTagCompound = CompressedStreamTools.readCompressed(fileinputstream)
                         fileinputstream.close()
-                        worldDataTemp.readFromNBT(nbttagcompound.getCompoundTag("data"))
+                        worldDataTemp.readFromNBT(nbttagcompound.getCompoundOrEmpty("data"))
 
                         // Search for id in server-defined statically loaded dimensions
                         val id: Int = Arrays.binarySearch(ConfigManagerCore.staticLoadDimensions, registeredID)
@@ -629,7 +631,7 @@ object WorldUtil {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimple(
                 PacketSimple.EnumSimplePacket.C_UPDATE_SPACESTATION_CLIENT_ID,
-                GCCoreUtil.getDimensionID(player.world),
+                GCCoreUtil.getDimensionID(player.level()),
                 arrayOf<Any>(spaceStationDataToString((stats.getSpaceStationDimensionData())!!))
             ), player
         )
@@ -700,7 +702,7 @@ object WorldUtil {
         transferInv: Boolean,
         ridingRocket: EntityAutoRocket?
     ): Entity? {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             //GalacticraftCore.packetPipeline.sendToAll(new PacketSimple(EnumSimplePacket.C_UPDATE_PLANETS_LIST, WorldUtil.getPlanetList()));
 
             val server: MinecraftServer? = world.getMinecraftServer()
@@ -736,25 +738,25 @@ object WorldUtil {
         var entity: Entity? = entity
         var ridingRocket: EntityAutoRocket? = ridingRocket
         var otherRiddenEntity: Entity? = null
-        if (entity!!.getRidingEntity() != null) {
-            if (entity.getRidingEntity() is EntitySpaceshipBase) {
-                entity.startRiding(entity.getRidingEntity())
-            } else if (entity.getRidingEntity() is EntityCelestialFake) {
-                val e: Entity? = entity.getRidingEntity()
+        if (entity!!.getVehicle() != null) {
+            if (entity.getVehicle() is EntitySpaceshipBase) {
+                entity.startRiding(entity.getVehicle())
+            } else if (entity.getVehicle() is EntityCelestialFake) {
+                val e: Entity? = entity.getVehicle()
                 e!!.removePassengers()
                 e.setDead()
             } else {
-                otherRiddenEntity = entity.getRidingEntity()
+                otherRiddenEntity = entity.getVehicle()
                 entity.dismountRidingEntity()
             }
         }
 
-        val dimChange: Boolean = entity.world !== worldNew
+        val dimChange: Boolean = entity.level() !== worldNew
         //Make sure the entity is added to the correct chunk in the OLD world so that it will be properly removed later if it needs to be unloaded from that world
-        entity.world.updateEntityWithOptionalForce(entity, false)
+        entity.level().updateEntityWithOptionalForce(entity, false)
         var player: EntityPlayerMP? = null
         var spawnPos: Vector3? = null
-        val oldDimID: Int = GCCoreUtil.getDimensionID(entity.world)
+        val oldDimID: Int = GCCoreUtil.getDimensionID(entity.level())
 
         if (ridingRocket != null) {
             val tList: ArrayList<TileEntityTelemetry?>? = ridingRocket.getTelemetry()
@@ -780,7 +782,7 @@ object WorldUtil {
         if (dimChange) {
             if (entity is EntityPlayerMP) {
                 player = entity
-                val worldOld: World = player.world
+                val worldOld: World = player.level()
 
                 val stats: GCPlayerStats = (GCPlayerStats.get(player))!!
                 stats.setUsingPlanetSelectionGui(false)
@@ -806,7 +808,7 @@ object WorldUtil {
                         (GalacticraftCore.packetPipeline)!!.sendTo(
                             PacketSimple(
                                 PacketSimple.EnumSimplePacket.C_UPDATE_SPACESTATION_DATA,
-                                GCCoreUtil.getDimensionID(player.world),
+                                GCCoreUtil.getDimensionID(player.level()),
                                 arrayOf<Any>(dimID, var2)
                             ), player
                         )
@@ -844,9 +846,9 @@ object WorldUtil {
                 player.server.getPlayerList().updateTimeAndWeatherForPlayer(player, worldNew)
                 player.server.getPlayerList().syncPlayerInventory(player)
 
-                for (o: Any? in player.getActivePotionEffects()) {
+                for (o: Any? in player.getActiveEffects()) {
                     val var10: PotionEffect = o as PotionEffect
-                    player.connection.sendPacket(SPacketEntityEffect(player.getEntityId(), var10))
+                    player.connection.sendPacket(SPacketEntityEffect(player.getId(), var10))
                 }
 
                 player.connection.sendPacket(
@@ -862,7 +864,7 @@ object WorldUtil {
                 if (entity is EntitySpaceshipBase) {
                     tList = entity.getTelemetry()
                 }
-                WorldUtil.removeEntityFromWorld(entity.world, entity, true)
+                WorldUtil.removeEntityFromWorld(entity.level(), entity, true)
 
                 val nbt: NBTTagCompound = NBTTagCompound()
                 entity.isDead = false
@@ -897,7 +899,7 @@ object WorldUtil {
                 if (ridingRocket != null) {
                     spawnPos = Vector3(ridingRocket)
                 } else {
-                    spawnPos = type.getPlayerSpawnLocation(entity.world as WorldServer?, entity)
+                    spawnPos = type.getPlayerSpawnLocation(entity.level() as WorldServer?, entity)
                 }
                 forceMoveEntityToPos(entity, worldNew as WorldServer, spawnPos, false)
 
@@ -958,7 +960,7 @@ object WorldUtil {
             if (transferInv && stats.getChestSpawnCooldown() == 0) {
                 stats.setChestSpawnVector(
                     type.getParaChestSpawnLocation(
-                        entity.world as WorldServer?,
+                        entity.level() as WorldServer?,
                         player,
                         Random()
                     )
@@ -970,28 +972,28 @@ object WorldUtil {
         if (ridingRocket != null) {
             CompatibilityManager.forceLoadChunks(worldNew as WorldServer)
             ridingRocket.forceSpawn = true
-            worldNew.spawnEntity(ridingRocket)
+            worldNew.addFreshEntity(ridingRocket)
             ridingRocket.setWorld(worldNew)
             worldNew.updateEntityWithOptionalForce(ridingRocket, true)
             CompatibilityManager.forceLoadChunksEnd(worldNew)
             entity.startRiding(ridingRocket)
-            GCLog.debug("Entering rocket at : " + entity.posX + "," + entity.posZ + " rocket at: " + ridingRocket.posX + "," + ridingRocket.posZ)
+            GCLog.debug("Entering rocket at : " + entity.x + "," + entity.z + " rocket at: " + ridingRocket.posX + "," + ridingRocket.posZ)
         } else if (otherRiddenEntity != null) {
             if (dimChange) {
-                val worldOld: World = otherRiddenEntity.world
+                val worldOld: World = otherRiddenEntity.level()
                 val nbt: NBTTagCompound = NBTTagCompound()
                 otherRiddenEntity.writeToNBTOptional(nbt)
                 removeEntityFromWorld(worldOld, otherRiddenEntity, true)
                 otherRiddenEntity = EntityList.createEntityFromNBT(nbt, worldNew)
-                worldNew.spawnEntity(otherRiddenEntity)
+                worldNew.addFreshEntity(otherRiddenEntity)
                 otherRiddenEntity!!.setWorld(worldNew)
             }
             otherRiddenEntity.setPositionAndRotation(
-                entity.posX,
-                entity.posY - 10,
-                entity.posZ,
-                otherRiddenEntity.rotationYaw,
-                otherRiddenEntity.rotationPitch
+                entity.x,
+                entity.y - 10,
+                entity.z,
+                otherRiddenEntity.yRot,
+                otherRiddenEntity.xRot
             )
             worldNew.updateEntityWithOptionalForce(otherRiddenEntity, true)
         }
@@ -1008,12 +1010,12 @@ object WorldUtil {
 
     @JvmStatic
     fun teleportEntitySimple(worldNew: World, dimID: Int, player: EntityPlayerMP, spawnPos: Vector3): Entity {
-        if (player.getRidingEntity() != null) {
-            player.getRidingEntity()!!.setDead()
+        if (player.getVehicle() != null) {
+            player.getVehicle()!!.setDead()
             player.dismountRidingEntity()
         }
 
-        val worldOld: World = player.world
+        val worldOld: World = player.level()
         val oldDimID: Int = GCCoreUtil.getDimensionID(worldOld)
         val dimChange: Boolean = worldOld !== worldNew
         //Make sure the entity is added to the correct chunk in the OLD world so that it will be properly removed later if it needs to be unloaded from that world
@@ -1027,8 +1029,8 @@ object WorldUtil {
             player.connection.sendPacket(
                 SPacketRespawn(
                     dimID,
-                    player.world.getDifficulty(),
-                    player.world.getWorldInfo().getTerrainType(),
+                    player.level().getDifficulty(),
+                    player.level().getWorldInfo().getTerrainType(),
                     player.interactionManager.getGameType()
                 )
             )
@@ -1040,7 +1042,7 @@ object WorldUtil {
                     (GalacticraftCore.packetPipeline)!!.sendTo(
                         PacketSimple(
                             PacketSimple.EnumSimplePacket.C_UPDATE_SPACESTATION_DATA,
-                            GCCoreUtil.getDimensionID(player.world),
+                            GCCoreUtil.getDimensionID(player.level()),
                             arrayOf<Any>(dimID, var2)
                         ), player
                     )
@@ -1059,9 +1061,9 @@ object WorldUtil {
             player.server.getPlayerList().updateTimeAndWeatherForPlayer(player, worldNew)
             player.server.getPlayerList().syncPlayerInventory(player)
 
-            for (o: Any? in player.getActivePotionEffects()) {
+            for (o: Any? in player.getActiveEffects()) {
                 val var10: PotionEffect = o as PotionEffect
-                player.connection.sendPacket(SPacketEntityEffect(player.getEntityId(), var10))
+                player.connection.sendPacket(SPacketEntityEffect(player.getId(), var10))
             }
 
             player.connection.sendPacket(
@@ -1084,7 +1086,7 @@ object WorldUtil {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimple(
                 PacketSimple.EnumSimplePacket.C_RESET_THIRD_PERSON,
-                GCCoreUtil.getDimensionID(player.world),
+                GCCoreUtil.getDimensionID(player.level()),
                 arrayOf<Any?>()
             ), player
         )
@@ -1112,12 +1114,12 @@ object WorldUtil {
         val pair: ChunkPos = worldNew.getChunk(spawnPos!!.intX() shr 4, spawnPos.intZ() shr 4).getPos()
         GCLog.debug("Loading first chunk in new dimension at " + pair.x + "," + pair.z)
         worldNew.getChunkProvider().loadChunk(pair.x, pair.z)
-        entity.setLocationAndAngles((spawnPos)!!.x, (spawnPos)!!.y, (spawnPos)!!.z, entity.rotationYaw, entity.rotationPitch)
-        val fromWorld: WorldServer? = (entity.world as WorldServer?)
+        entity.setLocationAndAngles((spawnPos)!!.x, (spawnPos)!!.y, (spawnPos)!!.z, entity.yRot, entity.xRot)
+        val fromWorld: WorldServer? = (entity.level() as WorldServer?)
         if (spawnRequired) {
-            (entity.world as WorldServer).getEntityTracker().untrack(entity)
+            (entity.level() as WorldServer).getEntityTracker().untrack(entity)
             entity.forceSpawn = true
-            worldNew.spawnEntity(entity)
+            worldNew.addFreshEntity(entity)
             entity.setWorld(worldNew)
         }
         worldNew.updateEntityWithOptionalForce(entity, true)
@@ -1126,8 +1128,8 @@ object WorldUtil {
                 (spawnPos)!!.x,
                 (spawnPos)!!.y,
                 (spawnPos)!!.z,
-                entity.rotationYaw,
-                entity.rotationPitch
+                entity.yRot,
+                entity.xRot
             )
         }
         CompatibilityManager.forceLoadChunksEnd(worldNew)
@@ -1146,7 +1148,7 @@ object WorldUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun forceRespawnClient(dimID: Int, par2: Int, par3: String?, par4: Int): EntityPlayer? {
         val fakePacket: SPacketRespawn = SPacketRespawn(
             dimID,
@@ -1166,7 +1168,7 @@ object WorldUtil {
         if (var1 is EntityPlayer) {
             val var2: EntityPlayer = var1
             var2.closeScreen()
-            var0.playerEntities.remove(var2)
+            var0.players().remove(var2)
             var0.updateAllPlayersSleepingFlag()
         }
 
@@ -1381,14 +1383,14 @@ object WorldUtil {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimple(
                 PacketSimple.EnumSimplePacket.C_UPDATE_DIMENSION_LIST,
-                GCCoreUtil.getDimensionID(player.world),
+                GCCoreUtil.getDimensionID(player.level()),
                 arrayOf<Any?>(PlayerUtil.getName(player), dimensionList, canCreateStations)
             ), player
         )
         stats.setUsingPlanetSelectionGui(true)
         stats.setSavedPlanetList(dimensionList)
-        val fakeEntity: Entity = EntityCelestialFake(player.world, player.posX, player.posY, player.posZ)
-        player.world.spawnEntity(fakeEntity)
+        val fakeEntity: Entity = EntityCelestialFake(player.level(), player.x, player.y, player.z)
+        player.level().spawnEntity(fakeEntity)
         player.startRiding(fakeEntity)
     }
 
@@ -1411,14 +1413,14 @@ object WorldUtil {
             // If the footprint is still over air....
             val b2: Block = world.getBlockState(pos1).getBlock()
             if (b2 != null && b2.isAir(world.getBlockState(pos1), world, pos1)) {
-                for (direction: EnumFacing in EnumFacing.VALUES) {
+                for (direction: EnumFacing in EnumFacing.values()) {
                     val offsetPos: BlockPos = posMain.offset(direction)
                     if (direction != EnumFacing.DOWN && direction != EnumFacing.UP) {
                         if (!world.getBlockState(offsetPos).getBlock()
                                 .isAir(world.getBlockState(offsetPos), world, offsetPos)
                         ) {
-                            position.x += direction.getXOffset()
-                            position.z += direction.getZOffset()
+                            position.x += direction.getStepX()
+                            position.z += direction.getStepZ()
                             break
                         }
                     }
@@ -1551,11 +1553,11 @@ object WorldUtil {
         var offsetPos: BlockPos
         for (dX: Int in -2..2) {
             for (dZ: Int in -2..2) {
-                offsetPos = pos.add(dX, 0, dZ)
+                offsetPos = pos.offset(dX, 0, dZ)
                 val blockState: IBlockState = worldIn.getBlockState(offsetPos)
 
                 if (blockState.getBlock() === GCBlocks.landingPadFull) {
-                    worldIn.notifyBlockUpdate(offsetPos, blockState, blockState, 3)
+                    worldIn.sendBlockUpdated(offsetPos, blockState, blockState, 3)
                 }
             }
         }

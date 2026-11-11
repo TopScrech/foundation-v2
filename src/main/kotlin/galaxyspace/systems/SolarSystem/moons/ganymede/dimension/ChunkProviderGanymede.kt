@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.moons.ganymede.dimension
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import asmodeuscore.core.astronomy.dimension.world.gen.ACBiome
 import asmodeuscore.core.astronomy.dimension.world.gen.ChunkProviderSpaceLakes
@@ -12,10 +14,10 @@ import galaxyspace.systems.SolarSystem.moons.ganymede.world.gen.BiomeDecoratorGa
 import galaxyspace.systems.SolarSystem.moons.ganymede.dimension.ChunkProviderGanymede
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
-import net.minecraft.block.state.IBlockState
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 
 
@@ -119,7 +121,7 @@ open class ChunkProviderGanymede constructor(par1World: World?, seed: Long, mapF
     override fun getCraterAdditions(primer: ChunkPrimer?, x: Int, y: Int, z: Int) {
         /*if(this.rand.nextInt(8) == 0 && primer.getBlockState(x, y - 1, z).getBlock() != Blocks.AIR)
 		{
-			primer.setBlockState(x, y - 1, z, GSBlocks.SURFACE_ICE.getDefaultState());
+			primer.setBlockState(x, y - 1, z, GSBlocks.SURFACE_ICE.defaultBlockState());
 		}*/
     }
 }

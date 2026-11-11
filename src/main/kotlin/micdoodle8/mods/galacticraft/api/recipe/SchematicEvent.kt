@@ -1,22 +1,33 @@
 package micdoodle8.mods.galacticraft.api.recipe
 
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraftforge.fml.common.eventhandler.Event
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.server.level.ServerPlayer
+import net.minecraftforge.api.distmarker.Dist
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.eventbus.api.bus.EventBus
+import net.minecraftforge.eventbus.api.event.MutableEvent
 
-/**
- * These events are used internally to perform actions when Galacticraft is
- * installed, without needing to include unnecessary classes. There is no need
- * to subscribe to these events.
- */
-abstract class SchematicEvent(@JvmField var page: ISchematicPage?) : Event() {
-    open class Unlock constructor(@JvmField var player: EntityPlayerMP?, page: ISchematicPage?) :
-        SchematicEvent(page)
+/** Internal notifications used to unlock blueprints and change NASA workbench pages */
+abstract class SchematicEvent(@JvmField var page: ISchematicPage?) : MutableEvent() {
+    abstract fun post(): Boolean
 
-    open class FlipPage constructor(
-        @JvmField var currentGui: GuiScreen?,
+    class Unlock(@JvmField var player: ServerPlayer?, page: ISchematicPage?) : SchematicEvent(page) {
+        override fun post(): Boolean = BUS.post(this)
+        companion object {
+            @JvmField val BUS: EventBus<Unlock> = EventBus.create(Unlock::class.java)
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    class FlipPage(
+        @JvmField var currentGui: Screen?,
         page: ISchematicPage?,
         @JvmField var index: Int,
         @JvmField var direction: Int
-    ) : SchematicEvent(page)
+    ) : SchematicEvent(page) {
+        override fun post(): Boolean = BUS.post(this)
+        companion object {
+            @JvmField val BUS: EventBus<FlipPage> = EventBus.create(FlipPage::class.java)
+        }
+    }
 }

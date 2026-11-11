@@ -1,10 +1,12 @@
 package micdoodle8.mods.galacticraft.planets.venus.world.gen.dungeon
 
+import foundation.persistence.containsTag
+
 import java.util.Random
 
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.template.TemplateManager
 import java.util.*
 
@@ -28,14 +30,14 @@ abstract class DirectionalPieceVenus : PieceVenus {
     override fun writeStructureToNBT(tagCompound: NBTTagCompound) {
         super.writeStructureToNBT(tagCompound)
 
-        tagCompound.setInteger("direction", this.direction!!.ordinal)
+        tagCompound.putInt("direction", this.direction!!.ordinal)
     }
 
     override fun readStructureFromNBT(tagCompound: NBTTagCompound, manager: TemplateManager) {
         super.readStructureFromNBT(tagCompound, manager)
 
-        if (tagCompound.hasKey("direction")) {
-            this.direction = EnumFacing.byIndex(tagCompound.getInteger("direction"))
+        if (tagCompound.containsTag("direction")) {
+            this.direction = EnumFacing.from3DDataValue(tagCompound.getIntOr("direction", 0))
         } else {
             this.direction = EnumFacing.NORTH
         }
@@ -54,15 +56,15 @@ abstract class DirectionalPieceVenus : PieceVenus {
             randomDir = EnumFacing.byHorizontalIndex(
                 (if (randDir == getDirection()!!.getOpposite().getHorizontalIndex()) randDir + 1 else randDir) % 4
             )
-            val extension: StructureBoundingBox = getExtension(
+            val extension: BoundingBox = getExtension(
                 randomDir,
                 (this.configuration)!!.getHallwayLengthMin() + rand.nextInt((this.configuration)!!.getHallwayLengthMax() - (this.configuration)!!.getHallwayLengthMin()),
                 5
             )
-            blockX = extension.minX
-            blockZ = extension.minZ
-            sizeX = extension.maxX - extension.minX
-            sizeZ = extension.maxZ - extension.minZ
+            blockX = extension.minX()
+            blockZ = extension.minZ()
+            sizeX = extension.maxX() - extension.minX()
+            sizeZ = extension.maxZ() - extension.minZ()
             valid = !startPiece.checkIntersection(extension)
             attempts--
         } while (!valid && attempts > 0)

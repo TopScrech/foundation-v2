@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.dimension
 
+import net.minecraft.network.chat.Component
+
 import java.util.Random
 
 import micdoodle8.mods.galacticraft.api.vector.Vector3
@@ -7,11 +9,11 @@ import micdoodle8.mods.galacticraft.api.world.ITeleportType
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
-import net.minecraft.world.WorldServer
+import net.minecraft.world.entity.Entity
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+
+import net.minecraft.world.level.Level as World
+import net.minecraft.server.level.ServerLevel as WorldServer
 import java.util.*
 
 open class TeleportTypeSpaceStation : ITeleportType {
@@ -32,9 +34,9 @@ open class TeleportTypeSpaceStation : ITeleportType {
     }
 
     override fun onSpaceDimensionChanged(newWorld: World?, player: EntityPlayerMP?, ridingAutoRocket: Boolean) {
-        if (ConfigManagerCore.spaceStationsRequirePermission && !(newWorld)!!.isRemote) {
-            (player)!!.sendMessage(
-                TextComponentString(
+        if (ConfigManagerCore.spaceStationsRequirePermission && !(newWorld)!!.isClientSide) {
+            (player)!!.sendSystemMessage(
+                Component.literal(
                     EnumColor.YELLOW.toString() + GCCoreUtil.translate("gui.spacestation.type_command") + " " + EnumColor.AQUA + "/ssinvite " + GCCoreUtil.translate(
                         "gui.spacestation.playername"
                     ) + " " + EnumColor.YELLOW + GCCoreUtil.translate("gui.spacestation.to_allow_entry")

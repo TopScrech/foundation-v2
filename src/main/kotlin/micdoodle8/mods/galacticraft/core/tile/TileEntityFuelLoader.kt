@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import micdoodle8.mods.galacticraft.api.entity.IFuelable
@@ -16,15 +18,15 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.wrappers.FluidHandlerWrapper
 import micdoodle8.mods.galacticraft.core.wrappers.IFluidHandlerWrapper
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.WorldlyContainer as ISidedInventory
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
@@ -32,7 +34,7 @@ import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 
 open class TileEntityFuelLoader constructor() : TileBaseElectricBlockWithInventory(), ISidedInventory,
     IFluidHandlerWrapper, ILandingPadAttachable, IMachineSides {
@@ -69,7 +71,7 @@ open class TileEntityFuelLoader constructor() : TileBaseElectricBlockWithInvento
                 this.attachedFuelable = null
 
                 val thisVec: BlockVec3 = BlockVec3(this)
-                for (dir: EnumFacing in EnumFacing.VALUES) {
+                for (dir: EnumFacing in EnumFacing.values()) {
                     val pad: TileEntity? = thisVec.getTileEntityOnSide(this.world, dir)
 
                     if (pad is TileEntityMulti) {
@@ -102,8 +104,8 @@ open class TileEntityFuelLoader constructor() : TileBaseElectricBlockWithInvento
         super.readFromNBT(par1NBTTagCompound)
         this.stacks = this.readStandardItemsFromNBT(par1NBTTagCompound)
 
-        if (par1NBTTagCompound.hasKey("fuelTank")) {
-            this.fuelTank!!.readFromNBT(par1NBTTagCompound.getCompoundTag("fuelTank"))
+        if (par1NBTTagCompound.containsTag("fuelTank")) {
+            this.fuelTank!!.readFromNBT(par1NBTTagCompound.getCompoundOrEmpty("fuelTank"))
         }
 
         this.readMachineSidesFromNBT(par1NBTTagCompound) //Needed by IMachineSides
@@ -114,7 +116,7 @@ open class TileEntityFuelLoader constructor() : TileBaseElectricBlockWithInvento
         this.writeStandardItemsToNBT(nbt, this.stacks)
 
         if (this.fuelTank!!.getFluid() != null) {
-            nbt.setTag("fuelTank", this.fuelTank!!.writeToNBT(NBTTagCompound()))
+            nbt.put("fuelTank", this.fuelTank!!.writeToNBT(NBTTagCompound()))
         }
 
         this.addMachineSidesToNBT(nbt) //Needed by IMachineSides
@@ -126,11 +128,11 @@ open class TileEntityFuelLoader constructor() : TileBaseElectricBlockWithInvento
         return this.stacks
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.fuelloader.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.fuelloader.name")
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 1
     }
 
@@ -139,11 +141,11 @@ open class TileEntityFuelLoader constructor() : TileBaseElectricBlockWithInvento
         return intArrayOf(0, 1)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
-        return this.isItemValidForSlot(slotID, itemstack)
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, itemstack)
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         if (slotID == 1 && !itemstack.isEmpty()) {
             return FluidUtil.isEmptyContainer(itemstack)
         }
@@ -154,7 +156,7 @@ open class TileEntityFuelLoader constructor() : TileBaseElectricBlockWithInvento
         return false
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         return (slotID == 1 && itemstack != null && itemstack.getItem() === GCItems.fuelCanister) || (if (slotID == 0) ItemElectricBase.isElectricItem(
             itemstack.getItem()
         ) else false)

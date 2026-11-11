@@ -2,17 +2,17 @@ package micdoodle8.mods.galacticraft.core.client.render.entities.layer
 
 import micdoodle8.mods.galacticraft.core.client.render.entities.RenderEvolvedEnderman
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedEnderman
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.BlockRendererDispatcher
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.entity.layers.LayerRenderer
 import net.minecraft.client.renderer.texture.TextureMap
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class LayerEvolvedEndermanHeldBlock constructor(private val render: RenderEvolvedEnderman) :
     LayerRenderer<EntityEvolvedEnderman> {
     override fun shouldCombineTextures(): Boolean {
@@ -32,7 +32,7 @@ open class LayerEvolvedEndermanHeldBlock constructor(private val render: RenderE
         val iblockstate: IBlockState? = entity.getHeldBlockState()
 
         if (iblockstate != null) {
-            val blockrendererdispatcher: BlockRendererDispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher()
+            val blockrendererdispatcher: BlockRendererDispatcher = Minecraft.getInstance().getBlockRendererDispatcher()
             GlStateManager.enableRescaleNormal()
             GlStateManager.pushMatrix()
             GlStateManager.translate(0.0f, 0.6875f, -0.75f)

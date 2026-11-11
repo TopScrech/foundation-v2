@@ -4,11 +4,11 @@ import asmodeuscore.api.space.IBookPage
 import asmodeuscore.core.astronomy.gui.book.Page_WithScroll
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.input.Mouse
 
 abstract class Page_WithScroll : IBookPage {
-    private val mc: Minecraft = Minecraft.getMinecraft()
+    private val mc: Minecraft = Minecraft.getInstance()
 
     init {
         scroll = 0
@@ -121,6 +121,6 @@ abstract class Page_WithScroll : IBookPage {
         private const val maxscroll = 1
 
         @JvmField
-        var bookPageTexture: ResourceLocation = ResourceLocation("asmodeuscore", "textures/gui/tablet.png")
+        var bookPageTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/tablet.png")
     }
 }

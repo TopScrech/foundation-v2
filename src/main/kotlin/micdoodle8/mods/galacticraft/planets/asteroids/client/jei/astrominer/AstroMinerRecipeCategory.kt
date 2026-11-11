@@ -12,7 +12,7 @@ import mezz.jei.api.recipe.IRecipeWrapper
 import micdoodle8.mods.galacticraft.core.client.jei.RecipeCategories
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class AstroMinerRecipeCategory constructor(guiHelper: IGuiHelper) : IRecipeCategory<IRecipeWrapper> {
     @Nonnull
@@ -69,6 +69,6 @@ open class AstroMinerRecipeCategory constructor(guiHelper: IGuiHelper) : IRecipe
 
     companion object {
         private val astroMinerGuiTexture =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/schematic_astro_miner.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/schematic_astro_miner.png")
     }
 }

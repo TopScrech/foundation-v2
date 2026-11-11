@@ -1,12 +1,13 @@
 package micdoodle8.mods.galacticraft.core.recipe
 
+import foundation.item.FoundationItemVariants
 import de.ellpeck.actuallyadditions.api.ActuallyAdditionsAPI
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.oredict.OreDictionary
 import java.util.ArrayList
 
@@ -24,7 +25,7 @@ object CompatModuleActuallyAdditions {
         // Silicon ore :- gives 5 silicon  (normally 1-5 depending on fortune enchantment)
         ActuallyAdditionsAPI.addCrusherRecipe(
             ItemStack(GCBlocks.basicBlock, 1, 8),
-            ItemStack(GCItems.basicItem, 5, 2),
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 5, 2),
             ItemStack.EMPTY,
             0
         )
@@ -39,7 +40,7 @@ object CompatModuleActuallyAdditions {
             // Desh ore :- gives 2 raw desh (normally 1, fortune enchantment gives chance of 2)
             ActuallyAdditionsAPI.addCrusherRecipe(
                 ItemStack(MarsBlocks.marsBlock, 1, 2),
-                ItemStack(MarsItems.marsItemBasic, 2, 0),
+                FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 2, 0),
                 ItemStack.EMPTY,
                 0
             )

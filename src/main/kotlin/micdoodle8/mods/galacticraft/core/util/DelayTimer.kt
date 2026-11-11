@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.core.util
 
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 
 open class DelayTimer
 constructor(delay: Long) {
@@ -17,7 +17,7 @@ constructor(delay: Long) {
             return false
         }
 
-        val currentTime: Long = world.getTotalWorldTime()
+        val currentTime: Long = world.getGameTime()
 
         if (currentTime < lastMark) {
             lastMark = currentTime

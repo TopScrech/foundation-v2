@@ -3,13 +3,13 @@ package micdoodle8.mods.galacticraft.core.client.model
 import micdoodle8.mods.galacticraft.core.Constants
 import net.minecraft.client.model.ModelBase
 import net.minecraft.client.model.ModelRenderer
-import net.minecraft.entity.Entity
-import net.minecraft.util.math.MathHelper
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.Entity
+import net.minecraft.util.Mth as MathHelper
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class ModelEvolvedCreeper @JvmOverloads constructor(par1: Float = 0.0f) : ModelBase() {
     @JvmField
     var leftOxygenTank: ModelRenderer

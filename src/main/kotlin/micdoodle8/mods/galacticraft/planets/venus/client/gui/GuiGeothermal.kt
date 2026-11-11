@@ -15,8 +15,8 @@ import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.venus.inventory.ContainerGeothermal
 import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntityGeothermalGenerator
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import java.util.ArrayList
 import kotlin.math.floor
 import kotlin.math.min
@@ -217,6 +217,6 @@ open class GuiGeothermal constructor(
 
     companion object {
         private val backgroundTexture =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/geothermal.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/geothermal.png")
     }
 }

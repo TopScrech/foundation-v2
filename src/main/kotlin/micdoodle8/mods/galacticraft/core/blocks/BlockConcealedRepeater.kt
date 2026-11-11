@@ -4,18 +4,18 @@ import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import net.minecraft.block.BlockRedstoneRepeater
-import net.minecraft.block.SoundType
-import net.minecraft.block.state.IBlockState
-import net.minecraft.item.Item
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemBlock
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class BlockConcealedRepeater constructor(assetName: String?, powered: Boolean) :
@@ -52,7 +52,7 @@ open class BlockConcealedRepeater constructor(assetName: String?, powered: Boole
         return true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun shouldSideBeRendered(
         state: IBlockState,
         worldIn: IBlockAccess,
@@ -74,30 +74,30 @@ open class BlockConcealedRepeater constructor(assetName: String?, powered: Boole
         val integer: Int = unpoweredState.getValue(DELAY) as Int
         val obool: Boolean = unpoweredState.getValue(LOCKED) as Boolean
         val enumfacing: EnumFacing = unpoweredState.getValue(FACING) as EnumFacing
-        return (GCBlocks.concealedRepeater_Powered)!!.getDefaultState()
-            .withProperty(FACING, enumfacing).withProperty(DELAY, integer)
-            .withProperty(LOCKED, obool)
+        return (GCBlocks.concealedRepeater_Powered)!!.defaultBlockState()
+            .setValue(FACING, enumfacing).setValue(DELAY, integer)
+            .setValue(LOCKED, obool)
     }
 
     override fun getUnpoweredState(poweredState: IBlockState): IBlockState {
         val integer: Int = poweredState.getValue(DELAY) as Int
         val obool: Boolean = poweredState.getValue(LOCKED) as Boolean
         val enumfacing: EnumFacing = poweredState.getValue(FACING) as EnumFacing
-        return (GCBlocks.concealedRepeater_Unpowered)!!.getDefaultState()
-            .withProperty(FACING, enumfacing).withProperty(DELAY, integer)
-            .withProperty(LOCKED, obool)
+        return (GCBlocks.concealedRepeater_Unpowered)!!.defaultBlockState()
+            .setValue(FACING, enumfacing).setValue(DELAY, integer)
+            .setValue(LOCKED, obool)
     }
 
     override fun getItemDropped(state: IBlockState, rand: Random, fortune: Int): Item {
         return ItemBlock.getItemFromBlock(GCBlocks.concealedRepeater_Unpowered)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getItem(worldIn: World, pos: BlockPos, state: IBlockState): ItemStack {
         return ItemStack(GCBlocks.concealedRepeater_Unpowered)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun randomDisplayTick(stateIn: IBlockState, worldIn: World, pos: BlockPos, rand: Random) {
     }
 

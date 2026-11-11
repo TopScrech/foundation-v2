@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items.armor
 
+import foundation.persistence.containsTag
+
 import galaxyspace.systems.SolarSystem.planets.overworld.items.modules.armor.Autofeeding
 import galaxyspace.systems.SolarSystem.planets.overworld.items.modules.armor.Jump
 import galaxyspace.systems.SolarSystem.planets.overworld.items.modules.armor.Nightvision
@@ -16,14 +18,14 @@ import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.model.ModelBiped
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.*
 
 open class ItemSpaceSuitLight constructor(materialIn: ArmorMaterial, armorIndex: EntityEquipmentSlot?) :
@@ -54,7 +56,7 @@ open class ItemSpaceSuitLight constructor(materialIn: ArmorMaterial, armorIndex:
         return 1
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getArmorModel(
         entityLiving: EntityLivingBase,
         itemStack: ItemStack,
@@ -83,7 +85,7 @@ open class ItemSpaceSuitLight constructor(materialIn: ArmorMaterial, armorIndex:
     }
 
     public override fun getMaxElectricityStored(stack: ItemStack?): Float {
-        val energy: Boolean = (stack)!!.hasTagCompound() && (stack)!!.getTagCompound()!!.hasKey("energy")
+        val energy: Boolean = (stack)!!.hasTagCompound() && (stack)!!.getTagCompound()!!.containsTag("energy")
         return if (energy) 120000.0f else 60000.0f
     }
 }

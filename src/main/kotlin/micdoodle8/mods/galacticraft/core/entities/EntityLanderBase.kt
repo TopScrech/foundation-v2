@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.entities
 
+import foundation.persistence.containsTag
+
 import java.util.UUID
 import io.netty.buffer.ByteBuf
 import micdoodle8.mods.galacticraft.core.GCFluids
@@ -10,23 +12,23 @@ import micdoodle8.mods.galacticraft.core.network.PacketDynamic
 import micdoodle8.mods.galacticraft.core.network.PacketDynamicInventory
 import micdoodle8.mods.galacticraft.core.util.FluidUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.DamageSource
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.util.ArrayList
 
@@ -64,7 +66,7 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
         return this.shouldSendAdvancedMotionPacket()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setPositionAndRotationDirect(
         x: Double,
         y: Double,
@@ -77,8 +79,8 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
         super.setPositionAndRotationDirect(x, y, z, yaw, pitch, posRotationIncrements, b)
         if (this.syncAdjustFlag && this.world.isBlockLoaded(BlockPos(x, 255.0, z))) {
             val p: EntityPlayer = FMLClientHandler.instance().getClientPlayerEntity()
-            val dx: Double = x - p.posX
-            val dz: Double = z - p.posZ
+            val dx: Double = x - p.x
+            val dz: Double = z - p.z
             if (dx * dx + dz * dz < 1024) {
                 if (!this.world.loadedEntityList.contains(this)) {
                     try {
@@ -129,10 +131,10 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
     }
 
     constructor(player: EntityPlayerMP, yOffset: Float) : this(
-        player.world,
-        player.posX,
-        player.posY,
-        player.posZ,
+        player.level(),
+        player.x,
+        player.y,
+        player.z,
         yOffset
     ) {
         val stats: GCPlayerStats = (GCPlayerStats.Companion.get(player))!!
@@ -147,7 +149,7 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
             }
         }
 
-        this.setPositionAndRotation(player.posX, player.posY, player.posZ, 0f, 0f)
+        this.setPositionAndRotation(player.x, player.y, player.z, 0f, 0f)
 
         player.startRiding(this, true)
     }
@@ -159,7 +161,7 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
             if (this.getPassengers().isEmpty()) {
                 val player: EntityPlayer? = this.world.getClosestPlayerToEntity(this, 5.0)
 
-                if (player != null && player.getRidingEntity() == null) {
+                if (player != null && player.getVehicle() == null) {
                     player.startRiding(this)
                 }
             }
@@ -189,8 +191,8 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
 
     private fun pushEntityAway(entityToPush: Entity) {
         if (!this.getPassengers().contains(entityToPush) && this.getRidingEntity() !== entityToPush) {
-            var d0: Double = this.posX - entityToPush.posX
-            var d1: Double = this.posZ - entityToPush.posZ
+            var d0: Double = this.posX - entityToPush.x
+            var d1: Double = this.posZ - entityToPush.z
             var d2: Double = MathHelper.absMax(d0, d1)
 
             if (d2 >= 0.009999999776482582) {
@@ -215,37 +217,37 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
     }
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
-        var invSize: Int = nbt.getInteger("rocketStacksLength")
+        var invSize: Int = nbt.getIntOr("rocketStacksLength", 0)
         if (invSize < 3) {
             invSize = 3
         }
         this.stacks = NonNullList.withSize<ItemStack>(invSize, ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, this.stacks)
 
-        if (nbt.hasKey("fuelTank")) {
-            this.fuelTank.readFromNBT(nbt.getCompoundTag("fuelTank"))
+        if (nbt.containsTag("fuelTank")) {
+            this.fuelTank.readFromNBT(nbt.getCompoundOrEmpty("fuelTank"))
         }
 
-        if (nbt.hasKey("RiderUUID_LSB")) {
-            this.persistantRiderUUID = UUID(nbt.getLong("RiderUUID_LSB"), nbt.getLong("RiderUUID_MSB"))
+        if (nbt.containsTag("RiderUUID_LSB")) {
+            this.persistantRiderUUID = UUID(nbt.getLongOr("RiderUUID_LSB", 0L), nbt.getLongOr("RiderUUID_MSB", 0L))
         }
     }
 
     override fun writeEntityToNBT(nbt: NBTTagCompound) {
         if (world.isRemote) return
-        nbt.setInteger("rocketStacksLength", this.stacks.size)
+        nbt.putInt("rocketStacksLength", this.stacks.size)
 
         ItemStackHelper.saveAllItems(nbt, this.stacks)
 
         if (this.fuelTank.getFluid() != null) {
-            nbt.setTag("fuelTank", this.fuelTank.writeToNBT(NBTTagCompound()))
+            nbt.put("fuelTank", this.fuelTank.writeToNBT(NBTTagCompound()))
         }
 
         val id: UUID? = this.getOwnerUUID()
 
         if (id != null) {
-            nbt.setLong("RiderUUID_LSB", id.getLeastSignificantBits())
-            nbt.setLong("RiderUUID_MSB", id.getMostSignificantBits())
+            nbt.putLong("RiderUUID_LSB", id.getLeastSignificantBits())
+            nbt.putLong("RiderUUID_MSB", id.getMostSignificantBits())
         }
     }
 
@@ -295,7 +297,7 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
             this.shouldMoveServer = this.shouldMove()
             objList.add(this.shouldMoveServer)
             //Server send rider information for client to check
-            objList.add(if (this.getPassengers().isEmpty()) -1 else this.getPassengers().get(0).getEntityId())
+            objList.add(if (this.getPassengers().isEmpty()) -1 else this.getPassengers().get(0).getId())
         }
 
         this.networkDataChanged = objList != this.prevData
@@ -347,8 +349,8 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
                                 if (e is EntityPlayer) {
                                     e = WorldUtil.forceRespawnClient(
                                         this.dimension,
-                                        e.world.getDifficulty().getId(),
-                                        e.world.getWorldInfo().getTerrainType().getName(),
+                                        e.level().getDifficulty().getId(),
+                                        e.level().getWorldInfo().getTerrainType().getName(),
                                         (e as EntityPlayerMP).interactionManager.getGameType().getID()
                                     )
                                     (e)!!.startRiding(this)
@@ -360,7 +362,7 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
                             }
                         }
                     }
-                } else if (this.getPassengers().get(0).getEntityId() != shouldBeMountedId) {
+                } else if (this.getPassengers().get(0).getId() != shouldBeMountedId) {
                     if (shouldBeMountedId == -1) {
                         this.removePassengers()
                     } else {
@@ -370,8 +372,8 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
                                 if (e is EntityPlayer) {
                                     e = WorldUtil.forceRespawnClient(
                                         this.dimension,
-                                        e.world.getDifficulty().getId(),
-                                        e.world.getWorldInfo().getTerrainType().getName(),
+                                        e.level().getDifficulty().getId(),
+                                        e.level().getWorldInfo().getTerrainType().getName(),
                                         (e as EntityPlayerMP).interactionManager.getGameType().getID()
                                     )
                                     (e)!!.startRiding(this, true)
@@ -400,7 +402,7 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
         return this.stacks
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.stacks.size
     }
 
@@ -408,7 +410,7 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
         this.stacks = NonNullList.withSize<ItemStack>(size, ItemStack.EMPTY)
     }
 
-    override fun isItemValidForSlot(var1: Int, var2: ItemStack): Boolean {
+    override fun canPlaceItem(var1: Int, var2: ItemStack): Boolean {
         return false
     }
 
@@ -434,7 +436,7 @@ abstract class EntityLanderBase(var1: World?) : EntityAdvancedMotion(var1), IInv
         return id
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getBrightnessForRender(): Int {
         var height: Double = this.posY + this.getEyeHeight().toDouble()
         if (height > 255.0) height = 255.0

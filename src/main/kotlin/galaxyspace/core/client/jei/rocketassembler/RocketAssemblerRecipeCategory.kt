@@ -17,7 +17,7 @@ import mezz.jei.api.ingredients.IIngredients
 import mezz.jei.api.recipe.IRecipeCategory
 import mezz.jei.api.recipe.IRecipeWrapper
 import net.minecraft.client.Minecraft
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 
 open class RocketAssemblerRecipeCategory constructor(guiHelper: IGuiHelper) : IRecipeCategory<IRecipeWrapper> {
@@ -126,6 +126,6 @@ open class RocketAssemblerRecipeCategory constructor(guiHelper: IGuiHelper) : IR
     }
 
     companion object {
-        private val rocketassemblerTex = ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/rocket_assembly.png")
+        private val rocketassemblerTex = ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/rocket_assembly.png")
     }
 }

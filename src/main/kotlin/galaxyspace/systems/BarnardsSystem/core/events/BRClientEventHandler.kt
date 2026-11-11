@@ -8,20 +8,19 @@ import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.dimension.sky.Weathe
 import micdoodle8.mods.galacticraft.api.event.client.CelestialBodyRenderEvent
 import micdoodle8.mods.galacticraft.core.client.gui.screen.GuiCelestialSelection
 import net.minecraft.client.Minecraft
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class BRClientEventHandler {
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onRenderPlanetPost(event: CelestialBodyRenderEvent.Post) {
-        val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+        val minecraft: Minecraft = Minecraft.getInstance()
         val ringTexture: ResourceLocation =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/rings_type_1.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/rings_type_1.png")
 
         if (minecraft.currentScreen is GuiCelestialSelection) {
             if (event.celestialBody === BarnardsSystemBodies.Companion.Barnarda_B) {
@@ -51,7 +50,7 @@ open class BRClientEventHandler {
         @JvmStatic
         @SubscribeEvent
         fun onClientTick(event: TickEvent.ClientTickEvent?) {
-            val mc: Minecraft = Minecraft.getMinecraft()
+            val mc: Minecraft = Minecraft.getInstance()
 
             if (!mc.isGamePaused() && mc.world != null && mc.world.provider.getWeatherRenderer() is WeatherRendererBarnarda_C1) {
                 (mc.world.provider.getWeatherRenderer() as WeatherRendererBarnarda_C1).tick()

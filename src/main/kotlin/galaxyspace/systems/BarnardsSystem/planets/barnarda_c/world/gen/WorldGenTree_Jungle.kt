@@ -1,18 +1,23 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.world.gen
 
+import foundation.block.LegacyVanillaBlockStates
+import foundation.block.LegacyVanillaBlockIds
+
+import foundation.block.getStateFromMeta
+
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.world.gen.WorldGenTree_Jungle
 import micdoodle8.mods.galacticraft.core.Constants
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.tileentity.TileEntityChest
 import net.minecraft.tileentity.TileEntityMobSpawner
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenAbstractTree
 import net.minecraft.world.storage.loot.LootTableList
 import net.minecraftforge.common.IPlantable
@@ -28,7 +33,7 @@ open class WorldGenTree_Jungle constructor(
 ) : WorldGenAbstractTree(doBlockNotify) {
     protected open fun GetValidSpawnBlocks(): Array<IBlockState?> {
         return ((arrayOf<IBlockState>(
-            BRBlocks.BARNARDA_C_GRASS.getDefaultState(),
+            BRBlocks.BARNARDA_C_GRASS.defaultBlockState(),
             BRBlocks.BARNARDA_C_BLOCKS.getStateFromMeta(0)
         ) as Array<IBlockState?>?))!!
     }
@@ -83,14 +88,14 @@ open class WorldGenTree_Jungle constructor(
             if (!flag) {
                 return false
             } else {
-                val block2: Block = world.getBlockState(position.down()).getBlock()
+                val block2: Block = world.getBlockState(position.below()).getBlock()
                 val isSoil: Boolean = block2.canSustainPlant(
-                    world.getBlockState(position.down()), world,
-                    position.down(), EnumFacing.UP, BRBlocks.BARNARDA_C_DANDELIONS as IPlantable
+                    world.getBlockState(position.below()), world,
+                    position.below(), EnumFacing.UP, BRBlocks.BARNARDA_C_DANDELIONS as IPlantable
                 )
 
                 if (isSoil && position.getY() < 256 - 1) {
-                    block2.onPlantGrow(world.getBlockState(position.down()), world, position.down(), position)
+                    block2.onPlantGrow(world.getBlockState(position.below()), world, position.below(), position)
                     b0 = 3
                     val b1: Byte = 0
                     var l1: Int
@@ -134,12 +139,12 @@ open class WorldGenTree_Jungle constructor(
 
                     k1 = 0
                     while (k1 < 3) {
-                        block = world.getBlockState(position.up(k1)).getBlock()
+                        block = world.getBlockState(position.above(k1)).getBlock()
 
-                        if (block.isAir(world.getBlockState(position.up(k1)), world, position.up(k1)) || block.isLeaves(
-                                world.getBlockState(position.up(k1)),
+                        if (block.isAir(world.getBlockState(position.above(k1)), world, position.above(k1)) || block.isLeaves(
+                                world.getBlockState(position.above(k1)),
                                 world,
-                                position.up(k1)
+                                position.above(k1)
                             )
                         ) {
                             // this.setBlockAndNotifyAdequately(par1World, par3, par4 + k1, par5,// this.wood);
@@ -156,16 +161,16 @@ open class WorldGenTree_Jungle constructor(
 
     private fun growVines(world: World, x: Int, y: Int, z: Int, flag: Int) {
         var y: Int = y
-        this.setBlockAndNotifyAdequately(world, BlockPos(x, y, z), Blocks.VINE.getStateFromMeta(flag))
+        this.setBlockAndNotifyAdequately(world, BlockPos(x, y, z), LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.VINE, flag))
         var i1: Int = 4
 
         while (true) {
             --y
 
-            if (world.isAirBlock(BlockPos(x, y, z)) || i1 <= 0) {
+            if (world.isEmptyBlock(BlockPos(x, y, z)) || i1 <= 0) {
                 return
             }
-            this.setBlockAndNotifyAdequately(world, BlockPos(x, y, z), Blocks.VINE.getStateFromMeta(flag))
+            this.setBlockAndNotifyAdequately(world, BlockPos(x, y, z), LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.VINE, flag))
             --i1
         }
     }
@@ -176,12 +181,12 @@ open class WorldGenTree_Jungle constructor(
         val blockBelow: IBlockState = world.getBlockState(BlockPos(x, y - 2, z))
 
         for (i: IBlockState? in GetValidSpawnBlocks()) {
-            if (blockAbove !== Blocks.AIR.getDefaultState()) {
+            if (blockAbove !== Blocks.AIR.defaultBlockState()) {
                 return false
             }
             if (checkBlock === i) {
                 return true
-            } else if (checkBlock === Blocks.SNOW_LAYER.getDefaultState() && blockBelow === i) {
+            } else if (checkBlock === Blocks.SNOW_LAYER.defaultBlockState() && blockBelow === i) {
                 return true
             } else if (checkBlock.getMaterial() === Material.PLANTS && blockBelow === i) {
                 return true
@@ -310,10 +315,10 @@ open class WorldGenTree_Jungle constructor(
             setBlockAndNotifyAdequately(par1World, i + 2, j - 1, k + 3, wood)
             this.setBlockAndNotifyAdequately(
                 par1World, BlockPos(i + 2, j, k + 3),
-                Blocks.MOB_SPAWNER.getDefaultState()
+                Blocks.MOB_SPAWNER.defaultBlockState()
             )
             val spawner: TileEntityMobSpawner? = par1World
-                .getTileEntity(BlockPos(i + 2, j, k + 3)) as TileEntityMobSpawner?
+                .getBlockEntity(BlockPos(i + 2, j, k + 3)) as TileEntityMobSpawner?
 
             if (spawner != null) {
                 spawner.getSpawnerBaseLogic().setEntityId(getMob(rand))
@@ -321,9 +326,9 @@ open class WorldGenTree_Jungle constructor(
 
             this.setBlockAndNotifyAdequately(
                 par1World, BlockPos(i + 2, j - 2, k + 3),
-                Blocks.CHEST.getDefaultState()
+                Blocks.CHEST.defaultBlockState()
             )
-            val chest: TileEntityChest? = par1World.getTileEntity(BlockPos(i + 2, j - 2, k + 3)) as TileEntityChest?
+            val chest: TileEntityChest? = par1World.getBlockEntity(BlockPos(i + 2, j - 2, k + 3)) as TileEntityChest?
             if (chest != null) {
                 chest.setLootTable(LootTableList.CHESTS_JUNGLE_TEMPLE, rand.nextLong())
             }
@@ -854,11 +859,11 @@ open class WorldGenTree_Jungle constructor(
         @JvmStatic
         private fun getMob(rand: Random): ResourceLocation {
             when (rand.nextInt(4)) {
-                0 -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_spider")
-                1 -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_creeper")
-                2 -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_skeleton")
-                3 -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_zombie")
-                else -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_zombie")
+                0 -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_spider")
+                1 -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_creeper")
+                2 -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_skeleton")
+                3 -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_zombie")
+                else -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_zombie")
             }
         }
     }

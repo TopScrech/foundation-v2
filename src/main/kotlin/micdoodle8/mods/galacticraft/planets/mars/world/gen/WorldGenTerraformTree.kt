@@ -1,17 +1,24 @@
 package micdoodle8.mods.galacticraft.planets.mars.world.gen
 
-import net.minecraft.block.Block
+import foundation.block.LegacyVanillaBlockStates
+import foundation.block.LegacyVanillaBlockIds
+
+import foundation.block.getStateFromMeta
+
+import foundation.level.offset
+
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockCocoa
 import net.minecraft.block.BlockSapling
 import net.minecraft.block.BlockVine
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyBool
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.properties.BooleanProperty as PropertyBool
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 import java.util.Random
 import kotlin.math.abs
@@ -64,7 +71,7 @@ open class WorldGenTerraformTree constructor(
             if (!flag) {
                 return false
             } else {
-                val down: BlockPos = position.down()
+                val down: BlockPos = position.below()
                 val block1: Block = worldIn.getBlockState(down).getBlock()
                 val isSoil: Boolean = block1.canSustainPlant(
                     worldIn.getBlockState(down),
@@ -110,7 +117,7 @@ open class WorldGenTerraformTree constructor(
                                         this.setBlockAndNotifyAdequately(
                                             worldIn,
                                             blockpos1,
-                                            Blocks.LEAVES.getStateFromMeta(this.metaLeaves)
+                                            LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.LEAVES, this.metaLeaves)
                                         )
                                     }
                                 }
@@ -122,7 +129,7 @@ open class WorldGenTerraformTree constructor(
 
                     l = 0
                     while (l < i) {
-                        val upN: BlockPos = position.up(l)
+                        val upN: BlockPos = position.above(l)
                         val state2: IBlockState = worldIn.getBlockState(upN)
                         val block2: Block = state2.getBlock()
 
@@ -134,25 +141,25 @@ open class WorldGenTerraformTree constructor(
                         ) {
                             this.setBlockAndNotifyAdequately(
                                 worldIn,
-                                position.up(l),
-                                Blocks.LOG.getStateFromMeta(this.metaWood)
+                                position.above(l),
+                                LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.LOG, this.metaWood)
                             )
 
                             if (this.vinesGrow && l > 0) {
-                                if (rand.nextInt(3) > 0 && worldIn.isAirBlock(position.add(-1, l, 0))) {
-                                    this.func_181647_a(worldIn, position.add(-1, l, 0), BlockVine.EAST)
+                                if (rand.nextInt(3) > 0 && worldIn.isEmptyBlock(position.offset(-1, l, 0))) {
+                                    this.func_181647_a(worldIn, position.offset(-1, l, 0), BlockVine.EAST)
                                 }
 
-                                if (rand.nextInt(3) > 0 && worldIn.isAirBlock(position.add(1, l, 0))) {
-                                    this.func_181647_a(worldIn, position.add(1, l, 0), BlockVine.WEST)
+                                if (rand.nextInt(3) > 0 && worldIn.isEmptyBlock(position.offset(1, l, 0))) {
+                                    this.func_181647_a(worldIn, position.offset(1, l, 0), BlockVine.WEST)
                                 }
 
-                                if (rand.nextInt(3) > 0 && worldIn.isAirBlock(position.add(0, l, -1))) {
-                                    this.func_181647_a(worldIn, position.add(0, l, -1), BlockVine.SOUTH)
+                                if (rand.nextInt(3) > 0 && worldIn.isEmptyBlock(position.offset(0, l, -1))) {
+                                    this.func_181647_a(worldIn, position.offset(0, l, -1), BlockVine.SOUTH)
                                 }
 
-                                if (rand.nextInt(3) > 0 && worldIn.isAirBlock(position.add(0, l, 1))) {
-                                    this.func_181647_a(worldIn, position.add(0, l, 1), BlockVine.NORTH)
+                                if (rand.nextInt(3) > 0 && worldIn.isEmptyBlock(position.offset(0, l, 1))) {
+                                    this.func_181647_a(worldIn, position.offset(0, l, 1), BlockVine.NORTH)
                                 }
                             }
                         }
@@ -222,10 +229,10 @@ open class WorldGenTerraformTree constructor(
                                         this.func_181652_a(
                                             worldIn,
                                             rand.nextInt(3),
-                                            position.add(
-                                                enumfacing.getXOffset(),
+                                            position.offset(
+                                                enumfacing.getStepX(),
                                                 i - 5 + l,
-                                                enumfacing.getZOffset()
+                                                enumfacing.getStepZ()
                                             ),
                                             enumfacing
                                         )
@@ -248,14 +255,14 @@ open class WorldGenTerraformTree constructor(
 
     private fun func_181647_a(world: World, pos: BlockPos, facing: PropertyBool) {
         var pos: BlockPos = pos
-        val iblockstate: IBlockState = Blocks.VINE.getDefaultState().withProperty(facing, true)
+        val iblockstate: IBlockState = Blocks.VINE.defaultBlockState().setValue(facing, true)
         this.setBlockAndNotifyAdequately(world, pos, iblockstate)
         var i: Int = 4
 
-        pos = pos.down()
+        pos = pos.below()
         while (world.getBlockState(pos).getBlock().isAir(world.getBlockState(pos), world, pos) && i > 0) {
             this.setBlockAndNotifyAdequately(world, pos, iblockstate)
-            pos = pos.down()
+            pos = pos.below()
             --i
         }
     }
@@ -264,8 +271,8 @@ open class WorldGenTerraformTree constructor(
         this.setBlockAndNotifyAdequately(
             p_181652_1_,
             p_181652_3_,
-            Blocks.COCOA.getDefaultState().withProperty(BlockCocoa.AGE, p_181652_2_)
-                .withProperty(BlockCocoa.FACING, p_181652_4_)
+            Blocks.COCOA.defaultBlockState().setValue(BlockCocoa.AGE, p_181652_2_)
+                .setValue(BlockCocoa.FACING, p_181652_4_)
         )
     }
 

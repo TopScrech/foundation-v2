@@ -1,11 +1,13 @@
 package micdoodle8.mods.galacticraft.core.items
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.ItemStack
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemBlockMoon constructor(block: Block?) : ItemBlockDesc(block) {
     init {
@@ -17,7 +19,7 @@ open class ItemBlockMoon constructor(block: Block?) : ItemBlockDesc(block) {
         return meta
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
@@ -25,7 +27,7 @@ open class ItemBlockMoon constructor(block: Block?) : ItemBlockDesc(block) {
     public override fun getTranslationKey(itemstack: ItemStack): String {
         val name: String
 
-        when (itemstack.getItemDamage()) {
+        when (itemstack.legacyItemValue) {
             0 -> {
                 name = "coppermoon"
             }

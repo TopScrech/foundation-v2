@@ -2,15 +2,15 @@ package micdoodle8.mods.galacticraft.planets.mars.client.fx
 
 import net.minecraft.block.BlockLiquid
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.particle.Particle
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class ParticleDrip constructor(world: World, x: Double, y: Double, z: Double) :
     Particle(world, x, y, z, 0.0, 0.0, 0.0) {
     private var bobTimer: Int

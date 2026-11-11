@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.planets.mars.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import com.google.common.base.Predicate
 import micdoodle8.mods.galacticraft.api.block.IDetectableResource
 import micdoodle8.mods.galacticraft.api.block.IPlantableBlock
@@ -11,34 +14,34 @@ import micdoodle8.mods.galacticraft.core.client.sounds.GCSounds
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
-import net.minecraft.block.Block
-import net.minecraft.block.material.MapColor
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.material.MapColor
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.Explosion
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.Explosion
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.IPlantable
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class BlockBasicMars constructor(assetName: String?) : Block(Material.ROCK), IDetectableResource,
-    IPlantableBlock, ITerraformableBlock, ISortableBlock {
+    IPlantableBlock, ITerraformableBlock, ISortableBlock, LegacyBlockMetadata {
     enum class EnumBlockBasic(private val meta: Int, private val serializedName: String) : IStringSerializable {
         ORE_COPPER(0, "ore_copper_mars"),
         ORE_TIN(1, "ore_tin_mars"),
@@ -55,7 +58,9 @@ open class BlockBasicMars constructor(assetName: String?) : Block(Material.ROCK)
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -95,7 +100,7 @@ open class BlockBasicMars constructor(assetName: String?) : Block(Material.ROCK)
         return super.getExplosionResistance(world, pos, exploder, explosion)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
@@ -137,7 +142,7 @@ open class BlockBasicMars constructor(assetName: String?) : Block(Material.ROCK)
         return 1
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (blockBasic: EnumBlockBasic in EnumBlockBasic.entries) {
             list.add(ItemStack(this, 1, blockBasic.getMeta()))
@@ -169,7 +174,7 @@ open class BlockBasicMars constructor(assetName: String?) : Block(Material.ROCK)
         return false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun randomDisplayTick(state: IBlockState, worldIn: World, pos: BlockPos, rand: Random) {
         if (rand.nextInt(10) == 0) {
             if (state.getBlock() === this && state.getValue(BASIC_TYPE) == EnumBlockBasic.DUNGEON_BRICK) {
@@ -197,7 +202,7 @@ open class BlockBasicMars constructor(assetName: String?) : Block(Material.ROCK)
 
     override fun isTerraformable(world: World?, pos: BlockPos?): Boolean {
         val state: IBlockState = (world)!!.getBlockState(pos)
-        val stateAbove: IBlockState = (world)!!.getBlockState((pos)!!.up())
+        val stateAbove: IBlockState = (world)!!.getBlockState((pos)!!.above())
         return state.getValue(BASIC_TYPE) == EnumBlockBasic.SURFACE && !stateAbove.getBlock()
             .isFullCube(stateAbove)
     }
@@ -228,8 +233,8 @@ open class BlockBasicMars constructor(assetName: String?) : Block(Material.ROCK)
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(BASIC_TYPE, (EnumBlockBasic.Companion.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(BASIC_TYPE, (EnumBlockBasic.Companion.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -254,7 +259,7 @@ open class BlockBasicMars constructor(assetName: String?) : Block(Material.ROCK)
 
         val meta: Int = this.getMetaFromState(state)
         if (meta == 2) {
-            val rand: Random = if (world is World) world.rand else Random()
+            val rand: Random = if (world is World) world.random else Random()
             return MathHelper.getInt(rand, 2, 5)
         }
         return 0

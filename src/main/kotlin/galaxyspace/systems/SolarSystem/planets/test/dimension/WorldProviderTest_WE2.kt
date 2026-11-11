@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.test.dimension
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import asmodeuscore.core.astronomy.dimension.world.gen.WorldProviderAdvancedSpace
 import galaxyspace.systems.SolarSystem.SolarSystemBodies
@@ -14,9 +16,9 @@ import asmodeuscore.core.utils.worldengine2.world.gen.WE_ChunkProvider
 import asmodeuscore.core.utils.worldengine2.world.gen.custom.WE_TerrainGenerator
 import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody
 import micdoodle8.mods.galacticraft.api.vector.Vector3
-import net.minecraft.block.Block
-import net.minecraft.util.ResourceLocation
-import net.minecraft.world.DimensionType
+import net.minecraft.world.level.block.Block
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.biome.BiomeProvider
 import net.minecraft.world.gen.IChunkGenerator
 

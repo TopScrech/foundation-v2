@@ -4,8 +4,8 @@ import java.util.Random
 
 import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
 import micdoodle8.mods.galacticraft.planets.venus.blocks.BlockBasicVenus
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraftforge.common.BiomeDictionary
 import java.util.*
@@ -29,13 +29,13 @@ open class BiomeGenVenusMountain constructor(properties: BiomeProperties?) : Bio
         p_180622_5_: Int,
         p_180622_6_: Double
     ) {
-        this.topBlock = (VenusBlocks.venusBlock)!!.getDefaultState()
-            .withProperty(
+        this.topBlock = (VenusBlocks.venusBlock)!!.defaultBlockState()
+            .setValue(
                 BlockBasicVenus.BASIC_TYPE_VENUS,
                 BlockBasicVenus.EnumBlockBasicVenus.ROCK_HARD
             )
-        this.fillerBlock = (VenusBlocks.venusBlock)!!.getDefaultState()
-            .withProperty(
+        this.fillerBlock = (VenusBlocks.venusBlock)!!.defaultBlockState()
+            .setValue(
                 BlockBasicVenus.BASIC_TYPE_VENUS,
                 BlockBasicVenus.EnumBlockBasicVenus.ROCK_SOFT
             )

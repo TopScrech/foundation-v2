@@ -21,22 +21,23 @@ import galaxyspace.core.prefab.tile.TileEntityInventorySource
 import micdoodle8.mods.galacticraft.core.tile.IMultiBlock
 import micdoodle8.mods.galacticraft.core.tile.TileEntityMulti
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.LinkedList
 import kotlin.math.abs
@@ -204,13 +205,13 @@ open class TileEntityModernSolarPanel constructor() :
 
     protected open fun initialiseMultiTiles(pos: BlockPos, world: World): Boolean {
         //Client can create its own fake blocks and tiles - no need for networking in 1.8+
-        if (world.isRemote) this.onCreate(world, pos)
+        if (world.isClientSide) this.onCreate(world, pos)
 
         val positions: MutableList<BlockPos> = ArrayList<BlockPos>()
         this.getPositions(pos, (positions as MutableList<BlockPos?>?))
         var result: Boolean = true
         for (vecToAdd: BlockPos in positions) {
-            val tile: TileEntity? = world.getTileEntity(vecToAdd)
+            val tile: TileEntity? = world.getBlockEntity(vecToAdd)
             if (tile is TileEntityMulti) {
                 tile.mainBlockPosition = pos
             } else {
@@ -292,11 +293,11 @@ open class TileEntityModernSolarPanel constructor() :
                     if (this.world.isRemote && this.world.rand.nextDouble() < 0.1) {
                         FMLClientHandler.instance().getClient().effectRenderer.addBlockDestroyEffects(
                             pos,
-                            (GCBlocks.solarPanel)!!.getDefaultState()
+                            (GCBlocks.solarPanel)!!.defaultBlockState()
                         )
                     }
 
-                    this.world.setBlockToAir(pos)
+                    this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                 }
             }
         }
@@ -306,13 +307,13 @@ open class TileEntityModernSolarPanel constructor() :
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.storage.setCapacity(nbt.getFloat("maxEnergy"))
-        this.currentAngle = nbt.getFloat("currentAngle")
-        this.targetAngle = nbt.getFloat("targetAngle")
-        this.setDisabled(0, nbt.getBoolean("disabled"))
-        this.disableCooldown = nbt.getInteger("disabledCooldown")
+        this.storage.setCapacity(nbt.getFloatOr("maxEnergy", 0f))
+        this.currentAngle = nbt.getFloatOr("currentAngle", 0f)
+        this.targetAngle = nbt.getFloatOr("targetAngle", 0f)
+        this.setDisabled(0, nbt.getBooleanOr("disabled", false))
+        this.disableCooldown = nbt.getIntOr("disabledCooldown", 0)
 
-        this.inventory = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.inventory = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, this.getInventory())
 
         this.initialised = false
@@ -320,11 +321,11 @@ open class TileEntityModernSolarPanel constructor() :
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setFloat("maxEnergy", this.getMaxEnergyStoredGC())
-        nbt.setFloat("currentAngle", this.currentAngle)
-        nbt.setFloat("targetAngle", this.targetAngle)
-        nbt.setInteger("disabledCooldown", this.disableCooldown)
-        nbt.setBoolean("disabled", this.getDisabled(0))
+        nbt.putFloat("maxEnergy", this.getMaxEnergyStoredGC())
+        nbt.putFloat("currentAngle", this.currentAngle)
+        nbt.putFloat("targetAngle", this.targetAngle)
+        nbt.putInt("disabledCooldown", this.disableCooldown)
+        nbt.putBoolean("disabled", this.getDisabled(0))
 
         ItemStackHelper.saveAllItems(nbt, this.getInventory())
 
@@ -332,7 +333,7 @@ open class TileEntityModernSolarPanel constructor() :
     }
 
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return Constants.RENDERDISTANCE_LONG
     }
@@ -359,7 +360,7 @@ open class TileEntityModernSolarPanel constructor() :
     }
 
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         if (this.renderAABB == null) {
             this.renderAABB = AxisAlignedBB(
@@ -389,29 +390,29 @@ open class TileEntityModernSolarPanel constructor() :
         return floor((this.getEnergyStoredGC() * i / this.getMaxEnergyStoredGC()).toDouble()).toInt()
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 1
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
     }
 
-    override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf(0)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
-        return this.isItemValidForSlot(slotID, itemstack)
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, itemstack)
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         return slotID == 0
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         return slotID == 0 && ItemElectricBase.isElectricItem(itemstack.getItem())
     }
 

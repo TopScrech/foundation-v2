@@ -2,8 +2,8 @@ package galaxyspace.core.prefab.world.gen
 
 import galaxyspace.core.prefab.world.gen.WorldDataSpace
 import galaxyspace.GalaxySpace
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.world.World
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.storage.MapStorage
 import net.minecraft.world.storage.WorldSavedData
 

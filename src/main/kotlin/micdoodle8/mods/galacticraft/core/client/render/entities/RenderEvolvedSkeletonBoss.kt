@@ -7,12 +7,12 @@ import micdoodle8.mods.galacticraft.core.entities.EntitySkeletonBoss
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.pow
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderEvolvedSkeletonBoss constructor(manager: RenderManager) :
     RenderLiving<EntitySkeletonBoss>(manager, ModelEvolvedSkeletonBoss(), 0.9f) {
     init {
@@ -35,6 +35,6 @@ open class RenderEvolvedSkeletonBoss constructor(manager: RenderManager) :
     }
 
     companion object {
-        private val skeletonBossTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/skeletonboss.png")
+        private val skeletonBossTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/skeletonboss.png")
     }
 }

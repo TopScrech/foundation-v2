@@ -1,49 +1,38 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items
 
+
 import galaxyspace.api.item.IModificationItem
 import galaxyspace.core.GSItems
 import galaxyspace.core.prefab.items.modules.ItemModule
-import galaxyspace.core.util.GSCreativeTabs
 import galaxyspace.core.util.GSUtils.Module_Type
 import galaxyspace.systems.SolarSystem.planets.overworld.items.modules.armor.EPP
 import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
-import micdoodle8.mods.galacticraft.core.util.EnumColor
-import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.item.ItemStack
-import net.minecraft.util.NonNullList
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
 
 open class ItemGSOxygenTank constructor(tier: Int, assetName: String, damage: Int, epp: Boolean) :
-    ItemOxygenTank(tier, assetName), IModificationItem {
+    ItemOxygenTank(
+        foundation.item.FoundationItemProperties.named("galaxyspace", assetName).stacksTo(1)
+            .rarity(net.minecraft.world.item.Rarity.RARE)
+            .overrideDescription("item.$assetName.name"),
+        damage
+    ), IModificationItem {
     private var epp = false
 
     init {
-        this.setMaxStackSize(1)
-        this.setMaxDamage(damage)
-        this.setTranslationKey(assetName)
-        this.setCreativeTab(GSCreativeTabs.GSItemsTab)
-        this.setNoRepair()
         this.epp = epp
     }
 
-    override fun getSubItems(tab: CreativeTabs, list: NonNullList<ItemStack>) {
-        if (tab === GSCreativeTabs.GSItemsTab || tab === CreativeTabs.SEARCH) {
-            list.add(ItemStack(this, 1, 0))
-            list.add(ItemStack(this, 1, this.getMaxDamage()))
+    override fun appendHoverText(
+        stack: ItemStack, context: net.minecraft.world.item.Item.TooltipContext,
+        display: net.minecraft.world.item.component.TooltipDisplay,
+        builder: java.util.function.Consumer<net.minecraft.network.chat.Component>, flag: net.minecraft.world.item.TooltipFlag
+    ) {
+        if (epp || stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA)?.copyTag()?.contains("epp") == true) {
+            for (key in listOf("gui.tank.passive_oxygen_regen.desc1", "gui.tank.passive_oxygen_regen.desc2")) {
+                builder.accept(net.minecraft.network.chat.Component.translatable(key).withStyle(net.minecraft.ChatFormatting.DARK_GREEN))
+            }
         }
-    }
-
-    @SideOnly(Side.CLIENT)
-    override fun addInformation(stack: ItemStack, worldIn: World?, list: MutableList<String?>, flagIn: ITooltipFlag) {
-        if (epp || stack.hasTagCompound() && stack.getTagCompound()!!.hasKey("epp")) {
-            list.add(EnumColor.DARK_GREEN.toString() + GCCoreUtil.translate("gui.tank.passive_oxygen_regen.desc1"))
-            list.add(EnumColor.DARK_GREEN.toString() + GCCoreUtil.translate("gui.tank.passive_oxygen_regen.desc2"))
-        }
-        list.add(GCCoreUtil.translate("gui.tank.oxygen_remaining") + ": " + (stack.getMaxDamage() - stack.getItemDamage()))
+        super.appendHoverText(stack, context, display, builder, flag)
     }
 
     override fun getType(stack: ItemStack?): Module_Type? {

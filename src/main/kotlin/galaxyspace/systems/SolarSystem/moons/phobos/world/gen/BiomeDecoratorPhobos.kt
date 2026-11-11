@@ -5,7 +5,7 @@ import galaxyspace.systems.SolarSystem.moons.phobos.world.gen.BiomeDecoratorPhob
 import galaxyspace.core.configs.GSConfigWorld
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
 import micdoodle8.mods.galacticraft.core.world.gen.WorldGenMinableMeta
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 
 open class BiomeDecoratorPhobos constructor() : BiomeDecoratorSpace() {

@@ -1,14 +1,16 @@
 package galaxyspace.core.prefab.tile
 
+import net.minecraft.network.chat.Component
+
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseElectricBlockWithInventory
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.text.ITextComponent
-import net.minecraft.util.text.TextComponentTranslation
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.network.chat.Component as ITextComponent
+
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.items.CapabilityItemHandler
 import net.minecraftforge.items.wrapper.InvWrapper
@@ -23,20 +25,24 @@ abstract class TileEntityElectricInventory(private val tileName: String?) : Tile
 
     override fun getContainingItems(): NonNullList<ItemStack> = inventory
 
-    override fun getName(): String = tileName ?: "container.inventory"
+    override fun getName(): net.minecraft.network.chat.Component = Component.translatable(tileName ?: "container.inventory")
 
-    override fun getDisplayName(): ITextComponent = TextComponentTranslation(getName())
+    override fun getDisplayName(): ITextComponent = getName()
 
-    override fun isItemValidForSlot(index: Int, stack: ItemStack): Boolean = true
-    override fun getSlotsForFace(side: EnumFacing?): IntArray = IntArray(getSizeInventory()) { it }
-    override fun canInsertItem(index: Int, stack: ItemStack, side: EnumFacing?): Boolean = isItemValidForSlot(index, stack)
-    override fun canExtractItem(index: Int, stack: ItemStack, side: EnumFacing?): Boolean = true
+    override fun canPlaceItem(index: Int, stack: ItemStack): Boolean = true
+    override fun getSlotsForFace(side: EnumFacing): IntArray = IntArray(getContainerSize()) { it }
+    override fun canPlaceItemThroughFace(index: Int, stack: ItemStack, side: EnumFacing?): Boolean = canPlaceItem(index, stack)
+    override fun canTakeItemThroughFace(index: Int, stack: ItemStack, side: EnumFacing): Boolean = true
 
-    override fun clear() { inventory.clear() }
+    override fun clearContent() {
+        if (isEmpty) return
+        inventory.clear()
+        setChanged()
+    }
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        inventory = NonNullList.withSize(getSizeInventory(), ItemStack.EMPTY)
+        inventory = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, inventory)
     }
 

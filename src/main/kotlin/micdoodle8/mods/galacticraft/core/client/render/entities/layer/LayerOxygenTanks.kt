@@ -4,17 +4,17 @@ import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.client.model.ModelPlayerGC
 import micdoodle8.mods.galacticraft.core.wrappers.PlayerGearData
-import net.minecraft.client.entity.AbstractClientPlayer
+import net.minecraft.client.player.AbstractClientPlayer
 import net.minecraft.client.model.ModelPlayer
 import net.minecraft.client.model.ModelRenderer
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.RenderPlayer
 import net.minecraft.client.renderer.entity.layers.LayerRenderer
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class LayerOxygenTanks constructor(private val playerRenderer: RenderPlayer) :
     LayerRenderer<AbstractClientPlayer> {
     @JvmField

@@ -5,15 +5,15 @@ import micdoodle8.mods.galacticraft.core.tile.TileEntitySpaceStationBase
 import net.minecraft.block.BlockContainer
 import net.minecraft.block.ITileEntityProvider
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 
 open class BlockSpaceStationBase constructor(assetName: String?) : BlockContainer(Material.ROCK),
     ITileEntityProvider {
@@ -39,7 +39,7 @@ open class BlockSpaceStationBase constructor(assetName: String?) : BlockContaine
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val tileAt: TileEntity? = worldIn.getTileEntity(pos)
+        val tileAt: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tileAt is IMultiBlock) {
             (tileAt as IMultiBlock).onDestroy(tileAt)
@@ -61,7 +61,7 @@ open class BlockSpaceStationBase constructor(assetName: String?) : BlockContaine
     ) {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack)
 
-        val tile: TileEntity? = worldIn.getTileEntity(pos)
+        val tile: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tile is IMultiBlock) {
             (tile as IMultiBlock).onCreate(worldIn, pos)

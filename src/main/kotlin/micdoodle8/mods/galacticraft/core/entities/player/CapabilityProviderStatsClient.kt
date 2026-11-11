@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.core.entities.player
 
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.util.EnumFacing
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 

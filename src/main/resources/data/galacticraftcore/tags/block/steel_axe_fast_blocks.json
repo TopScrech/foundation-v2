@@ -1,0 +1,23 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:mineable/axe",
+    "#minecraft:flowers",
+    "#minecraft:saplings",
+    "#minecraft:crops",
+    "minecraft:short_grass",
+    "minecraft:fern",
+    "minecraft:tall_grass",
+    "minecraft:large_fern",
+    "minecraft:dead_bush",
+    "minecraft:brown_mushroom",
+    "minecraft:red_mushroom",
+    "minecraft:sugar_cane",
+    "minecraft:lily_pad",
+    "minecraft:nether_wart",
+    "minecraft:melon_stem",
+    "minecraft:pumpkin_stem",
+    "minecraft:attached_melon_stem",
+    "minecraft:attached_pumpkin_stem"
+  ]
+}

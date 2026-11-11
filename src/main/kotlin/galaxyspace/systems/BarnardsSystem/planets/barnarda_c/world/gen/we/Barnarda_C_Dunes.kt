@@ -1,5 +1,9 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.world.gen.we
 
+import foundation.block.getStateFromMeta
+
+import foundation.level.offset
+
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Dandelions
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Falling_Blocks.EnumFallingBlockBarnardaC
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
@@ -12,9 +16,9 @@ import net.minecraft.entity.monster.EntityEnderman
 import net.minecraft.entity.monster.EntityHusk
 import net.minecraft.entity.monster.EntitySkeleton
 import net.minecraft.entity.monster.EntitySpider
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class Barnarda_C_Dunes constructor(min: Double, max: Double) :
@@ -48,7 +52,7 @@ open class Barnarda_C_Dunes constructor(min: Double, max: Double) :
             0,
             false
         )
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         createChunkGen_InXZ_List.add(standardBiomeLayers)
     }
 
@@ -60,38 +64,38 @@ open class Barnarda_C_Dunes constructor(min: Double, max: Double) :
         var cangen: Boolean = true
         val range: Int = 2
         for (pos1: BlockPos in BlockPos.getAllInBox(
-            pos.add(-range, -range, -range),
-            pos.add(range, range, range)
-        )) if ((world)!!.getBlockState(pos1) === BRBlocks.BARNARDA_C_CACTUS.getDefaultState()) cangen = false
+            pos.offset(-range, -range, -range),
+            pos.offset(range, range, range)
+        )) if ((world)!!.getBlockState(pos1) === BRBlocks.BARNARDA_C_CACTUS.defaultBlockState()) cangen = false
 
         for (pos1: BlockPos in BlockPos.getAllInBox(
-            pos.add(-range, 0, -range),
-            pos.add(range, 0, range)
-        )) if ((world)!!.getBlockState(pos1) !== Blocks.AIR.getDefaultState()) cangen = false
+            pos.offset(-range, 0, -range),
+            pos.offset(range, 0, range)
+        )) if ((world)!!.getBlockState(pos1) !== Blocks.AIR.defaultBlockState()) cangen = false
 
-        if (cangen && (world)!!.getBlockState(pos.down()) === BRBlocks.BARNARDA_C_FALLING_BLOCKS.getDefaultState()
-                .withProperty(
+        if (cangen && (world)!!.getBlockState(pos.below()) === BRBlocks.BARNARDA_C_FALLING_BLOCKS.defaultBlockState()
+                .setValue(
                     Barnarda_C_Falling_Blocks.BASIC_TYPE,
                     EnumFallingBlockBarnardaC.SAND
                 )
         ) {
             if ((rand)!!.nextInt(2) == 0) {
                 for (size: Int in 0..<1 + (rand)!!.nextInt(3)) {
-                    (world)!!.setBlockState(pos.up(size), BRBlocks.BARNARDA_C_CACTUS.getDefaultState())
+                    (world)!!.setBlockAndUpdate(pos.above(size), BRBlocks.BARNARDA_C_CACTUS.defaultBlockState())
                 }
             } else {
-                (world)!!.setBlockState(
+                (world)!!.setBlockAndUpdate(
                     pos,
-                    BRBlocks.BARNARDA_C_DANDELIONS.getDefaultState()
-                        .withProperty(
+                    BRBlocks.BARNARDA_C_DANDELIONS.defaultBlockState()
+                        .setValue(
                             Barnarda_C_Dandelions.BASIC_TYPE,
                             Barnarda_C_Dandelions.EnumBlockDandelions.DESERT_DOWN
                         )
                 )
-                if ((rand)!!.nextInt(3) == 0) (world)!!.setBlockState(
-                    pos.up(),
-                    BRBlocks.BARNARDA_C_DANDELIONS.getDefaultState()
-                        .withProperty(
+                if ((rand)!!.nextInt(3) == 0) (world)!!.setBlockAndUpdate(
+                    pos.above(),
+                    BRBlocks.BARNARDA_C_DANDELIONS.defaultBlockState()
+                        .setValue(
                             Barnarda_C_Dandelions.BASIC_TYPE,
                             Barnarda_C_Dandelions.EnumBlockDandelions.DESERT_UP
                         )

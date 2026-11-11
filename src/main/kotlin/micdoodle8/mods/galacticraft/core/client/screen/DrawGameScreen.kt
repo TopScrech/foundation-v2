@@ -10,8 +10,8 @@ import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.client.renderer.texture.TextureManager
 import net.minecraft.client.renderer.texture.TextureUtil
-import net.minecraft.entity.Entity
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.world.WorldProvider
 import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
@@ -69,11 +69,11 @@ open class DrawGameScreen constructor(
     }
 
     private fun makeMap() {
-        if (this.mapDone || reusableMap == null || GCCoreUtil.getDimensionID(this.driver!!.getWorld()) != 0) {
+        if (this.mapDone || reusableMap == null || GCCoreUtil.getDimensionID(this.driver!!.getLevel()) != 0) {
             return
         }
         this.localMap = IntArray(MapUtil.SIZE_STD2 * MapUtil.SIZE_STD2)
-        val result: Boolean = MapUtil.getMap((this.localMap)!!, this.driver!!.getWorld(), this.driver!!.getPos())
+        val result: Boolean = MapUtil.getMap((this.localMap)!!, this.driver!!.getLevel(), this.driver!!.getBlockPos())
         if (result) {
             TextureUtil.uploadTexture(
                 reusableMap!!.getGlTextureId(),
@@ -184,7 +184,7 @@ open class DrawGameScreen constructor(
 
     override fun getWorldProvider(): WorldProvider? {
         if (this.driver != null) {
-            return driver!!.getWorld().provider
+            return driver!!.getLevel().provider
         }
 
         return null

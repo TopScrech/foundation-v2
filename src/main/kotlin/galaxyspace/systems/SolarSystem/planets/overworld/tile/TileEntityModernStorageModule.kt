@@ -8,14 +8,14 @@ import micdoodle8.mods.galacticraft.api.transmission.NetworkType
 import micdoodle8.mods.galacticraft.api.transmission.tile.IConnector
 import micdoodle8.mods.galacticraft.core.energy.item.ItemElectricBase
 import galaxyspace.core.prefab.tile.TileEntityInventorySource
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
 import java.util.HashSet
 import kotlin.math.floor
 
@@ -79,7 +79,7 @@ open class TileEntityModernStorageModule @JvmOverloads constructor(tier: Int = 1
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
 
-        this.inventory = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.inventory = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, this.getInventory())
     }
 
@@ -95,27 +95,27 @@ open class TileEntityModernStorageModule @JvmOverloads constructor(tier: Int = 1
         return nbt
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 1
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this
                 && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5,
             this.getPos().getZ() + 0.5
         ) <= 64.0
     }
 
-    override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    override fun getSlotsForFace(side: EnumFacing): IntArray {
         return IntArray(0)
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         return ItemElectricBase.isElectricItem(itemstack.getItem())
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
         if (itemstack.getItem() is IItemElectricBase) {
             if (slotID == 0) {
                 return (itemstack.getItem() as IItemElectricBase).getTransfer(itemstack) > 0
@@ -126,7 +126,7 @@ open class TileEntityModernStorageModule @JvmOverloads constructor(tier: Int = 1
         return false
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         if (itemstack.getItem() is IItemElectricBase) {
             if (slotID == 0) {
                 return (itemstack.getItem() as IItemElectricBase).getTransfer(itemstack) <= 0

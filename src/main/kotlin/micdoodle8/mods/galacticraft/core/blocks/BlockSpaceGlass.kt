@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
 import micdoodle8.mods.galacticraft.api.item.IPaintable
 import micdoodle8.mods.galacticraft.core.GCBlocks
@@ -8,32 +10,33 @@ import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.JavaUtil
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.IProperty
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.Property as IProperty
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.Random
 
@@ -42,7 +45,7 @@ open class BlockSpaceGlass constructor(
     //This will define whether originally placed by the player facing NS - EW - or UD
     @JvmField val type: GlassType, //frameValue corresponds to the damage of the placing item
     private val frame: GlassFrame, base: Block?
-) : Block(Material.GLASS), IPartialSealableBlock, IShiftDescription, ISortableBlock, IPaintable {
+) : Block(Material.GLASS), IPartialSealableBlock, IShiftDescription, ISortableBlock, IPaintable, LegacyBlockMetadata {
     @JvmField
     var color: Int = 0xFFFFFF
     private val baseBlock: Block
@@ -51,7 +54,7 @@ open class BlockSpaceGlass constructor(
         return BlockStateContainer(this, *arrayOf<IProperty<*>>(MODEL, ROTATION))
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         //The plain block variety produces items carrying all variants as damage values
         //Other block varieties have no corresponding ItemBlock (see registration in GCBlocks)
@@ -84,14 +87,14 @@ open class BlockSpaceGlass constructor(
         when (GlassFrame.entries[meta]) {
             GlassFrame.TIN_DECO -> {
                 when (this.type) {
-                    GlassType.STRONG -> return (GCBlocks.spaceGlassTinStrong)!!.getDefaultState()
-                    GlassType.VANILLA -> return (GCBlocks.spaceGlassTinVanilla)!!.getDefaultState()
-                    else -> return (GCBlocks.spaceGlassTinClear)!!.getDefaultState()
+                    GlassType.STRONG -> return (GCBlocks.spaceGlassTinStrong)!!.defaultBlockState()
+                    GlassType.VANILLA -> return (GCBlocks.spaceGlassTinVanilla)!!.defaultBlockState()
+                    else -> return (GCBlocks.spaceGlassTinClear)!!.defaultBlockState()
                 }
             }
 
-            GlassFrame.PLAIN -> return this.getDefaultState()
-            else -> return this.getDefaultState()
+            GlassFrame.PLAIN -> return this.defaultBlockState()
+            else -> return this.defaultBlockState()
         }
         //TODO: Add PLACING direction
     }
@@ -149,7 +152,7 @@ open class BlockSpaceGlass constructor(
         return this.material
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun shouldSideBeRendered(
         blockState: IBlockState,
         blockAccess: IBlockAccess,
@@ -159,7 +162,7 @@ open class BlockSpaceGlass constructor(
         return true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.TRANSLUCENT
     }
@@ -177,8 +180,8 @@ open class BlockSpaceGlass constructor(
         entityIn: Entity?,
         p_185477_7_: Boolean
     ) {
-        val above: IBlockState = worldIn.getBlockState(pos.up())
-        val below: IBlockState = worldIn.getBlockState(pos.down())
+        val above: IBlockState = worldIn.getBlockState(pos.above())
+        val below: IBlockState = worldIn.getBlockState(pos.below())
         val north: IBlockState = worldIn.getBlockState(pos.north())
         val south: IBlockState = worldIn.getBlockState(pos.south())
         val west: IBlockState = worldIn.getBlockState(pos.west())
@@ -210,9 +213,9 @@ open class BlockSpaceGlass constructor(
         if (!connectE && !connectW && !connectN && !connectS) {
             var prefEW: Boolean = false
             if (below.getBlock() === this) {
-                prefEW = (isConnectedEW(below, worldIn, pos.down()) || isPreferenceEW(below, worldIn, pos.down()))
+                prefEW = (isConnectedEW(below, worldIn, pos.below()) || isPreferenceEW(below, worldIn, pos.below()))
             } else if (above.getBlock() === this) {
-                prefEW = (isConnectedEW(above, worldIn, pos.up()) || isPreferenceEW(above, worldIn, pos.up()))
+                prefEW = (isConnectedEW(above, worldIn, pos.above()) || isPreferenceEW(above, worldIn, pos.above()))
             }
 
             if (this.isPreferenceEW(state, worldIn, pos)) prefEW = true
@@ -271,15 +274,15 @@ open class BlockSpaceGlass constructor(
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSelectedBoundingBox(bs: IBlockState, worldIn: World, pos: BlockPos): AxisAlignedBB {
         return this.getBoundingBox(bs, worldIn, pos).offset(pos)
     }
 
     override fun getBoundingBox(bs: IBlockState, worldIn: IBlockAccess, pos: BlockPos): AxisAlignedBB {
         val state: IBlockState = worldIn.getBlockState(pos)
-        val above: IBlockState = worldIn.getBlockState(pos.up())
-        val below: IBlockState = worldIn.getBlockState(pos.down())
+        val above: IBlockState = worldIn.getBlockState(pos.above())
+        val below: IBlockState = worldIn.getBlockState(pos.below())
         val north: IBlockState = worldIn.getBlockState(pos.north())
         val south: IBlockState = worldIn.getBlockState(pos.south())
         val west: IBlockState = worldIn.getBlockState(pos.west())
@@ -311,9 +314,9 @@ open class BlockSpaceGlass constructor(
         if (!connectedE && !connectedW && !connectedN && !connectedS) {
             var prefEW: Boolean = false
             if (below.getBlock() === this) {
-                prefEW = (isConnectedEW(below, worldIn, pos.down()) || isPreferenceEW(below, worldIn, pos.down()))
+                prefEW = (isConnectedEW(below, worldIn, pos.below()) || isPreferenceEW(below, worldIn, pos.below()))
             } else if (above.getBlock() === this) {
-                prefEW = (isConnectedEW(above, worldIn, pos.up()) || isPreferenceEW(above, worldIn, pos.up()))
+                prefEW = (isConnectedEW(above, worldIn, pos.above()) || isPreferenceEW(above, worldIn, pos.above()))
             }
 
             if (this.isPreferenceEW(state, worldIn, pos)) prefEW = true
@@ -362,8 +365,8 @@ open class BlockSpaceGlass constructor(
         this.setSoundType(SoundType.GLASS)
         this.hasTileEntity = true
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(MODEL, GlassModel.STANDARD_PANE)
-                .withProperty(ROTATION, GlassRotation.N)
+            this.blockState.getBaseState().setValue(MODEL, GlassModel.STANDARD_PANE)
+                .setValue(ROTATION, GlassRotation.N)
         )
     }
 
@@ -539,26 +542,26 @@ open class BlockSpaceGlass constructor(
             (if (connectN) 1 else 0) + (if (connectS) 1 else 0) + (if (connectW) 1 else 0) + (if (connectE) 1 else 0)
 
         if (!connectN && !connectS && !connectW && !connectE) {
-            val above: IBlockState = worldIn.getBlockState(pos.up())
-            val below: IBlockState = worldIn.getBlockState(pos.down())
+            val above: IBlockState = worldIn.getBlockState(pos.above())
+            val below: IBlockState = worldIn.getBlockState(pos.below())
 
-            if (below.getBlock() === this && this.isConnectedEWRecursive(below, worldIn, pos.down(), EnumFacing.DOWN)) {
+            if (below.getBlock() === this && this.isConnectedEWRecursive(below, worldIn, pos.below(), EnumFacing.DOWN)) {
                 return 3
             } else if (above.getBlock() === this && this.isConnectedEWRecursive(
                     above,
                     worldIn,
-                    pos.up(),
+                    pos.above(),
                     EnumFacing.UP
                 )
             ) {
                 return 3
             }
-            if (below.getBlock() === this && this.isConnectedNSRecursive(below, worldIn, pos.down(), EnumFacing.DOWN)) {
+            if (below.getBlock() === this && this.isConnectedNSRecursive(below, worldIn, pos.below(), EnumFacing.DOWN)) {
                 return 12
             } else if (above.getBlock() === this && this.isConnectedNSRecursive(
                     above,
                     worldIn,
-                    pos.up(),
+                    pos.above(),
                     EnumFacing.UP
                 )
             ) {
@@ -573,8 +576,8 @@ open class BlockSpaceGlass constructor(
     }
 
     override fun getActualState(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState {
-        val above: IBlockState = worldIn.getBlockState(pos.up())
-        val below: IBlockState = worldIn.getBlockState(pos.down())
+        val above: IBlockState = worldIn.getBlockState(pos.above())
+        val below: IBlockState = worldIn.getBlockState(pos.below())
         val north: IBlockState = worldIn.getBlockState(pos.north())
         val south: IBlockState = worldIn.getBlockState(pos.south())
         val west: IBlockState = worldIn.getBlockState(pos.west())
@@ -608,22 +611,22 @@ open class BlockSpaceGlass constructor(
         }
 
         if (connections == 0) {
-            if (below.getBlock() === this && this.isConnectedEWRecursive(below, worldIn, pos.down(), EnumFacing.DOWN)) {
+            if (below.getBlock() === this && this.isConnectedEWRecursive(below, worldIn, pos.below(), EnumFacing.DOWN)) {
                 rot = GlassRotation.E
             } else if (above.getBlock() === this && this.isConnectedEWRecursive(
                     above,
                     worldIn,
-                    pos.up(),
+                    pos.above(),
                     EnumFacing.UP
                 )
             ) {
                 rot = GlassRotation.E
             }
-            if (below.getBlock() === this && this.isConnectedNSRecursive(below, worldIn, pos.down(), EnumFacing.DOWN)) {
+            if (below.getBlock() === this && this.isConnectedNSRecursive(below, worldIn, pos.below(), EnumFacing.DOWN)) {
             } else if (above.getBlock() === this && this.isConnectedNSRecursive(
                     above,
                     worldIn,
-                    pos.up(),
+                    pos.above(),
                     EnumFacing.UP
                 )
             ) {
@@ -723,8 +726,8 @@ open class BlockSpaceGlass constructor(
             (if (plateD) 1 else 0) + (if (plateU) 1 else 0) + (if (plateR) 1 else 0) + (if (plateL) 1 else 0)
         when (model) {
             1 -> {
-                if (solids == 4) return state.withProperty(MODEL, GlassModel.STANDARD_S4)
-                    .withProperty(ROTATION, GlassRotation.Companion.get(y, 0))
+                if (solids == 4) return state.setValue(MODEL, GlassModel.STANDARD_S4)
+                    .setValue(ROTATION, GlassRotation.Companion.get(y, 0))
 
                 if (solids == 3) {
                     if (!plateD) x = if (y % 2 == 1) 3 else 1
@@ -732,101 +735,101 @@ open class BlockSpaceGlass constructor(
                         x = 2
                         y = y xor 2
                     } else if (!plateU) x = if (y % 2 == 1) 1 else 3
-                    return state.withProperty(MODEL, GlassModel.STANDARD_S3)
-                        .withProperty(ROTATION, GlassRotation.Companion.get(y, x))
+                    return state.setValue(MODEL, GlassModel.STANDARD_S3)
+                        .setValue(ROTATION, GlassRotation.Companion.get(y, x))
                 }
 
-                if (plateD && plateU) return state.withProperty(
+                if (plateD && plateU) return state.setValue(
                     MODEL,
                     GlassModel.STANDARD_S2A
-                ).withProperty(ROTATION, GlassRotation.Companion.get(y, 0))
+                ).setValue(ROTATION, GlassRotation.Companion.get(y, 0))
 
-                if (plateL && plateR) return state.withProperty(
+                if (plateL && plateR) return state.setValue(
                     MODEL,
                     GlassModel.STANDARD_S2A
-                ).withProperty(ROTATION, GlassRotation.Companion.get(y, 1))
+                ).setValue(ROTATION, GlassRotation.Companion.get(y, 1))
 
                 if (plateD && (plateR || plateL)) {
-                    return state.withProperty(
+                    return state.setValue(
                         MODEL,
                         if (cornerPiece > 0) GlassModel.STANDARD_S2B else GlassModel.STANDARD_S2
-                    ).withProperty(
+                    ).setValue(
                         ROTATION,
                         GlassRotation.Companion.get(if (plateL) (y xor 2) else y, 0)
                     )
                 }
 
                 if (plateU && (plateR || plateL)) {
-                    return state.withProperty(
+                    return state.setValue(
                         MODEL,
                         if (cornerPiece > 0) GlassModel.STANDARD_S2B else GlassModel.STANDARD_S2
-                    ).withProperty(
+                    ).setValue(
                         ROTATION,
                         GlassRotation.Companion.get(if (plateL) (y xor 2) else y, 2)
                     )
                 }
 
-                if (plateU || plateD) return state.withProperty(
+                if (plateU || plateD) return state.setValue(
                     MODEL,
                     getCornerModel(cornerPiece)
-                ).withProperty(
+                ).setValue(
                     ROTATION,
                     GlassRotation.Companion.get(y, if (plateU || cornerPiece > 4) 2 else 0)
                 )
 
-                if (plateR || plateL) return state.withProperty(
+                if (plateR || plateL) return state.setValue(
                     MODEL,
                     getCornerModel(cornerPiece)
-                ).withProperty(
+                ).setValue(
                     ROTATION,
                     GlassRotation.Companion.get(if (plateL) (y xor 2) else y, 1 + (if (cornerPiece > 4) 2 else 0))
                 )
 
-                return state.withProperty(MODEL, GlassModel.STANDARD_PANE)
-                    .withProperty(ROTATION, GlassRotation.Companion.get(y, 0))
+                return state.setValue(MODEL, GlassModel.STANDARD_PANE)
+                    .setValue(ROTATION, GlassRotation.Companion.get(y, 0))
             }
 
             2 -> {
-                if (plateU && plateD) return state.withProperty(MODEL, GlassModel.CORNER_S2)
-                    .withProperty(ROTATION, GlassRotation.Companion.get(y, 0))
-                if (plateD) return state.withProperty(MODEL, GlassModel.CORNER_S)
-                    .withProperty(ROTATION, GlassRotation.Companion.get(y, 0))
-                if (plateU) return state.withProperty(MODEL, GlassModel.CORNER_S)
-                    .withProperty(ROTATION, GlassRotation.Companion.get((y + 3) % 4, 2))
+                if (plateU && plateD) return state.setValue(MODEL, GlassModel.CORNER_S2)
+                    .setValue(ROTATION, GlassRotation.Companion.get(y, 0))
+                if (plateD) return state.setValue(MODEL, GlassModel.CORNER_S)
+                    .setValue(ROTATION, GlassRotation.Companion.get(y, 0))
+                if (plateU) return state.setValue(MODEL, GlassModel.CORNER_S)
+                    .setValue(ROTATION, GlassRotation.Companion.get((y + 3) % 4, 2))
 
-                return state.withProperty(MODEL, GlassModel.CORNER)
-                    .withProperty(ROTATION, GlassRotation.Companion.get(y, 0))
+                return state.setValue(MODEL, GlassModel.CORNER)
+                    .setValue(ROTATION, GlassRotation.Companion.get(y, 0))
             }
 
             3 -> {
-                if (plateD && plateU) return state.withProperty(
+                if (plateD && plateU) return state.setValue(
                     MODEL,
                     GlassModel.T_JUNCTION_S2
-                ).withProperty(ROTATION, GlassRotation.Companion.get(y, 0))
-                if (plateD) return state.withProperty(MODEL, GlassModel.T_JUNCTION_S)
-                    .withProperty(ROTATION, GlassRotation.Companion.get(y, 0))
-                if (plateU) return state.withProperty(MODEL, GlassModel.T_JUNCTION_S)
-                    .withProperty(ROTATION, GlassRotation.Companion.get(y xor 2, 2))
+                ).setValue(ROTATION, GlassRotation.Companion.get(y, 0))
+                if (plateD) return state.setValue(MODEL, GlassModel.T_JUNCTION_S)
+                    .setValue(ROTATION, GlassRotation.Companion.get(y, 0))
+                if (plateU) return state.setValue(MODEL, GlassModel.T_JUNCTION_S)
+                    .setValue(ROTATION, GlassRotation.Companion.get(y xor 2, 2))
 
-                return state.withProperty(MODEL, GlassModel.T_JUNCTION)
-                    .withProperty(ROTATION, GlassRotation.Companion.get(y, x))
+                return state.setValue(MODEL, GlassModel.T_JUNCTION)
+                    .setValue(ROTATION, GlassRotation.Companion.get(y, x))
             }
 
             4 -> {
-                if (plateD && plateU) return state.withProperty(
+                if (plateD && plateU) return state.setValue(
                     MODEL,
                     GlassModel.CROSSROADS_S2
-                ).withProperty(ROTATION, GlassRotation.Companion.get(y, 0))
-                if (plateD) return state.withProperty(MODEL, GlassModel.CROSSROADS_S)
-                    .withProperty(ROTATION, GlassRotation.Companion.get(y, 0))
-                if (plateU) return state.withProperty(MODEL, GlassModel.CROSSROADS_S)
-                    .withProperty(ROTATION, GlassRotation.Companion.get(y xor 2, 2))
-                return state.withProperty(MODEL, GlassModel.CROSSROADS)
-                    .withProperty(ROTATION, GlassRotation.Companion.get(y, x))
+                ).setValue(ROTATION, GlassRotation.Companion.get(y, 0))
+                if (plateD) return state.setValue(MODEL, GlassModel.CROSSROADS_S)
+                    .setValue(ROTATION, GlassRotation.Companion.get(y, 0))
+                if (plateU) return state.setValue(MODEL, GlassModel.CROSSROADS_S)
+                    .setValue(ROTATION, GlassRotation.Companion.get(y xor 2, 2))
+                return state.setValue(MODEL, GlassModel.CROSSROADS)
+                    .setValue(ROTATION, GlassRotation.Companion.get(y, x))
             }
 
-            else -> return state.withProperty(MODEL, GlassModel.CROSSROADS)
-                .withProperty(ROTATION, GlassRotation.Companion.get(y, x))
+            else -> return state.setValue(MODEL, GlassModel.CROSSROADS)
+                .setValue(ROTATION, GlassRotation.Companion.get(y, x))
         }
     }
 
@@ -836,7 +839,7 @@ open class BlockSpaceGlass constructor(
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
+        return this.defaultBlockState()
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -884,7 +887,9 @@ open class BlockSpaceGlass constructor(
         CROSSROADS_S("joinx_s"),
         CROSSROADS_S2("joinx_s2");
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
     }
@@ -907,7 +912,9 @@ open class BlockSpaceGlass constructor(
         DS("dyy"),
         DW("dyyy");
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -929,7 +936,9 @@ open class BlockSpaceGlass constructor(
         PLAIN("plain", 0xfafaf7),
         TIN_DECO("tin_deco", 0xFFFFFF); //TODO - more frame textures can be added in future - maybe only on Asteroids?
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -943,7 +952,9 @@ open class BlockSpaceGlass constructor(
         CLEAR("clear"),
         STRONG("strong");
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
     }
@@ -995,7 +1006,7 @@ open class BlockSpaceGlass constructor(
         )
 
         @JvmStatic
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         fun updateGlassColors(color1: Int, color2: Int, color3: Int) {
             var changes: Int = 0
             changes += (GCBlocks.spaceGlassVanilla)!!.setColor(color1, null, Side.CLIENT)
@@ -1006,9 +1017,9 @@ open class BlockSpaceGlass constructor(
         }
 
         @JvmStatic
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         fun updateClientRender() {
-            Minecraft.getMinecraft().renderGlobal.loadRenderers()
+            Minecraft.getInstance().renderGlobal.loadRenderers()
             //TODO: improve performance, this is re-rendering ALL chunks on client
             //Can we somehow limit this to chunks containing BlockSpaceGlass?
             //or else: don't do all the chunk redrawing at once, queue them?

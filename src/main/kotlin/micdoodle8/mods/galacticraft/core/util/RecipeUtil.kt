@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.core.util
 
+import foundation.item.legacyItemValue
+
+import foundation.persistence.containsTag
+
 import javax.annotation.Nonnull
 
 import micdoodle8.mods.galacticraft.api.GalacticraftRegistry
@@ -7,12 +11,12 @@ import micdoodle8.mods.galacticraft.api.recipe.INasaWorkbenchRecipe
 import micdoodle8.mods.galacticraft.core.inventory.InventoryBuggyBench
 import micdoodle8.mods.galacticraft.core.inventory.InventoryRocketBench
 import micdoodle8.mods.galacticraft.core.recipe.NasaWorkbenchRecipe
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.CraftingManager
 import net.minecraft.item.crafting.IRecipe
 import net.minecraft.item.crafting.ShapedRecipes
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.ResourceLocation
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.common.crafting.CraftingHelper
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.registries.GameData
@@ -66,7 +70,7 @@ object RecipeUtil {
             var count: Int = 1
             val newNameBase: String = newLocation.getPath() + "_"
             while (CraftingManager.REGISTRY.containsKey(newLocation)) {
-                newLocation = ResourceLocation(modID, newNameBase + count++)
+                newLocation = ResourceLocation.fromNamespaceAndPath(modID, newNameBase + count++)
             }
         }
         rec.setRegistryName(newLocation)
@@ -98,7 +102,7 @@ object RecipeUtil {
             query = stackA.getTagCompound()
         }
         if (query != null) {
-            if (query.getKeySet().size == 1 && query.hasKey("NoPlacing")) return true
+            if (query.getKeySet().size == 1 && query.containsTag("NoPlacing")) return true
         }
 
         return false
@@ -112,7 +116,7 @@ object RecipeUtil {
      */
     @JvmStatic
     fun stacksMatch(itemstack: ItemStack, itemstack1: ItemStack): Boolean {
-        return !itemstack1.isEmpty() && itemstack1.getItem() === itemstack.getItem() && (!itemstack.getHasSubtypes() || itemstack.getItemDamage() == itemstack1.getItemDamage()) && areItemStackTagsEqual(
+        return !itemstack1.isEmpty() && itemstack1.getItem() === itemstack.getItem() && (!itemstack.getHasSubtypes() || itemstack.legacyItemValue == itemstack1.legacyItemValue) && areItemStackTagsEqual(
             itemstack,
             itemstack1
         )

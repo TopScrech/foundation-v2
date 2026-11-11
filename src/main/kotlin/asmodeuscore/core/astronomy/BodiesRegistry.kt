@@ -30,10 +30,10 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSkeleton
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSpider
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedZombie
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.util.ResourceLocation
-import net.minecraft.world.World
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 import net.minecraftforge.common.util.EnumHelper
 import java.util.ArrayList
 import java.util.HashMap
@@ -194,7 +194,7 @@ object BodiesRegistry {
         val path: String? = system.getTranslationKey().replace("solarsystem.", "")
         body.setRingColorRGB(0.0f, 0.4f, 0.9f)
         body.setRelativeDistanceFromCenter(CelestialBody.ScalableDistance(distancefromcenter, distancefromcenter))
-        body.setBodyIcon(ResourceLocation(prefix, "textures/gui/celestialbodies/" + path + "/" + name + ".png"))
+        body.setBodyIcon(ResourceLocation.fromNamespaceAndPath(prefix, "textures/gui/celestialbodies/" + path + "/" + name + ".png"))
 
         return body
     }
@@ -205,7 +205,7 @@ object BodiesRegistry {
         val path: String? = (parent.getParentSolarSystem())!!.getTranslationKey().replace("solarsystem.", "")
         body.setRingColorRGB(0.0f, 0.4f, 0.9f)
         body.setRelativeDistanceFromCenter(CelestialBody.ScalableDistance(distancefromcenter, distancefromcenter))
-        body.setBodyIcon(ResourceLocation(prefix, "textures/gui/celestialbodies/" + path + "/moons/" + name + ".png"))
+        body.setBodyIcon(ResourceLocation.fromNamespaceAndPath(prefix, "textures/gui/celestialbodies/" + path + "/moons/" + name + ".png"))
 
         return body
     }
@@ -376,7 +376,7 @@ object BodiesRegistry {
         body.setRelativeSize(size)
         body.setRelativeDistanceFromCenter(CelestialBody.ScalableDistance(distancefromcenter, distancefromcenter))
         body.setRelativeOrbitTime(relativetime)
-        body.setBodyIcon(ResourceLocation(prefix, "textures/gui/celestialbodies/" + path + "/" + name + ".png"))
+        body.setBodyIcon(ResourceLocation.fromNamespaceAndPath(prefix, "textures/gui/celestialbodies/" + path + "/" + name + ".png"))
 
         //body.setAtmosphere(new AtmosphereInfo(breathable, precipitation, corrosive, relativeTemperature, windLevel, density))
         if (provider != null) {
@@ -415,7 +415,7 @@ object BodiesRegistry {
         body.setRelativeSize(size)
         body.setRelativeDistanceFromCenter(CelestialBody.ScalableDistance(distancefromcenter, distancefromcenter))
         body.setRelativeOrbitTime(relativetime)
-        body.setBodyIcon(ResourceLocation(prefix, "textures/gui/celestialbodies/" + path + "/moons/" + name + ".png"))
+        body.setBodyIcon(ResourceLocation.fromNamespaceAndPath(prefix, "textures/gui/celestialbodies/" + path + "/moons/" + name + ".png"))
 
         if (provider != null) {
             body.setTierRequired(tier)
@@ -442,7 +442,7 @@ object BodiesRegistry {
         body.setParentBody(parent)
         body.setRelativeDistanceFromCenter(CelestialBody.ScalableDistance(5.5f, 5.5f))
         body.setRingColorRGB(0.0f, 0.4f, 0.9f)
-        body.setBodyIcon(ResourceLocation("galacticraftcore:textures/gui/celestialbodies/space_station.png"))
+        body.setBodyIcon(ResourceLocation.parse("galacticraftcore:textures/gui/celestialbodies/space_station.png"))
 
         if (provider != null) {
             if (parent.getReachable()) body.setTierRequired(parent.getTierRequirement())

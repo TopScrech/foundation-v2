@@ -1,4 +1,6 @@
 package micdoodle8.mods.galacticraft.core.network
+
+import net.minecraft.network.chat.Component
 import micdoodle8.mods.galacticraft.api.transmission.grid.splitUntyped
 
 import micdoodle8.mods.galacticraft.api.prefab.entity.EntitySpaceshipBase.EnumLaunchPhase
@@ -44,7 +46,6 @@ import micdoodle8.mods.galacticraft.core.dimension.SpaceStationWorldData
 import micdoodle8.mods.galacticraft.core.dimension.WorldProviderSpaceStation
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseConductor
 import micdoodle8.mods.galacticraft.core.entities.EntityBuggy
-import micdoodle8.mods.galacticraft.core.entities.EntityHangingSchematic
 import micdoodle8.mods.galacticraft.core.entities.IBubbleProvider
 import micdoodle8.mods.galacticraft.core.entities.IControllableEntity
 import micdoodle8.mods.galacticraft.core.entities.player.GCEntityPlayerMP
@@ -75,37 +76,38 @@ import micdoodle8.mods.galacticraft.core.wrappers.Footprint
 import micdoodle8.mods.galacticraft.core.wrappers.PlayerGearData
 import micdoodle8.mods.galacticraft.core.wrappers.ScheduledDimensionChange
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.settings.GameSettings
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.SoundEvents
-import net.minecraft.inventory.Container
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.INetHandler
-import net.minecraft.network.Packet
+import net.minecraft.network.protocol.Packet
 import net.minecraft.network.PacketBuffer
 import net.minecraft.network.play.server.SPacketRespawn
 import net.minecraft.server.MinecraftServer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.Style
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.util.text.TextFormatting
-import net.minecraft.world.GameType
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.network.chat.Style
+
+import net.minecraft.ChatFormatting as TextFormatting
+import net.minecraft.world.level.GameType
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.WorldServer
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.lang.RuntimeException
 import java.lang.reflect.Field
@@ -266,7 +268,6 @@ open class PacketSimple : PacketBase, Packet<INetHandler> {
             Int::class.java,
             Int::class.java
         ),
-        C_SPAWN_HANGING_SCHEMATIC(Side.CLIENT, BlockPos::class.java, Int::class.java, Int::class.java, Int::class.java),
         C_LEAK_DATA(Side.CLIENT, BlockPos::class.java, Array<Int>::class.java);
 
         private val decodeAs: Array<Class<*>?>
@@ -339,7 +340,7 @@ open class PacketSimple : PacketBase, Packet<INetHandler> {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun handleClientSide(player: EntityPlayer?) {
         var playerBaseClient: EntityPlayerSP? = null
         var stats: GCPlayerStatsClient? = null
@@ -355,7 +356,6 @@ open class PacketSimple : PacketBase, Packet<INetHandler> {
 
         var tile: TileEntity? = null
 lateinit var str: String
-lateinit var entity: EntityHangingSchematic
 when (this.type) {
             EnumSimplePacket.C_AIR_REMAINING -> if (this.data!!.get(2).toString() == PlayerUtil.getName(player)
                     .toString()
@@ -419,8 +419,8 @@ when (this.type) {
                     }
                 }
 
-                if (FMLClientHandler.instance().getClient().world != null) {
-                    if (FMLClientHandler.instance().getClient().currentScreen !is GuiCelestialSelection) {
+                if (Minecraft.getInstance().level != null) {
+                    if (Minecraft.getInstance().gui.screen() !is GuiCelestialSelection) {
                         val gui: GuiCelestialSelection = GuiCelestialSelection(
                             false,
                             possibleCelestialBodies,
@@ -429,22 +429,22 @@ when (this.type) {
                         gui.spaceStationMap = spaceStationData
                         //                        gui.spaceStationNames = spaceStationNames;
 //                        gui.spaceStationIDs = spaceStationIDs;
-                        FMLClientHandler.instance().getClient().displayGuiScreen(gui)
+                        Minecraft.getInstance().gui.setScreen(gui)
                     } else {
                         (FMLClientHandler.instance()
                             .getClient().currentScreen as GuiCelestialSelection).possibleBodies =
                             possibleCelestialBodies
                         (FMLClientHandler.instance()
                             .getClient().currentScreen as GuiCelestialSelection).spaceStationMap = spaceStationData
-                        //                        ((GuiCelestialSelection) FMLClientHandler.instance().getClient().currentScreen).spaceStationNames = spaceStationNames;
-//                        ((GuiCelestialSelection) FMLClientHandler.instance().getClient().currentScreen).spaceStationIDs = spaceStationIDs;
+                        //                        ((GuiCelestialSelection) Minecraft.getInstance().gui.screen()).spaceStationNames = spaceStationNames;
+//                        ((GuiCelestialSelection) Minecraft.getInstance().gui.screen()).spaceStationIDs = spaceStationIDs;
                     }
                 }
             }
 
             EnumSimplePacket.C_SPAWN_SPARK_PARTICLES -> {
                 val pos: BlockPos = this.data!!.get(0) as BlockPos
-                val mc: Minecraft = Minecraft.getMinecraft()
+                val mc: Minecraft = Minecraft.getInstance()
 
                 var i: Int = 0
                 while (i < 4) {
@@ -468,7 +468,7 @@ when (this.type) {
                 val subtype: Int = this.data!!.get(3) as Int
                 val gearName: String = this.data!!.get(0) as String
 
-                val gearDataPlayer: EntityPlayer? = player!!.world.getPlayerEntityByName(gearName)
+                val gearDataPlayer: EntityPlayer? = player!!.level().getPlayerEntityByName(gearName)
 
                 if (gearDataPlayer != null) {
                     var gearData: PlayerGearData? =
@@ -531,14 +531,14 @@ when (this.type) {
                 }
             }
 
-            EnumSimplePacket.C_CLOSE_GUI -> FMLClientHandler.instance().getClient().displayGuiScreen(null)
+            EnumSimplePacket.C_CLOSE_GUI -> Minecraft.getInstance().gui.setScreen(null)
             EnumSimplePacket.C_RESET_THIRD_PERSON -> FMLClientHandler.instance()
                 .getClient().gameSettings.thirdPersonView = stats!!.getThirdPersonView()
 
             EnumSimplePacket.C_UPDATE_SPACESTATION_LIST -> WorldUtil.decodeSpaceStationListClient((data)!!)
             EnumSimplePacket.C_UPDATE_SPACESTATION_DATA -> {
                 val var4: SpaceStationWorldData = SpaceStationWorldData.getMPSpaceStationData(
-                    player!!.world,
+                    player!!.level(),
                     (this.data!!.get(0) as kotlin.Int?)!!,
                     player
                 )
@@ -587,12 +587,12 @@ when (this.type) {
             EnumSimplePacket.C_PLAY_SOUND_BOW -> player!!.playSound(SoundEvents.ENTITY_ARROW_SHOOT, 10.0f, 0.2f)
             EnumSimplePacket.C_UPDATE_OXYGEN_VALIDITY -> stats!!.setOxygenSetupValid((this.data!!.get(0) as kotlin.Boolean?)!!)
             EnumSimplePacket.C_OPEN_PARACHEST_GUI -> when (this.data!!.get(1) as Int?) {
-                0 -> if (player!!.getRidingEntity() is EntityBuggy) {
-                    FMLClientHandler.instance().getClient().displayGuiScreen(
+                0 -> if (player!!.getVehicle() is EntityBuggy) {
+                    Minecraft.getInstance().gui.setScreen(
                         GuiBuggy(
                             player.inventory,
-                            (player.getRidingEntity() as EntityBuggy?)!!,
-                            (player.getRidingEntity() as EntityBuggy).getType()
+                            (player.getVehicle() as EntityBuggy?)!!,
+                            (player.getVehicle() as EntityBuggy).getType()
                         )
                     )
                     player.openContainer.windowId = ((this.data)!!.get(0) as kotlin.Int?)!!
@@ -600,10 +600,10 @@ when (this.type) {
 
                 1 -> {
                     val entityID: Int = this.data!!.get(2) as Int
-                    val entity: Entity? = player!!.world.getEntityByID(entityID)
+                    val entity: Entity? = player!!.level().getEntityByID(entityID)
 
                     if (entity != null && entity is IInventorySettable) {
-                        FMLClientHandler.instance().getClient()
+                        Minecraft.getInstance()
                             .displayGuiScreen(GuiParaChest(player.inventory, entity as IInventorySettable))
                     }
 
@@ -612,7 +612,7 @@ when (this.type) {
             }
 
             EnumSimplePacket.C_UPDATE_WIRE_BOUNDS -> {
-                tile = player!!.world.getTileEntity(this.data!!.get(0) as BlockPos?)
+                tile = player!!.level().getBlockEntity(this.data!!.get(0) as BlockPos?)
 
                 if (tile is TileBaseConductor) {
                     tile.adjacentConnections = null
@@ -620,15 +620,15 @@ when (this.type) {
                 }
             }
 
-            EnumSimplePacket.C_OPEN_SPACE_RACE_GUI -> if (Minecraft.getMinecraft().currentScreen == null) {
+            EnumSimplePacket.C_OPEN_SPACE_RACE_GUI -> if (Minecraft.getInstance().gui.screen() == null) {
                 TickHandlerClient.Companion.spaceRaceGuiScheduled = false
                 player!!.openGui(
                     GalacticraftCore.instance,
                     GuiIdsCore.SPACE_RACE_START,
-                    player.world,
-                    player.posX.toInt(),
-                    player.posY.toInt(),
-                    player.posZ.toInt()
+                    player.level(),
+                    player.x.toInt(),
+                    player.y.toInt(),
+                    player.z.toInt()
                 )
             } else {
                 TickHandlerClient.Companion.spaceRaceGuiScheduled = true
@@ -659,10 +659,10 @@ when (this.type) {
                 player!!.openGui(
                     GalacticraftCore.instance,
                     GuiIdsCore.SPACE_RACE_JOIN,
-                    player.world,
-                    player.posX.toInt(),
-                    player.posY.toInt(),
-                    player.posZ.toInt()
+                    player.level(),
+                    player.x.toInt(),
+                    player.y.toInt(),
+                    player.z.toInt()
                 )
             }
 
@@ -701,18 +701,18 @@ when (this.type) {
                 }
             }
 
-            EnumSimplePacket.C_UPDATE_STATION_SPIN -> if (playerBaseClient!!.world.provider is WorldProviderSpaceStation) {
-                (playerBaseClient.world.provider as WorldProviderSpaceStation).getSpinManager()
+            EnumSimplePacket.C_UPDATE_STATION_SPIN -> if (playerBaseClient!!.level().provider is WorldProviderSpaceStation) {
+                (playerBaseClient.level().provider as WorldProviderSpaceStation).getSpinManager()
                     .setSpinRate((this.data!!.get(0) as kotlin.Float?)!!, (this.data!!.get(1) as kotlin.Boolean?)!!)
             }
 
-            EnumSimplePacket.C_UPDATE_STATION_DATA -> if (playerBaseClient!!.world.provider is WorldProviderSpaceStation) {
-                (playerBaseClient.world.provider as WorldProviderSpaceStation).getSpinManager()
+            EnumSimplePacket.C_UPDATE_STATION_DATA -> if (playerBaseClient!!.level().provider is WorldProviderSpaceStation) {
+                (playerBaseClient.level().provider as WorldProviderSpaceStation).getSpinManager()
                     .setSpinCentre((this.data!!.get(0) as kotlin.Double?)!!, (this.data!!.get(1) as kotlin.Double?)!!)
             }
 
-            EnumSimplePacket.C_UPDATE_STATION_BOX -> if (playerBaseClient!!.world.provider is WorldProviderSpaceStation) {
-                (playerBaseClient.world.provider as WorldProviderSpaceStation).getSpinManager().setSpinBox(
+            EnumSimplePacket.C_UPDATE_STATION_BOX -> if (playerBaseClient!!.level().provider is WorldProviderSpaceStation) {
+                (playerBaseClient.level().provider as WorldProviderSpaceStation).getSpinManager().setSpinBox(
                     (this.data!!.get(0) as kotlin.Int?)!!,
                     (this.data!!.get(1) as kotlin.Int?)!!,
                     (this.data!!.get(2) as kotlin.Int?)!!,
@@ -728,29 +728,29 @@ when (this.type) {
             }
 
             EnumSimplePacket.C_DISPLAY_ROCKET_CONTROLS -> {
-                player!!.sendMessage(
-                    TextComponentString(
+                player!!.sendSystemMessage(
+                    Component.literal(
                         GameSettings.getKeyDisplayString((KeyHandlerClient.Companion.spaceKey)!!.getKeyCode()) + "  - " + GCCoreUtil.translate(
                             "gui.rocket.launch.name"
                         )
                     )
                 )
-                player.sendMessage(
-                    TextComponentString(
+                player.sendSystemMessage(
+                    Component.literal(
                         GameSettings.getKeyDisplayString((KeyHandlerClient.Companion.leftKey)!!.getKeyCode()) + " / " + GameSettings.getKeyDisplayString(
                             (KeyHandlerClient.Companion.rightKey)!!.getKeyCode()
                         ) + "  - " + GCCoreUtil.translate("gui.rocket.turn.name")
                     )
                 )
-                player.sendMessage(
-                    TextComponentString(
+                player.sendSystemMessage(
+                    Component.literal(
                         GameSettings.getKeyDisplayString((KeyHandlerClient.Companion.accelerateKey)!!.getKeyCode()) + " / " + GameSettings.getKeyDisplayString(
                             (KeyHandlerClient.Companion.decelerateKey)!!.getKeyCode()
                         ) + "  - " + GCCoreUtil.translate("gui.rocket.updown.name")
                     )
                 )
-                player.sendMessage(
-                    TextComponentString(
+                player.sendSystemMessage(
+                    Component.literal(
                         GameSettings.getKeyDisplayString(KeyHandlerClient.Companion.openFuelGui.getKeyCode()) + "       - " + GCCoreUtil.translate(
                             "gui.rocket.inv.name"
                         )
@@ -805,7 +805,7 @@ when (this.type) {
             }
 
             EnumSimplePacket.C_UPDATE_TELEMETRY -> {
-                tile = player!!.world.getTileEntity(this.data!!.get(0) as BlockPos?)
+                tile = player!!.level().getBlockEntity(this.data!!.get(0) as BlockPos?)
                 if (tile is TileEntityTelemetry) {
                     (tile as TileEntityTelemetry).receiveUpdate((data)!!, this.getDimensionID())
                 }
@@ -833,7 +833,7 @@ when (this.type) {
             }
 
             EnumSimplePacket.C_RECOLOR_PIPE -> {
-                val tileEntity: TileEntity? = player!!.world.getTileEntity(this.data!!.get(0) as BlockPos?)
+                val tileEntity: TileEntity? = player!!.level().getBlockEntity(this.data!!.get(0) as BlockPos?)
                 if (tileEntity is TileEntityFluidPipe) {
                     val pipe: TileEntityFluidPipe = tileEntity
                     (pipe.getNetwork())!!.splitUntyped(pipe)
@@ -848,28 +848,19 @@ when (this.type) {
             )
 
             EnumSimplePacket.C_UPDATE_MACHINE_DATA -> {
-                val tile3: TileEntity? = player!!.world.getTileEntity(this.data!!.get(0) as BlockPos?)
+                val tile3: TileEntity? = player!!.level().getBlockEntity(this.data!!.get(0) as BlockPos?)
                 if (tile3 is ITileClientUpdates) {
                     (tile3 as ITileClientUpdates).updateClient(this.data)
                 }
             }
 
             EnumSimplePacket.C_LEAK_DATA -> {
-                val tile4: TileEntity? = player!!.world.getTileEntity(this.data!!.get(0) as BlockPos?)
+                val tile4: TileEntity? = player!!.level().getBlockEntity(this.data!!.get(0) as BlockPos?)
                 if (tile4 is TileEntityOxygenSealer) {
                     (tile4 as ITileClientUpdates).updateClient(this.data)
                 }
             }
 
-            EnumSimplePacket.C_SPAWN_HANGING_SCHEMATIC -> {
-                entity = EntityHangingSchematic(
-                    player!!.world,
-                    (this.data!!.get(0) as BlockPos?)!!,
-                    EnumFacing.byIndex((this.data!!.get(2) as Int?)!!),
-                    (this.data!!.get(3) as kotlin.Int?)!!
-                )
-                (player.world as WorldClient).addEntityToWorld((this.data!!.get(1) as kotlin.Int?)!!, entity)
-            }
 
             else -> {}
         }
@@ -891,8 +882,8 @@ when (this.type) {
             EnumSimplePacket.S_RESPAWN_PLAYER -> playerBase.connection.sendPacket(
                 SPacketRespawn(
                     player!!.dimension,
-                    player.world.getDifficulty(),
-                    player.world.getWorldInfo().getTerrainType(),
+                    player.level().getDifficulty(),
+                    player.level().getWorldInfo().getTerrainType(),
                     playerBase.interactionManager.getGameType()
                 )
             )
@@ -904,8 +895,8 @@ when (this.type) {
                 )
             )
 
-            EnumSimplePacket.S_IGNITE_ROCKET -> if (!player!!.world.isRemote && !player.isDead && player.getRidingEntity() != null && !player.getRidingEntity()!!.isDead && player.getRidingEntity() is EntityTieredRocket) {
-                val ship: EntityTieredRocket? = player.getRidingEntity() as EntityTieredRocket?
+            EnumSimplePacket.S_IGNITE_ROCKET -> if (!player!!.level().isRemote && !player.isRemoved() && player.getVehicle() != null && !player.getVehicle()!!.isDead && player.getVehicle() is EntityTieredRocket) {
+                val ship: EntityTieredRocket? = player.getVehicle() as EntityTieredRocket?
 
                 if (ship!!.launchPhase != EntitySpaceshipBase.EnumLaunchPhase.LANDING.ordinal) {
                     if (ship.hasValidFuel()) {
@@ -915,12 +906,12 @@ when (this.type) {
                             ship.igniteCheckingCooldown()
                             stats.setLaunchAttempts(0)
                         } else if (stats.getChatCooldown() == 0 && stats.getLaunchAttempts() == 0) {
-                            player.sendMessage(TextComponentString(GCCoreUtil.translate("gui.rocket.warning.noparachute")))
+                            player.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.rocket.warning.noparachute")))
                             stats.setChatCooldown(250)
                             stats.setLaunchAttempts(1)
                         }
                     } else if (stats.getChatCooldown() == 0) {
-                        player.sendMessage(TextComponentString(GCCoreUtil.translate("gui.rocket.warning.nofuel")))
+                        player.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.rocket.warning.nofuel")))
                         stats.setChatCooldown(250)
                     }
                 }
@@ -933,40 +924,40 @@ when (this.type) {
                 player.openGui(
                     GalacticraftCore.instance,
                     page!!.getGuiID(),
-                    player.world,
+                    player.level(),
                     (this.data!!.get(1) as kotlin.Int?)!!,
                     (this.data!!.get(2) as kotlin.Int?)!!,
                     (this.data!!.get(3) as kotlin.Int?)!!
                 )
             }
 
-            EnumSimplePacket.S_OPEN_FUEL_GUI -> if (player!!.getRidingEntity() is EntityBuggy) {
+            EnumSimplePacket.S_OPEN_FUEL_GUI -> if (player!!.getVehicle() is EntityBuggy) {
                 GCCoreUtil.openBuggyInv(
                     playerBase,
-                    (player.getRidingEntity() as EntityBuggy?)!!,
-                    (player.getRidingEntity() as EntityBuggy).getType()
+                    (player.getVehicle() as EntityBuggy?)!!,
+                    (player.getVehicle() as EntityBuggy).getType()
                 )
-            } else if (player.getRidingEntity() is EntitySpaceshipBase) {
+            } else if (player.getVehicle() is EntitySpaceshipBase) {
                 player.openGui(
                     GalacticraftCore.instance,
                     GuiIdsCore.ROCKET_INVENTORY,
-                    player.world,
-                    player.posX.toInt(),
-                    player.posY.toInt(),
-                    player.posZ.toInt()
+                    player.level(),
+                    player.x.toInt(),
+                    player.y.toInt(),
+                    player.z.toInt()
                 )
             }
 
-            EnumSimplePacket.S_UPDATE_SHIP_YAW -> if (player!!.getRidingEntity() is EntitySpaceshipBase) {
-                val ship: EntitySpaceshipBase? = player.getRidingEntity() as EntitySpaceshipBase?
+            EnumSimplePacket.S_UPDATE_SHIP_YAW -> if (player!!.getVehicle() is EntitySpaceshipBase) {
+                val ship: EntitySpaceshipBase? = player.getVehicle() as EntitySpaceshipBase?
 
                 if (ship != null) {
                     ship.rotationYaw = ((this.data)!!.get(0) as kotlin.Float?)!!
                 }
             }
 
-            EnumSimplePacket.S_UPDATE_SHIP_PITCH -> if (player!!.getRidingEntity() is EntitySpaceshipBase) {
-                val ship: EntitySpaceshipBase? = player.getRidingEntity() as EntitySpaceshipBase?
+            EnumSimplePacket.S_UPDATE_SHIP_PITCH -> if (player!!.getVehicle() is EntitySpaceshipBase) {
+                val ship: EntitySpaceshipBase? = player.getVehicle() as EntitySpaceshipBase?
 
                 if (ship != null) {
                     ship.rotationPitch = ((this.data)!!.get(0) as kotlin.Float?)!!
@@ -974,7 +965,7 @@ when (this.type) {
             }
 
             EnumSimplePacket.S_SET_ENTITY_FIRE -> {
-                val entity: Entity? = player!!.world.getEntityByID((this.data!!.get(0) as kotlin.Int?)!!)
+                val entity: Entity? = player!!.level().getEntityByID((this.data!!.get(0) as kotlin.Int?)!!)
 
                 if (entity is EntityLivingBase) {
                     entity.setFire(3)
@@ -990,7 +981,7 @@ when (this.type) {
                     if (playerBase.capabilities.isCreativeMode || (WorldUtil.getSpaceStationRecipe(homeID))!!
                             .matches(playerBase, true)
                     ) {
-                        WorldUtil.bindSpaceStationToNewDimension(playerBase.world, playerBase, homeID)
+                        WorldUtil.bindSpaceStationToNewDimension(playerBase.level(), playerBase, homeID)
                     }
                 }
             }
@@ -1027,7 +1018,7 @@ when (this.type) {
             }
 
             EnumSimplePacket.S_UPDATE_DISABLEABLE_BUTTON -> {
-                val tileAt: TileEntity? = player!!.world.getTileEntity(this.data!!.get(0) as BlockPos?)
+                val tileAt: TileEntity? = player!!.level().getBlockEntity(this.data!!.get(0) as BlockPos?)
 
                 if (tileAt is IDisableableMachine) {
                     val machine: IDisableableMachine = tileAt as IDisableableMachine
@@ -1040,8 +1031,8 @@ when (this.type) {
             }
 
             EnumSimplePacket.S_ON_FAILED_CHEST_UNLOCK -> if (stats.getChatCooldown() == 0) {
-                player!!.sendMessage(
-                    TextComponentString(
+                player!!.sendSystemMessage(
+                    Component.literal(
                         GCCoreUtil.translateWithFormat(
                             "gui.chest.warning.wrongkey",
                             this.data!!.get(0)
@@ -1053,7 +1044,7 @@ when (this.type) {
 
             EnumSimplePacket.S_RENAME_SPACE_STATION -> {
                 val ssdata: SpaceStationWorldData? = SpaceStationWorldData.getStationData(
-                    playerBase.world,
+                    playerBase.level(),
                     (this.data!!.get(1) as kotlin.Int?)!!,
                     playerBase
                 )
@@ -1067,14 +1058,14 @@ when (this.type) {
             EnumSimplePacket.S_OPEN_EXTENDED_INVENTORY -> player!!.openGui(
                 GalacticraftCore.instance,
                 GuiIdsCore.EXTENDED_INVENTORY,
-                player.world,
+                player.level(),
                 0,
                 0,
                 0
             )
 
             EnumSimplePacket.S_ON_ADVANCED_GUI_CLICKED_INT -> {
-                val tile1: TileEntity? = player!!.world.getTileEntity(this.data!!.get(1) as BlockPos?)
+                val tile1: TileEntity? = player!!.level().getBlockEntity(this.data!!.get(1) as BlockPos?)
 
                 when (this.data!!.get(0) as Int?) {
                     0 -> if (tile1 is TileEntityAirLockController) {
@@ -1118,7 +1109,7 @@ when (this.type) {
             }
 
             EnumSimplePacket.S_ON_ADVANCED_GUI_CLICKED_STRING -> {
-                val tile2: TileEntity? = player!!.world.getTileEntity(this.data!!.get(1) as BlockPos?)
+                val tile2: TileEntity? = player!!.level().getBlockEntity(this.data!!.get(1) as BlockPos?)
 
                 when (this.data!!.get(0) as Int?) {
                     0 -> if (tile2 is TileEntityAirLockController) {
@@ -1134,7 +1125,7 @@ when (this.type) {
                 val entityID: Int = this.data!!.get(0) as Int
                 val up: Boolean = this.data!!.get(1) as Boolean
 
-                val entity2: Entity? = player!!.world.getEntityByID(entityID)
+                val entity2: Entity? = player!!.level().getEntityByID(entityID)
 
                 if (entity2 is EntityAutoRocket) {
                     val autoRocket: EntityAutoRocket = entity2
@@ -1198,8 +1189,8 @@ when (this.type) {
                         for (teamNamePart: String? in teamNameSplit) {
                             teamNameTotal = teamNameTotal + dB + teamNamePart + " "
                         }
-                        playerInvited.sendMessage(
-                            TextComponentString(
+                        playerInvited.sendSystemMessage(
+                            Component.literal(
                                 dA + GCCoreUtil.translateWithFormat(
                                     "gui.space_race.chat.invite_received",
                                     bG + PlayerUtil.getName(player) + dA
@@ -1222,8 +1213,8 @@ when (this.type) {
                     val playerToRemove: String? = this.data!!.get(0) as String?
 
                     if (!(race.getPlayerNames())!!.remove((playerToRemove)!!)) {
-                        player!!.sendMessage(
-                            TextComponentString(
+                        player!!.sendSystemMessage(
+                            Component.literal(
                                 GCCoreUtil.translateWithFormat(
                                     "gui.space_race.chat.not_found",
                                     playerToRemove
@@ -1256,8 +1247,8 @@ when (this.type) {
                             val memberObj: EntityPlayerMP? = PlayerUtil.getPlayerForUsernameVanilla(server, (member)!!)
 
                             if (memberObj != null) {
-                                memberObj.sendMessage(
-                                    TextComponentString(
+                                memberObj.sendSystemMessage(
+                                    Component.literal(
                                         EnumColor.DARK_AQUA.toString() + GCCoreUtil.translateWithFormat(
                                             "gui.space_race.chat.add_success",
                                             EnumColor.BRIGHT_GREEN.toString() + playerToAdd + EnumColor.DARK_AQUA
@@ -1267,8 +1258,8 @@ when (this.type) {
                             }
                         }
                     } else {
-                        player!!.sendMessage(
-                            TextComponentString(GCCoreUtil.translate("gui.space_race.chat.already_part")).setStyle(
+                        player!!.sendSystemMessage(
+                            Component.literal(GCCoreUtil.translate("gui.space_race.chat.already_part")).setStyle(
                                 Style().setColor(TextFormatting.DARK_RED)
                             )
                         )
@@ -1307,7 +1298,7 @@ when (this.type) {
                 }
 
                 if (missingObjects.length > 0) {
-                    playerBase.connection.disconnect(TextComponentString("Missing Galacticraft Celestial Objects:\n\n " + missingObjects))
+                    playerBase.connection.disconnect(Component.literal("Missing Galacticraft Celestial Objects:\n\n " + missingObjects))
                 }
             }
 
@@ -1355,14 +1346,14 @@ when (this.type) {
                             strName,
                             property.getValue(),
                             property.getSignature(),
-                            playerRequested.getUniqueID().toString()
+                            playerRequested.getUUID().toString()
                         )
                     ), playerBase
                 )
             }
 
-            EnumSimplePacket.S_CONTROL_ENTITY -> if (player!!.getRidingEntity() != null && player.getRidingEntity() is IControllableEntity) {
-                (player.getRidingEntity() as IControllableEntity).pressKey((this.data!!.get(0) as kotlin.Int?)!!)
+            EnumSimplePacket.S_CONTROL_ENTITY -> if (player!!.getVehicle() != null && player.getVehicle() is IControllableEntity) {
+                (player.getVehicle() as IControllableEntity).pressKey((this.data!!.get(0) as kotlin.Int?)!!)
             }
 
             EnumSimplePacket.S_NOCLIP_PLAYER -> {
@@ -1400,7 +1391,7 @@ when (this.type) {
             EnumSimplePacket.S_REQUEST_DATA -> {
                 val worldServer: WorldServer = server.getWorld((this.data!!.get(0) as kotlin.Int?)!!)
                 if (worldServer != null) {
-                    val requestedTile: TileEntity? = worldServer.getTileEntity(this.data!!.get(1) as BlockPos?)
+                    val requestedTile: TileEntity? = worldServer.getBlockEntity(this.data!!.get(1) as BlockPos?)
                     if (requestedTile is INetworkProvider) {
                         if ((requestedTile as INetworkProvider).getNetwork() is FluidNetwork) {
                             val network: FluidNetwork = (requestedTile as INetworkProvider).getNetwork() as FluidNetwork
@@ -1411,20 +1402,20 @@ when (this.type) {
             }
 
             EnumSimplePacket.S_UPDATE_CHECKLIST -> for (enumhand: EnumHand in EnumHand.entries) {
-                val stack: ItemStack = player!!.getHeldItem(enumhand)
+                val stack: ItemStack = player!!.getItemInHand(enumhand)
                 if (stack != null && stack.getItem() === GCItems.prelaunchChecklist) {
                     var tagCompound: NBTTagCompound? = stack.getTagCompound()
                     if (tagCompound == null) {
                         tagCompound = NBTTagCompound()
                     }
                     val tagCompoundRead: NBTTagCompound = this.data!!.get(0) as NBTTagCompound
-                    tagCompound.setTag("checklistData", tagCompoundRead)
+                    tagCompound.put("checklistData", tagCompoundRead)
                     stack.setTagCompound(tagCompound)
                 }
             }
 
             EnumSimplePacket.S_REQUEST_MACHINE_DATA -> {
-                val tile3: TileEntity? = player!!.world.getTileEntity(this.data!!.get(0) as BlockPos?)
+                val tile3: TileEntity? = player!!.level().getBlockEntity(this.data!!.get(0) as BlockPos?)
                 if (tile3 is ITileClientUpdates) {
                     (tile3 as ITileClientUpdates).sendUpdateToClient(playerBase)
                 }
@@ -1449,7 +1440,7 @@ when (this.type) {
         this.encodeInto(var1)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun processPacket(var1: INetHandler) {
         if (this.type != EnumSimplePacket.C_UPDATE_SPACESTATION_LIST && this.type != EnumSimplePacket.C_UPDATE_PLANETS_LIST && this.type != EnumSimplePacket.C_UPDATE_CONFIGS) {
             return

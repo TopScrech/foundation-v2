@@ -1,5 +1,10 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import net.minecraft.network.chat.Component
+
+import net.minecraft.world.ContainerHelper
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import io.netty.buffer.ByteBuf
@@ -12,20 +17,20 @@ import micdoodle8.mods.galacticraft.core.network.PacketDynamicInventory
 import micdoodle8.mods.galacticraft.core.util.FluidUtil
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.SoundEvents
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.sounds.SoundEvents
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.EnumDyeColor
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.NonNullList
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.text.ITextComponent
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.util.text.TextComponentTranslation
+import net.minecraft.world.item.DyeColor as EnumDyeColor
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.NonNullList
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.network.chat.Component as ITextComponent
+
+
 import net.minecraftforge.fluids.FluidTank
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 
 open class TileEntityParaChest constructor() : TileEntityAdvanced(), IInventorySettable, IScaleableFuelLevel {
     private val tankCapacity = 5000
@@ -71,40 +76,40 @@ open class TileEntityParaChest constructor() : TileEntityAdvanced(), IInventoryS
         return (fuelLevel * i / this.tankCapacity).toInt()
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.stacks.size
     }
 
-    override fun getStackInSlot(index: Int): ItemStack {
+    override fun getItem(index: Int): ItemStack {
         return this.stacks.get(index)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        val oldstack: ItemStack = ItemStackHelper.getAndRemove(this.stacks, index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        val oldstack: ItemStack = ContainerHelper.takeItem(this.stacks, index)
         if (!oldstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
         return oldstack
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.stacks.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
     override fun setSizeInventory(size: Int) {
@@ -121,8 +126,8 @@ open class TileEntityParaChest constructor() : TileEntityAdvanced(), IInventoryS
         return true
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.parachest.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return Component.translatable("container.parachest.name")
     }
 
     override fun hasCustomName(): Boolean {
@@ -132,7 +137,7 @@ open class TileEntityParaChest constructor() : TileEntityAdvanced(), IInventoryS
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
 
-        var size: Int = nbt.getInteger("chestContentLength")
+        var size: Int = nbt.getIntOr("chestContentLength", 0)
         if ((size - 3) % 18 != 0) {
             size += 18 - ((size - 3) % 18)
         }
@@ -140,26 +145,26 @@ open class TileEntityParaChest constructor() : TileEntityAdvanced(), IInventoryS
 
         ItemStackHelper.loadAllItems(nbt, this.stacks)
 
-        if (nbt.hasKey("fuelTank")) {
-            this.fuelTank.readFromNBT(nbt.getCompoundTag("fuelTank"))
+        if (nbt.containsTag("fuelTank")) {
+            this.fuelTank.readFromNBT(nbt.getCompoundOrEmpty("fuelTank"))
         }
 
-        if (nbt.hasKey("color")) {
-            this.color = EnumDyeColor.byDyeDamage(nbt.getInteger("color"))
+        if (nbt.containsTag("color")) {
+            this.color = EnumDyeColor.byDyeDamage(nbt.getIntOr("color", 0))
         }
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
 
-        nbt.setInteger("chestContentLength", this.stacks.size)
+        nbt.putInt("chestContentLength", this.stacks.size)
         ItemStackHelper.saveAllItems(nbt, this.stacks)
 
         if (this.fuelTank.getFluid() != null) {
-            nbt.setTag("fuelTank", this.fuelTank.writeToNBT(NBTTagCompound()))
+            nbt.put("fuelTank", this.fuelTank.writeToNBT(NBTTagCompound()))
         }
 
-        nbt.setInteger("color", this.color.getDyeDamage())
+        nbt.putInt("color", this.color.getDyeDamage())
         return nbt
     }
 
@@ -167,12 +172,12 @@ open class TileEntityParaChest constructor() : TileEntityAdvanced(), IInventoryS
         return this.writeToNBT(NBTTagCompound())
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
     }
@@ -288,7 +293,7 @@ open class TileEntityParaChest constructor() : TileEntityAdvanced(), IInventoryS
         }
     }
 
-    override fun openInventory(player: EntityPlayer) {
+    override fun startOpen(player: net.minecraft.world.entity.ContainerUser) {
         if (this.numUsingPlayers < 0) {
             this.numUsingPlayers = 0
         }
@@ -299,7 +304,7 @@ open class TileEntityParaChest constructor() : TileEntityAdvanced(), IInventoryS
         this.world.notifyNeighborsOfStateChange(this.getPos().down(), this.getBlockType(), false)
     }
 
-    override fun closeInventory(player: EntityPlayer) {
+    override fun stopOpen(player: net.minecraft.world.entity.ContainerUser) {
         if (this.getBlockType() != null && this.getBlockType() is BlockParaChest) {
             --this.numUsingPlayers
             this.world.addBlockEvent(this.getPos(), this.getBlockType(), 1, this.numUsingPlayers)
@@ -308,7 +313,7 @@ open class TileEntityParaChest constructor() : TileEntityAdvanced(), IInventoryS
         }
     }
 
-    override fun isItemValidForSlot(par1: Int, par2ItemStack: ItemStack): Boolean {
+    override fun canPlaceItem(par1: Int, par2ItemStack: ItemStack): Boolean {
         return true
     }
 
@@ -329,26 +334,14 @@ open class TileEntityParaChest constructor() : TileEntityAdvanced(), IInventoryS
         return true
     }
 
-    override fun getField(id: Int): Int {
-        return 0
+
+
+
+    override fun clearContent() {
+        for (slot in 0 until containerSize) setItem(slot, ItemStack.EMPTY)
     }
 
-    override fun setField(id: Int, value: Int) {
-    }
-
-    override fun getFieldCount(): Int {
-        return 0
-    }
-
-    override fun clear() {
-    }
-
-    override fun getDisplayName(): ITextComponent? {
-        return (if (this.hasCustomName()) TextComponentString(this.getName()) else TextComponentTranslation(
-            this.getName(),
-            *arrayOfNulls<Any>(0)
-        ))
-    }
+    override fun getDisplayName(): ITextComponent = getName()
 
     override fun decodePacketdata(buffer: ByteBuf?) {
         val color: EnumDyeColor = this.color

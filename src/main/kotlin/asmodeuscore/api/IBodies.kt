@@ -1,25 +1,23 @@
 package asmodeuscore.api
 
 import asmodeuscore.api.IBodies
-import net.minecraft.item.Item
-import net.minecraftforge.event.RegistryEvent
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraft.world.item.Item
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
 
 interface IBodies {
     fun canRegister(): Boolean
-    fun preInit(event: FMLPreInitializationEvent?)
+    fun preInit()
     fun init(event: FMLInitializationEvent?)
     fun postInit(event: FMLPostInitializationEvent?)
     fun registerRecipes()
     fun registerRender()
     fun registerVariant()
 
-    fun preInitialization(event: FMLPreInitializationEvent?) {
+    fun preInitialization() {
     }
 
-    fun registerItems(event: RegistryEvent.Register<Item?>?) {
+    fun registerItems() {
     }
 
     fun getPriority(): Int {

@@ -5,7 +5,7 @@ import javax.annotation.Nonnull
 import org.lwjgl.opengl.GL11
 import asmodeuscore.core.astronomy.sky.CustomCloudRender
 import net.minecraft.client.Minecraft
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.EntityRenderer
 import net.minecraft.client.renderer.GLAllocation
@@ -18,17 +18,17 @@ import net.minecraft.client.renderer.vertex.VertexBuffer
 import net.minecraft.client.renderer.vertex.VertexFormat
 import net.minecraft.client.resources.IReloadableResourceManager
 import net.minecraft.client.resources.IResourceManager
-import net.minecraft.entity.Entity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.entity.Entity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraftforge.client.IRenderHandler
 import net.minecraftforge.client.resource.IResourceType
 import net.minecraftforge.client.resource.ISelectiveResourceReloadListener
 import net.minecraftforge.client.resource.VanillaResourceType
 import net.minecraftforge.common.ForgeModContainer
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.nio.ByteBuffer
 import java.util.Random
 import java.util.function.Predicate
@@ -36,10 +36,10 @@ import java.util.function.Predicate
 abstract class CustomCloudRender(layersLevels_t: FloatArray) : IRenderHandler(), ISelectiveResourceReloadListener {
     // Instance fields
     @JvmField
-    protected val mc: Minecraft = Minecraft.getMinecraft()
+    protected val mc: Minecraft = Minecraft.getInstance()
 
     @JvmField
-    protected val default_clouds: ResourceLocation = ResourceLocation("textures/environment/clouds.png")
+    protected val default_clouds: ResourceLocation = ResourceLocation.parse("textures/environment/clouds.png")
 
     private var displayList = -1
     private var vbo: VertexBuffer? = null
@@ -382,7 +382,7 @@ abstract class CustomCloudRender(layersLevels_t: FloatArray) : IRenderHandler(),
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun render(cloudTicks: Float, partialTicks: Float, offsets: FloatArray): Boolean {
         if (!isBuilt()) return false
 
@@ -390,11 +390,11 @@ abstract class CustomCloudRender(layersLevels_t: FloatArray) : IRenderHandler(),
 
         val totalOffset: Double = (cloudTicks + partialTicks).toDouble()
 
-        var x: Double = (entity!!.prevPosX + (entity.posX - entity.prevPosX) * partialTicks + totalOffset * 0.03)
+        var x: Double = (entity!!.prevPosX + (entity.x - entity.prevPosX) * partialTicks + totalOffset * 0.03)
         val y: Double = (mc.world.provider.getCloudHeight()
-                - (entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * partialTicks)
+                - (entity.lastTickPosY + (entity.y - entity.lastTickPosY) * partialTicks)
                 + 0.33)
-        var z: Double = entity.prevPosZ + (entity.posZ - entity.prevPosZ) * partialTicks
+        var z: Double = entity.prevPosZ + (entity.z - entity.prevPosZ) * partialTicks
 
         x += offsets[0].toDouble()
         z += offsets[2].toDouble()
@@ -545,7 +545,7 @@ abstract class CustomCloudRender(layersLevels_t: FloatArray) : IRenderHandler(),
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun render(partialTicks: Float, world: WorldClient?, mc: Minecraft?) {
         this.color = Vec3d(
             getCloudColor(partialTicks).x / 255f,
@@ -560,13 +560,13 @@ abstract class CustomCloudRender(layersLevels_t: FloatArray) : IRenderHandler(),
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     abstract fun getCloudMovementSpeed(world: WorldClient?): Float
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     abstract fun getCloudTexture(): ResourceLocation?
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     abstract fun getCloudColor(renderPartialTicks: Float): Vec3d
 
     companion object {

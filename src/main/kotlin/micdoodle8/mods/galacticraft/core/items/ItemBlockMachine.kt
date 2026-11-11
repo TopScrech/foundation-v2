@@ -1,18 +1,20 @@
 package micdoodle8.mods.galacticraft.core.items
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.blocks.BlockMachine
 import micdoodle8.mods.galacticraft.core.blocks.BlockMachine2
 import micdoodle8.mods.galacticraft.core.blocks.BlockMachineTiered
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
-import net.minecraft.block.Block
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.level.block.Block
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemBlockMachine constructor(block: Block?) : ItemBlockDesc(block) {
     init {
@@ -24,14 +26,14 @@ open class ItemBlockMachine constructor(block: Block?) : ItemBlockDesc(block) {
         return damage
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
 
     public override fun getTranslationKey(itemstack: ItemStack): String {
         var index: Int = 0
-        val typenum: Int = itemstack.getItemDamage() and 12
+        val typenum: Int = itemstack.legacyItemValue and 12
 
         if (this.getBlock() === GCBlocks.machineBase) {
             index = typenum / 4
@@ -67,11 +69,11 @@ open class ItemBlockMachine constructor(block: Block?) : ItemBlockDesc(block) {
     }
 
     override fun onCreated(stack: ItemStack, world: World, player: EntityPlayer) {
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             return
         }
 
-        val typenum: Int = stack.getItemDamage() and 12
+        val typenum: Int = stack.legacyItemValue and 12
 
         //The player could be a FakePlayer made by another mod e.g. LogisticsPipes
         if (player is EntityPlayerSP) {

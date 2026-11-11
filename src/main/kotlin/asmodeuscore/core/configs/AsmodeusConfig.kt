@@ -5,11 +5,11 @@ import java.util.List
 import asmodeuscore.core.configs.AsmodeusConfig
 import asmodeuscore.core.utils.ACCompatibilityManager
 import micdoodle8.mods.galacticraft.core.Constants
-import net.minecraftforge.common.config.ConfigElement
-import net.minecraftforge.common.config.Configuration
-import net.minecraftforge.common.config.Property
-import net.minecraftforge.fml.client.config.IConfigElement
-import net.minecraftforge.fml.common.FMLLog
+import foundation.config.FoundationConfigElement as ConfigElement
+import foundation.config.FoundationConfiguration as Configuration
+import foundation.config.FoundationConfigProperty as Property
+import foundation.config.FoundationConfigEntry as IConfigElement
+import foundation.logging.FoundationLog as FMLLog
 import org.apache.logging.log4j.Level
 import java.io.File
 import java.lang.Exception

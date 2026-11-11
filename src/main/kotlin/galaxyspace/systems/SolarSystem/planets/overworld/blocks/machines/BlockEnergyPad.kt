@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.blocks.machines
 
+import foundation.block.LegacyBlockMetadata
+
 import galaxyspace.GalaxySpace
 import asmodeuscore.api.item.IShiftDescription
 import galaxyspace.systems.SolarSystem.planets.overworld.blocks.machines.BlockEnergyPad
@@ -9,26 +11,26 @@ import micdoodle8.mods.galacticraft.core.blocks.BlockAdvancedTile
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.SoundType
-import net.minecraft.block.properties.PropertyBool
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.properties.BooleanProperty as PropertyBool
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 
-open class BlockEnergyPad constructor() : BlockAdvancedTile(GCBlocks.machine), IShiftDescription, ISortableBlock {
+open class BlockEnergyPad constructor() : BlockAdvancedTile(GCBlocks.machine), IShiftDescription, ISortableBlock, LegacyBlockMetadata {
     init {
         this.setTranslationKey("energy_pad")
         this.setHardness(1.0f)
@@ -46,7 +48,7 @@ open class BlockEnergyPad constructor() : BlockAdvancedTile(GCBlocks.machine), I
         placer: EntityLivingBase,
         stack: ItemStack
     ) {
-        worldIn.setBlockState(pos, getStateFromMeta(0), 3)
+        worldIn.setBlock(pos, getStateFromMeta(0), 3)
     }
 
     override fun isTopSolid(state: IBlockState): Boolean {
@@ -66,17 +68,17 @@ open class BlockEnergyPad constructor() : BlockAdvancedTile(GCBlocks.machine), I
     }
 
     override fun onEntityCollision(world: World, pos: BlockPos, state: IBlockState, entity: Entity) {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             if (entity is EntityPlayer) {
-                val tile: TileEntityEnergyPad? = world.getTileEntity(pos) as TileEntityEnergyPad?
+                val tile: TileEntityEnergyPad? = world.getBlockEntity(pos) as TileEntityEnergyPad?
 
 
                 //EntityPlayer player = (EntityPlayer) entity;
-                if (tile!!.hasEnoughEnergyToRun) for (i: Int in 0..4) Minecraft.getMinecraft().world.spawnParticle(
+                if (tile!!.hasEnoughEnergyToRun) for (i: Int in 0..4) Minecraft.getInstance().level.spawnParticle(
                     EnumParticleTypes.REDSTONE,
-                    pos.getX() + world.rand.nextDouble(),
-                    pos.getY() + world.rand.nextDouble() + 0.2,
-                    pos.getZ() + world.rand.nextDouble(),
+                    pos.getX() + world.random.nextDouble(),
+                    pos.getY() + world.random.nextDouble() + 0.2,
+                    pos.getZ() + world.random.nextDouble(),
                     0.5,
                     0.9,
                     0.0
@@ -84,7 +86,7 @@ open class BlockEnergyPad constructor() : BlockAdvancedTile(GCBlocks.machine), I
             }
         } else {
             if (entity is EntityPlayer) {
-                val tile: TileEntityEnergyPad? = world.getTileEntity(pos) as TileEntityEnergyPad?
+                val tile: TileEntityEnergyPad? = world.getBlockEntity(pos) as TileEntityEnergyPad?
                 val player: EntityPlayer = entity
 
                 tile!!.smeltItem(player)
@@ -133,7 +135,7 @@ open class BlockEnergyPad constructor() : BlockAdvancedTile(GCBlocks.machine), I
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(STATUS, false)
+        return this.defaultBlockState().setValue(STATUS, false)
     }
 
     override fun createBlockState(): BlockStateContainer {
@@ -141,11 +143,11 @@ open class BlockEnergyPad constructor() : BlockAdvancedTile(GCBlocks.machine), I
     }
 
     override fun getActualState(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState {
-        val tile: TileEntity? = worldIn.getTileEntity(pos)
+        val tile: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tile != null) {
             val energyLevel: Boolean = (tile as TileEntityEnergyPad).isCollide
-            return state.withProperty(STATUS, energyLevel)
+            return state.setValue(STATUS, energyLevel)
         }
         return state
     }

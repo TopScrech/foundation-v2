@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.Overwrite
 import micdoodle8.mods.galacticraft.api.world.EnumAtmosphericGas
 import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityGasLiquefier
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.world.WorldProvider
 import org.spongepowered.asm.mixin.Mixin
 import java.util.ArrayList

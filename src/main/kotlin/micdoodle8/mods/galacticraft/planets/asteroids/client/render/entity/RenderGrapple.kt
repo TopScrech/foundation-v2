@@ -15,10 +15,9 @@ import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
-import net.minecraftforge.fml.client.FMLClientHandler
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.Vec3 as Vec3d
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL12
 
@@ -28,13 +27,13 @@ open class RenderGrapple constructor(manager: RenderManager) : Render<EntityGrap
     private fun updateModel() {
         if (grappleModel == null) {
             val TEXTUREGETTER: Function<ResourceLocation?, TextureAtlasSprite?> = Function { input: ResourceLocation? ->
-                Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(input.toString())
+                Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(input.toString())
             }
 
             val modelResourceLocation: ModelResourceLocation =
                 ModelResourceLocation(GalacticraftPlanets.TEXTURE_PREFIX + "grapple", "inventory")
             grappleModel =
-                FMLClientHandler.instance().getClient().getRenderItem().getItemModelMesher().getModelManager()
+                Minecraft.getInstance().getRenderItem().getItemModelMesher().getModelManager()
                     .getModel(modelResourceLocation) as ItemModelGrapple
         }
     }
@@ -48,11 +47,11 @@ open class RenderGrapple constructor(manager: RenderManager) : Render<EntityGrap
 
         if (shootingEntity != null && grapple.getPullingEntity()) {
             val d3: Double =
-                shootingEntity.prevPosX + (shootingEntity.posX - shootingEntity.prevPosX) * partialTicks + vec3.x
+                shootingEntity.prevPosX + (shootingEntity.x - shootingEntity.prevPosX) * partialTicks + vec3.x
             val d4: Double =
-                shootingEntity.prevPosY + (shootingEntity.posY - shootingEntity.prevPosY) * partialTicks + vec3.y
+                shootingEntity.prevPosY + (shootingEntity.y - shootingEntity.prevPosY) * partialTicks + vec3.y
             val d5: Double =
-                shootingEntity.prevPosZ + (shootingEntity.posZ - shootingEntity.prevPosZ) * partialTicks + vec3.z
+                shootingEntity.prevPosZ + (shootingEntity.z - shootingEntity.prevPosZ) * partialTicks + vec3.z
 
             val tessellator: Tessellator = Tessellator.getInstance()
             GL11.glDisable(GL11.GL_TEXTURE_2D)
@@ -122,7 +121,7 @@ open class RenderGrapple constructor(manager: RenderManager) : Render<EntityGrap
     ////        return ItemRendererGrappleHook.grappleTexture;
     //    }
     override fun getEntityTexture(entity: EntityGrapple): ResourceLocation? {
-        return ResourceLocation("missing")
+        return ResourceLocation.parse("missing")
     }
 
     override fun shouldRender(

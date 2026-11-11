@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import micdoodle8.mods.galacticraft.api.recipe.CircuitFabricatorRecipes
@@ -12,15 +14,15 @@ import micdoodle8.mods.galacticraft.core.items.ItemBasic
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.SoundEvents
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.SoundCategory
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.WorldlyContainer as ISidedInventory
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.ArrayList
 
 open class TileEntityCircuitFabricator constructor() : TileBaseElectricBlockWithInventory(), ISidedInventory,
@@ -66,7 +68,7 @@ open class TileEntityCircuitFabricator constructor() : TileBaseElectricBlockWith
             }
 
             if (updateInv) {
-                this.markDirty()
+                this.setChanged()
             }
         }
 
@@ -93,7 +95,7 @@ open class TileEntityCircuitFabricator constructor() : TileBaseElectricBlockWith
         }
         val result: Int =
             if (this.stacks.get(6).isEmpty()) 0 else this.stacks.get(6).getCount() + this.producingStack.getCount()
-        return result <= this.getInventoryStackLimit() && result <= this.producingStack.getMaxStackSize()
+        return result <= this.getMaxStackSize() && result <= this.producingStack.getMaxStackSize()
     }
 
     open fun compressItems() {
@@ -101,9 +103,9 @@ open class TileEntityCircuitFabricator constructor() : TileBaseElectricBlockWith
             val resultItemStack: ItemStack = this.producingStack.copy()
             if (this.world.provider is IZeroGDimension) {
                 if (resultItemStack.getItem() === GCItems.basicItem) {
-                    if (resultItemStack.getItemDamage() == ItemBasic.WAFER_BASIC) {
+                    if (resultItemStack.legacyItemValue == ItemBasic.WAFER_BASIC) {
                         resultItemStack.setCount(5)
-                    } else if (resultItemStack.getItemDamage() == 12)  //Solar panels
+                    } else if (resultItemStack.legacyItemValue == 12)  //Solar panels
                     {
                         resultItemStack.setCount(15)
                     } else {
@@ -126,20 +128,20 @@ open class TileEntityCircuitFabricator constructor() : TileBaseElectricBlockWith
         }
 
         for (i: Int in 1..5) {
-            this.decrStackSize(i, 1)
+            this.removeItem(i, 1)
         }
     }
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.processTicks = nbt.getInteger("smeltingTicks")
+        this.processTicks = nbt.getIntOr("smeltingTicks", 0)
         this.stacks = this.readStandardItemsFromNBT(nbt)
         this.readMachineSidesFromNBT(nbt) //Needed by IMachineSides
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setInteger("smeltingTicks", this.processTicks)
+        nbt.putInt("smeltingTicks", this.processTicks)
         this.writeStandardItemsToNBT(nbt, this.stacks)
         this.addMachineSidesToNBT(nbt) //Needed by IMachineSides
         return nbt
@@ -149,15 +151,15 @@ open class TileEntityCircuitFabricator constructor() : TileBaseElectricBlockWith
         return this.stacks
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("tile.machine2.5.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("tile.machine2.5.name")
     }
 
     override fun hasCustomName(): Boolean {
         return false
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemStack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemStack: ItemStack): Boolean {
         if (slotID == 0) {
             return itemStack != null && ItemElectricBase.isElectricItem(itemStack.getItem())
         }
@@ -189,11 +191,11 @@ open class TileEntityCircuitFabricator constructor() : TileBaseElectricBlockWith
         return if (siliconFlag) intArrayOf(0, 1, 3, 4, 5) else intArrayOf(0, 1, 2, 4, 5)
     }
 
-    override fun canInsertItem(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
-        return slotID < 6 && this.isItemValidForSlot(slotID, par2ItemStack)
+    override fun canPlaceItemThroughFace(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing?): Boolean {
+        return slotID < 6 && this.canPlaceItem(slotID, par2ItemStack)
     }
 
-    override fun canExtractItem(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
         return slotID == 6
     }
 

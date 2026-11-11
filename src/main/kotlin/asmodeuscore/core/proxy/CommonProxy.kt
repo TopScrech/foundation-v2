@@ -1,6 +1,6 @@
 package asmodeuscore.core.proxy
 
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.network.INetHandler
 import net.minecraft.network.NetHandlerPlayServer
 import net.minecraftforge.common.MinecraftForge

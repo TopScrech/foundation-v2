@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import asmodeuscore.api.item.IShiftDescription
 import galaxyspace.core.GSBlocks
 import galaxyspace.systems.SolarSystem.planets.overworld.blocks.BlockAdvancedLandingPad
@@ -9,28 +11,28 @@ import micdoodle8.mods.galacticraft.core.blocks.BlockAdvancedTile
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class BlockAdvancedLandingPad constructor() : BlockAdvancedTile(Material.IRON), IPartialSealableBlock,
-    IShiftDescription, ISortableBlock {
+    IShiftDescription, ISortableBlock, LegacyBlockMetadata {
     init {
         this.setHardness(1.0f)
         this.setResistance(10.0f)
@@ -42,7 +44,7 @@ open class BlockAdvancedLandingPad constructor() : BlockAdvancedTile(Material.IR
         return AABB
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (i: Int in 0..0) {
             list.add(ItemStack(this, 1, i))
@@ -128,7 +130,7 @@ open class BlockAdvancedLandingPad constructor() : BlockAdvancedTile(Material.IR
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(
+        return this.defaultBlockState().setValue(
             PAD_TYPE,
             (EnumLandingPadType.Companion.byMetadata(meta))!!
         )
@@ -154,7 +156,9 @@ open class BlockAdvancedLandingPad constructor() : BlockAdvancedTile(Material.IR
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 

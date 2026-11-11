@@ -1,5 +1,8 @@
 package galaxyspace.systems.SolarSystem
 
+import foundation.item.FoundationItemVariants
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody.ScalableDistance
 
 import galaxyspace.core.GSItems
@@ -115,15 +118,14 @@ import micdoodle8.mods.galacticraft.planets.mars.schematic.SchematicTier2Rocket
 import micdoodle8.mods.galacticraft.planets.venus.ConfigManagerVenus
 import micdoodle8.mods.galacticraft.planets.venus.VenusModule
 import net.minecraft.client.Minecraft
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
 import net.minecraftforge.fml.common.registry.GameRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.ArrayList
 import java.util.HashMap
 
@@ -156,7 +158,7 @@ open class SolarSystemBodies : IBodies {
 	 * Makemake Distance: 3.75F
 	 * Eris Distance: 4.0F
 	 */
-    override fun preInit(event: FMLPreInitializationEvent?) {
+    override fun preInit() {
         val sol: SolarSystem? = GalacticraftCore.solarSystemSol
 
         val mercury: Planet = BodiesRegistry.registerExPlanet((sol)!!, "mercury", GalaxySpace.ASSET_PREFIX, 0.5f)
@@ -395,7 +397,7 @@ open class SolarSystemBodies : IBodies {
                 GSConfigDimensions.idDimensionMarsOrbitStatic,
                 WorldProviderMarsSS::class.java
             )
-            marsSpaceStation!!.setBodyIcon(ResourceLocation("galacticraftcore:textures/gui/celestialbodies/space_station.png"))
+            marsSpaceStation!!.setBodyIcon(ResourceLocation.parse("galacticraftcore:textures/gui/celestialbodies/space_station.png"))
             marsSpaceStation!!.setBiomeInfo(ACBiome.ACSpace)
             marsSpaceStation!!.setAtmosphere(AtmosphereInfo(false, false, false, -1.8f, 0.0f, 0.0f))
         }
@@ -411,7 +413,7 @@ open class SolarSystemBodies : IBodies {
                 GSConfigDimensions.idDimensionVenusOrbitStatic,
                 WorldProviderVenusSS::class.java
             )
-            venusSpaceStation!!.setBodyIcon(ResourceLocation("galacticraftcore:textures/gui/celestialbodies/space_station.png"))
+            venusSpaceStation!!.setBodyIcon(ResourceLocation.parse("galacticraftcore:textures/gui/celestialbodies/space_station.png"))
             venusSpaceStation!!.addChecklistKeys("equip_oxygen_suit", "equip_parachute")
             venusSpaceStation!!.setBiomeInfo(ACBiome.ACSpace)
             venusSpaceStation!!.atmosphereComponent(EnumAtmosphericGas.CO2)
@@ -427,7 +429,7 @@ open class SolarSystemBodies : IBodies {
 		if(GSConfigDimensions.enableJupiterSpaceStation) {
 			jupiterSpaceStation.setTierRequired(VenusModule.planetVenus.getTierRequirement());
 			jupiterSpaceStation.setDimensionInfo(GSConfigDimensions.idDimensionJupiterOrbit, GSConfigDimensions.idDimensionJupiterOrbitStatic, WorldProviderJupiterSS.class);
-			jupiterSpaceStation.setBodyIcon(new ResourceLocation("galacticraftcore:textures/gui/celestialbodies/space_station.png"));
+			jupiterSpaceStation.setBodyIcon(new ResourceLocation.parse("galacticraftcore:textures/gui/celestialbodies/space_station.png"));
 			jupiterSpaceStation.addChecklistKeys("equip_oxygen_suit", "equip_parachute");
 			jupiterSpaceStation.setBiomeInfo(ACBiome.ACSpace);
 			jupiterSpaceStation.atmosphereComponent(EnumAtmosphericGas.CO2).atmosphereComponent(EnumAtmosphericGas.NITROGEN);
@@ -483,18 +485,18 @@ open class SolarSystemBodies : IBodies {
         if (GSConfigWorld.enableOverworldOres) {
             if (!CompatibilityManager.isTConstructLoaded) GameRegistry.registerWorldGenerator(
                 OreGenerator(
-                    GSBlocks.OVERWORLD_ORES.getDefaultState()
-                        .withProperty(BlockOres.BASIC_TYPE, EnumBlockOres.COBALT),
+                    GSBlocks.OVERWORLD_ORES.defaultBlockState()
+                        .setValue(BlockOres.BASIC_TYPE, EnumBlockOres.COBALT),
                     6,
                     0,
                     60,
                     5,
-                    Blocks.STONE.getDefaultState(),
+                    Blocks.STONE.defaultBlockState(),
                     0
                 ), 0
             )
 
-            //GameRegistry.registerWorldGenerator(new OreGenerator(GSBlocks.OVERWORLD_ORES.getDefaultState().withProperty(BlockOres.BASIC_TYPE, BlockOres.EnumBlockOres.NICKEL), 6, 0, 45, 4, Blocks.STONE.getDefaultState(), 0), 1);
+            //GameRegistry.registerWorldGenerator(new OreGenerator(GSBlocks.OVERWORLD_ORES.defaultBlockState().setValue(BlockOres.BASIC_TYPE, BlockOres.EnumBlockOres.NICKEL), 6, 0, 45, 4, Blocks.STONE.defaultBlockState(), 0), 1);
             GameRegistry.registerWorldGenerator(NickelGenerator(), 1)
         }
         if (GSConfigWorld.enableNatureGasGen) GameRegistry.registerWorldGenerator(
@@ -502,7 +504,7 @@ open class SolarSystemBodies : IBodies {
                 6,
                 35,
                 45,
-                Blocks.STONE.getDefaultState(),
+                Blocks.STONE.defaultBlockState(),
                 10,
                 0
             ), 1
@@ -543,7 +545,7 @@ open class SolarSystemBodies : IBodies {
             }
             SchematicRegistry.registerSchematicRecipe(galaxyspace.systems.SolarSystem.planets.overworld.schematics.SchematicTier2Rocket())
 
-            GCItems.hiddenItems.add(ItemStack(MarsItems.schematic, 1, 0).getItem())
+            GCItems.hiddenItems.add(foundation.item.FoundationItemVariants.stack(requireNotNull(MarsItems.schematic), 1, 0).getItem())
         }
 
         GalacticraftRegistry.registerGear(
@@ -767,13 +769,13 @@ open class SolarSystemBodies : IBodies {
         GSDimensions.TEST = WorldUtil.getDimensionTypeById(GSConfigDimensions.dimensionIDTest)
 
 
-        if ((event)!!.getSide() == Side.CLIENT) {
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT) {
             for (bodies in (GalaxyRegistry.getRegisteredPlanets())!!.entries) {
                 val img: ResourceLocation =
                     ResourceLocation(GalaxySpace.TEXTURE_PREFIX + "textures/gui/backgrounds/bg_" + bodies.value!!.getName() + ".png")
 
                 try {
-                    if (Minecraft.getMinecraft().getResourceManager().getResource(img) != null) {
+                    if (Minecraft.getInstance().getResourceManager().getResource(img) != null) {
                         BodiesRegistry.addTeleportData(bodies.value!!.getDimensionID(), img)
                     }
                 } catch (e: IOException) {
@@ -785,7 +787,7 @@ open class SolarSystemBodies : IBodies {
                     ResourceLocation(GalaxySpace.TEXTURE_PREFIX + "textures/gui/backgrounds/bg_" + bodies.value!!.getName() + ".png")
 
                 try {
-                    if (Minecraft.getMinecraft().getResourceManager().getResource(img) != null) {
+                    if (Minecraft.getInstance().getResourceManager().getResource(img) != null) {
                         BodiesRegistry.addTeleportData(bodies.value!!.getDimensionID(), img)
                     }
                 } catch (e: IOException) {
@@ -836,9 +838,9 @@ open class SolarSystemBodies : IBodies {
         val spaceStationRequirements: HashMap<Any?,Int> = HashMap<Any?,Int>(6, 1.0f)
         spaceStationRequirements.put("ingotTin", 32)
         spaceStationRequirements.put("ingotCopper", 64)
-        spaceStationRequirements.put(ItemStack(GCItems.basicItem, 1, ItemBasic.WAFER_ADVANCED), 1)
+        spaceStationRequirements.put(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, ItemBasic.WAFER_ADVANCED), 1)
         spaceStationRequirements.put(Items.IRON_INGOT, 24)
-        spaceStationRequirements.put(ItemStack(GSItems.HDP, 1, 0), 10)
+        spaceStationRequirements.put(FoundationItemVariants.stack(GSItems.HDP, 1, 0), 10)
         spaceStationRequirements.put(ItemStack(GSItems.BASIC, 1, 6), 10)
 
         if (GSConfigDimensions.enableVenusSpaceStation) GalacticraftRegistry.registerSpaceStation(
@@ -851,9 +853,9 @@ open class SolarSystemBodies : IBodies {
         spaceStationRequirements.clear()
         spaceStationRequirements.put("ingotTin", 32)
         spaceStationRequirements.put("ingotDesh", 64)
-        spaceStationRequirements.put(ItemStack(GCItems.basicItem, 1, ItemBasic.WAFER_ADVANCED), 1)
+        spaceStationRequirements.put(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, ItemBasic.WAFER_ADVANCED), 1)
         spaceStationRequirements.put(Items.IRON_INGOT, 24)
-        spaceStationRequirements.put(ItemStack(GSItems.HDP, 1, 0), 10)
+        spaceStationRequirements.put(FoundationItemVariants.stack(GSItems.HDP, 1, 0), 10)
         spaceStationRequirements.put(ItemStack(GSItems.BASIC, 1, 6), 10)
 
         if (GSConfigDimensions.enableMarsSpaceStation) GalacticraftRegistry.registerSpaceStation(
@@ -993,7 +995,7 @@ open class SolarSystemBodies : IBodies {
                 GalacticraftRegistry.addDungeonLoot(2, ItemStack(GSItems.BASIC, 1, 10)) //MARS
             }
             //EPO
-            GalacticraftRegistry.addDungeonLoot(1, ItemStack(GSItems.SCHEMATICS, 1, 5))
+            GalacticraftRegistry.addDungeonLoot(1, foundation.item.FoundationItemVariants.stack(requireNotNull(GSItems.SCHEMATICS), 1, 5))
 
             /*	GalacticraftRegistry.addDungeonLoot(2, new ItemStack(GSItems.PLASMA_SWORD, 1, 0));
 		GalacticraftRegistry.addDungeonLoot(2, new ItemStack(GSItems.PLASMA_PICKAXE, 1, 0));
@@ -1007,8 +1009,8 @@ open class SolarSystemBodies : IBodies {
             GalacticraftRegistry.addDungeonLoot(4, ItemStack(GSItems.BASIC, 1, 18))
 
             //GalacticraftRegistry.addDungeonLoot(4, new ItemStack(GSItems.GEOLOGICAL_SCANNER, 1, 100));
-            GalacticraftRegistry.addDungeonLoot(5, ItemStack(GSItems.ROCKET_MODULES, 1, 4))
-            GalacticraftRegistry.addDungeonLoot(5, ItemStack(GSItems.ROCKET_MODULES, 1, 6))
+            GalacticraftRegistry.addDungeonLoot(5, FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 4))
+            GalacticraftRegistry.addDungeonLoot(5, FoundationItemVariants.stack(GSItems.ROCKET_MODULES, 1, 6))
         }
 
         @JvmStatic

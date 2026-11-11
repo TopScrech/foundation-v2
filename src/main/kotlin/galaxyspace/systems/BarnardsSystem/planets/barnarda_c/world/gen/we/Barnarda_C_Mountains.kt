@@ -1,5 +1,7 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.world.gen.we
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Blocks.EnumBlockBarnardaC
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Dandelions
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
@@ -18,9 +20,9 @@ import net.minecraft.entity.monster.EntitySkeleton
 import net.minecraft.entity.monster.EntitySpider
 import net.minecraft.entity.monster.EntityZombie
 import net.minecraft.entity.passive.EntityCow
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenMinable
 import java.util.Random
 
@@ -77,14 +79,14 @@ open class Barnarda_C_Mountains constructor(min: Double, max: Double, height: In
             0,
             false
         )
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         createChunkGen_InXZ_List.add(standardBiomeLayers)
 
         val snowGen: WE_SnowGen = WE_SnowGen()
         snowGen.snowPoint = 120
         snowGen.randomSnowPoint = 8
-        snowGen.snowBlock = Blocks.SNOW.getDefaultState()
-        snowGen.iceBlock = Blocks.ICE.getDefaultState()
+        snowGen.snowBlock = Blocks.SNOW.defaultBlockState()
+        snowGen.iceBlock = Blocks.ICE.defaultBlockState()
         snowGen.freezeMaterial = Material.WATER
         createChunkGen_InXZ_List.add(snowGen)
     }
@@ -100,7 +102,7 @@ open class Barnarda_C_Mountains constructor(min: Double, max: Double, height: In
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
             if (pos.getY() > 120 && pos.getY() < 125) {
-                (world)!!.setBlockState(pos, Blocks.FLOWING_WATER.getDefaultState(), 3)
+                (world)!!.setBlock(pos, Blocks.FLOWING_WATER.defaultBlockState(), 3)
             }
         }
 
@@ -110,21 +112,21 @@ open class Barnarda_C_Mountains constructor(min: Double, max: Double, height: In
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
             if ((world)!!.isAreaLoaded(pos, 13, false)) WorldGenMinable(
-                BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+                BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                     Barnarda_C_Blocks.BASIC_TYPE,
                     EnumBlockBarnardaC.STONE
                 ), 25,
                 BlockPredicate(
-                    BRBlocks.BARNARDA_C_GRASS.getDefaultState(),
-                    BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+                    BRBlocks.BARNARDA_C_GRASS.defaultBlockState(),
+                    BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                         Barnarda_C_Blocks.BASIC_TYPE,
                         EnumBlockBarnardaC.DIRT
                     ),
-                    BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+                    BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                         Barnarda_C_Blocks.BASIC_TYPE,
                         EnumBlockBarnardaC.DIRT_1
                     ),
-                    BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+                    BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                         Barnarda_C_Blocks.BASIC_TYPE,
                         EnumBlockBarnardaC.STONE
                     )
@@ -137,23 +139,23 @@ open class Barnarda_C_Mountains constructor(min: Double, max: Double, height: In
             randPosZ = z + (rand)!!.nextInt(16) + 8
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-            if ((world)!!.getBlockState(pos.down()) === BRBlocks.BARNARDA_C_GRASS.getDefaultState()
-                    .withProperty(
+            if ((world)!!.getBlockState(pos.below()) === BRBlocks.BARNARDA_C_GRASS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Grass.BASIC_TYPE,
                         Barnarda_C_Grass.EnumBlockGrass.GRASS
                     )
-            ) (world)!!.setBlockState(
+            ) (world)!!.setBlockAndUpdate(
                 pos,
-                BRBlocks.BARNARDA_C_DANDELIONS.getDefaultState()
-                    .withProperty(
+                BRBlocks.BARNARDA_C_DANDELIONS.defaultBlockState()
+                    .setValue(
                         Barnarda_C_Dandelions.BASIC_TYPE,
                         Barnarda_C_Dandelions.EnumBlockDandelions.GRASS
                     )
             )
         }
 
-        if ((rand)!!.nextInt(10) == 0 && (world)!!.getBlockState(pos.down()) === BRBlocks.BARNARDA_C_GRASS.getDefaultState()
-                .withProperty(
+        if ((rand)!!.nextInt(10) == 0 && (world)!!.getBlockState(pos.below()) === BRBlocks.BARNARDA_C_GRASS.defaultBlockState()
+                .setValue(
                     Barnarda_C_Grass.BASIC_TYPE,
                     Barnarda_C_Grass.EnumBlockGrass.GRASS
                 )
@@ -163,7 +165,7 @@ open class Barnarda_C_Mountains constructor(min: Double, max: Double, height: In
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
             WorldGenTree_Small(
-                BRBlocks.BARNARDA_C_VIOLET_LOG.getDefaultState(),
+                BRBlocks.BARNARDA_C_VIOLET_LOG.defaultBlockState(),
                 BRBlocks.BARNARDA_C_LEAVES.getStateFromMeta(0),
                 (rand)!!.nextInt(3)
             ).generate((world)!!, (rand)!!, pos)

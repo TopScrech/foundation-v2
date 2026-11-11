@@ -1,14 +1,14 @@
 package micdoodle8.mods.galacticraft.core.client.render.item
 
 import com.google.common.collect.ImmutableList
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.renderer.block.model.*
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.client.FMLClientHandler
 
 open class ItemLiquidCanisterModel constructor(private val iBakedModel: IBakedModel) : IBakedModel {
@@ -50,7 +50,7 @@ open class ItemLiquidCanisterModel constructor(private val iBakedModel: IBakedMo
             if (stack.getTagCompound() == null) {
                 val copy: ItemStack = stack.copy()
                 copy.setTagCompound(NBTTagCompound())
-                copy.getTagCompound()!!.setBoolean("Unbreakable", true)
+                copy.getTagCompound()!!.putBoolean("Unbreakable", true)
                 return FMLClientHandler.instance().getClient().getRenderItem().getItemModelMesher().getItemModel(copy)
             }
             return originalModel

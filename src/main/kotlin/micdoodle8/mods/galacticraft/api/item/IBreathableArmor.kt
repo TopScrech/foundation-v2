@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.api.item
 
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
 
 /**
  * Implement into Armor items

@@ -2,7 +2,7 @@ package asmodeuscore.core.utils.worldengine
 
 import asmodeuscore.core.utils.worldengine.WE_WorldProvider
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.IChunkGenerator
 

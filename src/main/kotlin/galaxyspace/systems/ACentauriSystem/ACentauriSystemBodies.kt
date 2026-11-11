@@ -33,25 +33,23 @@ import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.api.world.EnumAtmosphericGas
 import micdoodle8.mods.galacticraft.core.util.ClientUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
-import net.minecraft.item.Item
-import net.minecraftforge.event.RegistryEvent
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraft.world.item.Item
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
 import java.io.File
 
 @IBodiesHandler
 open class ACentauriSystemBodies : IBodies {
-    override fun preInitialization(event: FMLPreInitializationEvent?) {
-        ACConfigCore(File((event)!!.getModConfigurationDirectory(), "GalaxySpace/alpha_centauri/core.conf"))
-        ACConfigDimensions(File((event)!!.getModConfigurationDirectory(), "GalaxySpace/alpha_centauri/dimensions.conf"))
+    override fun preInitialization() {
+        ACConfigCore(File(foundation.bootstrap.FoundationBootstrap.configDirectory, "GalaxySpace/alpha_centauri/core.conf"))
+        ACConfigDimensions(File(foundation.bootstrap.FoundationBootstrap.configDirectory, "GalaxySpace/alpha_centauri/dimensions.conf"))
     }
 
     override fun canRegister(): Boolean {
         return ACConfigCore.Companion.enableACentauriSystems
     }
 
-    override fun preInit(event: FMLPreInitializationEvent?) {
+    override fun preInit() {
         aCentauriSystem = BodiesRegistry.registerSolarSystem(
             GalaxySpace.ASSET_PREFIX,
             "acentauri",
@@ -207,7 +205,7 @@ open class ACentauriSystemBodies : IBodies {
         //}
     }
 
-    override fun registerItems(event: RegistryEvent.Register<Item?>?) {
+    override fun registerItems() {
         ACBlocks.oreDictRegistration()
     }
 

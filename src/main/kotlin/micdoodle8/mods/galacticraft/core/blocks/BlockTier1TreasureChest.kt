@@ -1,44 +1,48 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.tile.TileEntityTreasureChest
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockContainer
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyDirection
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.particle.ParticleManager
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.passive.EntityOcelot
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.IInventory
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.Container as IInventory
 import net.minecraft.inventory.InventoryHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 
 open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContainer(Material.WOOD),
-    ITileEntityProvider, IShiftDescription, ISortableBlock {
+    ITileEntityProvider, IShiftDescription, ISortableBlock, LegacyBlockMetadata {
     init {
         this.setSoundType(SoundType.WOOD)
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH)
+            this.blockState.getBaseState().setValue(FACING, EnumFacing.NORTH)
         )
         //        this.setBlockBounds(0.0625F, 0.0F, 0.0625F, 0.9375F, 0.875F, 0.9375F);
         this.setHardness(100000.0f)
@@ -124,7 +128,7 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
         placer: EntityLivingBase,
         hand: EnumHand
     ): IBlockState {
-        return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing())
+        return this.defaultBlockState().setValue(FACING, placer.getHorizontalFacing())
     }
 
     override fun onBlockPlacedBy(
@@ -136,9 +140,9 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
     ) {
         var state: IBlockState = state
         val enumfacing: EnumFacing =
-            EnumFacing.byHorizontalIndex(MathHelper.floor((placer.rotationYaw * 4.0f / 360.0f).toDouble() + 0.5) and 3)
+            EnumFacing.byHorizontalIndex(MathHelper.floor((placer.yRot * 4.0f / 360.0f).toDouble() + 0.5) and 3)
                 .getOpposite()
-        state = state.withProperty(FACING, enumfacing)
+        state = state.setValue(FACING, enumfacing)
         val blockpos1: BlockPos = pos.north()
         val blockpos2: BlockPos = pos.south()
         val blockpos3: BlockPos = pos.west()
@@ -149,27 +153,27 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
         val flag3: Boolean = this === worldIn.getBlockState(blockpos4).getBlock()
 
         if (!flag && !flag1 && !flag2 && !flag3) {
-            worldIn.setBlockState(pos, state, 3)
+            worldIn.setBlock(pos, state, 3)
         } else if (enumfacing.getAxis() == EnumFacing.Axis.X && (flag || flag1)) {
             if (flag) {
-                worldIn.setBlockState(blockpos1, state, 3)
+                worldIn.setBlock(blockpos1, state, 3)
             } else {
-                worldIn.setBlockState(blockpos2, state, 3)
+                worldIn.setBlock(blockpos2, state, 3)
             }
 
-            worldIn.setBlockState(pos, state, 3)
+            worldIn.setBlock(pos, state, 3)
         } else if (enumfacing.getAxis() == EnumFacing.Axis.Z && (flag2 || flag3)) {
             if (flag2) {
-                worldIn.setBlockState(blockpos3, state, 3)
+                worldIn.setBlock(blockpos3, state, 3)
             } else {
-                worldIn.setBlockState(blockpos4, state, 3)
+                worldIn.setBlock(blockpos4, state, 3)
             }
 
-            worldIn.setBlockState(pos, state, 3)
+            worldIn.setBlock(pos, state, 3)
         }
 
         if (stack.hasDisplayName()) {
-            val tileentity: TileEntity? = worldIn.getTileEntity(pos)
+            val tileentity: TileEntity? = worldIn.getBlockEntity(pos)
 
             if (tileentity is TileEntityTreasureChest) {
                 tileentity.setCustomName(stack.getDisplayName())
@@ -179,7 +183,7 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
 
     open fun checkForSurroundingChests(worldIn: World, pos: BlockPos, state: IBlockState): IBlockState? {
         var state: IBlockState = state
-        if (worldIn.isRemote) {
+        if (worldIn.isClientSide) {
             return state
         } else {
             val iblockstate1: IBlockState = worldIn.getBlockState(pos.north())
@@ -259,8 +263,8 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
                 }
             }
 
-            state = state.withProperty(FACING, enumfacing)
-            worldIn.setBlockState(pos, state, 3)
+            state = state.setValue(FACING, enumfacing)
+            worldIn.setBlock(pos, state, 3)
             return state
         }
     }
@@ -288,7 +292,7 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
         }
 
         if (enumfacing != null) {
-            return state.withProperty(FACING, enumfacing.getOpposite())
+            return state.setValue(FACING, enumfacing.getOpposite())
         } else {
             var enumfacing2: EnumFacing = state.getValue(FACING) as EnumFacing
             var state1: IBlockState = worldIn.getBlockState(pos.offset(enumfacing2))
@@ -307,7 +311,7 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
                 enumfacing2 = enumfacing2.getOpposite()
             }
 
-            return state.withProperty(FACING, enumfacing2)
+            return state.setValue(FACING, enumfacing2)
         }
     }
 
@@ -374,7 +378,7 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
 
     override fun neighborChanged(state: IBlockState, worldIn: World, pos: BlockPos, blockIn: Block, fromPos: BlockPos) {
         super.neighborChanged(state, worldIn, pos, blockIn, fromPos)
-        val tileentity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileentity: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tileentity is TileEntityTreasureChest) {
             tileentity.updateContainingBlockInfo()
@@ -382,7 +386,7 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val tileentity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileentity: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tileentity is IInventory) {
             InventoryHelper.dropInventoryItems(worldIn, pos, tileentity as IInventory)
@@ -403,10 +407,10 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        if (worldIn.isRemote) {
+        if (worldIn.isClientSide) {
             return true
         } else {
-            val tile: TileEntity? = worldIn.getTileEntity(pos)
+            val tile: TileEntity? = worldIn.getBlockEntity(pos)
             playerIn.displayGUIChest(tile as IInventory?)
             return true
         }
@@ -421,7 +425,7 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
             return 0
         } else {
             var i: Int = 0
-            val tileentity: TileEntity? = worldIn.getTileEntity(pos)
+            val tileentity: TileEntity? = worldIn.getBlockEntity(pos)
 
             if (tileentity is TileEntityTreasureChest) {
                 i = tileentity.numPlayersUsing
@@ -440,7 +444,7 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
     }
 
     private fun isBelowSolidBlock(worldIn: World, pos: BlockPos): Boolean {
-        return worldIn.isSideSolid(pos.up(), EnumFacing.DOWN, false)
+        return worldIn.isSideSolid(pos.above(), EnumFacing.DOWN, false)
     }
 
     private fun isOcelotSittingOnChest(worldIn: World, pos: BlockPos): Boolean {
@@ -474,13 +478,13 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        var enumfacing: EnumFacing = EnumFacing.byIndex(meta)
+        var enumfacing: EnumFacing = EnumFacing.from3DDataValue(meta)
 
         if (enumfacing.getAxis() == EnumFacing.Axis.Y) {
             enumfacing = EnumFacing.NORTH
         }
 
-        return this.getDefaultState().withProperty(FACING, enumfacing)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -509,7 +513,7 @@ open class BlockTier1TreasureChest constructor(assetName: String?) : BlockContai
 
     companion object {
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL)
+        val FACING: EnumProperty<Direction> = BlockStateProperties.HORIZONTAL_FACING
 
         @JvmField
         protected val AABB: AxisAlignedBB = AxisAlignedBB(0.0625, 0.0, 0.0625, 0.9375, 0.875, 0.9375)

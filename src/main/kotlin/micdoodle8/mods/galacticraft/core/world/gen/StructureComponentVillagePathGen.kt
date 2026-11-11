@@ -1,15 +1,18 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.StructureComponent
 import net.minecraft.world.gen.structure.template.TemplateManager
 import java.util.Random
@@ -24,24 +27,24 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
         par1ComponentVillageStartPiece: StructureComponentVillageStartPiece?,
         par2: Int,
         par3Random: Random?,
-        par4StructureBoundingBox: StructureBoundingBox,
+        par4StructureBoundingBox: BoundingBox,
         par5: EnumFacing?
     ) : super(par1ComponentVillageStartPiece, par2) {
         this.setCoordBaseMode(par5)
         this.boundingBox = par4StructureBoundingBox
-        this.averageGroundLevel = max(par4StructureBoundingBox.getXSize(), par4StructureBoundingBox.getZSize())
+        this.averageGroundLevel = max(par4StructureBoundingBox.getXSpan(), par4StructureBoundingBox.getZSpan())
     }
 
     override fun writeStructureToNBT(nbt: NBTTagCompound) {
         super.writeStructureToNBT(nbt)
 
-        nbt.setInteger("AvgGroundLevel", this.averageGroundLevel)
+        nbt.putInt("AvgGroundLevel", this.averageGroundLevel)
     }
 
     override fun readStructureFromNBT(nbt: NBTTagCompound, manager: TemplateManager) {
         super.readStructureFromNBT(nbt, manager)
 
-        this.averageGroundLevel = nbt.getInteger("AvgGroundLevel")
+        this.averageGroundLevel = nbt.getIntOr("AvgGroundLevel", 0)
     }
 
     override fun buildComponent(
@@ -64,7 +67,7 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
             )
 
             if (var6 != null) {
-                var5 += max(var6.getBoundingBox().getXSize(), var6.getBoundingBox().getZSize())
+                var5 += max(var6.getBoundingBox().getXSpan(), var6.getBoundingBox().getZSpan())
                 var4 = true
             }
             var5 += 2 + par3Random.nextInt(5)
@@ -81,7 +84,7 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
             )
 
             if (var6 != null) {
-                var5 += max(var6.getBoundingBox().getXSize(), var6.getBoundingBox().getZSize())
+                var5 += max(var6.getBoundingBox().getXSpan(), var6.getBoundingBox().getZSpan())
                 var4 = true
             }
             var5 += 2 + par3Random.nextInt(5)
@@ -93,9 +96,9 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
                     par1StructureComponent as StructureComponentVillageStartPiece,
                     par2List,
                     par3Random,
-                    this.boundingBox.minX - 1,
-                    this.boundingBox.minY,
-                    this.boundingBox.maxZ - 2,
+                    this.boundingBox.minX() - 1,
+                    this.boundingBox.minY(),
+                    this.boundingBox.maxZ() - 2,
                     EnumFacing.byHorizontalIndex(1),
                     this.getComponentType()
                 )
@@ -104,9 +107,9 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
                     par1StructureComponent as StructureComponentVillageStartPiece,
                     par2List,
                     par3Random,
-                    this.boundingBox.minX,
-                    this.boundingBox.minY,
-                    this.boundingBox.minZ - 1,
+                    this.boundingBox.minX(),
+                    this.boundingBox.minY(),
+                    this.boundingBox.minZ() - 1,
                     EnumFacing.byHorizontalIndex(2),
                     this.getComponentType()
                 )
@@ -115,9 +118,9 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
                     par1StructureComponent as StructureComponentVillageStartPiece,
                     par2List,
                     par3Random,
-                    this.boundingBox.minX - 1,
-                    this.boundingBox.minY,
-                    this.boundingBox.minZ,
+                    this.boundingBox.minX() - 1,
+                    this.boundingBox.minY(),
+                    this.boundingBox.minZ(),
                     EnumFacing.byHorizontalIndex(1),
                     this.getComponentType()
                 )
@@ -126,9 +129,9 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
                     par1StructureComponent as StructureComponentVillageStartPiece,
                     par2List,
                     par3Random,
-                    this.boundingBox.maxX - 2,
-                    this.boundingBox.minY,
-                    this.boundingBox.minZ - 1,
+                    this.boundingBox.maxX() - 2,
+                    this.boundingBox.minY(),
+                    this.boundingBox.minZ() - 1,
                     EnumFacing.byHorizontalIndex(2),
                     this.getComponentType()
                 )
@@ -141,9 +144,9 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
                     par1StructureComponent as StructureComponentVillageStartPiece,
                     par2List,
                     par3Random,
-                    this.boundingBox.maxX + 1,
-                    this.boundingBox.minY,
-                    this.boundingBox.maxZ - 2,
+                    this.boundingBox.maxX() + 1,
+                    this.boundingBox.minY(),
+                    this.boundingBox.maxZ() - 2,
                     EnumFacing.byHorizontalIndex(3),
                     this.getComponentType()
                 )
@@ -152,9 +155,9 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
                     par1StructureComponent as StructureComponentVillageStartPiece,
                     par2List,
                     par3Random,
-                    this.boundingBox.minX,
-                    this.boundingBox.minY,
-                    this.boundingBox.maxZ + 1,
+                    this.boundingBox.minX(),
+                    this.boundingBox.minY(),
+                    this.boundingBox.maxZ() + 1,
                     EnumFacing.byHorizontalIndex(0),
                     this.getComponentType()
                 )
@@ -163,9 +166,9 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
                     par1StructureComponent as StructureComponentVillageStartPiece,
                     par2List,
                     par3Random,
-                    this.boundingBox.maxX + 1,
-                    this.boundingBox.minY,
-                    this.boundingBox.minZ,
+                    this.boundingBox.maxX() + 1,
+                    this.boundingBox.minY(),
+                    this.boundingBox.minZ(),
                     EnumFacing.byHorizontalIndex(3),
                     this.getComponentType()
                 )
@@ -174,9 +177,9 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
                     par1StructureComponent as StructureComponentVillageStartPiece,
                     par2List,
                     par3Random,
-                    this.boundingBox.maxX - 2,
-                    this.boundingBox.minY,
-                    this.boundingBox.maxZ + 1,
+                    this.boundingBox.maxX() - 2,
+                    this.boundingBox.minY(),
+                    this.boundingBox.maxZ() + 1,
                     EnumFacing.byHorizontalIndex(0),
                     this.getComponentType()
                 )
@@ -191,16 +194,16 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
     override fun addComponentParts(
         par1World: World,
         par2Random: Random,
-        par3StructureBoundingBox: StructureBoundingBox
+        par3StructureBoundingBox: BoundingBox
     ): Boolean {
         val var4: Block = Blocks.PLANKS
 
-        for (var5: Int in this.boundingBox.minX..this.boundingBox.maxX) {
-            for (var6: Int in this.boundingBox.minZ..this.boundingBox.maxZ) {
+        for (var5: Int in this.boundingBox.minX()..this.boundingBox.maxX()) {
+            for (var6: Int in this.boundingBox.minZ()..this.boundingBox.maxZ()) {
                 val pos: BlockPos =
                     BlockPos(var5, par1World.getTopSolidOrLiquidBlock(BlockPos(var5, 0, var6)).getY() - 1, var6)
                 val state: IBlockState = par1World.getBlockState(pos)
-                if (par3StructureBoundingBox.isVecInside(
+                if (par3StructureBoundingBox.isInside(
                         BlockPos(
                             var5,
                             64,
@@ -210,7 +213,7 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
                         .getMetaFromState(state) == 5 || Blocks.AIR === state.getBlock())
                 ) {
                     val var7: Int = par1World.getTopSolidOrLiquidBlock(BlockPos(var5, 0, var6)).getY() - 1
-                    par1World.setBlockState(BlockPos(var5, var7, var6), var4.getStateFromMeta(1), 2)
+                    par1World.setBlock(BlockPos(var5, var7, var6), var4.getStateFromMeta(1), 2)
                 }
             }
         }
@@ -228,11 +231,11 @@ open class StructureComponentVillagePathGen : StructureComponentVillageRoadPiece
             par4: Int,
             par5: Int,
             par6: EnumFacing
-        ): StructureBoundingBox? {
+        ): BoundingBox? {
             var var7: Int = 7 * MathHelper.getInt(par2Random, 3, 5)
             while (var7 >= 7) {
-                val var8: StructureBoundingBox =
-                    StructureBoundingBox.getComponentToAddBoundingBox(par3, par4, par5, 0, 0, 0, 3, 3, var7, par6)
+                val var8: BoundingBox =
+                    BoundingBox.orientBox(par3, par4, par5, 0, 0, 0, 3, 3, var7, par6)
 
                 if (findIntersecting(par1List, var8) == null) {
                     return var8

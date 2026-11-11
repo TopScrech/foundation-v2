@@ -12,14 +12,14 @@ import com.google.gson.JsonArray
 import com.google.common.collect.Maps
 import micdoodle8.mods.galacticraft.api.recipe.IRecipeUpdatable
 import micdoodle8.mods.galacticraft.core.util.RecipeUtil
-import net.minecraft.block.Block
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
-import net.minecraft.item.crafting.Ingredient
+import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.util.JsonUtils
-import net.minecraft.util.NonNullList
-import net.minecraft.util.ResourceLocation
+import net.minecraft.core.NonNullList
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.common.crafting.CraftingHelper
 import net.minecraftforge.common.crafting.IRecipeFactory
 import net.minecraftforge.common.crafting.JsonContext
@@ -137,7 +137,7 @@ open class OreRecipeUpdatable : ShapedOreRecipe, IRecipeUpdatable {
             if (!keys.isEmpty()) throw JsonSyntaxException("Key defines symbols that aren't used in pattern: " + keys)
 
             val result: ItemStack = CraftingHelper.getItemStack(JsonUtils.getJsonObject(json, "result"), context)
-            return OreRecipeUpdatable(if (group.isEmpty()) null else ResourceLocation(group), result, primer)
+            return OreRecipeUpdatable(if (group.isEmpty()) null else ResourceLocation.parse(group), result, primer)
         }
     }
 }

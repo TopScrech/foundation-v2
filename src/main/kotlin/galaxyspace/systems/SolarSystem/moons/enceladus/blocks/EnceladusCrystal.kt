@@ -1,30 +1,34 @@
 package galaxyspace.systems.SolarSystem.moons.enceladus.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import galaxyspace.core.GSItems
 import galaxyspace.systems.SolarSystem.moons.enceladus.tile.TileEntityBlockCrystallTE
 import galaxyspace.systems.SolarSystem.moons.enceladus.blocks.EnceladusCrystal
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyDirection
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
-open class EnceladusCrystal constructor() : Block(Material.GLASS), ITileEntityProvider {
+open class EnceladusCrystal constructor() : Block(Material.GLASS), ITileEntityProvider, LegacyBlockMetadata {
     init {
         this.setTranslationKey("enceladus_crystal")
         this.setHardness(2.0f)
@@ -53,9 +57,9 @@ open class EnceladusCrystal constructor() : Block(Material.GLASS), ITileEntityPr
         placer: EntityLivingBase,
         stack: ItemStack
     ) {
-        val angle: Int = MathHelper.floor(placer.rotationYaw * 4.0f / 360.0f + 0.5) and 3
+        val angle: Int = MathHelper.floor(placer.yRot * 4.0f / 360.0f + 0.5) and 3
         val change: Int = EnumFacing.byHorizontalIndex(angle).getOpposite().getHorizontalIndex()
-        worldIn.setBlockState(pos, getStateFromMeta(change), 3)
+        worldIn.setBlock(pos, getStateFromMeta(change), 3)
     }
 
     override fun getItemDropped(state: IBlockState, rand: Random, fortune: Int): Item {
@@ -93,12 +97,12 @@ open class EnceladusCrystal constructor() : Block(Material.GLASS), ITileEntityPr
         placer: EntityLivingBase,
         hand: EnumHand
     ): IBlockState {
-        return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing())
+        return this.defaultBlockState().setValue(FACING, placer.getHorizontalFacing())
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
         val enumfacing: EnumFacing = EnumFacing.byHorizontalIndex(meta % 4)
-        return this.getDefaultState().withProperty(FACING, enumfacing)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -112,6 +116,6 @@ open class EnceladusCrystal constructor() : Block(Material.GLASS), ITileEntityPr
 
     companion object {
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL)
+        val FACING: EnumProperty<Direction> = BlockStateProperties.HORIZONTAL_FACING
     }
 }

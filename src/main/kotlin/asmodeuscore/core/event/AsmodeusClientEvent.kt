@@ -1,5 +1,7 @@
 package asmodeuscore.core.event
 
+import foundation.item.legacyItemValue
+
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase
 import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent
@@ -43,32 +45,31 @@ import micdoodle8.mods.galacticraft.planets.asteroids.dimension.WorldProviderAst
 import micdoodle8.mods.galacticraft.planets.venus.dimension.WorldProviderVenus
 import net.minecraft.block.material.Material
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.ScaledResolution
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.settings.GameSettings
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.item.Item
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Item
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraftforge.client.event.GuiOpenEvent
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 
 open class AsmodeusClientEvent {
     @JvmField
-    var mc: Minecraft = FMLClientHandler.instance().getClient()
+    var mc: Minecraft = Minecraft.getInstance()
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun onGuiOpenEvent(event: GuiOpenEvent) {
         if (ACCompatibilityManager.isGalacticraftLoaded()) if (event.getGui() is GuiCelestialSelection && AsmodeusConfig.Companion.enableNewGalaxyMap) {
             /*if(Loader.isModLoaded("ExtraPlanets"))
@@ -89,7 +90,7 @@ open class AsmodeusClientEvent {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onTick(e: TickEvent.ClientTickEvent?) {
         val world: World? = mc.world
@@ -148,18 +149,18 @@ open class AsmodeusClientEvent {
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun onRenderTick(event: TickEvent.RenderTickEvent) {
         if (!ACCompatibilityManager.isGalacticraftLoaded()) return
 
-        val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+        val minecraft: Minecraft = Minecraft.getInstance()
         val player: EntityPlayerSP = minecraft.player ?: return
         val playerBaseClient: EntityPlayerSP = PlayerUtil.getPlayerBaseClientFromPlayer(player, false) ?: return
         var level: Float = 0f
         if (event.phase == TickEvent.Phase.END) {
             if (player != null) {
-                if (player.world.provider is IGalacticraftWorldProvider && OxygenUtil.shouldDisplayTankGui(minecraft.currentScreen) && !playerBaseClient.isSpectator() && !minecraft.gameSettings.showDebugInfo) {
-                    val provider: IGalacticraftWorldProvider = player.world.provider as IGalacticraftWorldProvider
+                if (player.level().provider is IGalacticraftWorldProvider && OxygenUtil.shouldDisplayTankGui(minecraft.currentScreen) && !playerBaseClient.isSpectator() && !minecraft.gameSettings.showDebugInfo) {
+                    val provider: IGalacticraftWorldProvider = player.level().provider as IGalacticraftWorldProvider
                     val data: BodiesData? = BodiesRegistry.getData(provider.getCelestialBody())
 
                     val stats: GCPlayerStatsClient? = GCPlayerStatsClient.get(player)
@@ -176,7 +177,7 @@ open class AsmodeusClientEvent {
                         )
 
                         if ((provider.getCelestialBody() as IExBody).isSolarRadiation()) OverlayDetectors.renderRadiationIndicator(
-                            player.getEntityAttribute(ACAttributePlayer.RADIATION_LVL).getAttributeValue().toInt(),
+                            player.getAttribute(ACAttributePlayer.RADIATION_LVL)!!.getValue().toInt(),
                             this.getInvalidLevel(2, level),
                             !ConfigManagerCore.oxygenIndicatorLeft,
                             !ConfigManagerCore.oxygenIndicatorBottom
@@ -186,7 +187,7 @@ open class AsmodeusClientEvent {
                             var i: Float = 0f
                             var blocks: Int = 0
 
-                            while (player.world.getBlockState(player.getPosition().up(blocks))
+                            while (player.level().getBlockState(player.getPosition().up(blocks))
                                     .getMaterial() !== Material.AIR
                             ) {
                                 i += (0.1 * (provider.getCelestialBody() as IExBody).getWaterPressure()).toFloat()
@@ -211,9 +212,7 @@ open class AsmodeusClientEvent {
                         )
 
                         if ((data != null && data.isSolarRadiation())) OverlayDetectors.renderRadiationIndicator(
-                            player.getEntityAttribute(
-                                ACAttributePlayer.RADIATION_LVL
-                            ).getAttributeValue().toInt(),
+                            player.getAttribute(ACAttributePlayer.RADIATION_LVL)!!.getValue().toInt(),
                             this.getInvalidLevel(2, level),
                             !ConfigManagerCore.oxygenIndicatorLeft,
                             !ConfigManagerCore.oxygenIndicatorBottom
@@ -224,7 +223,7 @@ open class AsmodeusClientEvent {
 
                     //0.0 == getDefaultDergrees
                     var mod: Float = provider.getThermalLevelModifier()
-                    if (player.world.provider is IAdvancedSpace) mod =
+                    if (player.level().provider is IAdvancedSpace) mod =
                         (provider as IAdvancedSpace).getThermalLevelModifier(player)
                     if (mod > 0) mod += 1.0f
                     temp = mod * BodiesRegistry.getDefaultDergrees
@@ -248,7 +247,7 @@ open class AsmodeusClientEvent {
     }
 
     private fun getInvalidLevel(mode: Int, level: Float): Boolean {
-        val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+        val minecraft: Minecraft = Minecraft.getInstance()
         val player: EntityPlayer = minecraft.player
 
         val event: PressureEvent = PressureEvent(player, level)
@@ -260,7 +259,7 @@ open class AsmodeusClientEvent {
         if (mode == 1) {
             if (level > 25 && !Utils.getAtmoArmor(player)) return true
         } else if (mode == 2) {
-            if (player.getEntityAttribute(ACAttributePlayer.RADIATION_LVL).getAttributeValue() > 45.0) return true
+            if (player.getAttribute(ACAttributePlayer.RADIATION_LVL)!!.getValue() > 45.0) return true
         } else if (mode == 3) if (level > 40 && !Utils.getAtmoArmor(player)) return true
 
         return false
@@ -296,36 +295,36 @@ open class AsmodeusClientEvent {
 
         @JvmStatic
         fun getDebugList(): MutableList<String?> {
-            val mc: Minecraft = Minecraft.getMinecraft()
+            val mc: Minecraft = Minecraft.getInstance()
             val body: String? =
-                (if (mc.player.getEntityWorld().provider is IGalacticraftWorldProvider) ((mc.player.getEntityWorld().provider as IGalacticraftWorldProvider).getCelestialBody())!!
+                (if (mc.player.level().provider is IGalacticraftWorldProvider) ((mc.player.level().provider as IGalacticraftWorldProvider).getCelestialBody())!!
                     .getLocalizedName() else "Unnamed")
-            val current_item: String = (if (mc.player.inventory.getCurrentItem().getItem() !== Item.getItemFromBlock(
+            val current_item: String = (if (mc.player.inventory.getSelectedItem().getItem() !== Item.getItemFromBlock(
                     Blocks.AIR
                 )
-            ) Item.REGISTRY.getNameForObject(mc.player.inventory.getCurrentItem().getItem())
-                .toString() + ":" + mc.player.inventory.getCurrentItem().getItemDamage() else "None")
+            ) Item.REGISTRY.getNameForObject(mc.player.inventory.getSelectedItem().getItem())
+                .toString() + ":" + mc.player.inventory.getSelectedItem().legacyItemValue else "None")
 
             val temp: Float =
-                if (mc.player.world.provider is IGalacticraftWorldProvider) (mc.player.world.provider as IGalacticraftWorldProvider).getThermalLevelModifier() else 1.0f
+                if (mc.player.level().provider is IGalacticraftWorldProvider) (mc.player.level().provider as IGalacticraftWorldProvider).getThermalLevelModifier() else 1.0f
             val t1: Long =
-                if (mc.player.world.provider is WorldProviderSpace) (mc.player.world.provider as WorldProviderSpace).getDayLength() else 24000
-            val time: Long = mc.player.world.getWorldTime() % (if (t1 > 0) t1 else 1)
-            val get_chunk: Chunk = mc.player.getEntityWorld().getChunk(mc.player.getPosition())
+                if (mc.player.level().provider is WorldProviderSpace) (mc.player.level().provider as WorldProviderSpace).getDayLength() else 24000
+            val time: Long = mc.player.level().getWorldTime() % (if (t1 > 0) t1 else 1)
+            val get_chunk: Chunk = mc.player.level().getChunk(mc.player.getPosition())
 
-            val isWE: Boolean = mc.player.getEntityWorld().provider is WE_WorldProvider
+            val isWE: Boolean = mc.player.level().provider is WE_WorldProvider
             var count: Double = 0.0
 
             val world: World = (ColorBlockHandler.Companion.world)!!
-            if (isWE && mc.player.getEntityWorld().provider != null && world.provider is WE_WorldProvider) {
+            if (isWE && mc.player.level().provider != null && world.provider is WE_WorldProvider) {
                 val chunk: WE_ChunkProvider? = (world.provider as WE_WorldProvider).chunk_provider
                 if (chunk != null) {
                     val scaleX: Double = chunk.biomemapScaleX
                     val persistance: Double = chunk.biomemapPersistence
                     count = (WE_PerlinNoise.PerlinNoise2D(
-                        (mc.player.getEntityWorld().getSeed() * 11) xor 6L,
-                        mc.player.getEntityWorld().getChunk(mc.player.getPosition()).x / scaleX,
-                        mc.player.getEntityWorld().getChunk(mc.player.getPosition()).z / scaleX,
+                        (mc.player.level().getSeed() * 11) xor 6L,
+                        mc.player.level().getChunk(mc.player.getPosition()).x / scaleX,
+                        mc.player.level().getChunk(mc.player.getPosition()).z / scaleX,
                         persistance,
                         chunk.biomemapNumberOfOctaves
                     )
@@ -353,15 +352,15 @@ open class AsmodeusClientEvent {
             list.add(
                 String.format(
                     "Dimension: %s (ID: %s)",
-                    mc.player.world.provider.getDimensionType().getName(),
-                    mc.player.world.provider.getDimensionType().getId()
+                    mc.player.level().provider.getDimensionType().getName(),
+                    mc.player.level().provider.getDimensionType().getId()
                 )
             )
             list.add("Temperature (F): " + temp)
-            list.add("Vanilla Biome: " + mc.player.world.getBiomeForCoordsBody(mc.player.getPosition()).getBiomeName())
-            list.add("Current Time: " + time + " | Day Length: " + (if (mc.player.world.provider is WorldProviderSpace) (mc.player.world.provider as WorldProviderSpace).getDayLength() else if (mc.player.world.provider is WE_WorldProviderSpace) (mc.player.world.provider as WE_WorldProviderSpace).getDayLength() else "24000") + " | Total Time: " + mc.player.world.getWorldTime())
-            list.add("Moon Phase: " + mc.player.world.getMoonPhase())
-            list.add("Is Advance Space Provider: " + (if (mc.player.getEntityWorld().provider is IAdvancedSpace) "Yes" else "No"))
+            list.add("Vanilla Biome: " + mc.player.level().getBiomeForCoordsBody(mc.player.getPosition()).getBiomeName())
+            list.add("Current Time: " + time + " | Day Length: " + (if (mc.player.level().provider is WorldProviderSpace) (mc.player.level().provider as WorldProviderSpace).getDayLength() else if (mc.player.level().provider is WE_WorldProviderSpace) (mc.player.level().provider as WE_WorldProviderSpace).getDayLength() else "24000") + " | Total Time: " + mc.player.level().getWorldTime())
+            list.add("Moon Phase: " + mc.player.level().getMoonPhase())
+            list.add("Is Advance Space Provider: " + (if (mc.player.level().provider is IAdvancedSpace) "Yes" else "No"))
 
             if (isWE) {
                 list.add("[WE] Biome Perlin Count: " + count)

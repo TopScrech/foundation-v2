@@ -11,8 +11,8 @@ import micdoodle8.mods.galacticraft.core.Constants
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraftforge.fml.client.FMLClientHandler
 
 open class SkyProviderMiranda : SkyProviderBase() {
@@ -81,7 +81,7 @@ open class SkyProviderMiranda : SkyProviderBase() {
     }
 
     override fun sunImage(): ResourceLocation {
-        return ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
+        return ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
     }
 
     override fun modeLight(): ModeLight {
@@ -101,8 +101,8 @@ open class SkyProviderMiranda : SkyProviderBase() {
     }
 
     companion object {
-        private val uranusTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/uranus.png")
+        private val uranusTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/uranus.png")
         private val uranusRingTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/uranus_rings.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/uranus_rings.png")
     }
 }

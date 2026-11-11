@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.api.entity
 
-import net.minecraft.util.text.translation.I18n
+import net.minecraft.network.chat.Component
 
 interface IRocketType {
     enum class EnumRocketType
@@ -11,13 +11,13 @@ interface IRocketType {
         private val inventorySpace: Int
     ) {
         DEFAULT(0, "", false, 2),
-        INVENTORY27(1, I18n.translateToLocal("gui.rocket_type.0"), false, 20),
-        INVENTORY36(2, I18n.translateToLocal("gui.rocket_type.1"), false, 38),
-        INVENTORY54(3, I18n.translateToLocal("gui.rocket_type.2"), false, 56),
-        PREFUELED(4, I18n.translateToLocal("gui.rocket_type.3"), true, 2);
+        INVENTORY27(1, "gui.rocket_type.0", false, 20),
+        INVENTORY36(2, "gui.rocket_type.1", false, 38),
+        INVENTORY54(3, "gui.rocket_type.2", false, 56),
+        PREFUELED(4, "gui.rocket_type.3", true, 2);
 
         fun getTooltip(): String {
-            return this.tooltip
+            return if (tooltip.isEmpty()) "" else Component.translatable(tooltip).string
         }
 
         fun getIndex(): Int {

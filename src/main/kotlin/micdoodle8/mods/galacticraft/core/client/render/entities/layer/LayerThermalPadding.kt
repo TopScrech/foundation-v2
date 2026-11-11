@@ -15,10 +15,10 @@ import net.minecraft.client.model.ModelBiped
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.RenderPlayer
 import net.minecraft.client.renderer.entity.layers.LayerArmorBase
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.ItemStack
 import org.lwjgl.opengl.GL11
 import kotlin.math.sin
 
@@ -163,20 +163,20 @@ else -> {}
 
             // Start alpha render
             GlStateManager.disableLighting()
-            Minecraft.getMinecraft().renderEngine.bindTexture(RenderPlayerGC.thermalPaddingTexture0)
+            Minecraft.getInstance().renderEngine.bindTexture(RenderPlayerGC.thermalPaddingTexture0)
             GlStateManager.enableAlpha()
             GlStateManager.enableBlend()
             GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
-            val time: Float = entityLivingBaseIn.ticksExisted / 10.0f
+            val time: Float = entityLivingBaseIn.tickCount / 10.0f
             val sTime: Float = sin(time.toDouble()).toFloat() * 0.5f + 0.5f
 
             var r: Float = 0.2f * sTime
             var g: Float = 1.0f * sTime
             var b: Float = 0.2f * sTime
 
-            if (entityLivingBaseIn.world.provider is IGalacticraftWorldProvider) {
+            if (entityLivingBaseIn.level().provider is IGalacticraftWorldProvider) {
                 val modifier: Float =
-                    (entityLivingBaseIn.world.provider as IGalacticraftWorldProvider).getThermalLevelModifier()
+                    (entityLivingBaseIn.level().provider as IGalacticraftWorldProvider).getThermalLevelModifier()
 
                 if (modifier > 0) {
                     b = g

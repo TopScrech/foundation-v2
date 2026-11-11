@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import com.google.common.base.Predicate
 import micdoodle8.mods.galacticraft.api.block.IDetectableResource
 import micdoodle8.mods.galacticraft.api.block.IPlantableBlock
@@ -11,35 +14,35 @@ import micdoodle8.mods.galacticraft.core.tick.TickHandlerServer
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.wrappers.Footprint
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockFlower
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.Explosion
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.Explosion
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.IPlantable
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.Random
 
 open class BlockBasicMoon constructor(assetName: String?) : Block(Material.ROCK), IDetectableResource,
-    IPlantableBlock, ITerraformableBlock, ISortableBlock {
+    IPlantableBlock, ITerraformableBlock, ISortableBlock, LegacyBlockMetadata {
     enum class EnumBlockBasicMoon(private val meta: Int, private val serializedName: String) : IStringSerializable {
         ORE_COPPER_MOON(0, "ore_copper_moon"),
         ORE_TIN_MOON(1, "ore_tin_moon"),
@@ -54,7 +57,9 @@ open class BlockBasicMoon constructor(assetName: String?) : Block(Material.ROCK)
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -76,7 +81,7 @@ open class BlockBasicMoon constructor(assetName: String?) : Block(Material.ROCK)
         this.blockHardness = 1.5f
         this.blockResistance = 2.5f
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(
+            this.blockState.getBaseState().setValue(
                 BASIC_TYPE_MOON,
                 EnumBlockBasicMoon.ORE_COPPER_MOON
             )
@@ -84,7 +89,7 @@ open class BlockBasicMoon constructor(assetName: String?) : Block(Material.ROCK)
         this.setTranslationKey(assetName)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.Companion.galacticraftBlocksTab
     }
@@ -171,7 +176,7 @@ open class BlockBasicMoon constructor(assetName: String?) : Block(Material.ROCK)
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (type: EnumBlockBasicMoon in EnumBlockBasicMoon.entries) {
             list.add(ItemStack(this, 1, type.getMeta()))
@@ -240,7 +245,7 @@ open class BlockBasicMoon constructor(assetName: String?) : Block(Material.ROCK)
         super.breakBlock(worldIn, pos, state)
         val type: EnumBlockBasicMoon = (state.getValue(BASIC_TYPE_MOON) as EnumBlockBasicMoon)
 
-        if (!worldIn.isRemote && type == EnumBlockBasicMoon.MOON_TURF) {
+        if (!worldIn.isClientSide && type == EnumBlockBasicMoon.MOON_TURF) {
             val footprintChunkMap: MutableMap<Long, MutableList<Footprint>?>? =
                 (TickHandlerServer.serverFootprintMap.get(GCCoreUtil.getDimensionID(worldIn)) as MutableMap<Long, MutableList<Footprint>?>?)
 
@@ -279,7 +284,7 @@ open class BlockBasicMoon constructor(assetName: String?) : Block(Material.ROCK)
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(
+        return this.defaultBlockState().setValue(
             BASIC_TYPE_MOON,
             EnumBlockBasicMoon.Companion.byMetadata(meta)
         )
@@ -310,7 +315,7 @@ else -> {}
 
         val meta: Int = this.getMetaFromState(state)
         if (meta == 2 || meta == 6) {
-            val rand: Random = if (world is World) world.rand else Random()
+            val rand: Random = if (world is World) world.random else Random()
             return MathHelper.getInt(rand, 2, 5) + (if (meta == 6) 1 else 0)
         }
         return 0

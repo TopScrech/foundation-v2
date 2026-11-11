@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.api.inventory
 
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.world.entity.Entity
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import java.lang.Exception
 import java.lang.reflect.Method
 

@@ -3,13 +3,13 @@ package micdoodle8.mods.galacticraft.core.blocks
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import net.minecraft.block.BlockStairs
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.Mirror
-import net.minecraft.util.Rotation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.block.Mirror
+import net.minecraft.world.level.block.Rotation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
 
 open class BlockStairsGC constructor(name: String?, state: IBlockState) : BlockStairs(state), ISortableBlock {
     init {
@@ -36,7 +36,7 @@ open class BlockStairsGC constructor(name: String?, state: IBlockState) : BlockS
     }
 
     override fun getActualState(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState {
-        return state.withProperty(SHAPE, getStairsShape(state, worldIn, pos))
+        return state.setValue(SHAPE, getStairsShape(state, worldIn, pos))
     }
 
     companion object {

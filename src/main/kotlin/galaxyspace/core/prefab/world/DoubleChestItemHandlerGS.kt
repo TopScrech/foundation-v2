@@ -5,12 +5,12 @@ import javax.annotation.Nonnull
 import com.google.common.base.Objects
 import galaxyspace.core.prefab.tile.TileEntityChestGS
 import galaxyspace.core.prefab.world.DoubleChestItemHandlerGS
-import net.minecraft.block.Block
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.items.IItemHandler
 import net.minecraftforge.items.IItemHandlerModifiable
 import java.lang.ref.WeakReference
@@ -32,11 +32,11 @@ open class DoubleChestItemHandlerGS constructor(
     }
 
     @Nonnull
-    override fun getStackInSlot(slot: Int): ItemStack {
+    override fun getItem(slot: Int): ItemStack {
         val accessingUpperChest: Boolean = slot < 27
         val targetSlot: Int = if (accessingUpperChest) slot else slot - 27
         val chest: TileEntityChestGS? = this.getChest(accessingUpperChest)
-        return if (chest != null) chest.getStackInSlot(targetSlot) else ItemStack.EMPTY
+        return if (chest != null) chest.getItem(targetSlot) else ItemStack.EMPTY
     }
 
     override fun setStackInSlot(slot: Int, @Nonnull itemStack: ItemStack) {
@@ -106,7 +106,7 @@ open class DoubleChestItemHandlerGS constructor(
 
     override fun getSlotLimit(slot: Int): Int {
         val accessingUpperChest: Boolean = slot < 27
-        return this.getChest(accessingUpperChest)!!.getInventoryStackLimit()
+        return this.getChest(accessingUpperChest)!!.getMaxStackSize()
     }
 
     override fun equals(o: Any?): Boolean {
@@ -180,7 +180,7 @@ open class DoubleChestItemHandlerGS constructor(
                 val block: Block = world.getBlockState(blockpos).getBlock()
 
                 if (block === blockType) {
-                    val otherTE: TileEntity? = world.getTileEntity(blockpos)
+                    val otherTE: TileEntity? = world.getBlockEntity(blockpos)
 
                     if (otherTE is TileEntityChestGS) {
                         val otherChest: TileEntityChestGS = otherTE

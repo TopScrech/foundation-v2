@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.moons.europa.world.gen.we
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import galaxyspace.core.prefab.entities.EntityEvolvedColdBlaze
 import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_BiomeLayer
@@ -7,9 +9,9 @@ import galaxyspace.systems.SolarSystem.moons.europa.world.gen.we.Europa_Spikes
 import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_OreGen.BlockPredicate
 import asmodeuscore.core.utils.worldengine.WE_Biome
 import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_TerrainGenerator
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenMinable
 import java.util.Random
 
@@ -34,20 +36,20 @@ open class Europa_Spikes constructor(tg: WE_TerrainGenerator) :
         spawnableMonsterList.add(SpawnListEntry(EntityEvolvedColdBlaze::class.java, 10, 1, 4))
 
         val layer: WE_BiomeLayer = WE_BiomeLayer()
-        layer.add(Blocks.PACKED_ICE.getDefaultState(), tg.worldStoneBlock, -256, 0, 65, -3, true)
+        layer.add(Blocks.PACKED_ICE.defaultBlockState(), tg.worldStoneBlock, -256, 0, 65, -3, true)
 
 
         layer.add(
             GSBlocks.EUROPA_BLOCKS.getStateFromMeta(0),
-            Blocks.PACKED_ICE.getDefaultState(),
+            Blocks.PACKED_ICE.defaultBlockState(),
             -256,
             0,
             -2,
             -1,
             true
         )
-        layer.add(Blocks.WATER.getDefaultState(), tg.worldStoneBlock, -256, 0, -100, 0, true)
-        layer.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        layer.add(Blocks.WATER.defaultBlockState(), tg.worldStoneBlock, -256, 0, -100, 0, true)
+        layer.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
 
 
         createChunkGen_InXZ_List.add(layer)

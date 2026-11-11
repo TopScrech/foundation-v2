@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.planets.mars.tile
 
+import net.minecraft.network.chat.Component
+
 import micdoodle8.mods.galacticraft.core.blocks.BlockMulti.EnumBlockMultiType
 import micdoodle8.mods.galacticraft.planets.mars.network.PacketSimpleMars.EnumSimplePacketMars
 
@@ -11,19 +13,19 @@ import micdoodle8.mods.galacticraft.core.tile.IMultiBlock
 import micdoodle8.mods.galacticraft.core.tile.TileEntityMulti
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.mars.network.PacketSimpleMars
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Biomes
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.biome.Biomes
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.LinkedList
 
 open class TileEntityCryogenicChamber constructor() : TileEntityMulti(null), IMultiBlock {
@@ -31,7 +33,7 @@ open class TileEntityCryogenicChamber constructor() : TileEntityMulti(null), IMu
     var isOccupied: Boolean = false
     private var initialised = false
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         return AxisAlignedBB(
             (getPos().getX() - 1).toDouble(),
@@ -54,16 +56,16 @@ open class TileEntityCryogenicChamber constructor() : TileEntityMulti(null), IMu
         when (enumstatus) {
             EntityPlayer.SleepResult.OK -> {
                 (entityPlayer as EntityPlayerMP).connection.setPlayerLocation(
-                    entityPlayer.posX,
-                    entityPlayer.posY,
-                    entityPlayer.posZ,
-                    entityPlayer.rotationYaw,
-                    entityPlayer.rotationPitch
+                    entityPlayer.x,
+                    entityPlayer.y,
+                    entityPlayer.z,
+                    entityPlayer.yRot,
+                    entityPlayer.xRot
                 )
                 (GalacticraftCore.packetPipeline)!!.sendTo(
                     PacketSimpleMars(
                         PacketSimpleMars.EnumSimplePacketMars.C_BEGIN_CRYOGENIC_SLEEP,
-                        GCCoreUtil.getDimensionID(entityPlayer.world),
+                        GCCoreUtil.getDimensionID(entityPlayer.level()),
                         arrayOf<Any>(this.getPos())
                     ), entityPlayer
                 )
@@ -72,8 +74,8 @@ open class TileEntityCryogenicChamber constructor() : TileEntityMulti(null), IMu
 
             EntityPlayer.SleepResult.NOT_POSSIBLE_NOW -> {
                 val stats: GCPlayerStats = (GCPlayerStats.get((entityPlayer)!!))!!
-                (entityPlayer)!!.sendMessage(
-                    TextComponentString(
+                (entityPlayer)!!.sendSystemMessage(
+                    Component.literal(
                         GCCoreUtil.translateWithFormat(
                             "gui.cryogenic.chat.cant_use",
                             stats.getCryogenicChamberCooldown() / 20
@@ -89,7 +91,7 @@ open class TileEntityCryogenicChamber constructor() : TileEntityMulti(null), IMu
 
     open fun sleepInBedAt(entityPlayer: EntityPlayer, par1: Int, par2: Int, par3: Int): EntityPlayer.SleepResult {
         if (!this.world.isRemote) {
-            if (entityPlayer.isPlayerSleeping() || !entityPlayer.isEntityAlive()) {
+            if (entityPlayer.isPlayerSleeping() || !entityPlayer.isAlive()) {
                 return EntityPlayer.SleepResult.OTHER_PROBLEM
             }
 
@@ -103,7 +105,7 @@ open class TileEntityCryogenicChamber constructor() : TileEntityMulti(null), IMu
             }
         }
 
-        if (entityPlayer.isRiding()) {
+        if (entityPlayer.isPassenger()) {
             entityPlayer.dismountRidingEntity()
         }
 
@@ -117,8 +119,8 @@ open class TileEntityCryogenicChamber constructor() : TileEntityMulti(null), IMu
         entityPlayer.sleepTimer = 0
         entityPlayer.bedLocation = BlockPos(this.getPos().getX(), this.getPos().getY(), this.getPos().getZ())
         entityPlayer.motionY = 0.0
-        entityPlayer.motionZ = entityPlayer.motionY
-        entityPlayer.motionX = entityPlayer.motionZ
+        entityPlayer.motionZ = entityPlayer.deltaMovement.y
+        entityPlayer.motionX = entityPlayer.deltaMovement.z
 
         if (!this.world.isRemote) {
             this.world.updateAllPlayersSleepingFlag()
@@ -185,12 +187,12 @@ open class TileEntityCryogenicChamber constructor() : TileEntityMulti(null), IMu
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.isOccupied = nbt.getBoolean("IsChamberOccupied")
+        this.isOccupied = nbt.getBooleanOr("IsChamberOccupied", false)
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setBoolean("IsChamberOccupied", this.isOccupied)
+        nbt.putBoolean("IsChamberOccupied", this.isOccupied)
         return nbt
     }
 

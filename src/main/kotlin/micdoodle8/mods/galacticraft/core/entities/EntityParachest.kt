@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.entities
 
+import foundation.persistence.containsTag
+
 import io.netty.buffer.ByteBuf
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.GCFluids
@@ -8,20 +10,20 @@ import micdoodle8.mods.galacticraft.core.network.IPacketReceiver
 import micdoodle8.mods.galacticraft.core.network.PacketDynamic
 import micdoodle8.mods.galacticraft.core.tile.TileEntityParaChest
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
-import net.minecraft.entity.MoverType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.MoverType
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.EnumDyeColor
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.item.DyeColor as EnumDyeColor
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidRegistry
 import net.minecraftforge.fml.common.network.NetworkRegistry
 import java.util.ArrayList
@@ -55,29 +57,29 @@ open class EntityParachest constructor(world: World) : Entity(world), IPacketRec
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
         var size: Int = 56
-        if (nbt.hasKey("CargoLength")) {
-            size = nbt.getInteger("CargoLength")
+        if (nbt.containsTag("CargoLength")) {
+            size = nbt.getIntOr("CargoLength", 0)
         }
         this.cargo = NonNullList.withSize<ItemStack>(size, ItemStack.EMPTY)
 
         ItemStackHelper.loadAllItems(nbt, this.cargo)
 
-        this.placedChest = nbt.getBoolean("placedChest")
-        this.fuelLevel = nbt.getInteger("FuelLevel")
+        this.placedChest = nbt.getBooleanOr("placedChest", false)
+        this.fuelLevel = nbt.getIntOr("FuelLevel", 0)
 
-        if (nbt.hasKey("color")) {
-            this.color = EnumDyeColor.byDyeDamage(nbt.getInteger("color"))
+        if (nbt.containsTag("color")) {
+            this.color = EnumDyeColor.byDyeDamage(nbt.getIntOr("color", 0))
         }
     }
 
     override fun writeEntityToNBT(nbt: NBTTagCompound) {
         if (world.isRemote) return
-        nbt.setInteger("CargoLength", this.cargo!!.size)
+        nbt.putInt("CargoLength", this.cargo!!.size)
         ItemStackHelper.saveAllItems(nbt, this.cargo)
 
-        nbt.setBoolean("placedChest", this.placedChest)
-        nbt.setInteger("FuelLevel", this.fuelLevel)
-        nbt.setInteger("color", this.color.getDyeDamage())
+        nbt.putBoolean("placedChest", this.placedChest)
+        nbt.putInt("FuelLevel", this.fuelLevel)
+        nbt.putInt("color", this.color.getDyeDamage())
     }
 
     override fun onUpdate() {
@@ -135,8 +137,8 @@ open class EntityParachest constructor(world: World) : Entity(world), IPacketRec
     }
 
     private fun placeChest(pos: BlockPos): Boolean {
-        this.world.setBlockState(pos, (GCBlocks.parachest)!!.getDefaultState(), 3)
-        val te: TileEntity? = this.world.getTileEntity(pos)
+        this.world.setBlock(pos, (GCBlocks.parachest)!!.defaultBlockState(), 3)
+        val te: TileEntity? = this.world.getBlockEntity(pos)
 
         if (te is TileEntityParaChest && this.cargo != null) {
             val chest: TileEntityParaChest = te

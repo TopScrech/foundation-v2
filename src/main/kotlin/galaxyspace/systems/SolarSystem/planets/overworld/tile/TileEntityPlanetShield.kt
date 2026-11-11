@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityPlanetShield
@@ -15,19 +17,20 @@ import micdoodle8.mods.galacticraft.core.entities.EntityMeteor
 import micdoodle8.mods.galacticraft.core.entities.IBubbleProviderColored
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.HashSet
 import kotlin.math.max
 import kotlin.math.min
@@ -108,7 +111,7 @@ open class TileEntityPlanetShield constructor() : TileEntityElectricInventory("t
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         return AxisAlignedBB(
             (this.getPos().getX() - this.bubbleSize).toDouble(),
@@ -120,7 +123,7 @@ open class TileEntityPlanetShield constructor() : TileEntityElectricInventory("t
         )
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return Constants.RENDERDISTANCE_LONG
     }
@@ -264,45 +267,45 @@ open class TileEntityPlanetShield constructor() : TileEntityElectricInventory("t
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
 
-        if (nbt.hasKey("bubbleVisible")) {
-            this.setBubbleVisible(nbt.getBoolean("bubbleVisible"))
+        if (nbt.containsTag("bubbleVisible")) {
+            this.setBubbleVisible(nbt.getBooleanOr("bubbleVisible", false))
         }
 
-        if (nbt.hasKey("bubbleSize")) {
-            this.bubbleSize = nbt.getFloat("bubbleSize")
+        if (nbt.containsTag("bubbleSize")) {
+            this.bubbleSize = nbt.getFloatOr("bubbleSize", 0f)
         }
 
-        this.inventory = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.inventory = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, this.getInventory())
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
 
-        nbt.setBoolean("bubbleVisible", this.shouldRenderBubble)
-        nbt.setFloat("bubbleSize", this.bubbleSize)
+        nbt.putBoolean("bubbleVisible", this.shouldRenderBubble)
+        nbt.putFloat("bubbleSize", this.bubbleSize)
         ItemStackHelper.saveAllItems(nbt, this.getInventory())
         return nbt
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
     }
 
-    override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    override fun getSlotsForFace(side: EnumFacing): IntArray {
         if (side == EnumFacing.DOWN) return intArrayOf(5)
 
         return intArrayOf(0, 5)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
-        if (this.isItemValidForSlot(slotID, itemstack)) {
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        if (this.canPlaceItem(slotID, itemstack)) {
             when (slotID) {
                 0 -> return ItemElectricBase.isElectricItemCharged(itemstack)
                 else -> return false
@@ -311,7 +314,7 @@ open class TileEntityPlanetShield constructor() : TileEntityElectricInventory("t
         return false
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         when (slotID) {
             0 -> return ItemElectricBase.isElectricItemEmpty(itemstack)
             5 -> return true
@@ -319,7 +322,7 @@ open class TileEntityPlanetShield constructor() : TileEntityElectricInventory("t
         }
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         if (itemstack.isEmpty()) {
             return false
         }
@@ -342,7 +345,7 @@ open class TileEntityPlanetShield constructor() : TileEntityElectricInventory("t
     }
 
     override fun getBatteryInSlot(): ItemStack {
-        return this.getStackInSlot(0)
+        return this.getItem(0)
     }
 
     open fun inBubble(pX: Double, pY: Double, pZ: Double): Boolean {

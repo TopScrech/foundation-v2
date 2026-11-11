@@ -1,5 +1,13 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items.tools
 
+import net.minecraft.network.chat.Component
+
+import foundation.block.getMetaFromState
+
+import foundation.level.offset
+
+import foundation.persistence.containsTag
+
 import java.util.HashMap
 
 import galaxyspace.core.GSFluids
@@ -10,23 +18,23 @@ import micdoodle8.mods.galacticraft.core.energy.item.ItemElectricBase
 import micdoodle8.mods.galacticraft.core.items.ISortableItem
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.util.text.TextFormatting
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+
+import net.minecraft.ChatFormatting as TextFormatting
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidRegistry
 
-open class ItemGeologicalScanner constructor() : ItemElectricBase(), ISortableItem {
+open class ItemGeologicalScanner constructor() : ItemElectricBase(foundation.item.FoundationItemProperties.named("galaxyspace", "geo_scanner").stacksTo(1)), ISortableItem {
     private val mode = 0
 
     init {
@@ -84,31 +92,31 @@ open class ItemGeologicalScanner constructor() : ItemElectricBase(), ISortableIt
         hitY: Float,
         hitZ: Float
     ): EnumActionResult {
-        val stack: ItemStack = player.getHeldItem(hand)
+        val stack: ItemStack = player.getItemInHand(hand)
 
-        if (!world.isRemote && this.getElectricityStored(stack) >= 100.0f) {
-            if (player.isSneaking()) {
+        if (!world.isClientSide && this.getElectricityStored(stack) >= 100.0f) {
+            if (player.isShiftKeyDown()) {
                 if (!stack.hasTagCompound()) stack.setTagCompound(NBTTagCompound())
 
-                if (stack.getTagCompound()!!.hasKey("mode")) stack.getTagCompound()!!
-                    .setInteger("mode", if (stack.getTagCompound()!!.getInteger("mode") > 0) 0 else 1)
-                else stack.getTagCompound()!!.setInteger("mode", 1)
+                if (stack.getTagCompound()!!.containsTag("mode")) stack.getTagCompound()!!
+                    .putInt("mode", if (stack.getTagCompound()!!.getIntOr("mode", 0) > 0) 0 else 1)
+                else stack.getTagCompound()!!.putInt("mode", 1)
 
 
-                player.sendMessage(
-                    TextComponentString(
-                        TextFormatting.GREEN.toString() + "Mode: " + stack.getTagCompound()!!.getInteger("mode")
+                player.sendSystemMessage(
+                    Component.literal(
+                        TextFormatting.GREEN.toString() + "Mode: " + stack.getTagCompound()!!.getIntOr("mode", 0)
                     )
                 )
                 return EnumActionResult.SUCCESS
             }
-            if (stack.getTagCompound()!!.getInteger("mode") == 0) {
+            if (stack.getTagCompound()!!.getIntOr("mode", 0) == 0) {
                 val blocks: MutableMap<IBlockState?,Int> = HashMap<IBlockState?,Int>()
 
 
-                for (scan: BlockPos in BlockPos.getAllInBox(pos.add(-2, -2, -2), pos.add(2, 2, 2))) {
+                for (scan: BlockPos in BlockPos.getAllInBox(pos.offset(-2, -2, -2), pos.offset(2, 2, 2))) {
                     val block: IBlockState = world.getBlockState(scan)
-                    if (world.isAirBlock(scan)) continue
+                    if (world.isEmptyBlock(scan)) continue
 
                     if (blocks.containsKey(block)) {
                         blocks.put(block, blocks.get(block)!! + 1)
@@ -134,11 +142,11 @@ open class ItemGeologicalScanner constructor() : ItemElectricBase(), ISortableIt
 
                 //GalaxySpace.packetPipeline.sendToServer(new GSPacketSimple(GSEnumSimplePacket.C_SHOW_SCANNER_BLOCK, player.world, new Object[] {0}));
                 if (!player.capabilities.isCreativeMode) this.discharge(stack, (20 * blocks.size).toFloat(), true)
-            } else if (stack.getTagCompound()!!.getInteger("mode") == 1) {
+            } else if (stack.getTagCompound()!!.getIntOr("mode", 0) == 1) {
                 val radius: Int = 8
                 var found: Boolean = false
 
-                for (y: Int in player.posY.toInt() downTo 6) {
+                for (y: Int in player.y.toInt() downTo 6) {
                     if (found) break
 
                     for (x: Int in -radius..<radius) {
@@ -148,7 +156,7 @@ open class ItemGeologicalScanner constructor() : ItemElectricBase(), ISortableIt
                             if (block.getBlock() === FluidRegistry.getFluidStack("oil", 1)!!.getFluid()
                                     .getBlock() || block.getBlock() === FluidRegistry.LAVA.getBlock() || block.getBlock() === GSFluids.BLOCK_NATURE_GAS
                             ) {
-                                //player.sendMessage(new TextComponentString(TextFormatting.GREEN + "Y Oil: " + y));
+                                //player.sendMessage(new Component.literal(TextFormatting.GREEN + "Y Oil: " + y));
                                 val blocks_to_render: MutableMap<IBlockState?, String?> =
                                     HashMap<IBlockState?, String?>()
                                 blocks_to_render.put(block, block.getBlock().getLocalizedName() + " Y Level: " + y)

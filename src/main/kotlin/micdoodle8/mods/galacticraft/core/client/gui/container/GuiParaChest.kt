@@ -4,14 +4,14 @@ import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.entities.IScaleableFuelLevel
 import micdoodle8.mods.galacticraft.core.inventory.ContainerParaChest
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.inventory.IInventory
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.Container as IInventory
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiParaChest constructor(
     private val upperChestInventory: IInventory,
     private val lowerChestInventory: IInventory
@@ -26,7 +26,7 @@ open class GuiParaChest constructor(
 
     init {
         this.allowUserInput = false
-        this.inventorySize = lowerChestInventory.getSizeInventory()
+        this.inventorySize = lowerChestInventory.getContainerSize()
         this.ySize = 146 + ((this.inventorySize)!! * 2)!!
     }
 
@@ -64,7 +64,7 @@ open class GuiParaChest constructor(
 
         init {
             for (i: Int in 0..3) {
-                parachestTexture[i] = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/chest_" + i * 18 + ".png")
+                parachestTexture[i] = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/chest_" + i * 18 + ".png")
             }
         }
     }

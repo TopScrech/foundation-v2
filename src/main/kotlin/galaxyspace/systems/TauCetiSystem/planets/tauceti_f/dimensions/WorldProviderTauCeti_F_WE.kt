@@ -1,5 +1,7 @@
 package galaxyspace.systems.TauCetiSystem.planets.tauceti_f.dimensions
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.systems.TauCetiSystem.planets.tauceti_f.blocks.TauCeti_F_Blocks.EnumBlockTauCetiF
 import galaxyspace.systems.TauCetiSystem.planets.tauceti_f.blocks.TauCeti_F_Blocks
 import galaxyspace.systems.TauCetiSystem.core.TCBlocks
@@ -24,21 +26,21 @@ import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_TerrainGenerator
 import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
-import net.minecraft.world.World
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IProviderWeather {
@@ -74,7 +76,7 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
         return WE_ChunkProviderSpace::class.java
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCloudHeight(): Float {
         return 180.0f
     }
@@ -83,7 +85,7 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
         return true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun calcSunriseSunsetColors(celestialAngle: Float, partialTicks: Float): FloatArray? {
         return super.calcSunriseSunsetColors(celestialAngle, partialTicks)
         /*  float f = 0.4F;
@@ -107,13 +109,13 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
         }*/
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getFogColor(): Vector3 {
         val f: Float = 1.0f - this.getStarBrightness(1.0f)
         return Vector3((140 / 255.0f * f).toDouble(), (167 / 255.0f * f).toDouble(), (207 / 255.0f * f).toDouble())
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyColor(): Vector3 {
         var f: Float = 0.8f - this.getStarBrightness(1.0f)
         if (world.isRaining()) {
@@ -135,7 +137,7 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
         return !ConfigManagerCore.forceOverworldRespawn
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val f: Float = this.world.getCelestialAngle(par1)
         var f1: Float = 1.0f - (MathHelper.cos(f * (Math.PI.toFloat() * 2f)) * 2.0f + 0.25f)
@@ -143,7 +145,7 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
         return f1 * f1 * 0.5f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSunBrightness(par1: Float): Float {
         val f1: Float = this.world.getCelestialAngle(1.0f)
         var f2: Float = 1.0f - (MathHelper.cos(f1 * 3.1415927f * 2.0f) * 2.0f + 0.2f)
@@ -153,14 +155,14 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
         return f2 * 0.8f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCloudRenderer(): IRenderHandler? {
         if (super.getCloudRenderer() == null) this.setCloudRenderer(CloudProviderTauCeti_F())
 
         return super.getCloudRenderer()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyRenderer(): IRenderHandler? {
         if (super.getSkyRenderer() == null) {
             this.setSkyRenderer(SkyProviderTauCeti_F())
@@ -200,7 +202,7 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
         val terrainGenerator: WE_TerrainGenerator = WE_TerrainGenerator()
         terrainGenerator.worldStoneBlock = TCBlocks.TAUCETI_F_BLOCKS.getStateFromMeta(0)
         terrainGenerator.worldSeaGen = true
-        terrainGenerator.worldSeaGenBlock = Blocks.WATER.getDefaultState()
+        terrainGenerator.worldSeaGenBlock = Blocks.WATER.defaultBlockState()
         terrainGenerator.worldSeaGenMaxY = 100
         (cp)!!.createChunkGen_List.add(terrainGenerator)
 
@@ -223,7 +225,7 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
         val rg: WE_RavineGen = WE_RavineGen()
         rg.replaceBlocksList.clear()
         rg.addReplacingBlock(terrainGenerator.worldStoneBlock)
-        rg.lavaBlock = Blocks.LAVA.getDefaultState()
+        rg.lavaBlock = Blocks.LAVA.defaultBlockState()
         rg.lavaMaxY = 0
         rg.range = 32
         rg.caveBlock = terrainGenerator.worldSeaGenBlock
@@ -243,11 +245,11 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
             -1,
             true
         )
-        layer.add(Blocks.BEDROCK.getDefaultState(), 0, 0, 1, 2, true)
+        layer.add(Blocks.BEDROCK.defaultBlockState(), 0, 0, 1, 2, true)
 
 
-        //layer.add(Blocks.PACKED_ICE.getDefaultState(), terrainGenerator.worldStoneBlock, -256, 0,   -4, -10,  true);
-        //layer.add(Blocks.SNOW.getDefaultState(), Blocks.PACKED_ICE.getDefaultState(), -256, 0,   -2, -1,  false);
+        //layer.add(Blocks.PACKED_ICE.defaultBlockState(), terrainGenerator.worldStoneBlock, -256, 0,   -4, -10,  true);
+        //layer.add(Blocks.SNOW.defaultBlockState(), Blocks.PACKED_ICE.defaultBlockState(), -256, 0,   -2, -1,  false);
         WE_Biome.addBiomeToGeneration(cp, object : WE_BaseBiome(0.0, 1.4, 4, 90, 35, layer) {
             override fun decorateBiome(world: World?, rand: Random?, x: Int, z: Int) {
                 for (i: Int in 0..79) {
@@ -256,13 +258,13 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
                     for (y: Int in terrainGenerator.worldSeaGenMaxY downTo 1) {
                         val pos: BlockPos = BlockPos(randPosX, y, randPosZ)
                         if (y < 91 && (world)!!.getBlockState(pos).getMaterial() === Material.WATER && (world)!!.getBlockState(
-                                pos.down()
-                            ) === TCBlocks.TAUCETI_F_BLOCKS.getDefaultState()
-                                .withProperty(
+                                pos.below()
+                            ) === TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState()
+                                .setValue(
                                     TauCeti_F_Blocks.Companion.BASIC_TYPE,
                                     EnumBlockTauCetiF.STONE
                                 )
-                        ) (world)!!.setBlockState(pos, TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(0))
+                        ) (world)!!.setBlockAndUpdate(pos, TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(0))
                     }
                 }
 
@@ -272,15 +274,15 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
                     for (y: Int in terrainGenerator.worldSeaGenMaxY downTo 1) {
                         val pos: BlockPos = BlockPos(randPosX, y, randPosZ)
                         if (y < 90 && (world)!!.getBlockState(pos).getMaterial() === Material.WATER && (world)!!.getBlockState(
-                                pos.down()
-                            ) === TCBlocks.TAUCETI_F_BLOCKS.getDefaultState()
-                                .withProperty(
+                                pos.below()
+                            ) === TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState()
+                                .setValue(
                                     TauCeti_F_Blocks.Companion.BASIC_TYPE,
                                     EnumBlockTauCetiF.STONE
                                 )
                         ) {
-                            (world)!!.setBlockState(pos, TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(4))
-                            (world)!!.setBlockState(pos.up(), TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(5))
+                            (world)!!.setBlockAndUpdate(pos, TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(4))
+                            (world)!!.setBlockAndUpdate(pos.above(), TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(5))
                         }
                     }
                 }
@@ -294,22 +296,22 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
                     for (y: Int in terrainGenerator.worldSeaGenMaxY downTo 1) {
                         val pos: BlockPos = BlockPos(randPosX, y, randPosZ)
                         if ((world)!!.getBlockState(pos)
-                                .getMaterial() === Material.WATER && (world)!!.getBlockState(pos.down()) === TCBlocks.TAUCETI_F_BLOCKS.getDefaultState()
-                                .withProperty(
+                                .getMaterial() === Material.WATER && (world)!!.getBlockState(pos.below()) === TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState()
+                                .setValue(
                                     TauCeti_F_Blocks.Companion.BASIC_TYPE,
                                     EnumBlockTauCetiF.STONE
                                 )
                         ) {
                             val size: Int = (rand)!!.nextInt(15) + 1
-                            (world)!!.setBlockState(pos, TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(1))
+                            (world)!!.setBlockAndUpdate(pos, TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(1))
 
 
-                            for (l: Int in 1..<size - 1) if (l < size - 1 && (world)!!.getBlockState(pos.up(l + 1))
+                            for (l: Int in 1..<size - 1) if (l < size - 1 && (world)!!.getBlockState(pos.above(l + 1))
                                     .getMaterial() === Material.WATER
-                            ) (world)!!.setBlockState(pos.up(l), TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(2))
+                            ) (world)!!.setBlockAndUpdate(pos.above(l), TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(2))
 
-                            if ((world)!!.getBlockState(pos.up(size)).getMaterial() === Material.WATER) (world)!!.setBlockState(
-                                pos.up(size - 1),
+                            if ((world)!!.getBlockState(pos.above(size)).getMaterial() === Material.WATER) (world)!!.setBlockAndUpdate(
+                                pos.above(size - 1),
                                 TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(3)
                             )
 
@@ -331,13 +333,13 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
                     for (y: Int in terrainGenerator.worldSeaGenMaxY downTo 1) {
                         val pos: BlockPos = BlockPos(randPosX, y, randPosZ)
                         if ((world)!!.getBlockState(pos)
-                                .getMaterial() === Material.WATER && (world)!!.getBlockState(pos.down()) === TCBlocks.TAUCETI_F_BLOCKS.getDefaultState()
-                                .withProperty(
+                                .getMaterial() === Material.WATER && (world)!!.getBlockState(pos.below()) === TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState()
+                                .setValue(
                                     TauCeti_F_Blocks.Companion.BASIC_TYPE,
                                     EnumBlockTauCetiF.STONE
                                 )
                         ) WorldGenCircleBlock(
-                            Blocks.DIRT.getDefaultState(),
+                            Blocks.DIRT.defaultBlockState(),
                             8,
                             TCBlocks.TAUCETI_F_BLOCKS.getStateFromMeta(2)
                         ).generate((world)!!, (rand)!!, pos)
@@ -350,23 +352,23 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
                     for (y: Int in terrainGenerator.worldSeaGenMaxY downTo 1) {
                         val pos: BlockPos = BlockPos(randPosX, y, randPosZ)
                         if (y > 35 && (world)!!.getBlockState(pos).getMaterial() === Material.WATER && (world)!!.getBlockState(
-                                pos.down()
-                            ) === TCBlocks.TAUCETI_F_BLOCKS.getDefaultState()
-                                .withProperty(
+                                pos.below()
+                            ) === TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState()
+                                .setValue(
                                     TauCeti_F_Blocks.Companion.BASIC_TYPE,
                                     EnumBlockTauCetiF.STONE
                                 )
                         ) {
                             val size: Int = (rand)!!.nextInt(15) + 1
-                            (world)!!.setBlockState(pos, TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(1))
+                            (world)!!.setBlockAndUpdate(pos, TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(1))
 
 
-                            for (l: Int in 1..<size - 1) if (l < size - 1 && (world)!!.getBlockState(pos.up(l + 1))
+                            for (l: Int in 1..<size - 1) if (l < size - 1 && (world)!!.getBlockState(pos.above(l + 1))
                                     .getMaterial() === Material.WATER
-                            ) (world)!!.setBlockState(pos.up(l), TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(2))
+                            ) (world)!!.setBlockAndUpdate(pos.above(l), TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(2))
 
-                            if ((world)!!.getBlockState(pos.up(size)).getMaterial() === Material.WATER) (world)!!.setBlockState(
-                                pos.up(size - 1),
+                            if ((world)!!.getBlockState(pos.above(size)).getMaterial() === Material.WATER) (world)!!.setBlockAndUpdate(
+                                pos.above(size - 1),
                                 TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(3)
                             )
 
@@ -382,13 +384,13 @@ open class WorldProviderTauCeti_F_WE : WE_WorldProviderSpace(), IProviderFog, IP
                     for (y: Int in terrainGenerator.worldSeaGenMaxY downTo 1) {
                         val pos: BlockPos = BlockPos(randPosX, y, randPosZ)
                         if (y > 35 && (world)!!.getBlockState(pos).getMaterial() === Material.WATER && (world)!!.getBlockState(
-                                pos.down()
-                            ) === TCBlocks.TAUCETI_F_BLOCKS.getDefaultState()
-                                .withProperty(
+                                pos.below()
+                            ) === TCBlocks.TAUCETI_F_BLOCKS.defaultBlockState()
+                                .setValue(
                                     TauCeti_F_Blocks.Companion.BASIC_TYPE,
                                     EnumBlockTauCetiF.STONE
                                 )
-                        ) (world)!!.setBlockState(pos, TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(6))
+                        ) (world)!!.setBlockAndUpdate(pos, TCBlocks.TAUCETI_F_WATERGRASS.getStateFromMeta(6))
                     }
                 }
             }

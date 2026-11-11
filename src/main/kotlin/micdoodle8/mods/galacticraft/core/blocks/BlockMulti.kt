@@ -1,5 +1,10 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import net.minecraft.network.chat.Component
+
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+
 import java.util.List
 
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
@@ -11,39 +16,39 @@ import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMars
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
-import net.minecraft.block.properties.PropertyEnum
-import net.minecraft.block.properties.PropertyInteger
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
+import net.minecraft.world.level.block.state.properties.IntegerProperty as PropertyInteger
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.particle.ParticleManager
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.Explosion
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+
+import net.minecraft.world.level.Explosion
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import java.util.LinkedList
 import java.util.Random
 
 open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.machine), IPartialSealableBlock,
-    ITileEntityProvider {
+    ITileEntityProvider, LegacyBlockMetadata {
     enum class EnumBlockMultiType(private val meta: Int, private val serializedName: String) : IStringSerializable {
         SOLAR_PANEL_0(0, "solar"),
         SPACE_STATION_BASE(1, "ss_base"),
@@ -59,7 +64,9 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -83,8 +90,8 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
     override fun getBoundingBox(state: IBlockState, source: IBlockAccess, pos: BlockPos): AxisAlignedBB {
         when (state.getValue(MULTI_TYPE) as EnumBlockMultiType) {
             EnumBlockMultiType.SOLAR_PANEL_0, EnumBlockMultiType.SOLAR_PANEL_1 -> {
-                val midPole: Boolean = source.getBlockState(pos.up()).getBlock() === this
-                val topPole: Boolean = source.getBlockState(pos.down()).getBlock() === this
+                val midPole: Boolean = source.getBlockState(pos.above()).getBlock() === this
+                val topPole: Boolean = source.getBlockState(pos.below()).getBlock() === this
                 if (topPole || midPole) return if (midPole) AABB_SOLAR_POLE else AABB_SOLAR_TOP
                 else return AABB_SOLAR
             }
@@ -170,7 +177,7 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
     }
 
     open fun makeFakeBlock(worldObj: World, pos: BlockPos, mainBlock: BlockPos?, meta: Int) {
-        worldObj.setBlockState(pos, (GCBlocks.fakeBlock)!!.getStateFromMeta(meta), if (meta == 5) 3 else 0)
+        worldObj.setBlock(pos, (GCBlocks.fakeBlock)!!.getStateFromMeta(meta), if (meta == 5) 3 else 0)
         worldObj.setTileEntity(pos, TileEntityMulti(mainBlock))
     }
 
@@ -181,9 +188,9 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
         type: EnumBlockMultiType
     ) {
         for (pos: BlockPos in posList) {
-            worldObj.setBlockState(
+            worldObj.setBlock(
                 pos,
-                this.getDefaultState().withProperty(MULTI_TYPE, type),
+                this.defaultBlockState().setValue(MULTI_TYPE, type),
                 if (type == EnumBlockMultiType.CRYO_CHAMBER) 3 else 0
             )
             worldObj.setTileEntity(pos, TileEntityMulti(mainBlock))
@@ -191,7 +198,7 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
     }
 
     override fun getBlockHardness(blockState: IBlockState, worldIn: World, pos: BlockPos): Float {
-        val tileEntity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileEntity: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tileEntity is TileEntityMulti) {
             val mainBlockPosition: BlockPos? = tileEntity.mainBlockPosition
@@ -221,7 +228,7 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val tileEntity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileEntity: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tileEntity is TileEntityMulti) {
             tileEntity.onBlockRemoval()
@@ -242,7 +249,7 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val tileEntity: TileEntityMulti? = (worldIn)!!.getTileEntity(pos) as TileEntityMulti?
+        val tileEntity: TileEntityMulti? = (worldIn)!!.getBlockEntity(pos) as TileEntityMulti?
         if (tileEntity == null) {
             return false
         }
@@ -260,7 +267,7 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val tileEntity: TileEntityMulti? = (world)!!.getTileEntity(pos) as TileEntityMulti?
+        val tileEntity: TileEntityMulti? = (world)!!.getBlockEntity(pos) as TileEntityMulti?
         return tileEntity!!.onBlockWrenched((world)!!, pos, (entityPlayer)!!, (hand)!!, (side)!!, hitX, hitY, hitZ)
     }
 
@@ -290,7 +297,7 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
         pos: BlockPos,
         player: EntityPlayer
     ): ItemStack {
-        val tileEntity: TileEntity? = world.getTileEntity(pos)
+        val tileEntity: TileEntity? = world.getBlockEntity(pos)
         if (tileEntity is TileEntityMulti) {
             val mainBlockPosition: BlockPos? = tileEntity.mainBlockPosition
 
@@ -308,7 +315,7 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
     }
 
     override fun getBedDirection(state: IBlockState, world: IBlockAccess, pos: BlockPos): EnumFacing {
-        val tileEntity: TileEntity? = world.getTileEntity(pos)
+        val tileEntity: TileEntity? = world.getBlockEntity(pos)
         if (tileEntity is TileEntityMulti) {
             val mainBlockPosition: BlockPos? = tileEntity.mainBlockPosition
 
@@ -322,7 +329,7 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
     }
 
     override fun isBed(state: IBlockState, world: IBlockAccess, pos: BlockPos, player: Entity?): Boolean {
-        val tileEntity: TileEntity? = world.getTileEntity(pos)
+        val tileEntity: TileEntity? = world.getBlockEntity(pos)
         if (tileEntity is TileEntityMulti) {
             val mainBlockPosition: BlockPos? = tileEntity.mainBlockPosition
 
@@ -336,7 +343,7 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
     }
 
     override fun setBedOccupied(world: IBlockAccess, pos: BlockPos, player: EntityPlayer, occupied: Boolean) {
-        val tileEntity: TileEntity? = world.getTileEntity(pos)
+        val tileEntity: TileEntity? = world.getBlockEntity(pos)
         val mainBlockPosition: BlockPos? = (tileEntity as TileEntityMulti).mainBlockPosition
 
         if (mainBlockPosition != null && mainBlockPosition != pos) {
@@ -357,7 +364,7 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
         }
         var tries: Int = 3
         val worldIn: World = world
-        val tileEntity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileEntity: TileEntity? = worldIn.getBlockEntity(pos)
         val mainBlockPosition: BlockPos = ((tileEntity as TileEntityMulti).mainBlockPosition)!!
         val cryoChamber: IBlockState = worldIn.getBlockState(mainBlockPosition)
         var enumfacing: EnumFacing = EnumFacing.NORTH
@@ -369,8 +376,8 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
         val k: Int = pos.getZ()
 
         for (l: Int in 0..1) {
-            val i1: Int = i - enumfacing.getXOffset() * l - 1
-            val j1: Int = k - enumfacing.getZOffset() * l - 1
+            val i1: Int = i - enumfacing.getStepX() * l - 1
+            val j1: Int = k - enumfacing.getStepZ() * l - 1
             val k1: Int = i1 + 2
             val l1: Int = j1 + 2
 
@@ -398,7 +405,7 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
         target: RayTraceResult,
         manager: ParticleManager
     ): Boolean {
-        val tileEntity: TileEntity? = worldObj.getTileEntity(target.getBlockPos())
+        val tileEntity: TileEntity? = worldObj.getBlockEntity(target.getBlockPos())
 
         if (tileEntity is TileEntityMulti) {
             val mainBlockPosition: BlockPos? = tileEntity.mainBlockPosition
@@ -412,7 +419,7 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(
+        return this.defaultBlockState().setValue(
             MULTI_TYPE,
             (EnumBlockMultiType.Companion.byMetadata(meta))!!
         )
@@ -432,8 +439,8 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
 
         when (type) {
             EnumBlockMultiType.CRYO_CHAMBER -> {
-                val stateAbove: IBlockState = worldIn.getBlockState(pos.up())
-                val tile: TileEntityMulti? = worldIn.getTileEntity(pos) as TileEntityMulti?
+                val stateAbove: IBlockState = worldIn.getBlockState(pos.above())
+                val tile: TileEntityMulti? = worldIn.getBlockEntity(pos) as TileEntityMulti?
                 if (stateAbove.getBlock() === this && (stateAbove.getValue(MULTI_TYPE)) == EnumBlockMultiType.CRYO_CHAMBER) {
                     renderType = 0
                 } else {
@@ -454,7 +461,7 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
             else -> {}
         }
 
-        return state.withProperty(RENDER_TYPE, renderType)
+        return state.setValue(RENDER_TYPE, renderType)
     }
 
     companion object {
@@ -479,14 +486,14 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
 
         @JvmStatic
         private fun hasRoomForPlayer(worldIn: World, pos: BlockPos): Boolean {
-            return worldIn.getBlockState(pos.down())
-                .isSideSolid(worldIn, pos.down(), EnumFacing.UP) && !worldIn.getBlockState(pos).getMaterial()
-                .isSolid() && !worldIn.getBlockState(pos.up()).getMaterial().isSolid()
+            return worldIn.getBlockState(pos.below())
+                .isSideSolid(worldIn, pos.below(), EnumFacing.UP) && !worldIn.getBlockState(pos).getMaterial()
+                .isSolid() && !worldIn.getBlockState(pos.above()).getMaterial().isSolid()
         }
 
         @JvmStatic
         fun onPlacement(worldIn: World, pos: BlockPos, placer: EntityLivingBase?, callingBlock: Block) {
-            val tile: TileEntity? = worldIn.getTileEntity(pos)
+            val tile: TileEntity? = worldIn.getBlockEntity(pos)
 
             if (tile is IMultiBlock) {
                 var validSpot: Boolean = true
@@ -501,11 +508,11 @@ open class BlockMulti constructor(assetName: String?) : BlockAdvanced(GCBlocks.m
                 }
 
                 if (!validSpot) {
-                    worldIn.setBlockToAir(pos)
+                    worldIn.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
 
-                    if (!worldIn.isRemote && placer is EntityPlayerMP) {
+                    if (!worldIn.isClientSide && placer is EntityPlayerMP) {
                         val player: EntityPlayerMP = placer
-                        player.sendMessage(TextComponentString(EnumColor.RED.toString() + GCCoreUtil.translate("gui.warning.noroom")))
+                        player.sendSystemMessage(Component.literal(EnumColor.RED.toString() + GCCoreUtil.translate("gui.warning.noroom")))
                         if (!player.capabilities.isCreativeMode) {
                             val nasaWorkbench: ItemStack = ItemStack(callingBlock, 1, 0)
                             val entityitem: EntityItem? = player.dropItem(nasaWorkbench, false)

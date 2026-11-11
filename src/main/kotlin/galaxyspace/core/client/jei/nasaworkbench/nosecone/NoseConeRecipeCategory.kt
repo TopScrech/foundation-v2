@@ -13,7 +13,7 @@ import mezz.jei.api.recipe.IRecipeCategory
 import mezz.jei.api.recipe.IRecipeWrapper
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class NoseConeRecipeCategory constructor(guiHelper: IGuiHelper) : IRecipeCategory<IRecipeWrapper> {
     @Nonnull
@@ -96,6 +96,6 @@ open class NoseConeRecipeCategory constructor(guiHelper: IGuiHelper) : IRecipeCa
 
     companion object {
         private val rocketGuiTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/schematics/schematic_clear.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/schematics/schematic_clear.png")
     }
 }

@@ -9,14 +9,14 @@ import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.EntityEquipmentSlot
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
 import net.minecraft.item.EnumRarity
 import net.minecraft.item.ItemArmor
-import net.minecraft.item.ItemStack
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemSensorGlasses constructor(assetName: String?) :
     ItemArmor(GCItems.ARMOR_SENSOR_GLASSES, 0, EntityEquipmentSlot.HEAD), ISortableItem, ISensorGlassesArmor {
@@ -37,12 +37,12 @@ open class ItemSensorGlasses constructor(assetName: String?) :
         return Constants.TEXTURE_PREFIX + "textures/model/armor/sensor_1.png"
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun renderHelmetOverlay(
         stack: ItemStack,
         player: EntityPlayer,

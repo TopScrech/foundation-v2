@@ -12,19 +12,19 @@ import micdoodle8.mods.galacticraft.core.blocks.BlockMulti
 import micdoodle8.mods.galacticraft.core.tile.IMultiBlock
 import micdoodle8.mods.galacticraft.core.tile.TileEntityMulti
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityLaunchController
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.HashSet
 
@@ -112,19 +112,19 @@ open class TileEntityAdvLandingPad constructor() : TileEntityMulti(null), IMulti
         this.getPositions(placedPosition, (positions as MutableList<BlockPos?>?))
 
         for (pos: BlockPos in positions) {
-            if (pos.getX() == (placedPosition)!!.getX() + 2 || pos.getX() == (placedPosition)!!.getX() - 2 || pos.getZ() == (placedPosition)!!.getZ() + 2 || pos.getZ() == (placedPosition)!!.getZ() - 2) (world)!!.setBlockState(
+            if (pos.getX() == (placedPosition)!!.getX() + 2 || pos.getX() == (placedPosition)!!.getX() - 2 || pos.getZ() == (placedPosition)!!.getZ() + 2 || pos.getZ() == (placedPosition)!!.getZ() - 2) (world)!!.setBlock(
                 pos,
-                GSBlocks.FAKE_BLOCK.getDefaultState()
-                    .withProperty(
+                GSBlocks.FAKE_BLOCK.defaultBlockState()
+                    .setValue(
                         GSBlockMulti.MULTI_TYPE,
                         GSBlockMulti.EnumBlockMultiType.ADVANCED_ROCKET_PAD_1
                     ),
                 0
             )
-            else (world)!!.setBlockState(
+            else (world)!!.setBlock(
                 pos,
-                GSBlocks.FAKE_BLOCK.getDefaultState()
-                    .withProperty(
+                GSBlocks.FAKE_BLOCK.defaultBlockState()
+                    .setValue(
                         GSBlockMulti.MULTI_TYPE,
                         this.getGSMultiType()
                     ),
@@ -217,7 +217,7 @@ open class TileEntityAdvLandingPad constructor() : TileEntityMulti(null), IMulti
 
         if (!this.world.isBlockLoaded(testPos, false)) return
 
-        val tile: TileEntity? = this.world.getTileEntity(testPos)
+        val tile: TileEntity? = this.world.getBlockEntity(testPos)
 
         if (tile is ILandingPadAttachable
             && (tile as ILandingPadAttachable).canAttachToLandingPad(this.world, this.getPos())
@@ -247,7 +247,7 @@ open class TileEntityAdvLandingPad constructor() : TileEntityMulti(null), IMulti
         return ICargoEntity.RemovalResult(ICargoEntity.EnumCargoLoadingState.NOTARGET, ItemStack.EMPTY)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         return AxisAlignedBB(
             (getPos().getX() - 2).toDouble(),

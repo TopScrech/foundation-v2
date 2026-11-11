@@ -1,14 +1,16 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.world.gen.base
 
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.planets.asteroids.blocks.AsteroidBlocks
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import java.util.Random
 
 open class BaseHangar : SizedPiece {
@@ -28,7 +30,7 @@ open class BaseHangar : SizedPiece {
             this.setCoordBaseMode(direction.getOpposite()) //Maybe a bug in vanilla here?
         } else this.setCoordBaseMode(direction)
         val yPos: Int = configuration.getYPosition()
-        this.boundingBox = StructureBoundingBox(
+        this.boundingBox = BoundingBox(
             blockPosX,
             yPos,
             blockPosZ,
@@ -42,20 +44,20 @@ open class BaseHangar : SizedPiece {
     override fun addComponentParts(
         worldIn: World,
         randomIn: Random,
-        structureBoundingBoxIn: StructureBoundingBox
+        structureBoundingBoxIn: BoundingBox
     ): Boolean {
-        val blockAir: IBlockState = Blocks.AIR.getDefaultState()
+        val blockAir: IBlockState = Blocks.AIR.defaultBlockState()
         val blockPlain: IBlockState = (GCBlocks.basicBlock)!!.getStateFromMeta(4)
         val blockPattern: IBlockState = (GCBlocks.basicBlock)!!.getStateFromMeta(3)
-        val blockGrid: IBlockState = (AsteroidBlocks.blockWalkway)!!.getDefaultState()
+        val blockGrid: IBlockState = (AsteroidBlocks.blockWalkway)!!.defaultBlockState()
         val blockSlab: IBlockState = (GCBlocks.slabGCHalf)!!.getStateFromMeta(1)
         val upsideSlab: IBlockState = (GCBlocks.slabGCHalf)!!.getStateFromMeta(9)
         val blockWall: IBlockState = (GCBlocks.wallGC)!!.getStateFromMeta(1)
         val decoWall: IBlockState = (GCBlocks.wallGC)!!.getStateFromMeta(0)
         val moonWall: IBlockState = (GCBlocks.wallGC)!!.getStateFromMeta(2)
-        val blockBars: IBlockState = Blocks.IRON_BARS.getDefaultState()
+        val blockBars: IBlockState = Blocks.IRON_BARS.defaultBlockState()
         val blockDesh: IBlockState = (MarsBlocks.marsBlock)!!.getStateFromMeta(8)
-        val blockRedstone: IBlockState = (GCBlocks.concealedRedstone)!!.getDefaultState()
+        val blockRedstone: IBlockState = (GCBlocks.concealedRedstone)!!.defaultBlockState()
         val blockStair: Block = (GCBlocks.tinStairs2)!!
         val arcLamp: Block = (GCBlocks.brightLamp)!!
         var stairmeta: Int = 1
@@ -561,7 +563,7 @@ open class BaseHangar : SizedPiece {
         blockWall: IBlockState,
         decoWall: IBlockState,
         zz: Int,
-        structureBoundingBoxIn: StructureBoundingBox
+        structureBoundingBoxIn: BoundingBox
     ) {
         this.setBlockState(worldIn, blockWall, 1, 0, zz, structureBoundingBoxIn)
         this.setBlockState(worldIn, decoWall, 2, 0, zz, structureBoundingBoxIn)
@@ -585,7 +587,7 @@ open class BaseHangar : SizedPiece {
         x: Int,
         y: Int,
         z: Int,
-        boundingBoxIn: StructureBoundingBox
+        boundingBoxIn: BoundingBox
     ) {
         for (zz: Int in z downTo rand.nextInt(4 * (4 - solid))) this.setBlockState(
             worldIn,
@@ -606,7 +608,7 @@ open class BaseHangar : SizedPiece {
         x: Int,
         y: Int,
         z: Int,
-        boundingBoxIn: StructureBoundingBox
+        boundingBoxIn: BoundingBox
     ) {
         for (zz: Int in z downTo rand.nextInt(4 * (4 - solid))) this.setBlockState(
             worldIn,
@@ -627,7 +629,7 @@ open class BaseHangar : SizedPiece {
         x: Int,
         y: Int,
         z: Int,
-        boundingBoxIn: StructureBoundingBox
+        boundingBoxIn: BoundingBox
     ) {
         for (zz: Int in z downTo rand.nextInt(4 * (4 - solid))) this.setBlockState(
             worldIn,
@@ -648,7 +650,7 @@ open class BaseHangar : SizedPiece {
         x: Int,
         y: Int,
         z: Int,
-        boundingBoxIn: StructureBoundingBox
+        boundingBoxIn: BoundingBox
     ) {
         for (zz: Int in z downTo rand.nextInt(4 * (4 - solid))) this.setBlockState(
             worldIn,

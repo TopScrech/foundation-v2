@@ -1,26 +1,28 @@
 package galaxyspace.core.prefab.items
 
+import net.minecraft.network.chat.Component
+
 import galaxyspace.core.util.GSCreativeTabs
 import galaxyspace.core.util.GSUtils
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.item.ItemPickaxe
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
+
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemPickaxeGS constructor(assetName: String, material: ToolMaterial, drillMode: Boolean) :
     ItemPickaxe(material) {
@@ -46,7 +48,7 @@ open class ItemPickaxeGS constructor(assetName: String, material: ToolMaterial, 
         return GSCreativeTabs.GSArmorTab
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(stack: ItemStack, worldIn: World?, list: MutableList<String?>, flagIn: ITooltipFlag) {
         if (this.drillMode) if (stack.getTagCompound() != null && stack.getTagCompound()!!
                 .getBoolean("drill_mode")
@@ -55,29 +57,29 @@ open class ItemPickaxeGS constructor(assetName: String, material: ToolMaterial, 
     }
 
     override fun onItemRightClick(world: World, player: EntityPlayer, handIn: EnumHand): ActionResult<ItemStack?> {
-        val stack: ItemStack = player.getHeldItem(handIn)
+        val stack: ItemStack = player.getItemInHand(handIn)
 
         if (drillMode && !stack.hasTagCompound()) stack.setTagCompound(NBTTagCompound())
 
-        if (!world.isRemote && drillMode) {
+        if (!world.isClientSide && drillMode) {
             if (!stack.getTagCompound()!!.getBoolean("drill_mode")) {
-                stack.getTagCompound()!!.setBoolean("drill_mode", true)
-                player.sendMessage(
-                    TextComponentString(
+                stack.getTagCompound()!!.putBoolean("drill_mode", true)
+                player.sendSystemMessage(
+                    Component.literal(
                         EnumColor.DARK_GREEN.toString() + GCCoreUtil.translateWithFormat(
                             "gui.pickaxe.drillmodeon"
                         )
                     )
                 )
             } else {
-                stack.getTagCompound()!!.setBoolean("drill_mode", false)
-                player.sendMessage(TextComponentString(EnumColor.DARK_RED.toString() + GCCoreUtil.translateWithFormat("gui.pickaxe.drillmodeoff")))
+                stack.getTagCompound()!!.putBoolean("drill_mode", false)
+                player.sendSystemMessage(Component.literal(EnumColor.DARK_RED.toString() + GCCoreUtil.translateWithFormat("gui.pickaxe.drillmodeoff")))
             }
 
-            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getHeldItem(handIn))
+            return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, player.getItemInHand(handIn))
         }
 
-        return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getHeldItem(handIn))
+        return ActionResult<ItemStack?>(EnumActionResult.PASS, player.getItemInHand(handIn))
     }
 
     override fun onBlockDestroyed(
@@ -89,7 +91,7 @@ open class ItemPickaxeGS constructor(assetName: String, material: ToolMaterial, 
     ): Boolean {
         val ret: Boolean = super.onBlockDestroyed(stack, worldIn, state, pos, entityLiving)
 
-        if (entityLiving !is EntityPlayer || worldIn.isRemote) {
+        if (entityLiving !is EntityPlayer || worldIn.isClientSide) {
             return ret
         }
 

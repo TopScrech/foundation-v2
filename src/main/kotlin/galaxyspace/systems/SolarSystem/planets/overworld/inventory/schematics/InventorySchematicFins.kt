@@ -1,15 +1,6 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.inventory.schematics
 
-import galaxyspace.systems.SolarSystem.planets.overworld.inventory.schematics.InventorySchematicFins
 import micdoodle8.mods.galacticraft.core.inventory.InventorySchematic
-import net.minecraft.inventory.Container
-import net.minecraft.item.ItemStack
-import net.minecraft.util.NonNullList
+import net.minecraft.world.inventory.AbstractContainerMenu
 
-open class InventorySchematicFins constructor(container: Container?) : InventorySchematic(container) {
-    private val size = 30
-
-    init {
-        this.stacks = NonNullList.withSize<ItemStack>(size, ItemStack.EMPTY)
-    }
-}
+open class InventorySchematicFins(menu: AbstractContainerMenu?) : InventorySchematic(menu, 30)

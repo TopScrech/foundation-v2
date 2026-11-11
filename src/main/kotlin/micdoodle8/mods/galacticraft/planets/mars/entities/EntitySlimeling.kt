@@ -1,5 +1,11 @@
 package micdoodle8.mods.galacticraft.planets.mars.entities
 
+import net.minecraft.network.chat.Component
+
+import foundation.item.legacyItemValue
+
+import foundation.persistence.listOfType
+
 import java.util.UUID
 
 import com.google.common.base.Predicate
@@ -14,9 +20,9 @@ import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import micdoodle8.mods.galacticraft.planets.mars.MarsModuleClient
 import micdoodle8.mods.galacticraft.planets.mars.inventory.InventorySlimeling
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityAgeable
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.*
 import net.minecraft.entity.monster.EntityCreeper
@@ -24,25 +30,25 @@ import net.minecraft.entity.monster.EntityGhast
 import net.minecraft.entity.passive.EntityAnimal
 import net.minecraft.entity.passive.EntityHorse
 import net.minecraft.entity.passive.EntityTameable
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Items
-import net.minecraft.init.MobEffects
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.Items
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
-import net.minecraft.util.DamageSource
+import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.util.EntityDamageSource
-import net.minecraft.util.EnumHand
-import net.minecraft.util.SoundEvent
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.util.Mth as MathHelper
+
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.ForgeHooks
 import java.util.*
 import kotlin.math.max
@@ -204,30 +210,30 @@ open class EntitySlimeling constructor(par1World: World) : EntityTameable(par1Wo
 
     override fun writeEntityToNBT(nbt: NBTTagCompound) {
         super.writeEntityToNBT(nbt)
-        nbt.setTag("SlimelingInventory", this.slimelingInventory.writeToNBT(NBTTagList()))
-        nbt.setFloat("SlimeRed", this.colorRed)
-        nbt.setFloat("SlimeGreen", this.colorGreen)
-        nbt.setFloat("SlimeBlue", this.colorBlue)
-        nbt.setInteger("SlimelingAge", this.age)
-        nbt.setString("SlimelingName", this.slimelingName)
-        nbt.setInteger("FavFoodID", this.favFoodID)
-        nbt.setFloat("SlimelingDamage", this.attackDamage)
-        nbt.setInteger("SlimelingKills", this.kills)
-        nbt.setString("OwnerUsername", this.getOwnerUsername())
+        nbt.put("SlimelingInventory", this.slimelingInventory.writeToNBT(NBTTagList()))
+        nbt.putFloat("SlimeRed", this.colorRed)
+        nbt.putFloat("SlimeGreen", this.colorGreen)
+        nbt.putFloat("SlimeBlue", this.colorBlue)
+        nbt.putInt("SlimelingAge", this.age)
+        nbt.putString("SlimelingName", this.slimelingName)
+        nbt.putInt("FavFoodID", this.favFoodID)
+        nbt.putFloat("SlimelingDamage", this.attackDamage)
+        nbt.putInt("SlimelingKills", this.kills)
+        nbt.putString("OwnerUsername", this.getOwnerUsername())
     }
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
         super.readEntityFromNBT(nbt)
-        this.slimelingInventory.readFromNBT(nbt.getTagList("SlimelingInventory", 10))
-        this.colorRed = nbt.getFloat("SlimeRed")
-        this.colorGreen = nbt.getFloat("SlimeGreen")
-        this.colorBlue = nbt.getFloat("SlimeBlue")
-        this.age = nbt.getInteger("SlimelingAge")
-        this.slimelingName = nbt.getString("SlimelingName")
-        this.favFoodID = nbt.getInteger("FavFoodID")
-        this.attackDamage = nbt.getFloat("SlimelingDamage")
-        this.kills = nbt.getInteger("SlimelingKills")
-        this.setOwnerUsername(nbt.getString("OwnerUsername"))
+        this.slimelingInventory.readFromNBT(nbt.listOfType("SlimelingInventory", 10))
+        this.colorRed = nbt.getFloatOr("SlimeRed", 0f)
+        this.colorGreen = nbt.getFloatOr("SlimeGreen", 0f)
+        this.colorBlue = nbt.getFloatOr("SlimeBlue", 0f)
+        this.age = nbt.getIntOr("SlimelingAge", 0)
+        this.slimelingName = nbt.getStringOr("SlimelingName", "")
+        this.favFoodID = nbt.getIntOr("FavFoodID", 0)
+        this.attackDamage = nbt.getFloatOr("SlimelingDamage", 0f)
+        this.kills = nbt.getIntOr("SlimelingKills", 0)
+        this.setOwnerUsername(nbt.getStringOr("OwnerUsername", ""))
         this.setColorRed(this.colorRed)
         this.setColorGreen(this.colorGreen)
         this.setColorBlue(this.colorBlue)
@@ -332,7 +338,7 @@ open class EntitySlimeling constructor(par1World: World) : EntityTameable(par1Wo
     }
 
     override fun processInteract(player: EntityPlayer, hand: EnumHand): Boolean {
-        val itemstack: ItemStack = player.inventory.getCurrentItem()
+        val itemstack: ItemStack = player.inventory.getSelectedItem()
 
         if (this.isTamed()) {
             if (!itemstack.isEmpty()) {
@@ -341,7 +347,7 @@ open class EntitySlimeling constructor(par1World: World) : EntityTameable(par1Wo
                         itemstack.shrink(1)
 
                         if (itemstack.isEmpty()) {
-                            player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY)
+                            player.inventory.setItem(player.inventory.selectedSlot, ItemStack.EMPTY)
                         }
 
                         if (this.world.isRemote) {
@@ -355,7 +361,7 @@ open class EntitySlimeling constructor(par1World: World) : EntityTameable(par1Wo
                         if (player is EntityPlayerMP) {
                             val stats: GCPlayerStats = (GCPlayerStats.get(player))!!
                             if (stats.getChatCooldown() == 0) {
-                                player.sendMessage(TextComponentString(GCCoreUtil.translate("gui.slimeling.chat.wrong_player")))
+                                player.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.slimeling.chat.wrong_player")))
                                 stats.setChatCooldown(100)
                             }
                         }
@@ -378,7 +384,7 @@ open class EntitySlimeling constructor(par1World: World) : EntityTameable(par1Wo
             }
 
             if (itemstack.isEmpty()) {
-                player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY)
+                player.inventory.setItem(player.inventory.selectedSlot, ItemStack.EMPTY)
             }
 
             if (!this.world.isRemote) {
@@ -388,7 +394,7 @@ open class EntitySlimeling constructor(par1World: World) : EntityTameable(par1Wo
                     this.setAttackTarget(null)
                     this.setSittingAI(true)
                     this.setHealth(20.0f)
-                    this.setOwnerId(player.getUniqueID())
+                    this.setOwnerId(player.getUUID())
                     this.setOwnerUsername(player.getName())
                     this.playTameEffect(true)
                     this.world.setEntityState(this, 7.toByte())
@@ -517,8 +523,8 @@ open class EntitySlimeling constructor(par1World: World) : EntityTameable(par1Wo
         this.dataManager.set<Int>(AGE, age)
     }
 
-    override fun getName(): String {
-        return this.dataManager.get<String>(NAME)
+    override fun getName(): net.minecraft.network.chat.Component {
+        return Component.literal(this.dataManager.get<String>(NAME))
     }
 
     open fun setName(name: String) {
@@ -565,9 +571,9 @@ open class EntitySlimeling constructor(par1World: World) : EntityTameable(par1Wo
         super.onDeath(p_70645_1_)
 
         if (!this.world.isRemote) {
-            val bag: ItemStack = this.slimelingInventory.getStackInSlot(1)
-            if (bag != null && bag.getItem() === MarsItems.marsItemBasic && bag.getItemDamage() == 4) {
-                this.slimelingInventory.decrStackSize(1, 64)
+            val bag: ItemStack = this.slimelingInventory.getItem(1)
+            if (bag != null && bag.getItem() === MarsItems.marsItemBasic && bag.legacyItemValue == 4) {
+                this.slimelingInventory.removeItem(1, 64)
                 this.entityDropItem(bag, 0.5f)
             }
         }
@@ -615,8 +621,8 @@ open class EntitySlimeling constructor(par1World: World) : EntityTameable(par1Wo
             this.motionY = 0.28
         }
 
-        if (this.isPotionActive(MobEffects.JUMP_BOOST)) {
-            this.motionY += ((this.getActivePotionEffect(MobEffects.JUMP_BOOST)!!.getAmplifier() + 1) * 0.1f).toDouble()
+        if (this.hasEffect(MobEffects.JUMP_BOOST)) {
+            this.motionY += ((this.getEffect(MobEffects.JUMP_BOOST)!!.getAmplifier() + 1) * 0.1f).toDouble()
         }
 
         if (this.isSprinting()) {

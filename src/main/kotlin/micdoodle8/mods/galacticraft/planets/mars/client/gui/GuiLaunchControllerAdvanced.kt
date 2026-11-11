@@ -22,9 +22,9 @@ import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityLaunchController
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.gui.GuiLabel
 import net.minecraft.client.renderer.RenderHelper
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL12
@@ -330,6 +330,6 @@ open class GuiLaunchControllerAdvanced constructor(
 
     companion object {
         private val launchControllerGui =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/launch_controller.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/launch_controller.png")
     }
 }

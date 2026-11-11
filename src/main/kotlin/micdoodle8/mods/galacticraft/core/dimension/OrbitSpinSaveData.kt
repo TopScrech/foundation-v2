@@ -1,64 +1,57 @@
 package micdoodle8.mods.galacticraft.core.dimension
 
+import com.mojang.serialization.Codec
+import foundation.persistence.FoundationSavedData
 import micdoodle8.mods.galacticraft.core.Constants
-import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.world.World
-import net.minecraft.world.storage.WorldSavedData
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.resources.ResourceKey
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.saveddata.SavedData
 
-open class OrbitSpinSaveData constructor(s: String?) : WorldSavedData(saveDataID) {
-    @JvmField
-    var datacompound: NBTTagCompound?
-    private var alldata: NBTTagCompound? = null
-    private var dim = 0
+/** Shared station records, with a stable entry for each dimension */
+open class OrbitSpinSaveData(@Suppress("UNUSED_PARAMETER") name: String?) : SavedData() {
+    private var dimensions = CompoundTag()
 
-    init {
-        this.datacompound = NBTTagCompound()
+    open fun readFromNBT(tag: CompoundTag) {
+        dimensions = tag.copy()
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
-        this.alldata = nbt
-        //world.loadData calls this but can't extract from alldata until we know the dimension ID
+    open fun writeToNBT(tag: CompoundTag): CompoundTag {
+        tag.merge(dimensions)
+        return tag
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
-        if (this.dim != 0) {
-            nbt.setTag("" + this.dim, this.datacompound)
-        }
+    fun forDimension(key: ResourceKey<Level>, legacyId: Int? = null, initialize: (CompoundTag) -> Unit = {}): Entry {
+        val name = key.identifier().toString()
+        val existing = dimensions.getCompound(name).orElse(null)
+        if (existing != null) return Entry(this, existing)
+        check(!dimensions.contains(name)) { "Invalid station spin record for $name" }
+        val legacy = legacyId?.let { dimensions.getCompound(it.toString()).orElse(null) }
+        val data = legacy?.copy() ?: CompoundTag().also(initialize)
+        dimensions.put(name, data)
+        setDirty()
+        return Entry(this, data)
+    }
 
-        return nbt
+    class Entry internal constructor(private val owner: OrbitSpinSaveData, @JvmField val datacompound: CompoundTag) {
+        fun setDirty() = owner.setDirty()
     }
 
     companion object {
         @JvmField
         val saveDataID: String = Constants.GCDATAFOLDER + "GCSpinData"
 
+        @JvmField
+        val CODEC: Codec<OrbitSpinSaveData> = CompoundTag.CODEC.xmap(
+            { tag -> OrbitSpinSaveData("").also { it.readFromNBT(tag) } },
+            { data -> data.writeToNBT(CompoundTag()) }
+        )
+
         @JvmStatic
-        fun initWorldData(world: World): OrbitSpinSaveData {
-            var worldData: OrbitSpinSaveData? =
-                world.loadData(OrbitSpinSaveData::class.java, saveDataID) as OrbitSpinSaveData?
-
-            if (worldData == null) {
-                worldData = OrbitSpinSaveData("")
-                world.setData(saveDataID, worldData)
-                if (world.provider is WorldProviderSpaceStation) {
-                    worldData.dim = GCCoreUtil.getDimensionID(world)
-                    (world.provider as WorldProviderSpaceStation).getSpinManager().writeToNBT((worldData.datacompound)!!)
-                }
-                worldData.markDirty()
-            } else if (world.provider is WorldProviderSpaceStation) {
-                worldData.dim = GCCoreUtil.getDimensionID(world)
-
-                worldData.datacompound = null
-                if (worldData.alldata != null) {
-                    worldData.datacompound = worldData.alldata!!.getCompoundTag("" + worldData.dim)
-                }
-                if (worldData.datacompound == null) {
-                    worldData.datacompound = NBTTagCompound()
-                }
-            }
-
-            return worldData
+        @JvmOverloads
+        fun initWorldData(world: Level, legacyId: Int? = null, initialize: (CompoundTag) -> Unit = {}): Entry {
+            val shared = FoundationSavedData.getShared(world, saveDataID, { OrbitSpinSaveData("") }, CODEC)
+            return shared.forDimension(world.dimension(), legacyId, initialize)
         }
     }
 }

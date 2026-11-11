@@ -1,5 +1,11 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import foundation.item.legacyItemValue
+
+import foundation.item.FoundationItemVariants
+
+import foundation.persistence.listOfType
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import micdoodle8.mods.galacticraft.api.GalacticraftRegistry
@@ -17,22 +23,22 @@ import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.WorldlyContainer as ISidedInventory
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.CraftingManager
 import net.minecraft.item.crafting.IRecipe
-import net.minecraft.item.crafting.Ingredient
+import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.item.crafting.ShapedRecipes
 import net.minecraft.item.crafting.ShapelessRecipes
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.SoundCategory
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraftforge.fml.LogicalSide as Side
 import net.minecraftforge.oredict.OreDictionary
 import net.minecraftforge.oredict.ShapedOreRecipe
 import net.minecraftforge.oredict.ShapelessOreRecipe
@@ -40,7 +46,7 @@ import java.util.LinkedList
 
 open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInventoryDefaults, ISidedInventory,
     IMachineSides {
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent? = super<TileBaseElectricBlock>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = super<TileBaseElectricBlock>.getDisplayName()
 
     @JvmField
     var processTimeRequired: Int = PROCESS_TIME_REQUIRED_BASE
@@ -89,7 +95,7 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
             }
 
             if (updateInv) {
-                this.markDirty()
+                this.setChanged()
             }
         }
 
@@ -102,7 +108,7 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
 
     open fun deconstruct() {
         val ingredients: MutableList<ItemStack> = LinkedList<ItemStack>()
-        ingredients.add(ItemStack(this.stacks.get(1).getItem(), 1, this.stacks.get(1).getItemDamage()))
+        ingredients.add(ItemStack(this.stacks.get(1).getItem(), 1, this.stacks.get(1).legacyItemValue))
         this.recursiveCount = 0
         var salvaged: MutableList<ItemStack>? = this.getSalvageable(ingredients)
         salvaged = this.squashList(salvaged)
@@ -112,7 +118,7 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
                 this.addToOutputMatrix(output)
             }
         }
-        this.decrStackSize(1, 1)
+        this.removeItem(1, 1)
     }
 
     private fun getSalvageable(ingredients: MutableList<ItemStack>?): MutableList<ItemStack>? {
@@ -228,7 +234,7 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
             }
         } else if (input is ItemStack) {
             val stack: ItemStack = input
-            if (stack.getMetadata() == OreDictionary.WILDCARD_VALUE) {
+            if (stack.legacyItemValue == OreDictionary.WILDCARD_VALUE) {
                 return ItemStack(stack.getItem(), stack.getCount(), 0)
             } else {
                 return stack.copy()
@@ -277,25 +283,25 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
                 continue
             }
             val size: Int = this.stacks.get(i).getCount()
-            if (size + stack.getCount() < this.getInventoryStackLimit()) {
+            if (size + stack.getCount() < this.getMaxStackSize()) {
                 this.stacks.get(i).grow(stack.getCount())
                 return
             }
-            this.stacks.get(i).setCount(this.getInventoryStackLimit())
-            stack.shrink(this.getInventoryStackLimit() - size)
+            this.stacks.get(i).setCount(this.getMaxStackSize())
+            stack.shrink(this.getMaxStackSize() - size)
         }
         GCCoreUtil.spawnItem(this.world, this.getPos(), stack)
     }
 
     override fun readFromNBT(par1NBTTagCompound: NBTTagCompound) {
         super.readFromNBT(par1NBTTagCompound)
-        this.processTicks = par1NBTTagCompound.getInteger("smeltingTicks")
-        val var2: NBTTagList = par1NBTTagCompound.getTagList("Items", 10)
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.processTicks = par1NBTTagCompound.getIntOr("smeltingTicks", 0)
+        val var2: NBTTagList = par1NBTTagCompound.listOfType("Items", 10)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
 
-        for (i: Int in 0..<var2.tagCount()) {
-            val nbttagcompound: NBTTagCompound = var2.getCompoundTagAt(i)
-            val j: Int = nbttagcompound.getByte("Slot").toInt() and 255
+        for (i: Int in 0..<var2.size) {
+            val nbttagcompound: NBTTagCompound = var2.getCompoundOrEmpty(i)
+            val j: Int = nbttagcompound.getByteOr("Slot", 0).toInt() and 255
 
             if (j >= 0 && j < this.stacks.size) {
                 this.stacks.set(j, ItemStack(nbttagcompound))
@@ -307,7 +313,7 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setInteger("smeltingTicks", this.processTicks)
+        nbt.putInt("smeltingTicks", this.processTicks)
         val var2: NBTTagList = NBTTagList()
         var var3: Int
 
@@ -315,34 +321,34 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
         while (var3 < this.stacks.size) {
             if (!this.stacks.get(var3).isEmpty()) {
                 val var4: NBTTagCompound = NBTTagCompound()
-                var4.setByte("Slot", var3.toByte())
+                var4.putByte("Slot", var3.toByte())
                 this.stacks.get(var3).writeToNBT(var4)
-                var2.appendTag(var4)
+                var2.add(var4)
             }
             ++var3
         }
-        nbt.setTag("Items", var2)
+        nbt.put("Items", var2)
 
         this.addMachineSidesToNBT(nbt) //Needed by IMachineSides
         return nbt
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.stacks.size
     }
 
-    override fun getStackInSlot(par1: Int): ItemStack {
+    override fun getItem(par1: Int): ItemStack {
         return this.stacks.get(par1)
     }
 
-    override fun decrStackSize(par1: Int, par2: Int): ItemStack {
+    override fun removeItem(par1: Int, par2: Int): ItemStack {
         if (!this.stacks.get(par1).isEmpty()) {
             val var3: ItemStack
 
             if (this.stacks.get(par1).getCount() <= par2) {
                 var3 = this.stacks.get(par1)
                 this.stacks.set(par1, ItemStack.EMPTY)
-                this.markDirty()
+                this.setChanged()
                 return var3
             } else {
                 var3 = this.stacks.get(par1).splitStack(par2)
@@ -351,7 +357,7 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
                     this.stacks.set(par1, ItemStack.EMPTY)
                 }
 
-                this.markDirty()
+                this.setChanged()
                 return var3
             }
         } else {
@@ -359,7 +365,7 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
         }
     }
 
-    override fun removeStackFromSlot(par1: Int): ItemStack {
+    override fun removeItemNoUpdate(par1: Int): ItemStack {
         if (par1 >= this.stacks.size) {
             return ItemStack.EMPTY
         }
@@ -367,34 +373,34 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
         if (!this.stacks.get(par1).isEmpty()) {
             val var2: ItemStack = this.stacks.get(par1)
             this.stacks.set(par1, ItemStack.EMPTY)
-            this.markDirty()
+            this.setChanged()
             return var2
         } else {
             return ItemStack.EMPTY
         }
     }
 
-    override fun setInventorySlotContents(par1: Int, stack: ItemStack) {
+    override fun setItem(par1: Int, stack: ItemStack) {
         if (par1 < this.stacks.size) {
             this.stacks.set(par1, stack)
 
-            if (!stack.isEmpty() && stack.getCount() > this.getInventoryStackLimit()) {
-                stack.setCount(this.getInventoryStackLimit())
+            if (!stack.isEmpty() && stack.getCount() > this.getMaxStackSize()) {
+                stack.setCount(this.getMaxStackSize())
             }
         }
-        this.markDirty()
+        this.setChanged()
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("tile.machine2.10.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("tile.machine2.10.name")
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun isUsableByPlayer(entityplayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && entityplayer.getDistanceSq(
+    override fun stillValid(entityplayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && entityplayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
     }
@@ -414,7 +420,7 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
     //    {
     //        return true;
     //    }
-    override fun isItemValidForSlot(slotID: Int, itemStack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemStack: ItemStack): Boolean {
         if (slotID == 0) {
             return itemStack != null && !itemStack.isEmpty() && ItemElectricBase.isElectricItem(itemStack.getItem())
         }
@@ -430,11 +436,11 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
         return intArrayOf(1)
     }
 
-    override fun canInsertItem(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
-        return this.isItemValidForSlot(slotID, par2ItemStack)
+    override fun canPlaceItemThroughFace(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, par2ItemStack)
     }
 
-    override fun canExtractItem(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
         return slotID >= 2
     }
 
@@ -462,7 +468,7 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
     }
 
     override fun getBatteryInSlot(): ItemStack {
-        return this.getStackInSlot(0)
+        return this.getItem(0)
     }
 
     //------------------
@@ -521,26 +527,26 @@ open class TileEntityDeconstructor constructor() : TileBaseElectricBlock(), IInv
         @JvmStatic
         private fun initialiseItemList() {
             if (GalacticraftCore.isPlanetsLoaded) {
-                addSalvage(ItemStack(AsteroidsItems.basicItem, 1, 5)) //T3 plate
-                addSalvage(ItemStack(AsteroidsItems.basicItem, 1, 6)) //Compressed titanium
-                addSalvage(ItemStack(AsteroidsItems.basicItem, 1, 0)) //Titanium ingot
-                addSalvage(ItemStack(MarsItems.marsItemBasic, 1, 3)) //T2 plate
-                addSalvage(ItemStack(MarsItems.marsItemBasic, 1, 5)) //Compressed desh
-                addSalvage(ItemStack(MarsItems.marsItemBasic, 1, 2)) //Desh ingot
+                addSalvage(FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 5)) //T3 plate
+                addSalvage(FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 6)) //Compressed titanium
+                addSalvage(FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 0)) //Titanium ingot
+                addSalvage(FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 3)) //T2 plate
+                addSalvage(FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 5)) //Compressed desh
+                addSalvage(FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 2)) //Desh ingot
             }
             addSalvage(ItemStack(GCItems.flagPole))
             addSalvage(ItemStack(GCItems.heavyPlatingTier1))
-            addSalvage(ItemStack(GCItems.itemBasicMoon, 1, 1)) //Compressed meteoric iron
-            addSalvage(ItemStack(GCItems.itemBasicMoon, 1, 0)) //Meteoric iron ingot
-            addSalvage(ItemStack(GCItems.basicItem, 1, 9)) //Compressed steel
-            addSalvage(ItemStack(GCItems.basicItem, 1, 10)) //Compressed bronze
-            addSalvage(ItemStack(GCItems.basicItem, 1, 6))
-            addSalvage(ItemStack(GCItems.basicItem, 1, 7))
-            addSalvage(ItemStack(GCItems.basicItem, 1, 8))
-            addSalvage(ItemStack(GCItems.basicItem, 1, 11)) //Compressed iron
-            addSalvage(ItemStack(GCItems.basicItem, 1, 3))
-            addSalvage(ItemStack(GCItems.basicItem, 1, 4))
-            addSalvage(ItemStack(GCItems.basicItem, 1, 5))
+            addSalvage(FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 1)) //Compressed meteoric iron
+            addSalvage(FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 0)) //Meteoric iron ingot
+            addSalvage(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 9)) //Compressed steel
+            addSalvage(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 10)) //Compressed bronze
+            addSalvage(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 6))
+            addSalvage(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 7))
+            addSalvage(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 8))
+            addSalvage(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 11)) //Compressed iron
+            addSalvage(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 3))
+            addSalvage(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 4))
+            addSalvage(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 5))
             addSalvage(ItemStack(Items.IRON_INGOT))
             addSalvage(ItemStack(Items.GOLD_INGOT))
             addSalvage(ItemStack(Items.GOLD_NUGGET))

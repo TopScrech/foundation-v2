@@ -1,5 +1,8 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
+import net.minecraft.world.ContainerHelper
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import galaxyspace.core.GSBlocks
@@ -17,16 +20,16 @@ import micdoodle8.mods.galacticraft.core.util.FluidUtil
 import micdoodle8.mods.galacticraft.core.wrappers.FluidHandlerWrapper
 import micdoodle8.mods.galacticraft.core.wrappers.IFluidHandlerWrapper
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
@@ -34,7 +37,7 @@ import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.ArrayList
 import kotlin.math.max
 import kotlin.math.min
@@ -89,9 +92,9 @@ open class TileEntityFuelGenerator constructor() : TileEntityInventorySource("ti
 
             if (world.rand.nextInt(20) == 0) if (this.world.getBlockState(
                     this.getPos().down()
-                ) === GSBlocks.IO_BLOCKS.getDefaultState()
-                    .withProperty(IoBlocks.BASIC_TYPE, EnumIoBlocks.IO_LAVA_GEYSER)
-            ) if (this.world.getBlockState(this.getPos().down(2)) === Blocks.LAVA.getDefaultState()) this.fuelTank.fill(
+                ) === GSBlocks.IO_BLOCKS.defaultBlockState()
+                    .setValue(IoBlocks.BASIC_TYPE, EnumIoBlocks.IO_LAVA_GEYSER)
+            ) if (this.world.getBlockState(this.getPos().down(2)) === Blocks.LAVA.defaultBlockState()) this.fuelTank.fill(
                 FluidStack(FluidRegistry.LAVA, 1),
                 true
             )
@@ -144,15 +147,15 @@ open class TileEntityFuelGenerator constructor() : TileEntityInventorySource("ti
      */
     override fun readFromNBT(par1NBTTagCompound: NBTTagCompound) {
         super.readFromNBT(par1NBTTagCompound)
-        this.itemCookTime = par1NBTTagCompound.getInteger("itemCookTime")
-        this.heatGJperTick = par1NBTTagCompound.getInteger("generateRateInt").toFloat()
+        this.itemCookTime = par1NBTTagCompound.getIntOr("itemCookTime", 0)
+        this.heatGJperTick = par1NBTTagCompound.getIntOr("generateRateInt", 0).toFloat()
 
-        this.inventory = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.inventory = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(par1NBTTagCompound, this.getInventory())
 
 
-        if (par1NBTTagCompound.hasKey("fuelTank")) {
-            this.fuelTank.readFromNBT(par1NBTTagCompound.getCompoundTag("fuelTank"))
+        if (par1NBTTagCompound.containsTag("fuelTank")) {
+            this.fuelTank.readFromNBT(par1NBTTagCompound.getCompoundOrEmpty("fuelTank"))
         }
     }
 
@@ -161,77 +164,77 @@ open class TileEntityFuelGenerator constructor() : TileEntityInventorySource("ti
      */
     override fun writeToNBT(par1NBTTagCompound: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(par1NBTTagCompound)
-        par1NBTTagCompound.setInteger("itemCookTime", this.itemCookTime)
-        par1NBTTagCompound.setFloat("generateRate", this.heatGJperTick)
+        par1NBTTagCompound.putInt("itemCookTime", this.itemCookTime)
+        par1NBTTagCompound.putFloat("generateRate", this.heatGJperTick)
         if (this.fuelTank.getFluid() != null) {
-            par1NBTTagCompound.setTag("fuelTank", this.fuelTank.writeToNBT(NBTTagCompound()))
+            par1NBTTagCompound.put("fuelTank", this.fuelTank.writeToNBT(NBTTagCompound()))
         }
 
         ItemStackHelper.saveAllItems(par1NBTTagCompound, this.getInventory())
         return par1NBTTagCompound
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.getInventory().size
     }
 
-    override fun getStackInSlot(par1: Int): ItemStack {
+    override fun getItem(par1: Int): ItemStack {
         return this.getInventory().get(par1)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.getInventory(), index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.getInventory(), index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        val oldstack: ItemStack = ItemStackHelper.getAndRemove(this.getInventory(), index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        val oldstack: ItemStack = ContainerHelper.takeItem(this.getInventory(), index)
         if (!oldstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
         return oldstack
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.getInventory().set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         return itemstack.getItem() === GCItems.bucketFuel || itemstack.getItem() === GCItems.fuelCanister || itemstack.getItem() === Items.LAVA_BUCKET
     }
 
-    override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf(0)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, direction: EnumFacing?): Boolean {
-        return this.isItemValidForSlot(slotID, itemstack)
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, direction: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, itemstack)
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, direction: EnumFacing?): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, direction: EnumFacing): Boolean {
         return slotID == 0
     }
 

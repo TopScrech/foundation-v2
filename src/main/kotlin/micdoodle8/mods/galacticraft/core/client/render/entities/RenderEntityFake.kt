@@ -4,11 +4,11 @@ import micdoodle8.mods.galacticraft.core.entities.EntityCelestialFake
 import net.minecraft.client.renderer.culling.ICamera
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderEntityFake constructor(manager: RenderManager) : Render<EntityCelestialFake>(manager) {
     override fun getEntityTexture(par1Entity: EntityCelestialFake): ResourceLocation? {
         return null

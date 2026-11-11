@@ -1,4 +1,8 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.tile
+
+import foundation.item.legacyItemValue
+
+import foundation.persistence.containsTag
 import micdoodle8.mods.galacticraft.core.blocks.BlockSpaceGlass.GlassRotation.E
 
 
@@ -25,22 +29,23 @@ import micdoodle8.mods.galacticraft.core.energy.item.ItemElectricBase
 import galaxyspace.core.prefab.tile.TileEntityInventorySource
 import micdoodle8.mods.galacticraft.core.tile.IMultiBlock
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProviderSurface
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.LinkedList
 import kotlin.math.abs
@@ -162,15 +167,15 @@ open class TileEntityWindGenerator @JvmOverloads constructor(adv: Boolean = fals
                     if (!this.getInventory().get(1).hasTagCompound()) this.getInventory().get(1)
                         .setTagCompound(NBTTagCompound())
 
-                    if (!(this.getInventory().get(1).getTagCompound())!!.hasKey("destroyedLvl")) (this.getInventory().get(1)
-                        .getTagCompound())!!.setInteger("destroyedLvl", 0)
+                    if (!(this.getInventory().get(1).getTagCompound())!!.containsTag("destroyedLvl")) (this.getInventory().get(1)
+                        .getTagCompound())!!.putInt("destroyedLvl", 0)
 
                     if (ticks % 20 == 0) {
                         if ((this.getInventory().get(1).getTagCompound())!!
-                                .getInteger("destroyedLvl") < ItemBasicGS.FANS_DURABILITY[getFanType()]
-                        ) (this.getInventory().get(1).getTagCompound())!!.setInteger(
+                                .getIntOr("destroyedLvl", 0) < ItemBasicGS.FANS_DURABILITY[getFanType()]
+                        ) (this.getInventory().get(1).getTagCompound())!!.putInt(
                             "destroyedLvl",
-                            (this.getInventory().get(1).getTagCompound())!!.getInteger("destroyedLvl") + 1
+                            (this.getInventory().get(1).getTagCompound())!!.getIntOr("destroyedLvl", 0) + 1
                         )
                         else {
                             this.getInventory().get(1).splitStack(1)
@@ -326,11 +331,11 @@ open class TileEntityWindGenerator @JvmOverloads constructor(adv: Boolean = fals
                     if (this.world.isRemote && this.world.rand.nextDouble() < 0.1) {
                         FMLClientHandler.instance().getClient().effectRenderer.addBlockDestroyEffects(
                             pos,
-                            (GCBlocks.solarPanel)!!.getDefaultState()
+                            (GCBlocks.solarPanel)!!.defaultBlockState()
                         )
                     }
 
-                    this.world.setBlockToAir(pos)
+                    this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                 }
             }
         }
@@ -340,32 +345,32 @@ open class TileEntityWindGenerator @JvmOverloads constructor(adv: Boolean = fals
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.storage.setCapacity(nbt.getFloat("maxEnergy"))
-        this.currentAngle = nbt.getFloat("currentAngle")
-        this.targetAngle = nbt.getFloat("targetAngle")
-        this.setDisabled(0, nbt.getBoolean("disabled"))
-        this.disableCooldown = nbt.getInteger("disabledCooldown")
-        this.advanced = nbt.getBoolean("advanced")
+        this.storage.setCapacity(nbt.getFloatOr("maxEnergy", 0f))
+        this.currentAngle = nbt.getFloatOr("currentAngle", 0f)
+        this.targetAngle = nbt.getFloatOr("targetAngle", 0f)
+        this.setDisabled(0, nbt.getBooleanOr("disabled", false))
+        this.disableCooldown = nbt.getIntOr("disabledCooldown", 0)
+        this.advanced = nbt.getBooleanOr("advanced", false)
 
-        this.inventory = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.inventory = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, this.getInventory())
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setFloat("maxEnergy", this.getMaxEnergyStoredGC())
-        nbt.setFloat("currentAngle", this.currentAngle)
-        nbt.setFloat("targetAngle", this.targetAngle)
-        nbt.setInteger("disabledCooldown", this.disableCooldown)
-        nbt.setBoolean("disabled", this.getDisabled(0))
-        nbt.setBoolean("advanced", this.advanced)
+        nbt.putFloat("maxEnergy", this.getMaxEnergyStoredGC())
+        nbt.putFloat("currentAngle", this.currentAngle)
+        nbt.putFloat("targetAngle", this.targetAngle)
+        nbt.putInt("disabledCooldown", this.disableCooldown)
+        nbt.putBoolean("disabled", this.getDisabled(0))
+        nbt.putBoolean("advanced", this.advanced)
 
         ItemStackHelper.saveAllItems(nbt, this.getInventory())
 
         return nbt
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return Constants.RENDERDISTANCE_LONG
     }
@@ -392,7 +397,7 @@ open class TileEntityWindGenerator @JvmOverloads constructor(adv: Boolean = fals
     }
 
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         if (this.renderAABB == null) {
             this.renderAABB = AxisAlignedBB(
@@ -422,29 +427,29 @@ open class TileEntityWindGenerator @JvmOverloads constructor(adv: Boolean = fals
         return floor((this.getEnergyStoredGC() * i / this.getMaxEnergyStoredGC()).toDouble()).toInt()
     }
 
-    public override fun getInventoryStackLimit(): Int {
+    public override fun getMaxStackSize(): Int {
         return 1
     }
 
-    public override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
+    public override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
     }
 
-    public override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    public override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf(0)
     }
 
-    public override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
-        return this.isItemValidForSlot(slotID, itemstack)
+    public override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, itemstack)
     }
 
-    public override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+    public override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         return slotID == 0
     }
 
-    public override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    public override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         return slotID == 0 && ItemElectricBase.isElectricItem(itemstack.getItem())
     }
 
@@ -463,7 +468,7 @@ open class TileEntityWindGenerator @JvmOverloads constructor(adv: Boolean = fals
     open fun getFanType(): Int {
         if (this.getInventory().get(1).isEmpty()) return -1
 
-        return this.getInventory().get(1).getMetadata() - 33
+        return this.getInventory().get(1).legacyItemValue - 33
     }
 
     companion object {

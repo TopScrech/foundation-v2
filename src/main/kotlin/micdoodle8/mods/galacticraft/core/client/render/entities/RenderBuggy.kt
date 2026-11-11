@@ -15,17 +15,17 @@ import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.AABB as AxisAlignedBB
 import net.minecraftforge.client.model.IModel
 import net.minecraftforge.client.model.obj.OBJModel
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import kotlin.math.cos
 import kotlin.math.sin
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderBuggy constructor(manager: RenderManager) : Render<EntityBuggy>(manager) {
     private var mainModel: OBJModel.OBJBakedModel? = null
     private var radarDish: OBJModel.OBJBakedModel? = null
@@ -41,10 +41,10 @@ open class RenderBuggy constructor(manager: RenderManager) : Render<EntityBuggy>
         if (this.mainModel == null) {
             try {
                 val model: IModel =
-                    OBJLoaderGC.instance.loadModel(ResourceLocation(Constants.ASSET_PREFIX, "buggy.obj"))
+                    OBJLoaderGC.instance.loadModel(ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "buggy.obj"))
                 val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> =
                     Function { location: ResourceLocation? ->
-                        Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+                        Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
                     }
 
                 this.mainModel = model.bake(

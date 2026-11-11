@@ -5,14 +5,14 @@ import micdoodle8.mods.galacticraft.core.tile.TileEntityScreen
 import net.minecraft.client.renderer.GLAllocation
 import net.minecraft.client.renderer.texture.TextureManager
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import java.nio.FloatBuffer
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class TileEntityScreenRenderer : TileEntitySpecialRenderer<TileEntityScreen>() {
     private val renderEngine: TextureManager = FMLClientHandler.instance().getClient().renderEngine
     private val yPlane = 0.91f
@@ -102,7 +102,7 @@ open class TileEntityScreenRenderer : TileEntitySpecialRenderer<TileEntityScreen
 
     companion object {
         @JvmField
-        val blockTexture: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "textures/blocks/screen_side.png")
+        val blockTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/blocks/screen_side.png")
         private val colorBuffer: FloatBuffer = GLAllocation.createDirectFloatBuffer(16)
     }
 }

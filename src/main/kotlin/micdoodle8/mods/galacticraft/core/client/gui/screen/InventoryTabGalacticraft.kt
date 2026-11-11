@@ -8,7 +8,7 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.fml.client.FMLClientHandler
 
 open class InventoryTabGalacticraft constructor() : AbstractTab(0, 0, 0, ItemStack(GCItems.oxMask)) {

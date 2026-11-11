@@ -4,7 +4,7 @@ import galaxyspace.systems.SolarSystem.moons.miranda.world.gen.layer.GenLayerMir
 import galaxyspace.systems.SolarSystem.SolarSystemBodies
 import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody
 import micdoodle8.mods.miccore.IntCache
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.gen.layer.GenLayer
 
 open class GenLayerMirandaBiomes : GenLayer {

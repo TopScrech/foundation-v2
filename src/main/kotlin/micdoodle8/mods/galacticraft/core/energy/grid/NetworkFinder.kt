@@ -5,9 +5,9 @@ import java.util.LinkedList
 
 import micdoodle8.mods.galacticraft.api.transmission.tile.IConductor
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.*
 
 open class NetworkFinder
@@ -37,7 +37,7 @@ constructor(@JvmField var worldObj: World, @JvmField var start: BlockVec3, priva
             if (!iterated.contains(obj)) {
                 iterated.add(obj)
 
-                val tileEntity: TileEntity? = worldObj.getTileEntity(BlockPos(obj!!.x, obj.y, obj.z))
+                val tileEntity: TileEntity? = worldObj.getBlockEntity(BlockPos(obj!!.x, obj.y, obj.z))
 
                 if (tileEntity is IConductor) {
                     found.add(tileEntity as IConductor)

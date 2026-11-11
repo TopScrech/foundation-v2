@@ -9,17 +9,17 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.renderer.RenderHelper
-import net.minecraft.init.Blocks
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.CraftingManager
 import net.minecraft.item.crafting.IRecipe
-import net.minecraft.item.crafting.Ingredient
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.item.crafting.Ingredient
+import net.minecraft.resources.Identifier as ResourceLocation
 
 abstract class Page_WithCraftMatrix : Page_WithScroll() {
     @JvmField
-    protected var mc: Minecraft = Minecraft.getMinecraft()
+    protected var mc: Minecraft = Minecraft.getInstance()
     abstract override fun titlePage(): String?
 
     abstract override fun iconTitle(): ResourceLocation?
@@ -161,6 +161,6 @@ abstract class Page_WithCraftMatrix : Page_WithScroll() {
 
     companion object {
         @JvmField
-        val bookPageTexture: ResourceLocation = ResourceLocation("asmodeuscore", "textures/gui/tablet.png")
+        val bookPageTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/tablet.png")
     }
 }

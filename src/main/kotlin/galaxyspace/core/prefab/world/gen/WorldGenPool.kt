@@ -4,10 +4,10 @@ import galaxyspace.core.GSBlocks
 import galaxyspace.systems.SolarSystem.moons.io.blocks.IoBlocks.EnumIoBlocks
 import galaxyspace.systems.SolarSystem.moons.io.blocks.IoBlocks
 import galaxyspace.core.prefab.world.gen.WorldGenPool
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 import java.util.Random
 
@@ -21,7 +21,7 @@ open class WorldGenPool constructor(
             return false
         }
 
-        // IBlockState ioSoft = GSBlocks.IO_BLOCKS.getDefaultState().withProperty(IoBlocks.BASIC_TYPE, IoBlocks.EnumIoBlocks.IO_GRUNT);
+        // IBlockState ioSoft = GSBlocks.IO_BLOCKS.defaultBlockState().setValue(IoBlocks.BASIC_TYPE, IoBlocks.EnumIoBlocks.IO_GRUNT);
         val radius: Int = this.range + rand.nextInt(4)
         val radiusSq: Int = radius * radius
         for (poolX: Int in -radius..radius) {
@@ -32,9 +32,9 @@ open class WorldGenPool constructor(
                     if (distance <= radiusSq) {
                         val pos: BlockPos =
                             BlockPos(poolX + position.getX(), poolY + position.getY(), poolZ + position.getZ())
-                        world.setBlockState(
+                        world.setBlock(
                             pos,
-                            if (distance >= radiusSq - 16) this.block else (if (poolY <= 0) this.fluid else Blocks.AIR.getDefaultState()),
+                            if (distance >= radiusSq - 16) this.block else (if (poolY <= 0) this.fluid else Blocks.AIR.defaultBlockState()),
                             if (distance == radiusSq) 3 else 2
                         )
                     }
@@ -50,13 +50,13 @@ open class WorldGenPool constructor(
             {
                 if (!firstSet)
                 {
-                    world.setBlockState(pos, GSBlocks.IO_BLOCKS.getDefaultState().withProperty(IoBlocks.BASIC_TYPE, IoBlocks.EnumIoBlocks.IO_SULFUR_GEYSER), 3);
-                    world.scheduleBlockUpdate(pos, GSBlocks.IO_BLOCKS.getDefaultState().withProperty(IoBlocks.BASIC_TYPE, IoBlocks.EnumIoBlocks.IO_SULFUR_GEYSER).getBlock(), 0, 0);
+                    world.setBlock(pos, GSBlocks.IO_BLOCKS.defaultBlockState().setValue(IoBlocks.BASIC_TYPE, IoBlocks.EnumIoBlocks.IO_SULFUR_GEYSER), 3);
+                    world.scheduleBlockUpdate(pos, GSBlocks.IO_BLOCKS.defaultBlockState().setValue(IoBlocks.BASIC_TYPE, IoBlocks.EnumIoBlocks.IO_SULFUR_GEYSER).getBlock(), 0, 0);
                     firstSet = true;
                 }
                 else
                 {
-                    world.setBlockState(pos, Blocks.AIR.getDefaultState(), 2);
+                    world.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
                 }
             }
         }

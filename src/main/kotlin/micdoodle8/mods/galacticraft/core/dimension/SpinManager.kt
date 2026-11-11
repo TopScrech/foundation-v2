@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.dimension
 
+import foundation.block.getMetaFromState
+
 import java.util.ArrayList
 import java.util.HashSet
 import java.util.LinkedList
@@ -16,25 +18,26 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.RedstoneUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockDynamicLiquid
 import net.minecraft.block.BlockLiquid
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.item.EntityFallingBlock
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.item.EntityTNTPrimed
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.*
 import kotlin.math.*
 
@@ -82,7 +85,7 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
     @JvmField
     var ssBoundsMinZ: Int = 0
 
-    private var savefile: OrbitSpinSaveData? = null
+    private var savefile: OrbitSpinSaveData.Entry? = null
 
     private val thrustersPlus: LinkedList<BlockPos> = Lists.newLinkedList<BlockPos>()
     private val thrustersMinus: LinkedList<BlockPos> = Lists.newLinkedList<BlockPos>()
@@ -130,7 +133,7 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private fun updateSkyProviderSpinRate() {
         this.worldProvider.setSpinDeltaPerTick(this.skyAngularVelocity)
     }
@@ -475,10 +478,10 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
     open fun updateSpin() {
         if (!this.clientSide) {
             if (this.dataNotLoaded) {
-                this.savefile = OrbitSpinSaveData.Companion.initWorldData(this.worldProvider.world)
+                this.savefile = OrbitSpinSaveData.initWorldData(this.worldProvider.world, GCCoreUtil.getDimensionID(this.worldProvider)) { writeToNBT(it) }
                 this.readFromNBT((this.savefile!!.datacompound)!!)
                 if (ConfigManagerCore.enableDebug) {
-                    GCLog.info("Loading data from save: " + (this.savefile!!.datacompound)!!.getFloat("omegaSky"))
+                    GCLog.info("Loading data from save: " + this.savefile!!.datacompound.getFloatOr("omegaSky", 0f))
                 }
                 this.dataNotLoaded = false
             }
@@ -507,7 +510,7 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
 
                 if (updateNeeded) {
                     this.writeToNBT((this.savefile!!.datacompound)!!)
-                    this.savefile!!.markDirty()
+                    this.savefile!!.setDirty()
                     val objList: MutableList<Any?> = ArrayList<Any?>()
                     objList.add(this.angularVelocityRadians)
                     objList.add(this.thrustersFiring)
@@ -527,7 +530,7 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
             for (e: Entity? in this.loadedEntities) {
                 //TODO: What about vehicles from GC (buggies) and other mods?
                 if ((e is EntityItem || e is EntityLivingBase && e !is EntityPlayer || e is EntityTNTPrimed || e is EntityFallingBlock) && !e.onGround) {
-                    val entityBoundingBox: AxisAlignedBB = e.getEntityBoundingBox()
+                    val entityBoundingBox: AxisAlignedBB = e.getBoundingBox()
                     val outsideStation: Boolean =
                         entityBoundingBox.maxX < this.ssBoundsMinX || entityBoundingBox.minX > this.ssBoundsMaxX || entityBoundingBox.maxY < this.ssBoundsMinY || entityBoundingBox.minY > this.ssBoundsMaxY || entityBoundingBox.maxZ < this.ssBoundsMinZ || entityBoundingBox.minZ > this.ssBoundsMaxZ
 
@@ -557,8 +560,8 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
         //Do the rotation
         if (deltaTheta != 0f) {
             var angle: Float
-            val xx: Double = e.posX - rotationCentreX
-            val zz: Double = e.posZ - rotationCentreZ
+            val xx: Double = e.x - rotationCentreX
+            val zz: Double = e.z - rotationCentreZ
             var arc: Double = sqrt(xx * xx + zz * zz)
             if (xx == 0.0) {
                 angle = if (zz > 0) 3.1415926535f / 2 else -3.1415926535f / 2
@@ -578,27 +581,27 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
             e.lastTickPosZ += offsetZ
 
             //Rotated into an unloaded chunk (probably also drifted out to there): byebye
-            if (!e.world.isBlockLoaded(BlockPos(MathHelper.floor(e.posX), 64, MathHelper.floor(e.posZ)))) {
+            if (!e.level().isBlockLoaded(BlockPos(MathHelper.floor(e.x), 64, MathHelper.floor(e.z)))) {
                 e.setDead()
                 return
             }
 
-            e.setEntityBoundingBox(e.getEntityBoundingBox().offset(offsetX, 0.0, offsetZ))
+            e.setBoundingBox(e.getBoundingBox().offset(offsetX, 0.0, offsetZ))
             //TODO check for block collisions here - if so move the entity appropriately and apply fall damage
             //Moving the entity = slide along / down
-            e.rotationYaw += this.skyAngularVelocity
-            while (e.rotationYaw > 360f) {
-                e.rotationYaw -= 360f
+            e.yRot += this.skyAngularVelocity
+            while (e.yRot > 360f) {
+                e.yRot -= 360f
             }
 
             //Rotate the motion vector (motionX, motionZ) by the angular rotation
-            val velocity: Double = sqrt(e.motionX * e.motionX + e.motionZ * e.motionZ)
-            if (e.motionX == 0.0) {
-                angle = if (e.motionZ > 0) 3.1415926535f / 2 else -3.1415926535f / 2
+            val velocity: Double = sqrt(e.deltaMovement.x * e.deltaMovement.x + e.deltaMovement.z * e.deltaMovement.z)
+            if (e.deltaMovement.x == 0.0) {
+                angle = if (e.deltaMovement.z > 0) 3.1415926535f / 2 else -3.1415926535f / 2
             } else {
-                angle = atan(e.motionZ / e.motionX).toFloat()
+                angle = atan(e.deltaMovement.z / e.deltaMovement.x).toFloat()
             }
-            if (e.motionX < 0.0) {
+            if (e.deltaMovement.x < 0.0) {
                 angle += 3.1415926535f
             }
             angle += deltaTheta
@@ -607,7 +610,7 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun updatePlayerForSpin(p: EntityPlayerSP, partial: Float): Boolean {
         val angleDelta: Float = partial * this.angularVelocityRadians
         if (this.doSpinning && angleDelta != 0f) {
@@ -617,8 +620,8 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
 
             var doCentrifugal: Boolean = false
             var angle: Float
-            val xx: Double = p.posX - this.spinCentreX
-            val zz: Double = p.posZ - this.spinCentreZ
+            val xx: Double = p.x - this.spinCentreX
+            val zz: Double = p.z - this.spinCentreZ
             var arc: Double = sqrt(xx * xx + zz * zz)
             if (xx == 0.0) {
                 angle = if (zz > 0) 3.1415926535f / 2 else -3.1415926535f / 2
@@ -635,12 +638,12 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
 
             //Check for block collisions here - if so move the player appropriately
             //First check that there are no existing collisions where the player is now (TODO: bounce the player away)
-            if (p.world.getCollisionBoxes(p, p.getEntityBoundingBox()).size == 0) {
+            if (p.level().getCollisionBoxes(p, p.getBoundingBox()).size == 0) {
                 //Now check for collisions in the new direction and if there are some, try reducing the movement
                 var collisions: Int = 0
                 do {
                     val list: MutableList<AxisAlignedBB?> =
-                        p.world.getCollisionBoxes(p, p.getEntityBoundingBox().expand(offsetX, 0.0, offsetZ))
+                        p.level().getCollisionBoxes(p, p.getBoundingBox().expand(offsetX, 0.0, offsetZ))
                     collisions = list.size
                     if (collisions > 0) {
                         if (!doCentrifugal) {
@@ -661,16 +664,16 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
 
                 p.posX += offsetX
                 p.posZ += offsetZ
-                p.setEntityBoundingBox(p.getEntityBoundingBox().offset(offsetX, 0.0, offsetZ))
+                p.setBoundingBox(p.getBoundingBox().offset(offsetX, 0.0, offsetZ))
             }
 
-            p.rotationYaw += this.skyAngularVelocity * partial
-            p.renderYawOffset += this.skyAngularVelocity * partial
-            while (p.rotationYaw > 360f) {
-                p.rotationYaw -= 360f
+            p.yRot += this.skyAngularVelocity * partial
+            p.yBodyRot += this.skyAngularVelocity * partial
+            while (p.yRot > 360f) {
+                p.yRot -= 360f
             }
-            while (p.rotationYaw < 0f) {
-                p.rotationYaw += 360f
+            while (p.yRot < 0f) {
+                p.yRot += 360f
             }
 
             return doCentrifugal
@@ -679,11 +682,11 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
         return false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun applyCentrifugalForce(p: EntityPlayerSP) {
         var quadrant: Int = 0
-        val xd: Double = p.posX - this.spinCentreX
-        val zd: Double = p.posZ - this.spinCentreZ
+        val xd: Double = p.x - this.spinCentreX
+        val zd: Double = p.z - this.spinCentreZ
         val accel: Double = sqrt(xd * xd + zd * zd) * this.angularVelocityRadians * this.angularVelocityRadians * 4.0
 
         if (xd < 0) {
@@ -732,7 +735,7 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
             (GalacticraftCore.packetPipeline)!!.sendTo(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.C_UPDATE_STATION_SPIN,
-                    GCCoreUtil.getDimensionID(player.world),
+                    GCCoreUtil.getDimensionID(player.level()),
                     objList
                 ), player
             )
@@ -753,7 +756,7 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
             (GalacticraftCore.packetPipeline)!!.sendTo(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.C_UPDATE_STATION_DATA,
-                    GCCoreUtil.getDimensionID(player.world),
+                    GCCoreUtil.getDimensionID(player.level()),
                     objList
                 ), player
             )
@@ -778,7 +781,7 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
             (GalacticraftCore.packetPipeline)!!.sendTo(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.C_UPDATE_STATION_BOX,
-                    GCCoreUtil.getDimensionID(player.world),
+                    GCCoreUtil.getDimensionID(player.level()),
                     objList
                 ), player
             )
@@ -787,25 +790,25 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
 
     private fun save() {
         if (this.savefile == null) {
-            this.savefile = OrbitSpinSaveData.Companion.initWorldData(this.worldProvider.world)
+            this.savefile = OrbitSpinSaveData.initWorldData(this.worldProvider.world, GCCoreUtil.getDimensionID(this.worldProvider)) { writeToNBT(it) }
             this.dataNotLoaded = false
         } else {
             this.writeToNBT((this.savefile!!.datacompound)!!)
-            this.savefile!!.markDirty()
+            this.savefile!!.setDirty()
         }
     }
 
     open fun readFromNBT(nbt: NBTTagCompound) {
-        this.doSpinning = true //nbt.getBoolean("doSpinning");
-        this.angularVelocityRadians = nbt.getFloat("omegaRad")
-        this.skyAngularVelocity = nbt.getFloat("omegaSky")
-        this.angularVelocityTarget = nbt.getFloat("omegaTarget")
-        this.angularVelocityAccel = nbt.getFloat("omegaAcc")
+        this.doSpinning = true //nbt.getBooleanOr("doSpinning", false);
+        this.angularVelocityRadians = nbt.getFloatOr("omegaRad", 0f)
+        this.skyAngularVelocity = nbt.getFloatOr("omegaSky", 0f)
+        this.angularVelocityTarget = nbt.getFloatOr("omegaTarget", 0f)
+        this.angularVelocityAccel = nbt.getFloatOr("omegaAcc", 0f)
 
         val oneBlock = nbt.getTag("oneBlock") as? NBTTagCompound
         if (oneBlock != null) {
 //            this.oneSSBlock = BlockVec3.readFromNBT(oneBlock);
-            this.oneSSBlock = BlockPos(oneBlock.getInteger("x"), oneBlock.getInteger("y"), oneBlock.getInteger("z"))
+            this.oneSSBlock = BlockPos(oneBlock.getIntOr("x", 0), oneBlock.getIntOr("y", 0), oneBlock.getIntOr("z", 0))
         } else {
             this.oneSSBlock = null
         }
@@ -817,17 +820,17 @@ constructor(private val worldProvider: WorldProviderSpaceStation) {
     }
 
     open fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
-        nbt.setBoolean("doSpinning", this.doSpinning)
-        nbt.setFloat("omegaRad", this.angularVelocityRadians)
-        nbt.setFloat("omegaSky", this.skyAngularVelocity)
-        nbt.setFloat("omegaTarget", this.angularVelocityTarget)
-        nbt.setFloat("omegaAcc", this.angularVelocityAccel)
+        nbt.putBoolean("doSpinning", this.doSpinning)
+        nbt.putFloat("omegaRad", this.angularVelocityRadians)
+        nbt.putFloat("omegaSky", this.skyAngularVelocity)
+        nbt.putFloat("omegaTarget", this.angularVelocityTarget)
+        nbt.putFloat("omegaAcc", this.angularVelocityAccel)
         if (this.oneSSBlock != null) {
             val oneBlock: NBTTagCompound = NBTTagCompound()
-            oneBlock.setInteger("x", this.oneSSBlock!!.getX())
-            oneBlock.setInteger("y", this.oneSSBlock!!.getY())
-            oneBlock.setInteger("z", this.oneSSBlock!!.getZ())
-            nbt.setTag("oneBlock", oneBlock)
+            oneBlock.putInt("x", this.oneSSBlock!!.getX())
+            oneBlock.putInt("y", this.oneSSBlock!!.getY())
+            oneBlock.putInt("z", this.oneSSBlock!!.getZ())
+            nbt.put("oneBlock", oneBlock)
         }
         return nbt
     }

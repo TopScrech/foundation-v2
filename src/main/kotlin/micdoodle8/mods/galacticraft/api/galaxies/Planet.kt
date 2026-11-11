@@ -2,7 +2,7 @@ package micdoodle8.mods.galacticraft.api.galaxies
 
 import net.minecraft.world.biome.Biome.SpawnListEntry
 
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 
 open class Planet constructor(planetName: String) : CelestialBody(planetName) {
     @JvmField

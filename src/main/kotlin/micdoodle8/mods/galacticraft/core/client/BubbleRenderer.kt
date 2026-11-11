@@ -12,9 +12,9 @@ import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.block.model.IBakedModel
 import net.minecraft.client.renderer.texture.TextureMap
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 import java.lang.Exception
 import java.lang.RuntimeException
@@ -37,7 +37,7 @@ object BubbleRenderer {
     private fun updateModels() {
         try {
             sphere = ClientUtil.modelFromOBJ(
-                ResourceLocation(Constants.ASSET_PREFIX, "sphere.obj"),
+                ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "sphere.obj"),
                 ImmutableList.of<String?>("Sphere")
             )
         } catch (e: Exception) {
@@ -51,15 +51,15 @@ object BubbleRenderer {
             return
         }
 
-        val interpPosX: Double = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks
-        val interpPosY: Double = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks
-        val interpPosZ: Double = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks
+        val interpPosX: Double = player.lastTickPosX + (player.x - player.lastTickPosX) * partialTicks
+        val interpPosY: Double = player.lastTickPosY + (player.y - player.lastTickPosY) * partialTicks
+        val interpPosZ: Double = player.lastTickPosZ + (player.z - player.lastTickPosZ) * partialTicks
 
         if (sphere == null) {
             updateModels()
         }
 
-        Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
+        Minecraft.getInstance().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
 
         GlStateManager.pushMatrix()
 
@@ -86,9 +86,9 @@ object BubbleRenderer {
 
             GL11.glPushMatrix()
 
-            val x: Float = (tile!!.getPos().getX() - interpPosX).toFloat()
-            val y: Float = (tile.getPos().getY() - interpPosY).toFloat()
-            val z: Float = (tile.getPos().getZ() - interpPosZ).toFloat()
+            val x: Float = (tile!!.getBlockPos().getX() - interpPosX).toFloat()
+            val y: Float = (tile.getBlockPos().getY() - interpPosY).toFloat()
+            val z: Float = (tile.getBlockPos().getZ() - interpPosZ).toFloat()
 
             GL11.glTranslatef(x + 0.5f, y + 1.0f, z + 0.5f)
             GL11.glScalef(provider.getBubbleSize(), provider.getBubbleSize(), provider.getBubbleSize())

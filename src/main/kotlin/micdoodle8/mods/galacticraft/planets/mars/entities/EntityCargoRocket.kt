@@ -16,20 +16,20 @@ import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
 import micdoodle8.mods.galacticraft.planets.mars.util.MarsUtil
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.WorldServer
+import net.minecraft.server.level.ServerLevel as WorldServer
 import kotlin.math.*
 
 open class EntityCargoRocket : EntityAutoRocket, IRocketType, IInventory, IWorldTransferCallback {
@@ -51,7 +51,7 @@ open class EntityCargoRocket : EntityAutoRocket, IRocketType, IInventory, IWorld
         rocketType: IRocketType.EnumRocketType?
     ) : super(par1World, par2, par4, par6) {
         this.rocketType = rocketType
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         this.setSize(0.98f, 2f)
     }
 
@@ -334,13 +334,13 @@ open class EntityCargoRocket : EntityAutoRocket, IRocketType, IInventory, IWorld
 
     override fun writeEntityToNBT(nbt: NBTTagCompound) {
         if (world.isRemote) return
-        nbt.setInteger("Type", this.rocketType!!.getIndex())
+        nbt.putInt("Type", this.rocketType!!.getIndex())
 
         super.writeEntityToNBT(nbt)
     }
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
-        this.rocketType = IRocketType.EnumRocketType.entries[nbt.getInteger("Type")]
+        this.rocketType = IRocketType.EnumRocketType.entries[nbt.getIntOr("Type", 0)]
 
         super.readEntityFromNBT(nbt)
     }
@@ -349,7 +349,7 @@ open class EntityCargoRocket : EntityAutoRocket, IRocketType, IInventory, IWorld
         return this.rocketType
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         if (this.rocketType == null) {
             return 0
         }
@@ -381,7 +381,7 @@ open class EntityCargoRocket : EntityAutoRocket, IRocketType, IInventory, IWorld
         super.getItemsDropped(droppedItemList)
         val rocket: ItemStack = ItemStack(MarsItems.rocketMars, 1, this.rocketType!!.getIndex() + 10)
         rocket.setTagCompound(NBTTagCompound())
-        rocket.getTagCompound()!!.setInteger("RocketFuel", this.fuelTank.getFluidAmount())
+        rocket.getTagCompound()!!.putInt("RocketFuel", this.fuelTank.getFluidAmount())
         (droppedItemList)!!.add(rocket)
         return ((droppedItemList as MutableList<ItemStack>?))!!
     }

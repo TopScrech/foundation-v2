@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.fluid
 
+import foundation.block.getMetaFromState
+
 import java.util.ArrayList
 import java.util.HashMap
 
@@ -12,10 +14,10 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import net.minecraft.block.*
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 
 object OxygenPressureProtocol {
     @JvmField

@@ -1,5 +1,11 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
+import foundation.level.offset
+
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
 import galaxyspace.systems.BarnardsSystem.core.BRItems
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Blocks.EnumBlockBarnardaC
@@ -7,43 +13,43 @@ import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_B
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Dandelions
 import asmodeuscore.core.astronomy.dimension.world.gen.features.trees.WorldGenTree_Forest
 import asmodeuscore.core.astronomy.dimension.world.gen.features.trees.WorldGenTree_Forest2
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockBush
 import net.minecraft.block.IGrowable
-import net.minecraft.block.SoundType
-import net.minecraft.block.material.MapColor
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.material.MapColor
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.DamageSource
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 import net.minecraftforge.common.IShearable
 import net.minecraftforge.event.terraingen.TerrainGen
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
-open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrowable, IShearable {
+open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrowable, IShearable, LegacyBlockMetadata {
     init {
         this.setTranslationKey("barnarda_c_dandelions")
         this.setTickRandomly(true)
@@ -111,7 +117,7 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
         return ItemStack(Item.getItemFromBlock(this), 1, this.getMetaFromState(state))
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (blockBasic: EnumBlockDandelions in EnumBlockDandelions.entries) {
             if ((blockBasic != EnumBlockDandelions.DESERT_UP) && (blockBasic != EnumBlockDandelions.REEDS) && (blockBasic != EnumBlockDandelions.REEDS_FRUITS) && (blockBasic != EnumBlockDandelions.YELLOW_GRASS_UP)) list.add(
@@ -132,20 +138,20 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
         hitZ: Float
     ): Boolean {
         val type: EnumBlockDandelions = (state.getValue(BASIC_TYPE) as EnumBlockDandelions)
-        if (!world.isRemote) {
+        if (!world.isClientSide) {
             if (type == EnumBlockDandelions.REEDS_FRUITS) {
-                world.spawnEntity(
+                world.addFreshEntity(
                     EntityItem(
                         world,
                         pos.getX().toDouble(),
                         pos.getY().toDouble(),
                         pos.getZ().toDouble(),
-                        ItemStack(BRItems.FOODS, 1, 0)
+                        foundation.item.FoundationItemVariants.stack(BRItems.FOODS, 1, 0)
                     )
                 )
-                world.setBlockState(
+                world.setBlock(
                     pos,
-                    this.getDefaultState().withProperty(
+                    this.defaultBlockState().setValue(
                         BASIC_TYPE,
                         EnumBlockDandelions.REEDS
                     ),
@@ -166,42 +172,42 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
         ) return  // Forge: prevent growing cactus from loading unloaded chunks with block update
 
 
-        if (!world.isRemote) {
-            if (state === this.getDefaultState().withProperty(
+        if (!world.isClientSide) {
+            if (state === this.defaultBlockState().setValue(
                     BASIC_TYPE,
                     EnumBlockDandelions.REEDS
-                ) || state === this.getDefaultState().withProperty(
+                ) || state === this.defaultBlockState().setValue(
                     BASIC_TYPE,
                     EnumBlockDandelions.REEDS_FRUITS
                 )
             ) {
-                if (world.isAirBlock(pos.up())) {
+                if (world.isEmptyBlock(pos.above())) {
                     var length: Int = 1
-                    val reed1: IBlockState = this.getDefaultState()
-                        .withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS)
-                    val reed2: IBlockState = this.getDefaultState()
-                        .withProperty(
+                    val reed1: IBlockState = this.defaultBlockState()
+                        .setValue(BASIC_TYPE, EnumBlockDandelions.REEDS)
+                    val reed2: IBlockState = this.defaultBlockState()
+                        .setValue(
                             BASIC_TYPE,
                             EnumBlockDandelions.REEDS_FRUITS
                         )
 
-                    while (world.getBlockState(pos.down(length)) === reed1 || world.getBlockState(pos.down(length)) === reed2) length++
+                    while (world.getBlockState(pos.below(length)) === reed1 || world.getBlockState(pos.below(length)) === reed2) length++
 
-                    if (length < 4) world.setBlockState(
-                        pos.up(),
-                        this.getDefaultState().withProperty(
+                    if (length < 4) world.setBlock(
+                        pos.above(),
+                        this.defaultBlockState().setValue(
                             BASIC_TYPE,
                             EnumBlockDandelions.REEDS
                         ),
                         3
                     )
                 }
-                if (state === this.getDefaultState()
-                        .withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS)
+                if (state === this.defaultBlockState()
+                        .setValue(BASIC_TYPE, EnumBlockDandelions.REEDS)
                 ) if (rand.nextInt(40) == 0) {
-                    world.setBlockState(
+                    world.setBlock(
                         pos,
-                        this.getDefaultState().withProperty(
+                        this.defaultBlockState().setValue(
                             BASIC_TYPE,
                             EnumBlockDandelions.REEDS_FRUITS
                         ),
@@ -210,12 +216,12 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
                 }
             }
 
-            if (state === this.getDefaultState().withProperty(
+            if (state === this.defaultBlockState().setValue(
                     BASIC_TYPE,
                     EnumBlockDandelions.VIOLET_TREE_SAPLING
                 )
             ) {
-                if (world.getLightFromNeighbors(pos.up()) >= 9 && rand.nextInt(7) == 0) {
+                if (world.getLightFromNeighbors(pos.above()) >= 9 && rand.nextInt(7) == 0) {
                     this.grow(world, rand, pos, state)
                 }
             }
@@ -224,15 +230,15 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
 
     override fun neighborChanged(state: IBlockState, world: World, pos: BlockPos, block: Block, fromPos: BlockPos) {
         //super.neighborChanged(state, world, pos, block, fromPos);
-        //canPlaceAt(state, world, pos, EnumBlockDandelions.REEDS, BRBlocks.BARNARDA_C_GRASS.getDefaultState(), this.getDefaultState().withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS));
+        //canPlaceAt(state, world, pos, EnumBlockDandelions.REEDS, BRBlocks.BARNARDA_C_GRASS.defaultBlockState(), this.defaultBlockState().setValue(BASIC_TYPE, EnumBlockDandelions.REEDS));
 
-        if (state === this.getDefaultState().withProperty(
+        if (state === this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockDandelions.YELLOW_GRASS_UP
             )
         ) {
-            if (world.getBlockState(pos.down()) != this.getDefaultState()
-                    .withProperty(
+            if (world.getBlockState(pos.below()) != this.defaultBlockState()
+                    .setValue(
                         BASIC_TYPE,
                         EnumBlockDandelions.YELLOW_GRASS_DOWN
                     )
@@ -243,28 +249,28 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
         }
 
 
-        if (state === this.getDefaultState()
-                .withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS)
+        if (state === this.defaultBlockState()
+                .setValue(BASIC_TYPE, EnumBlockDandelions.REEDS)
         ) {
-            if (world.isAirBlock(pos.down())) {
+            if (world.isEmptyBlock(pos.below())) {
                 this.dropBlockAsItem(world, pos, world.getBlockState(pos), 0)
                 world.destroyBlock(pos, false)
             }
         }
 
-        if (state !== this.getDefaultState().withProperty(
+        if (state !== this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockDandelions.LEAVES_BALLS
-            ) && world.isAirBlock(pos.down())
+            ) && world.isEmptyBlock(pos.below())
         ) {
             this.dropBlockAsItem(world, pos, world.getBlockState(pos), 0)
             world.destroyBlock(pos, false)
         }
 
-        if (state === this.getDefaultState().withProperty(
+        if (state === this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockDandelions.LEAVES_BALLS
-            ) && world.isAirBlock(pos.up())
+            ) && world.isEmptyBlock(pos.above())
         ) {
             this.dropBlockAsItem(world, pos, world.getBlockState(pos), 0)
             world.destroyBlock(pos, false)
@@ -279,21 +285,21 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
         type: EnumBlockDandelions,
         vararg valide: IBlockState?
     ) {
-        if (!world.isRemote && state === this.getDefaultState()
-                .withProperty(BASIC_TYPE, type)
+        if (!world.isClientSide && state === this.defaultBlockState()
+                .setValue(BASIC_TYPE, type)
         ) {
             var is_forriden: Boolean = true
-            for (block: IBlockState? in valide) if (world.getBlockState(pos.down()) === block) is_forriden = false
+            for (block: IBlockState? in valide) if (world.getBlockState(pos.below()) === block) is_forriden = false
 
             if (is_forriden) {
                 world.destroyBlock(pos, false)
-                if (placer is EntityPlayer && !placer.capabilities.isCreativeMode) world.spawnEntity(
+                if (placer is EntityPlayer && !placer.capabilities.isCreativeMode) world.addFreshEntity(
                     EntityItem(
                         world,
                         pos.getX().toDouble(),
                         pos.getY().toDouble(),
                         pos.getZ().toDouble(),
-                        ItemStack(this.getDefaultState().getBlock(), 1, this.getMetaFromState(state))
+                        ItemStack(this.defaultBlockState().getBlock(), 1, this.getMetaFromState(state))
                     )
                 )
             }
@@ -313,9 +319,9 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
             pos,
             placer,
             EnumBlockDandelions.REEDS,
-            BRBlocks.BARNARDA_C_GRASS.getDefaultState(),
-            this.getDefaultState()
-                .withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS)
+            BRBlocks.BARNARDA_C_GRASS.defaultBlockState(),
+            this.defaultBlockState()
+                .setValue(BASIC_TYPE, EnumBlockDandelions.REEDS)
         )
 
         canPlaceAt(
@@ -324,28 +330,28 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
             pos,
             placer,
             EnumBlockDandelions.VIOLET_TREE_SAPLING,
-            BRBlocks.BARNARDA_C_GRASS.getDefaultState(),
+            BRBlocks.BARNARDA_C_GRASS.defaultBlockState(),
             BRBlocks.BARNARDA_C_BLOCKS.getStateFromMeta(0)
         )
 
-        if (state === this.getDefaultState()
-                .withProperty(BASIC_TYPE, EnumBlockDandelions.DESERT_DOWN)
+        if (state === this.defaultBlockState()
+                .setValue(BASIC_TYPE, EnumBlockDandelions.DESERT_DOWN)
         ) {
-            if (world.isAirBlock(pos.up())) world.setBlockState(
-                pos.up(),
-                this.getDefaultState()
-                    .withProperty(BASIC_TYPE, EnumBlockDandelions.DESERT_UP)
+            if (world.isEmptyBlock(pos.above())) world.setBlockAndUpdate(
+                pos.above(),
+                this.defaultBlockState()
+                    .setValue(BASIC_TYPE, EnumBlockDandelions.DESERT_UP)
             )
         }
 
-        if (state === this.getDefaultState().withProperty(
+        if (state === this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockDandelions.YELLOW_GRASS_DOWN
             )
         ) {
-            if (world.isAirBlock(pos.up())) world.setBlockState(
-                pos.up(),
-                this.getDefaultState().withProperty(
+            if (world.isEmptyBlock(pos.above())) world.setBlockAndUpdate(
+                pos.above(),
+                this.defaultBlockState().setValue(
                     BASIC_TYPE,
                     EnumBlockDandelions.YELLOW_GRASS_UP
                 )
@@ -358,8 +364,8 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
             pos,
             placer,
             EnumBlockDandelions.GRASS,
-            BRBlocks.BARNARDA_C_GRASS.getDefaultState(),
-            BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+            BRBlocks.BARNARDA_C_GRASS.defaultBlockState(),
+            BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                 Barnarda_C_Blocks.Companion.BASIC_TYPE,
                 EnumBlockBarnardaC.DIRT
             )
@@ -370,8 +376,8 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
             pos,
             placer,
             EnumBlockDandelions.HOPPER,
-            BRBlocks.BARNARDA_C_GRASS.getDefaultState(),
-            BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+            BRBlocks.BARNARDA_C_GRASS.defaultBlockState(),
+            BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                 Barnarda_C_Blocks.Companion.BASIC_TYPE,
                 EnumBlockBarnardaC.DIRT
             )
@@ -382,8 +388,8 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
             pos,
             placer,
             EnumBlockDandelions.LIGHT_BALLS,
-            BRBlocks.BARNARDA_C_GRASS.getDefaultState(),
-            BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+            BRBlocks.BARNARDA_C_GRASS.defaultBlockState(),
+            BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                 Barnarda_C_Blocks.Companion.BASIC_TYPE,
                 EnumBlockBarnardaC.DIRT
             )
@@ -394,8 +400,8 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
             pos,
             placer,
             EnumBlockDandelions.YELLOW_GRASS_DOWN,
-            BRBlocks.BARNARDA_C_GRASS.getDefaultState(),
-            BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+            BRBlocks.BARNARDA_C_GRASS.defaultBlockState(),
+            BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                 Barnarda_C_Blocks.Companion.BASIC_TYPE,
                 EnumBlockBarnardaC.DIRT
             )
@@ -406,8 +412,8 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
             pos,
             placer,
             EnumBlockDandelions.RED_FERN,
-            BRBlocks.BARNARDA_C_GRASS.getDefaultState(),
-            BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+            BRBlocks.BARNARDA_C_GRASS.defaultBlockState(),
+            BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                 Barnarda_C_Blocks.Companion.BASIC_TYPE,
                 EnumBlockBarnardaC.DIRT
             )
@@ -418,8 +424,8 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
             pos,
             placer,
             EnumBlockDandelions.TALLGRASS_DARK,
-            BRBlocks.BARNARDA_C_GRASS.getDefaultState(),
-            BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+            BRBlocks.BARNARDA_C_GRASS.defaultBlockState(),
+            BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                 Barnarda_C_Blocks.Companion.BASIC_TYPE,
                 EnumBlockBarnardaC.DIRT
             )
@@ -430,8 +436,8 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
             pos,
             placer,
             EnumBlockDandelions.DESERT_DOWN,
-            BRBlocks.BARNARDA_C_GRASS.getDefaultState(),
-            BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+            BRBlocks.BARNARDA_C_GRASS.defaultBlockState(),
+            BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                 Barnarda_C_Blocks.Companion.BASIC_TYPE,
                 EnumBlockBarnardaC.DIRT
             )
@@ -442,8 +448,8 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
             pos,
             placer,
             EnumBlockDandelions.GREEN_FERN,
-            BRBlocks.BARNARDA_C_GRASS.getDefaultState(),
-            BRBlocks.BARNARDA_C_BLOCKS.getDefaultState().withProperty(
+            BRBlocks.BARNARDA_C_GRASS.defaultBlockState(),
+            BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState().setValue(
                 Barnarda_C_Blocks.Companion.BASIC_TYPE,
                 EnumBlockBarnardaC.DIRT
             )
@@ -451,51 +457,51 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
     }
 
     override fun breakBlock(world: World, pos: BlockPos, state: IBlockState) {
-        if (state === this.getDefaultState()
-                .withProperty(BASIC_TYPE, EnumBlockDandelions.DESERT_UP)
+        if (state === this.defaultBlockState()
+                .setValue(BASIC_TYPE, EnumBlockDandelions.DESERT_UP)
         ) {
-            world.destroyBlock(pos.down(), true)
+            world.destroyBlock(pos.below(), true)
         }
 
-        if (state === this.getDefaultState()
-                .withProperty(BASIC_TYPE, EnumBlockDandelions.DESERT_DOWN)
+        if (state === this.defaultBlockState()
+                .setValue(BASIC_TYPE, EnumBlockDandelions.DESERT_DOWN)
         ) {
-            if (world.getBlockState(pos.up()) === this.getDefaultState()
-                    .withProperty(BASIC_TYPE, EnumBlockDandelions.DESERT_UP)
-            ) world.destroyBlock(pos.up(), true)
+            if (world.getBlockState(pos.above()) === this.defaultBlockState()
+                    .setValue(BASIC_TYPE, EnumBlockDandelions.DESERT_UP)
+            ) world.destroyBlock(pos.above(), true)
         }
 
-        if (state === this.getDefaultState().withProperty(
+        if (state === this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockDandelions.YELLOW_GRASS_UP
             )
         ) {
-            if (world.getBlockState(pos.down()) === this.getDefaultState()
-                    .withProperty(
+            if (world.getBlockState(pos.below()) === this.defaultBlockState()
+                    .setValue(
                         BASIC_TYPE,
                         EnumBlockDandelions.YELLOW_GRASS_DOWN
                     )
-            ) world.destroyBlock(pos.down(), true)
+            ) world.destroyBlock(pos.below(), true)
         }
 
-        if (state === this.getDefaultState().withProperty(
+        if (state === this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockDandelions.YELLOW_GRASS_DOWN
             )
         ) {
-            if (world.getBlockState(pos.up()) === this.getDefaultState()
-                    .withProperty(
+            if (world.getBlockState(pos.above()) === this.defaultBlockState()
+                    .setValue(
                         BASIC_TYPE,
                         EnumBlockDandelions.YELLOW_GRASS_UP
                     )
-            ) world.destroyBlock(pos.up(), true)
+            ) world.destroyBlock(pos.above(), true)
         }
         super.breakBlock(world, pos, state)
     }
 
     override fun isReplaceable(world: IBlockAccess, pos: BlockPos): Boolean {
-        if (world.getBlockState(pos) === this.getDefaultState()
-                .withProperty(BASIC_TYPE, EnumBlockDandelions.REEDS)
+        if (world.getBlockState(pos) === this.defaultBlockState()
+                .setValue(BASIC_TYPE, EnumBlockDandelions.REEDS)
         ) return false
         return true
     }
@@ -523,7 +529,7 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
     }
 
     override fun canGrow(worldIn: World, pos: BlockPos, state: IBlockState, isClient: Boolean): Boolean {
-        if (state === this.getDefaultState().withProperty(
+        if (state === this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockDandelions.VIOLET_TREE_SAPLING
             )
@@ -533,7 +539,7 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
     }
 
     override fun canUseBonemeal(worldIn: World, rand: Random, pos: BlockPos, state: IBlockState): Boolean {
-        if (state === this.getDefaultState().withProperty(
+        if (state === this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumBlockDandelions.VIOLET_TREE_SAPLING
             )
@@ -563,8 +569,8 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
         )
 
         var check: Boolean = true
-        for (poscheck: BlockPos in BlockPos.getAllInBox(pos.add(-5, 2, -5), pos.add(5, 10, 5))) {
-            if (!world.isAirBlock(poscheck)) check = false
+        for (poscheck: BlockPos in BlockPos.getAllInBox(pos.offset(-5, 2, -5), pos.offset(5, 10, 5))) {
+            if (!world.isEmptyBlock(poscheck)) check = false
         }
 
         if (check) {
@@ -595,7 +601,7 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
         return false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT_MIPPED
     }
@@ -616,7 +622,7 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
         state: IBlockState,
         fortune: Int
     ) {
-        val rand: Random = if (world is World) world.rand else RANDOM
+        val rand: Random = if (world is World) world.random else RANDOM
 
         val count: Int = quantityDropped(state, fortune, rand)
         for (i: Int in 0..<count) {
@@ -646,7 +652,7 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
         return (state.getValue(BASIC_TYPE) as EnumBlockDandelions)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getAmbientOcclusionLightValue(state: IBlockState): Float {
         return 1.0f
     }
@@ -672,7 +678,9 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -685,7 +693,7 @@ open class Barnarda_C_Dandelions constructor() : BlockBush(Material.VINE), IGrow
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(
+        return this.defaultBlockState().setValue(
             BASIC_TYPE,
             (EnumBlockDandelions.Companion.byMetadata(meta))!!
         )

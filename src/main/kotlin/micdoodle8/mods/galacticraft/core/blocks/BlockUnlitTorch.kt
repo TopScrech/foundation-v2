@@ -1,27 +1,31 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.getMetaFromState
+
 import com.google.common.base.Predicate
 import micdoodle8.mods.galacticraft.api.block.IOxygenReliantBlock
 import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.util.OxygenUtil
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.IProperty
-import net.minecraft.block.properties.PropertyDirection
+import net.minecraft.world.level.block.state.properties.Property as IProperty
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.Random
@@ -48,7 +52,7 @@ open class BlockUnlitTorch constructor(lit: Boolean, assetName: String?) : Block
         this.setSoundType(SoundType.WOOD)
         this.setTranslationKey(assetName)
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(FACING, EnumFacing.UP)
+            this.blockState.getBaseState().setValue(FACING, EnumFacing.UP)
         )
     }
 
@@ -107,7 +111,7 @@ open class BlockUnlitTorch constructor(lit: Boolean, assetName: String?) : Block
 
             if (flag) {
                 this.dropBlockAsItem(worldIn, pos, state, 0)
-                worldIn.setBlockToAir(pos)
+                worldIn.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
             } else {
                 this.checkOxygen(worldIn, pos, state)
             }
@@ -123,15 +127,15 @@ open class BlockUnlitTorch constructor(lit: Boolean, assetName: String?) : Block
             }
         } else {
             val enumfacing: EnumFacing = state.getValue(FACING)
-            world.setBlockState(
+            world.setBlock(
                 pos,
-                this.fallback!!.getDefaultState().withProperty(FACING, enumfacing),
+                this.fallback!!.defaultBlockState().setValue(FACING, enumfacing),
                 2
             )
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun randomDisplayTick(stateIn: IBlockState, worldIn: World, pos: BlockPos, rand: Random) {
         val enumfacing: EnumFacing = stateIn.getValue(FACING)
         val d0: Double = pos.getX().toDouble() + 0.5
@@ -144,9 +148,9 @@ open class BlockUnlitTorch constructor(lit: Boolean, assetName: String?) : Block
             val enumfacing1: EnumFacing = enumfacing.getOpposite()
             worldIn.spawnParticle(
                 EnumParticleTypes.SMOKE_NORMAL,
-                d0 + d4 * enumfacing1.getXOffset() as Double,
+                d0 + d4 * enumfacing1.getStepX() as Double,
                 d1 + d3,
-                d2 + d4 * enumfacing1.getZOffset() as Double,
+                d2 + d4 * enumfacing1.getStepZ() as Double,
                 0.0,
                 0.0,
                 0.0,
@@ -155,9 +159,9 @@ open class BlockUnlitTorch constructor(lit: Boolean, assetName: String?) : Block
             if (this === GCBlocks.unlitTorchLit) {
                 worldIn.spawnParticle(
                     EnumParticleTypes.FLAME,
-                    d0 + d4 * enumfacing1.getXOffset() as Double,
+                    d0 + d4 * enumfacing1.getStepX() as Double,
                     d1 + d3,
-                    d2 + d4 * enumfacing1.getZOffset() as Double,
+                    d2 + d4 * enumfacing1.getStepZ() as Double,
                     0.0,
                     0.0,
                     0.0,
@@ -175,9 +179,9 @@ open class BlockUnlitTorch constructor(lit: Boolean, assetName: String?) : Block
     override fun onOxygenRemoved(world: World?, pos: BlockPos?, state: IBlockState?) {
         if ((world)!!.provider is IGalacticraftWorldProvider) {
             val enumfacing: EnumFacing = (state)!!.getValue(FACING)
-            (world)!!.setBlockState(
+            (world)!!.setBlock(
                 pos,
-                this.unlitVersion!!.getDefaultState().withProperty(FACING, enumfacing),
+                this.unlitVersion!!.defaultBlockState().setValue(FACING, enumfacing),
                 2
             )
         }
@@ -186,9 +190,9 @@ open class BlockUnlitTorch constructor(lit: Boolean, assetName: String?) : Block
     override fun onOxygenAdded(world: World?, pos: BlockPos?, state: IBlockState?) {
         if ((world)!!.provider is IGalacticraftWorldProvider) {
             val enumfacing: EnumFacing = (state)!!.getValue(FACING)
-            (world)!!.setBlockState(
+            (world)!!.setBlock(
                 pos,
-                this.litVersion!!.getDefaultState().withProperty(FACING, enumfacing),
+                this.litVersion!!.defaultBlockState().setValue(FACING, enumfacing),
                 2
             )
         }
@@ -209,15 +213,15 @@ open class BlockUnlitTorch constructor(lit: Boolean, assetName: String?) : Block
         return BlockStateContainer(this, *arrayOf<IProperty<*>>(FACING))
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT
     }
 
     companion object {
         @JvmField
-        val FACING: PropertyDirection =
-            PropertyDirection.create("facing", Predicate { facing: EnumFacing? -> facing != EnumFacing.DOWN })
+        val FACING: EnumProperty<Direction> =
+            EnumProperty.create("facing", Direction::class.java) { it != Direction.DOWN }
 
         @JvmField
         var registeredTorches: HashMap<Block?, Block?> = HashMap<Block?, Block?>()

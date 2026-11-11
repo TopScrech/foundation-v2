@@ -1,10 +1,10 @@
 package micdoodle8.mods.galacticraft.core.util
 
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.item.ItemStack
-import net.minecraft.util.NonNullList
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.NonNullList
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.util.Collections
 import java.util.Comparator
@@ -15,7 +15,7 @@ open class CreativeTabGC constructor(
     private var itemForTab: ItemStack?,
     private var tabSorter: Comparator<ItemStack>?
 ) : CreativeTabs(par1, par2Str) {
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun createIcon(): ItemStack? {
         return this.itemForTab
     }
@@ -24,7 +24,7 @@ open class CreativeTabGC constructor(
         this.itemForTab = itemForTab
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getTranslationKey(): String {
         return "item_group." + this.getTabLabel()
     }

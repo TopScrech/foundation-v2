@@ -2,11 +2,11 @@ package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
 import galaxyspace.core.GSBlocks
 import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityAdvLandingPadSingle
-import net.minecraft.block.state.IBlockState
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.ITickable
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.ArrayList
 
 open class TileEntityAdvLandingPadSingle : TileEntity(), ITickable {
@@ -18,7 +18,7 @@ open class TileEntityAdvLandingPadSingle : TileEntity(), ITickable {
 
             for (x: Int in this.getPos().getX() - 2..<this.getPos().getX() + 3) {
                 for (z: Int in this.getPos().getZ() - 2..<this.getPos().getZ() + 3) {
-                    val tile: TileEntity? = this.world.getTileEntity(BlockPos(x, this.getPos().getY(), z))
+                    val tile: TileEntity? = this.world.getBlockEntity(BlockPos(x, this.getPos().getY(), z))
 
                     if (tile is TileEntityAdvLandingPadSingle && !tile.isInvalid() && tile.corner == 0) {
                         attachedLaunchPads.add(tile)
@@ -32,7 +32,7 @@ open class TileEntityAdvLandingPadSingle : TileEntity(), ITickable {
                     (tile as TileEntityAdvLandingPadSingle).corner = 1
                 }
 
-                this.world.setBlockState(this.getPos(), GSBlocks.ADVANCED_LANDING_PAD.getDefaultState(), 2)
+                this.world.setBlock(this.getPos(), GSBlocks.ADVANCED_LANDING_PAD.defaultBlockState(), 2)
             }
         }
     }

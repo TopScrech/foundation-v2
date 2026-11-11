@@ -9,17 +9,16 @@ import micdoodle8.mods.galacticraft.core.util.ColorUtil
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ScaledResolution
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 object OverlayDockingRocket : Overlay() {
-    private val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+    private val minecraft: Minecraft = Minecraft.getInstance()
 
     private var screenTicks: Long = 0
 
@@ -35,8 +34,8 @@ object OverlayDockingRocket : Overlay() {
         val height: Int = scaledresolution.getScaledHeight()
         minecraft.entityRenderer.setupOverlayRendering()
 
-        if (minecraft.player.getRidingEntity() is EntityAutoRocket) {
-            val rocket: EntityAutoRocket? = minecraft.player.getRidingEntity() as EntityAutoRocket?
+        if (minecraft.player.getVehicle() is EntityAutoRocket) {
+            val rocket: EntityAutoRocket? = minecraft.player.getVehicle() as EntityAutoRocket?
 
             if (rocket!!.launchPhase == EntitySpaceshipBase.EnumLaunchPhase.LANDING.ordinal && rocket.targetVec != null) {
                 val dX: Double = Math.round((rocket.posX - ((rocket.targetVec)!!.getX())!!) * 100.0) / 100.0

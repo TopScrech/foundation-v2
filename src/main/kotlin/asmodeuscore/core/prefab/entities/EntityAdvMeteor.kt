@@ -4,13 +4,13 @@ import asmodeuscore.core.prefab.entities.EntityAdvMeteor
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.entities.EntityMeteor
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 
 open class EntityAdvMeteor : EntityMeteor {
-    private var blockSpawn: IBlockState? = (GCBlocks.fallenMeteor)!!.getDefaultState()
+    private var blockSpawn: IBlockState? = (GCBlocks.fallenMeteor)!!.defaultBlockState()
 
     constructor(world: World?) : super((world)!!)
 
@@ -43,9 +43,9 @@ open class EntityAdvMeteor : EntityMeteor {
                         pos = this.world.getTopSolidOrLiquidBlock(this.getPosition())
                     }
                 }
-                val above: BlockPos = pos.up()
-                if (blockSpawn != null && this.world.isAirBlock(above)) {
-                    this.world.setBlockState(above, blockSpawn, 3)
+                val above: BlockPos = pos.above()
+                if (blockSpawn != null && this.world.isEmptyBlock(above)) {
+                    this.world.setBlock(above, blockSpawn, 3)
                 }
 
                 if (movingObjPos.entityHit != null) {

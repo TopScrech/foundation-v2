@@ -1,8 +1,5 @@
 package asmodeuscore
 
-import net.minecraftforge.fml.common.Mod.EventHandler
-import net.minecraftforge.fml.common.Mod.Instance
-import net.minecraftforge.fml.common.discovery.ASMDataTable.ASMData
 
 import asmodeuscore.AsmodeusCore
 import asmodeuscore.api.IBodiesHandler
@@ -20,69 +17,30 @@ import asmodeuscore.core.command.CommandFrozenStormToggle
 import asmodeuscore.core.command.CommandMeteoricRainToggle
 import asmodeuscore.core.astronomy.BodiesRegistry.Galaxies
 import asmodeuscore.core.proxy.CommonProxy
-import asmodeuscore.core.utils.Utils
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.world.biome.Biome
-import net.minecraftforge.common.BiomeDictionary
-import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.ModMetadata
-import net.minecraftforge.fml.common.SidedProxy
-import net.minecraftforge.fml.common.discovery.ASMDataTable
-import net.minecraftforge.fml.common.event.FMLConstructionEvent
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
+import net.minecraftforge.event.RegisterCommandsEvent
 import java.io.File
 import java.util.ArrayList
 import java.util.Collections
 import java.util.Comparator
 
-@Mod(
-    modid = AsmodeusCore.Companion.MODID,
-    version = AsmodeusCore.Companion.VERSION,
-    dependencies = "required-after:forge@[14.23.1.2555,); after:planetprogression@[0.4.6,); after:galacticraftcore; after:galacticraftplanets;",
-    acceptedMinecraftVersions = "[1.12.2]",
-    name = AsmodeusCore.Companion.NAME,
-    guiFactory = "asmodeuscore.core.client.gui.ACConfigGuiFactory"
-)
-open class AsmodeusCore {
-    @Mod.EventHandler
-    open fun construct(event: FMLConstructionEvent) {
-        for (data: ASMDataTable.ASMData in event.getASMHarvestedData().getAll(IBodiesHandler::class.java.getName())) {
-            val body: IBodies?
-            try {
-                body = Class.forName(data.getClassName()).newInstance() as IBodies?
-                bodies.add((body)!!)
-            } catch (e: InstantiationException) {
-                e.printStackTrace()
-            } catch (e: IllegalAccessException) {
-                e.printStackTrace()
-            } catch (e: ClassNotFoundException) {
-                e.printStackTrace()
-            }
-        }
+@Mod(AsmodeusCore.MODID)
+open class AsmodeusCore(context: net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext) {
 
-        Collections.sort<IBodies>(bodies, object : Comparator<IBodies> {
-            override fun compare(lhs: IBodies, rhs: IBodies): Int {
-                val x: Int = rhs.getPriority()
-                val y: Int = lhs.getPriority()
-                return if (x < y) -1 else (if (x == y) 0 else 1)
-            }
-        })
+    open fun construct() {
+        bodies.addAll(foundation.bootstrap.FoundationBootstrap.discover(IBodiesHandler::class.java, IBodies::class.java))
+        bodies.sortByDescending { it.getPriority() }
     }
 
-    @Mod.EventHandler
-    open fun preInit(event: FMLPreInitializationEvent) {
-        this.initModInfo(event.getModMetadata())
+    open fun preInit() {
 
-        AsmodeusConfig(File(event.getModConfigurationDirectory(), "AsmodeusCore/core.conf"))
+        AsmodeusConfig(File(foundation.bootstrap.FoundationBootstrap.configDirectory, "AsmodeusCore/core.conf"))
 
         ACCapabilityStatsHandler.register()
-        ACPotions.initialize()
 
         packetPipeline = AsmodeusChannelHandler.init()
 
@@ -91,16 +49,15 @@ open class AsmodeusCore {
         /*
 		for(IBodies list : AsmodeusCore.bodies)
 		{
-			list.preInitialization(event);
+			list.preInitialization();
 			
     		if(list.canRegister()) 
-    			list.preInit(event);
+                list.preInit();
 		}
 		*/
         //Galaxies NEW_GALAXY = EnumHelper.addEnum(Galaxies.class, "NEW_GALAXY", new Class<?>[]{String.class}, "new_galaxy");
     }
 
-    @Mod.EventHandler
     open fun init(event: FMLInitializationEvent?) {
         proxy!!.load()
         BodiesRegistry.registerCelestialBody(SpaceData.Companion.getRegisteredCelestialBodies())
@@ -113,7 +70,6 @@ open class AsmodeusCore {
     			list.init(event);*/
     }
 
-    @Mod.EventHandler
     open fun postInit(event: FMLPostInitializationEvent?) {
         proxy!!.postload()
 
@@ -124,40 +80,28 @@ open class AsmodeusCore {
     	*/
     }
 
-    @Mod.EventHandler
-    open fun onServerStarting(event: FMLServerStartingEvent) {
-        event.registerServerCommand(CommandDustStormToggle())
-        event.registerServerCommand(CommandFrozenStormToggle())
-        event.registerServerCommand(CommandMeteoricRainToggle())
+    open fun registerCommands(event: RegisterCommandsEvent) {
+        CommandDustStormToggle.register(event.getDispatcher())
+        CommandFrozenStormToggle.register(event.getDispatcher())
+        CommandMeteoricRainToggle.register(event.getDispatcher())
     }
 
-    private fun initModInfo(info: ModMetadata) {
-        info.autogenerated = false
-        info.modId = MODID
-        info.name = NAME
-        info.version = VERSION
-        info.description = "Technical lib for BlesseNtumble (Vi[Told]) mods."
-        info.authorList = mutableListOf<String?>("Vi[Told]")
+
+
+    init {
+        foundation.level.FoundationSpaceEnvironment.install(context)
+        ACPotions.install(context)
+        asmodeuscore.core.utils.ACAttributePlayer.install(context)
+        foundation.level.FoundationLevels.install()
+        INSTANCE = this
+        proxy = foundation.bootstrap.FoundationBootstrap.createProxy(CommonProxy::class.java, "asmodeuscore.core.proxy.ClientProxy")
+        construct()
+        preInit()
+        foundation.biome.FoundationBiomeTags.install { !ConfigManagerCore.disableBiomeTypeRegistrations }
+        foundation.bootstrap.FoundationBootstrap.attach(context, { init(it) }, { postInit(it) })
+        RegisterCommandsEvent.BUS.addListener { event -> registerCommands(event) }
     }
 
-    @Mod.EventBusSubscriber(modid = MODID)
-    object RegistrationHandler {
-        @JvmStatic
-        @SubscribeEvent
-        fun registerBiomes(event: RegistryEvent.Register<Biome?>) {
-            event.getRegistry().register(Utils.WE_Biome)
-            event.getRegistry().register(Utils.WE_Biome_2)
-
-            if (!ConfigManagerCore.disableBiomeTypeRegistrations) {
-                BiomeDictionary.addTypes(
-                    Utils.WE_Biome,
-                    BiomeDictionary.Type.COLD,
-                    BiomeDictionary.Type.DRY,
-                    BiomeDictionary.Type.DEAD
-                )
-            }
-        }
-    }
 
     companion object {
         const val major_version: Int = 1
@@ -186,14 +130,9 @@ open class AsmodeusCore {
 
         //---------------------------------------------
         @JvmField
-        @Mod.Instance(MODID)
         var INSTANCE: AsmodeusCore? = null
 
         @JvmField
-        @SidedProxy(
-            clientSide = "asmodeuscore.core.proxy.ClientProxy",
-            serverSide = "asmodeuscore.core.proxy.CommonProxy"
-        )
         var proxy: CommonProxy? = null
     }
 }

@@ -1,7 +1,5 @@
 package micdoodle8.mods.galacticraft.planets
 
-import net.minecraftforge.fml.common.Mod.EventHandler
-import net.minecraftforge.fml.common.Mod.Instance
 
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.Constants
@@ -15,46 +13,34 @@ import micdoodle8.mods.galacticraft.planets.mars.MarsModule
 import micdoodle8.mods.galacticraft.planets.venus.ConfigManagerVenus
 import micdoodle8.mods.galacticraft.planets.venus.VenusModule
 import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.common.config.ConfigElement
-import net.minecraftforge.common.config.Property
-import net.minecraftforge.fml.client.config.IConfigElement
+import foundation.config.FoundationConfigElement as ConfigElement
+import foundation.config.FoundationConfigProperty as Property
+import foundation.config.FoundationConfigEntry as IConfigElement
 import net.minecraftforge.fml.client.event.ConfigChangedEvent
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.ModMetadata
-import net.minecraftforge.fml.common.SidedProxy
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.common.event.FMLServerStartedEvent
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
+import net.minecraftforge.event.server.ServerStartedEvent as FMLServerStartedEvent
+import net.minecraftforge.event.server.ServerStartingEvent as FMLServerStartingEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.io.File
 import java.util.ArrayList
 import java.util.TreeMap
 
-@Mod(
-    modid = Constants.MOD_ID_PLANETS,
-    name = GalacticraftPlanets.Companion.NAME,
-    version = Constants.COMBINEDVERSION,
-    useMetadata = true,
-    acceptedMinecraftVersions = Constants.MCVERSION,
-    dependencies = "required-after:" + Constants.MOD_ID_CORE + ";",
-    guiFactory = "micdoodle8.mods.galacticraft.planets.ConfigGuiFactoryPlanets"
-)
-open class GalacticraftPlanets {
+@Mod(Constants.MOD_ID_PLANETS)
+open class GalacticraftPlanets(context: net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext) {
+
     private var GCPlanetsSource: File? = null
 
-    @Mod.EventHandler
-    open fun preInit(event: FMLPreInitializationEvent) {
-        GCPlanetsSource = event.getSourceFile()
-        this.initModInfo(event.getModMetadata())
+    open fun preInit() {
+        GCPlanetsSource = foundation.bootstrap.FoundationBootstrap.sourceFile(javaClass)
         MinecraftForge.EVENT_BUS.register(this)
 
         //Initialise configs, converting mars.conf + asteroids.conf to planets.conf if necessary
-        val oldMarsConf: File = File(event.getModConfigurationDirectory(), "Galacticraft/mars.conf")
-        val newPlanetsConf: File = File(event.getModConfigurationDirectory(), "Galacticraft/planets.conf")
+        val oldMarsConf: File = File(foundation.bootstrap.FoundationBootstrap.configDirectory, "Galacticraft/mars.conf")
+        val newPlanetsConf: File = File(foundation.bootstrap.FoundationBootstrap.configDirectory, "Galacticraft/planets.conf")
         var update: Boolean = false
         if (oldMarsConf.exists()) {
             oldMarsConf.renameTo(newPlanetsConf)
@@ -62,39 +48,35 @@ open class GalacticraftPlanets {
         }
         this.configSyncStart()
         ConfigManagerMars(newPlanetsConf, update)
-        ConfigManagerAsteroids(File(event.getModConfigurationDirectory(), "Galacticraft/asteroids.conf"))
-        ConfigManagerVenus(File(event.getModConfigurationDirectory(), "Galacticraft/venus.conf"))
+        ConfigManagerAsteroids(File(foundation.bootstrap.FoundationBootstrap.configDirectory, "Galacticraft/asteroids.conf"))
+        ConfigManagerVenus(File(foundation.bootstrap.FoundationBootstrap.configDirectory, "Galacticraft/venus.conf"))
         this.configSyncEnd(true)
 
         commonModules.add(MarsModule())
         commonModules.add(AsteroidsModule())
         commonModules.add(VenusModule())
-        proxy!!.preInit(event)
+        proxy!!.preInit()
     }
 
-    @Mod.EventHandler
     open fun init(event: FMLInitializationEvent?) {
         proxy!!.init(event)
         NetworkRegistry.INSTANCE.registerGuiHandler(instance, proxy)
     }
 
-    @Mod.EventHandler
     open fun postInit(event: FMLPostInitializationEvent) {
         proxy!!.postInit(event)
         TileEntityDeconstructor.initialiseRecipeListPlanets()
-        if (event.getSide() == Side.SERVER) this.loadLanguagePlanets("en_US")
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.DEDICATED_SERVER) this.loadLanguagePlanets("en_US")
     }
 
     open fun loadLanguagePlanets(lang: String?) {
         GCCoreUtil.loadLanguage((lang)!!, ASSET_PREFIX, (GCPlanetsSource)!!)
     }
 
-    @Mod.EventHandler
     open fun serverStarting(event: FMLServerStartingEvent?) {
         proxy!!.serverStarting(event)
     }
 
-    @Mod.EventHandler
     open fun serverInit(event: FMLServerStartedEvent?) {
         proxy!!.serverInit(event)
     }
@@ -124,23 +106,22 @@ open class GalacticraftPlanets {
         propOrder.clear()
     }
 
-    private fun initModInfo(info: ModMetadata) {
-        info.autogenerated = false
-        info.modId = Constants.MOD_ID_PLANETS
-        info.name = NAME
-        info.version = Constants.COMBINEDVERSION
-        info.description = "Planets addon for Galacticraft."
-        info.url = "https://micdoodle8.com/"
-        info.authorList =
-            mutableListOf<String?>("micdoodle8", "radfast", "EzerArch", "fishtaco", "SpaceViking", "SteveKunG")
-        info.logoFile = "assets/galacticraftplanets/galacticraft_logo.png"
+
+    init {
+        foundation.level.FoundationLevels.install()
+        instance = this
+        proxy = foundation.bootstrap.FoundationBootstrap.createProxy(PlanetsProxy::class.java, "micdoodle8.mods.galacticraft.planets.PlanetsProxyClient")
+        preInit()
+        foundation.bootstrap.FoundationBootstrap.attach(context, { init(it) }, { postInit(it) })
+        net.minecraftforge.event.server.ServerStartingEvent.BUS.addListener { event -> serverStarting(event) }
+        net.minecraftforge.event.server.ServerStartedEvent.BUS.addListener { event -> serverInit(event) }
     }
+
 
     companion object {
         const val NAME: String = "Galacticraft Planets"
 
         @JvmField
-        @Mod.Instance(Constants.MOD_ID_PLANETS)
         var instance: GalacticraftPlanets? = null
 
         @JvmField
@@ -155,14 +136,10 @@ open class GalacticraftPlanets {
         val TEXTURE_PREFIX: String = ASSET_PREFIX + ":"
 
         @JvmField
-        @SidedProxy(
-            clientSide = "micdoodle8.mods.galacticraft.planets.PlanetsProxyClient",
-            serverSide = "micdoodle8.mods.galacticraft.planets.PlanetsProxy"
-        )
         var proxy: PlanetsProxy? = null
 
         @JvmField
-        var propOrder: MutableMap<String?, MutableList<String?>?> = TreeMap<String?, MutableList<String?>?>()
+        var propOrder: MutableMap<String?, MutableList<String?>?> = foundation.config.FoundationPlanetConfigOrder.properties
 
         @JvmStatic
         fun spawnParticle(particleID: String?, position: Vector3?, motion: Vector3?, vararg extraData: Any?) {
@@ -214,10 +191,7 @@ open class GalacticraftPlanets {
 
         @JvmStatic
         fun finishProp(prop: Property, currentCat: String?) {
-            if (propOrder.get(currentCat) == null) {
-                propOrder.put(currentCat, ArrayList<String?>())
-            }
-            propOrder.get(currentCat)!!.add(prop.getName())
+            foundation.config.FoundationPlanetConfigOrder.finish(prop, currentCat)
         }
     }
 }

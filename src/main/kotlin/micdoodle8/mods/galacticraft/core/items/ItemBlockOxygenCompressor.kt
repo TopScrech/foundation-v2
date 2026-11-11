@@ -1,8 +1,10 @@
 package micdoodle8.mods.galacticraft.core.items
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.core.blocks.BlockOxygenCompressor
-import net.minecraft.block.Block
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.ItemStack
 
 open class ItemBlockOxygenCompressor constructor(block: Block?) : ItemBlockDesc(block) {
     init {
@@ -17,9 +19,9 @@ open class ItemBlockOxygenCompressor constructor(block: Block?) : ItemBlockDesc(
     public override fun getTranslationKey(itemstack: ItemStack): String {
         var metadata: Int = 0
 
-        if (itemstack.getItemDamage() >= BlockOxygenCompressor.OXYGEN_DECOMPRESSOR_METADATA) {
+        if (itemstack.legacyItemValue >= BlockOxygenCompressor.OXYGEN_DECOMPRESSOR_METADATA) {
             metadata = 1
-        } else if (itemstack.getItemDamage() >= BlockOxygenCompressor.OXYGEN_COMPRESSOR_METADATA) {
+        } else if (itemstack.legacyItemValue >= BlockOxygenCompressor.OXYGEN_COMPRESSOR_METADATA) {
             metadata = 0
         }
 

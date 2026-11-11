@@ -1,5 +1,8 @@
 package galaxyspace.systems.ACentauriSystem.planets.proxima_b.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import galaxyspace.GalaxySpace
 import galaxyspace.systems.ACentauriSystem.planets.proxima_b.blocks.Proxima_B_Blocks.EnumBlockProximaB
 import galaxyspace.systems.ACentauriSystem.planets.proxima_b.blocks.Proxima_B_Blocks
@@ -11,31 +14,31 @@ import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.IPlantable
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class Proxima_B_Blocks constructor() : Block(Material.ROCK), ISortableBlock, ITerraformableBlock,
-    IDetectableResource, IEnergyGeyser {
+    IDetectableResource, IEnergyGeyser, LegacyBlockMetadata {
     init {
         this.setTranslationKey("proxima_b_blocks")
         this.setSoundType(SoundType.STONE)
@@ -48,7 +51,7 @@ open class Proxima_B_Blocks constructor() : Block(Material.ROCK), ISortableBlock
             EnumBlockProximaB.MUSHROOM_GEYSER -> world.scheduleBlockUpdate(
                 pos,
                 this,
-                this.tickRate(world) + world.rand.nextInt(10),
+                this.tickRate(world) + world.random.nextInt(10),
                 0
             )
 
@@ -60,12 +63,12 @@ open class Proxima_B_Blocks constructor() : Block(Material.ROCK), ISortableBlock
         if (!world.isAreaLoaded(pos, 1)) return
 
         val lifetime: Int = 1
-        if (rand.nextInt(20) == 0 && state === state.withProperty(
+        if (rand.nextInt(20) == 0 && state === state.setValue(
                 BASIC_TYPE,
                 EnumBlockProximaB.MUSHROOM_GEYSER
             )
         ) {
-            if (world.isAirBlock(pos.up()) && world.getBlockState(pos.down())
+            if (world.isEmptyBlock(pos.above()) && world.getBlockState(pos.below())
                     .getBlock() === VenusBlocks.sulphuricAcid
             ) {
                 (GalaxySpace.proxy)!!.spawnParticle(
@@ -98,7 +101,7 @@ open class Proxima_B_Blocks constructor() : Block(Material.ROCK), ISortableBlock
         return ItemStack(Item.getItemFromBlock(this), 1, this.getMetaFromState(state))
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (blockBasic: EnumBlockProximaB in EnumBlockProximaB.entries) {
             list.add(ItemStack(this, 1, blockBasic.getMeta()))
@@ -129,7 +132,7 @@ open class Proxima_B_Blocks constructor() : Block(Material.ROCK), ISortableBlock
         state: IBlockState,
         fortune: Int
     ) {
-        val rand: Random = if (world is World) world.rand else RANDOM
+        val rand: Random = if (world is World) world.random else RANDOM
 
         val count: Int = quantityDropped(state, fortune, rand)
         for (i: Int in 0..<count) {
@@ -195,7 +198,9 @@ open class Proxima_B_Blocks constructor() : Block(Material.ROCK), ISortableBlock
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -208,8 +213,8 @@ open class Proxima_B_Blocks constructor() : Block(Material.ROCK), ISortableBlock
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(BASIC_TYPE, (EnumBlockProximaB.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(BASIC_TYPE, (EnumBlockProximaB.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {

@@ -14,8 +14,8 @@ import micdoodle8.mods.galacticraft.core.client.jei.RecipeCategories
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class IngotCompressorRecipeCategory constructor(guiHelper: IGuiHelper) : IRecipeCategory<IRecipeWrapper> {
     @Nonnull
@@ -94,8 +94,8 @@ open class IngotCompressorRecipeCategory constructor(guiHelper: IGuiHelper) : IR
     }
 
     companion object {
-        private val compressorTex = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/ingot_compressor.png")
+        private val compressorTex = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/ingot_compressor.png")
         private val compressorTexBlank =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/ingot_compressor_blank.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/ingot_compressor_blank.png")
     }
 }

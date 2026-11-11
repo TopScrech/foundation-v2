@@ -1,49 +1,37 @@
 package micdoodle8.mods.galacticraft.core.recipe
 
+import foundation.item.FoundationItemVariants
 import micdoodle8.mods.galacticraft.api.recipe.INasaWorkbenchRecipe
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
-import net.minecraftforge.oredict.OreDictionary
+import net.minecraft.world.Container
+import net.minecraft.world.item.ItemStack
 import java.util.HashMap
 
-open class NasaWorkbenchRecipe constructor(
-    private val output: ItemStack,
-    private val input: HashMap<Int, ItemStack?>
-) : INasaWorkbenchRecipe {
-    init {
-        for (entry: MutableMap.MutableEntry<Int, ItemStack?> in this.input.entries) {
-            requireNotNull(entry.value) { "Recipe contains null ingredient!" }
+/** Slot-addressed NASA recipes retain their layout rather than using a vanilla 3 by 3 grid */
+open class NasaWorkbenchRecipe(output: ItemStack, input: HashMap<Int, ItemStack?>) : INasaWorkbenchRecipe {
+    private val output = output.copy()
+    private val input: HashMap<Int, ItemStack?> = HashMap<Int, ItemStack?>().also { snapshot ->
+        input.forEach { (slot, ingredient) ->
+            require(slot >= 0) { "Negative recipe slot $slot" }
+            snapshot[slot] = requireNotNull(ingredient) { "Recipe contains null ingredient" }.copy()
         }
     }
 
-    override fun matches(inventory: IInventory?): Boolean {
-        for (entry: MutableMap.MutableEntry<Int, ItemStack?> in this.input.entries) {
-            val stackAt: ItemStack = (inventory)!!.getStackInSlot(entry.key!!)
+    override fun matches(inventory: Container?): Boolean = inventory != null && input.all { (slot, ingredient) ->
+        slot < inventory.containerSize && matchesIngredient(inventory.getItem(slot), requireNotNull(ingredient))
+    }
 
-            if (!this.checkItemEquals(stackAt, entry.value!!)) {
-                return false
-            }
+    override fun getRecipeSize(): Int = input.size
+    override fun getRecipeOutput(): ItemStack = output.copy()
+    override fun getRecipeInput(): HashMap<Int, ItemStack?> = HashMap<Int, ItemStack?>().also { snapshot ->
+        input.forEach { (slot, ingredient) -> snapshot[slot] = requireNotNull(ingredient).copy() }
+    }
+
+    companion object {
+        /** Counts and unrelated custom data do not affect these legacy single-item ingredients */
+        @JvmStatic
+        fun matchesIngredient(target: ItemStack, ingredient: ItemStack?): Boolean {
+            if (ingredient == null) return false
+            return FoundationItemVariants.sameVariant(target, ingredient)
         }
-
-        return true
-    }
-
-    private fun checkItemEquals(target: ItemStack, input: ItemStack): Boolean {
-        if (input.isEmpty() && !target.isEmpty() || !input.isEmpty() && target.isEmpty()) {
-            return false
-        }
-        return target.isEmpty() && input.isEmpty() || target.getItem() === input.getItem() && (target.getItemDamage() == OreDictionary.WILDCARD_VALUE || target.getItemDamage() == input.getItemDamage())
-    }
-
-    override fun getRecipeSize(): Int {
-        return this.input.size
-    }
-
-    override fun getRecipeOutput(): ItemStack {
-        return this.output.copy()
-    }
-
-    override fun getRecipeInput(): HashMap<Int, ItemStack?>? {
-        return this.input
     }
 }

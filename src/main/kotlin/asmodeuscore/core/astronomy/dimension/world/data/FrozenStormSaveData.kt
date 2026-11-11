@@ -1,14 +1,15 @@
 package asmodeuscore.core.astronomy.dimension.world.data
 
 import asmodeuscore.core.astronomy.dimension.world.data.FrozenStormSaveData
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
-import net.minecraft.world.storage.MapStorage
-import net.minecraft.world.storage.WorldSavedData
-import java.util.Random
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
+import com.mojang.serialization.Codec
+import foundation.persistence.FoundationSavedData
+import net.minecraft.world.level.saveddata.SavedData
+import net.minecraft.util.RandomSource
 
-open class FrozenStormSaveData constructor(name: String) : WorldSavedData(name) {
+open class FrozenStormSaveData constructor(@Suppress("UNUSED_PARAMETER") name: String) : SavedData() {
     private var isStorm = false
 
     @JvmField
@@ -23,20 +24,20 @@ var stormStrength: Float = 0.0f
     @JvmField
     var tickClearWeather: Int = 24000 * 5
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
-        isStorm = nbt.getBoolean("isFrozenStorm")
-        tickStorm = nbt.getInteger("tickFrozenStorm")
-        tickClearWeather = nbt.getInteger("tickClearWeather")
-        prevStormStrength = nbt.getFloat("prevStormStrength")
-        stormStrength = nbt.getFloat("stormStrength")
+    open fun readFromNBT(nbt: NBTTagCompound) {
+        isStorm = nbt.getBooleanOr("isFrozenStorm", false)
+        tickStorm = nbt.getIntOr("tickFrozenStorm", 0)
+        tickClearWeather = nbt.getIntOr("tickClearWeather", 0)
+        prevStormStrength = nbt.getFloatOr("prevStormStrength", 0f)
+        stormStrength = nbt.getFloatOr("stormStrength", 0f)
     }
 
-    override fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {
-        compound.setBoolean("isFrozenStorm", isStorm)
-        compound.setInteger("tickFrozenStorm", tickStorm)
-        compound.setInteger("tickClearWeather", tickClearWeather)
-        compound.setFloat("prevStormStrength", prevStormStrength)
-        compound.setFloat("stormStrength", stormStrength)
+    open fun writeToNBT(compound: NBTTagCompound): NBTTagCompound {
+        compound.putBoolean("isFrozenStorm", isStorm)
+        compound.putInt("tickFrozenStorm", tickStorm)
+        compound.putInt("tickClearWeather", tickClearWeather)
+        compound.putFloat("prevStormStrength", prevStormStrength)
+        compound.putFloat("stormStrength", stormStrength)
         return compound
     }
 
@@ -57,23 +58,19 @@ var stormStrength: Float = 0.0f
     }
 
     companion object {
+        @JvmField
+        val CODEC: Codec<FrozenStormSaveData> = NBTTagCompound.CODEC.xmap(
+            { tag -> FrozenStormSaveData("").also { it.readFromNBT(tag) } },
+            { data -> data.writeToNBT(NBTTagCompound()) }
+        )
+
         @JvmStatic
         fun get(world: World, name: String?): FrozenStormSaveData {
-            var name: String? = name
-            name += "_frozenstorm"
-            val storage: MapStorage = world.getPerWorldStorage()
-            var instance: FrozenStormSaveData? =
-                storage.getOrLoadData(FrozenStormSaveData::class.java, name) as FrozenStormSaveData?
-
-            if (instance == null) {
-                instance = FrozenStormSaveData((name)!!)
-                storage.setData(name, instance)
-            }
-            return instance
+            return FoundationSavedData.get(world, "${name}_frozenstorm", { FrozenStormSaveData("${name}_frozenstorm") }, CODEC)
         }
 
         @JvmStatic
-        fun calculateWeather(data: FrozenStormSaveData, rand: Random) {
+        fun calculateWeather(data: FrozenStormSaveData, rand: RandomSource) {
             data.prevStormStrength = data.stormStrength
 
             if (!data.isFrozenStorm()) {
@@ -102,7 +99,7 @@ var stormStrength: Float = 0.0f
             }
 
             data.stormStrength = MathHelper.clamp(data.stormStrength, 0.0f, 1.0f)
-            data.markDirty()
+            data.setDirty()
         }
     }
 }

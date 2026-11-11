@@ -4,13 +4,13 @@ import micdoodle8.mods.galacticraft.api.tile.ILockable
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.block.ITileEntityProvider
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 abstract class BlockAdvancedTile(par3Material: Material?) : BlockAdvanced((par3Material)!!), ITileEntityProvider {
@@ -32,7 +32,7 @@ abstract class BlockAdvancedTile(par3Material: Material?) : BlockAdvanced((par3M
     }
 
     fun dropEntireInventory(worldIn: World, pos: BlockPos, state: IBlockState?) {
-        val tileEntity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileEntity: TileEntity? = worldIn.getBlockEntity(pos)
         if (tileEntity is ILockable) {
             (tileEntity as ILockable).clearLockedInventory()
         }
@@ -43,8 +43,8 @@ abstract class BlockAdvancedTile(par3Material: Material?) : BlockAdvanced((par3M
 
                 val syncRandom: Random = GCCoreUtil.getRandom(pos)
 
-                for (var6: Int in 0..<inventory.getSizeInventory()) {
-                    val var7: ItemStack = inventory.getStackInSlot(var6)
+                for (var6: Int in 0..<inventory.getContainerSize()) {
+                    val var7: ItemStack = inventory.getItem(var6)
 
                     if (var7 != null && !var7.isEmpty()) {
                         val var8: Float = syncRandom.nextFloat() * 0.8f + 0.1f
@@ -63,7 +63,7 @@ abstract class BlockAdvancedTile(par3Material: Material?) : BlockAdvanced((par3M
                             var12.motionX = (syncRandom.nextGaussian().toFloat() * var13).toDouble()
                             var12.motionY = (syncRandom.nextGaussian().toFloat() * var13 + 0.2f).toDouble()
                             var12.motionZ = (syncRandom.nextGaussian().toFloat() * var13).toDouble()
-                            worldIn.spawnEntity(var12)
+                            worldIn.addFreshEntity(var12)
                         }
                     }
                 }

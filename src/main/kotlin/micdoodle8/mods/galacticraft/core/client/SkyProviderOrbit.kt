@@ -10,14 +10,13 @@ import java.util.Random
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import net.minecraft.client.Minecraft
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.renderer.*
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 import java.util.*
 import kotlin.math.*
@@ -44,7 +43,7 @@ open class SkyProviderOrbit constructor(
     private var prevPartialTicks = 0f
     private var prevTick: Long = 0
 
-    private val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+    private val minecraft: Minecraft = Minecraft.getInstance()
 
     init {
         GL11.glPushMatrix()
@@ -99,7 +98,7 @@ open class SkyProviderOrbit constructor(
     }
 
     override fun render(partialTicks: Float, world: WorldClient?, mc: Minecraft?) {
-        val var20: Float = 400.0f + this.minecraft.player.posY.toFloat() / 2f
+        val var20: Float = 400.0f + this.minecraft.player.y.toFloat() / 2f
 
         // if (this.minecraft.player.getRidingEntity() != null)
         run {}
@@ -432,7 +431,7 @@ open class SkyProviderOrbit constructor(
     }
 
     companion object {
-        private val moonTexture = ResourceLocation("textures/environment/moon_phases.png")
-        private val sunTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/planets/orbitalsun.png")
+        private val moonTexture = ResourceLocation.parse("textures/environment/moon_phases.png")
+        private val sunTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/planets/orbitalsun.png")
     }
 }

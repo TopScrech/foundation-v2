@@ -1,10 +1,11 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items.modules.armor
 
+import foundation.item.FoundationItemVariants
 import galaxyspace.core.GSItems
 import galaxyspace.core.prefab.items.modules.ItemModule
 import galaxyspace.core.util.GSUtils.Module_Type
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.ItemStack
 
 open class Gravity : ItemModule() {
     override fun getName(): String {
@@ -12,7 +13,7 @@ open class Gravity : ItemModule() {
     }
 
     override fun getIcon(): ItemStack {
-        return ItemStack(GSItems.COMPRESSED_PLATES, 1, 1)
+        return FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 1)
     }
 
     override fun getEquipmentSlot(): EntityEquipmentSlot {
@@ -24,7 +25,7 @@ open class Gravity : ItemModule() {
     }
 
     override fun getItemsForModule(): Array<ItemStack?> {
-        return ((arrayOf<ItemStack>(ItemStack(GSItems.COMPRESSED_PLATES, 2, 1)) as Array<ItemStack?>?))!!
+        return ((arrayOf<ItemStack>(FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 2, 1)) as Array<ItemStack?>?))!!
     }
 
     override fun getForrbidenModules(): Array<ItemModule?> {

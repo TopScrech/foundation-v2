@@ -17,7 +17,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.client.model.IModel
 import net.minecraftforge.client.model.obj.OBJModel
 import java.lang.Exception
@@ -35,10 +35,10 @@ open class TileEntityWindGeneratorRenderer : TileEntitySpecialRenderer<TileEntit
         if (cube == null) {
             try {
                 val model: IModel = OBJLoaderGC.instance
-                    .loadModel(ResourceLocation(GalaxySpace.MODID, "windmill_straight.obj"))
+                    .loadModel(ResourceLocation.fromNamespaceAndPath(GalaxySpace.MODID, "windmill_straight.obj"))
                 val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> =
                     Function { location: ResourceLocation? ->
-                        Minecraft.getMinecraft()
+                        Minecraft.getInstance()
                             .getTextureMapBlocks().getAtlasSprite(location.toString())
                     }
 

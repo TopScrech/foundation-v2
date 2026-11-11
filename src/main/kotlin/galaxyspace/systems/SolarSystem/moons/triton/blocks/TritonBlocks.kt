@@ -1,5 +1,8 @@
 package galaxyspace.systems.SolarSystem.moons.triton.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import galaxyspace.GalaxySpace
 import galaxyspace.api.block.IEnergyGeyser
 import galaxyspace.systems.SolarSystem.moons.triton.blocks.TritonBlocks.EnumTritonBlocks
@@ -7,29 +10,29 @@ import galaxyspace.systems.SolarSystem.moons.triton.blocks.TritonBlocks
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockIce
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProviderSurface
 import net.minecraftforge.fluids.FluidRegistry
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
-open class TritonBlocks constructor() : Block(Material.ROCK), ISortableBlock, IEnergyGeyser {
+open class TritonBlocks constructor() : Block(Material.ROCK), ISortableBlock, IEnergyGeyser, LegacyBlockMetadata {
     init {
         this.setTranslationKey("tritonblocks")
         this.setSoundType(SoundType.STONE)
@@ -37,7 +40,7 @@ open class TritonBlocks constructor() : Block(Material.ROCK), ISortableBlock, IE
         this.setTickRandomly(false)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (blockBasic: EnumTritonBlocks in EnumTritonBlocks.entries) {
             list.add(ItemStack(this, 1, blockBasic.getMeta()))
@@ -51,13 +54,13 @@ open class TritonBlocks constructor() : Block(Material.ROCK), ISortableBlock, IE
         var lifetime: Int = 1
         if (world.provider is WorldProviderSurface) lifetime = -250
 
-        if (state === state.withProperty(
+        if (state === state.setValue(
                 BASIC_TYPE,
                 EnumTritonBlocks.TRITON_GEYSER
             )
         ) {
-            if (world.isAirBlock(pos.up()) && (world.getBlockState(pos.down())
-                    .getBlock() === FluidRegistry.WATER.getBlock() || world.getBlockState(pos.down())
+            if (world.isEmptyBlock(pos.above()) && (world.getBlockState(pos.below())
+                    .getBlock() === FluidRegistry.WATER.getBlock() || world.getBlockState(pos.below())
                     .getBlock() is BlockIce)
             ) {
                 (GalaxySpace.proxy)!!.spawnParticle(
@@ -107,13 +110,13 @@ open class TritonBlocks constructor() : Block(Material.ROCK), ISortableBlock, IE
 
         if (world.provider is WorldProviderSurface) lifetime = -60
 
-        if (state === state.withProperty(
+        if (state === state.setValue(
                 BASIC_TYPE,
                 EnumTritonBlocks.TRITON_GEYSER_2
             )
         ) {
-            if (world.isAirBlock(pos.up()) && (world.getBlockState(pos.down())
-                    .getBlock() === FluidRegistry.WATER.getBlock() || world.getBlockState(pos.down())
+            if (world.isEmptyBlock(pos.above()) && (world.getBlockState(pos.below())
+                    .getBlock() === FluidRegistry.WATER.getBlock() || world.getBlockState(pos.below())
                     .getBlock() is BlockIce)
             ) {
                 (GalaxySpace.proxy)!!.spawnParticle(
@@ -169,7 +172,7 @@ open class TritonBlocks constructor() : Block(Material.ROCK), ISortableBlock, IE
             EnumTritonBlocks.TRITON_GEYSER, EnumTritonBlocks.TRITON_GEYSER_2 -> world.scheduleBlockUpdate(
                 pos,
                 this,
-                this.tickRate(world) + world.rand.nextInt(10),
+                this.tickRate(world) + world.random.nextInt(10),
                 0
             )
 
@@ -233,16 +236,16 @@ open class TritonBlocks constructor() : Block(Material.ROCK), ISortableBlock, IE
     }
 
     override fun isWorkGeyser(world: World?, state: IBlockState?, pos: BlockPos?): Boolean {
-        if (state === (state)!!.withProperty(
+        if (state === (state)!!.setValue(
                 BASIC_TYPE,
                 EnumTritonBlocks.TRITON_GEYSER
             )
-        ) return (world)!!.getBlockState((pos)!!.down()).getBlock() === FluidRegistry.WATER.getBlock()
-        if (state === (state)!!.withProperty(
+        ) return (world)!!.getBlockState((pos)!!.below()).getBlock() === FluidRegistry.WATER.getBlock()
+        if (state === (state)!!.setValue(
                 BASIC_TYPE,
                 EnumTritonBlocks.TRITON_GEYSER_2
             )
-        ) return (world)!!.getBlockState((pos)!!.down()).getBlock() === FluidRegistry.WATER.getBlock()
+        ) return (world)!!.getBlockState((pos)!!.below()).getBlock() === FluidRegistry.WATER.getBlock()
         return false
     }
 
@@ -258,7 +261,9 @@ open class TritonBlocks constructor() : Block(Material.ROCK), ISortableBlock, IE
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -273,8 +278,8 @@ open class TritonBlocks constructor() : Block(Material.ROCK), ISortableBlock, IE
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(BASIC_TYPE, (EnumTritonBlocks.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(BASIC_TYPE, (EnumTritonBlocks.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {

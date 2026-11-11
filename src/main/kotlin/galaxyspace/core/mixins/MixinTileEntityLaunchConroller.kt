@@ -19,12 +19,12 @@ import micdoodle8.mods.galacticraft.core.world.ChunkLoadingCallback
 import micdoodle8.mods.galacticraft.planets.mars.ConfigManagerMars
 import micdoodle8.mods.galacticraft.planets.mars.network.PacketSimpleMars
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityLaunchController
-import net.minecraft.block.Block
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.world.IBlockAccess
+import net.minecraft.world.level.block.Block
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
 import net.minecraftforge.common.ForgeChunkManager
 import org.spongepowered.asm.mixin.Mixin
 import java.util.ArrayList
@@ -46,7 +46,7 @@ open class MixinTileEntityLaunchConroller {
         pos: BlockPos,
         cir: CallbackInfoReturnable<Boolean>
     ) {
-        val tile: TileEntity? = world.getTileEntity(pos)
+        val tile: TileEntity? = world.getBlockEntity(pos)
         cir.setReturnValue(tile is IFuelDock)
     }
 
@@ -62,7 +62,7 @@ open class MixinTileEntityLaunchConroller {
     open fun update(ci: CallbackInfo) {
         val te: TileEntityLaunchController = this as Any as TileEntityLaunchController
 
-        if (!(te.getWorld())!!.isRemote) {
+        if (!(te.getWorld())!!.isClientSide) {
             te.controlEnabled = te.launchSchedulingEnabled && te.hasEnoughEnergyToRun && !te.getDisabled(0)
             if (this.frequencyCheckNeeded) {
                 te.checkDestFrequencyValid()
@@ -82,7 +82,7 @@ open class MixinTileEntityLaunchConroller {
                 for (i: Int in this.connectedPads.indices) {
                     val coords: BlockPos = this.connectedPads.get(i) as BlockPos
                     val block: Block = (te.getWorld())!!.getBlockState(coords).getBlock()
-                    val tile: TileEntity? = (te.getWorld())!!.getTileEntity(coords)
+                    val tile: TileEntity? = (te.getWorld())!!.getBlockEntity(coords)
 
                     if (block !== GCBlocks.landingPadFull || block !== GSBlocks.ADVANCED_LANDING_PAD) {
                         this.connectedPads.removeAt(i)
@@ -112,7 +112,7 @@ open class MixinTileEntityLaunchConroller {
     @Overwrite
     open fun onTicketLoaded(ticket: ForgeChunkManager.Ticket?, placed: Boolean) {
         val lc: TileEntityLaunchController = this as Any as TileEntityLaunchController
-        if (!(lc.getWorld())!!.isRemote && ConfigManagerMars.launchControllerChunkLoad) {
+        if (!(lc.getWorld())!!.isClientSide && ConfigManagerMars.launchControllerChunkLoad) {
             if (ticket == null) {
                 return
             }
@@ -122,13 +122,13 @@ open class MixinTileEntityLaunchConroller {
             }
 
             val nbt: NBTTagCompound = this.chunkLoadTicket!!.getModData()
-            nbt.setInteger("ChunkLoaderTileX", lc.getPos().getX())
-            nbt.setInteger("ChunkLoaderTileY", lc.getPos().getY())
-            nbt.setInteger("ChunkLoaderTileZ", lc.getPos().getZ())
+            nbt.putInt("ChunkLoaderTileX", lc.getPos().getX())
+            nbt.putInt("ChunkLoaderTileY", lc.getPos().getY())
+            nbt.putInt("ChunkLoaderTileZ", lc.getPos().getZ())
 
             for (x: Int in -3..3) {
                 for (z: Int in -3..3) {
-                    val tile: TileEntity? = (lc.getWorld())!!.getTileEntity(lc.getPos().add(x, 0, z))
+                    val tile: TileEntity? = (lc.getWorld())!!.getBlockEntity(lc.getPos().add(x, 0, z))
                     val blockID: Block = (lc.getWorld())!!.getBlockState(lc.getPos().add(x, 0, z)).getBlock()
                     //System.out.println((blockID instanceof BlockLandingPadFull || blockID instanceof BlockAdvancedLandingPadFull) + " | " + (lc.getPos().getX() + x >> 4 != lc.getPos().getX() >> 4 || lc.getPos().getZ() + z >> 4 != lc.getPos().getZ() >> 4));
                     //System.out.println((lc.getPos().getX() + x >> 4) + " | " + (lc.getPos().getX() >> 4) + " || " + (lc.getPos().getZ() + z >> 4) + " | "  + (lc.getPos().getZ() >> 4));

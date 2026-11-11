@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.api.transmission.grid
 
 import micdoodle8.mods.galacticraft.api.transmission.tile.ITransmitter
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 
 /**
  * The Oxygen Network in interface form.

@@ -17,8 +17,8 @@ import micdoodle8.mods.galacticraft.planets.mars.inventory.ContainerLaunchContro
 import micdoodle8.mods.galacticraft.planets.mars.inventory.ContainerSlimeling
 import micdoodle8.mods.galacticraft.planets.mars.network.PacketSimpleMars
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityLaunchController
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
 import java.util.HashMap
 
 object MarsUtil {
@@ -40,7 +40,7 @@ object MarsUtil {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimple(
                 PacketSimple.EnumSimplePacket.C_OPEN_PARACHEST_GUI,
-                GCCoreUtil.getDimensionID(player.world),
+                GCCoreUtil.getDimensionID(player.level()),
                 arrayOf<Any>(windowId, 1, landerInv.getEntityId())
             ), player
         )
@@ -57,7 +57,7 @@ object MarsUtil {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimpleMars(
                 PacketSimpleMars.EnumSimplePacketMars.C_OPEN_CUSTOM_GUI,
-                GCCoreUtil.getDimensionID(player.world),
+                GCCoreUtil.getDimensionID(player.level()),
                 arrayOf<Any>(windowId, 0, slimeling.getEntityId())
             ), player
         )
@@ -74,7 +74,7 @@ object MarsUtil {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimpleMars(
                 PacketSimpleMars.EnumSimplePacketMars.C_OPEN_CUSTOM_GUI,
-                GCCoreUtil.getDimensionID(player.world),
+                GCCoreUtil.getDimensionID(player.level()),
                 arrayOf<Any>(windowId, 1, rocket.getEntityId())
             ), player
         )
@@ -91,7 +91,7 @@ object MarsUtil {
         (GalacticraftCore.packetPipeline)!!.sendTo(
             PacketSimpleMars(
                 PacketSimpleMars.EnumSimplePacketMars.C_OPEN_CUSTOM_GUI_TILE,
-                GCCoreUtil.getDimensionID(player.world),
+                GCCoreUtil.getDimensionID(player.level()),
                 arrayOf<Any>(windowId, 0, launchController.getPos())
             ), player
         )

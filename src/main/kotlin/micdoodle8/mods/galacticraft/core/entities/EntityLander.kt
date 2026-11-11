@@ -11,16 +11,16 @@ import micdoodle8.mods.galacticraft.core.client.fx.ParticleLanderFlame
 import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.particle.Particle
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.HashMap
 import java.util.Random
 import kotlin.math.abs
@@ -62,8 +62,8 @@ open class EntityLander : EntityLanderBase, IIgnoreShift, ICameraZoomEntity {
         super.writeEntityToNBT(nbt)
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.lander.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.lander.name")
     }
 
     override fun hasCustomName(): Boolean {
@@ -161,7 +161,7 @@ open class EntityLander : EntityLanderBase, IIgnoreShift, ICameraZoomEntity {
         return particleMap
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getParticle(
         rand: Random?,
         x: Double,
@@ -215,7 +215,7 @@ open class EntityLander : EntityLanderBase, IIgnoreShift, ICameraZoomEntity {
                     entity.motionX = 0.0
                     entity.motionY = 0.0
                     entity.motionZ = 0.0
-                    entity.setPosition(entity.posX, this.posY + this.getMountedYOffset(), entity.posZ)
+                    entity.setPosition(entity.x, this.posY + this.getMountedYOffset(), entity.z)
                     this.world.updateEntityWithOptionalForce(entity, false)
                 }
                 this.world.createExplosion(this, this.posX, this.posY, this.posZ, 12f, true)

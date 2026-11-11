@@ -3,18 +3,18 @@ package micdoodle8.mods.galacticraft.api.recipe
 import micdoodle8.mods.galacticraft.api.recipe.SchematicEvent.FlipPage
 import micdoodle8.mods.galacticraft.api.recipe.SchematicEvent.Unlock
 
-import micdoodle8.mods.galacticraft.core.util.GCLog
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import org.apache.logging.log4j.LogManager
+import net.minecraft.client.gui.screens.Screen as GuiScreen
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.client.Minecraft
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 
 object SchematicRegistry {
+    private val logger = LogManager.getLogger("Galacticraft")
     @JvmField
     var schematicRecipes: ArrayList<ISchematicPage> = ArrayList<ISchematicPage>()
 
@@ -45,7 +45,7 @@ object SchematicRegistry {
         for (schematic: ISchematicPage in schematicRecipes) {
             val requiredItem: ItemStack? = schematic.getRequiredItem()
 
-            if (requiredItem != null && stack != null && requiredItem.isItemEqual(stack)) {
+            if (requiredItem != null && stack != null && !requiredItem.isEmpty && !stack.isEmpty && foundation.item.FoundationItemVariants.sameVariant(requiredItem, stack)) {
                 return schematic
             }
         }
@@ -80,7 +80,7 @@ object SchematicRegistry {
     fun addUnlockedPage(player: EntityPlayerMP?, page: ISchematicPage?) {
         // Used internally to add page to player's list of unlocked schematics.
         // No need to subscribe to this event
-        if (page != null) MinecraftForge.EVENT_BUS.post(SchematicEvent.Unlock(player, page))
+        if (page != null) SchematicEvent.Unlock(player, page).post()
     }
 
     /**
@@ -112,13 +112,13 @@ object SchematicRegistry {
      * @return the schematic page that will be shown when the player clicks NEXT
      */
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun flipToNextPage(cs: GuiScreen?, currentIndex: Int) {
-        FMLClientHandler.instance().getClient().currentScreen = null
+        Minecraft.getInstance().gui.setScreen(null)
 
         // Used internally inside Galacticraft to flip to the next page. No need
         // to subscribe to this event.
-        MinecraftForge.EVENT_BUS.post(SchematicEvent.FlipPage(cs, null, currentIndex, 1))
+        SchematicEvent.FlipPage(cs, null, currentIndex, 1).post()
     }
 
     /**
@@ -128,13 +128,13 @@ object SchematicRegistry {
      * @return the schematic page that will be shown when the player clicks BACK
      */
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun flipToLastPage(cs: GuiScreen?, currentIndex: Int) {
-        FMLClientHandler.instance().getClient().currentScreen = null
+        Minecraft.getInstance().gui.setScreen(null)
 
         // Used internally inside Galacticraft to flip to the last page. No need
         // to subscribe to this event.
-        MinecraftForge.EVENT_BUS.post(SchematicEvent.FlipPage(cs, null, currentIndex, -1))
+        SchematicEvent.FlipPage(cs, null, currentIndex, -1).post()
     }
 
     @JvmStatic
@@ -144,10 +144,10 @@ object SchematicRegistry {
 
     @JvmStatic
     fun getSchematicTexture(index: Int): ResourceLocation? {
-        if (index < textures.size) return textures.get(index)
+        if (index in textures.indices) return textures[index]
 
-        GCLog.debug("couldn't find render texture for " + index)
-        return textures.get(0)
+        logger.debug("couldn't find render texture for " + index)
+        return textures.firstOrNull()
     }
 
     @JvmStatic
@@ -159,9 +159,9 @@ object SchematicRegistry {
 
     @JvmStatic
     fun getSchematicItem(index: Int): ItemStack {
-        if (index < schematicItems.size) return schematicItems.get(index)!!.copy()
+        if (index in schematicItems.indices) return schematicItems[index]?.copy() ?: ItemStack.EMPTY
 
-        GCLog.debug("couldn't find schematic item for " + index)
-        return schematicItems.get(0)!!.copy()
+        logger.debug("couldn't find schematic item for " + index)
+        return schematicItems.firstOrNull()?.copy() ?: ItemStack.EMPTY
     }
 }

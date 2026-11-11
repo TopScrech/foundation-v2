@@ -9,17 +9,17 @@ import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseElectricBlockWithIn
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.WorldlyContainer as ISidedInventory
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.FurnaceRecipes
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.HashSet
 
 open class TileEntityElectricFurnace @JvmOverloads constructor(tier: Int = 1) :
@@ -52,7 +52,7 @@ open class TileEntityElectricFurnace @JvmOverloads constructor(tier: Int = 1) :
             //for version update compatibility
             val b: Block = this.world.getBlockState(this.getPos()).getBlock()
             if (b === GCBlocks.machineBase) {
-                this.world.setBlockState(this.getPos(), (GCBlocks.machineTiered)!!.getDefaultState(),  /*,s 4*/2)
+                this.world.setBlock(this.getPos(), (GCBlocks.machineTiered)!!.defaultBlockState(),  /*,s 4*/2)
             } else if (metadata >= 8) {
                 this.setTier2()
             }
@@ -189,7 +189,7 @@ open class TileEntityElectricFurnace @JvmOverloads constructor(tier: Int = 1) :
         } else {
             this.initialised = false
         }
-        this.processTicks = nbt.getInteger("smeltingTicks")
+        this.processTicks = nbt.getIntOr("smeltingTicks", 0)
         this.stacks = this.readStandardItemsFromNBT(nbt)
 
         this.readMachineSidesFromNBT(nbt) //Needed by IMachineSides
@@ -200,7 +200,7 @@ open class TileEntityElectricFurnace @JvmOverloads constructor(tier: Int = 1) :
             this.storage.setEnergyStored(STANDARD_CAPACITY)
         }
         super.writeToNBT(nbt)
-        nbt.setInteger("smeltingTicks", this.processTicks)
+        nbt.putInt("smeltingTicks", this.processTicks)
         this.writeStandardItemsToNBT(nbt, this.stacks)
 
         this.addMachineSidesToNBT(nbt) //Needed by IMachineSides
@@ -212,12 +212,12 @@ open class TileEntityElectricFurnace @JvmOverloads constructor(tier: Int = 1) :
         return this.stacks
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return if (this.tierGC == 1 && this.initialised) 3 else 4
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate(if (this.tierGC == 1) "tile.machine.2.name" else "tile.machine.7.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable(if (this.tierGC == 1) "tile.machine.2.name" else "tile.machine.7.name")
     }
 
     //    @Override
@@ -229,7 +229,7 @@ open class TileEntityElectricFurnace @JvmOverloads constructor(tier: Int = 1) :
      * Returns true if automation is allowed to insert the given stack (ignoring
      * stack size) into the given slot.
      */
-    override fun isItemValidForSlot(slotID: Int, itemStack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemStack: ItemStack): Boolean {
         if (itemStack.isEmpty()) {
             return false
         }
@@ -244,11 +244,11 @@ open class TileEntityElectricFurnace @JvmOverloads constructor(tier: Int = 1) :
         return intArrayOf(0, 1, 2)
     }
 
-    override fun canInsertItem(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
-        return this.isItemValidForSlot(slotID, par2ItemStack)
+    override fun canPlaceItemThroughFace(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, par2ItemStack)
     }
 
-    override fun canExtractItem(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
         return slotID == 2 || this.tierGC == 2 && slotID == 3
     }
 

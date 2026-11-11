@@ -11,9 +11,9 @@ import asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart.RoomSpa
 import asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart.RoomTreasure
 import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.structure.MapGenStructure
 import net.minecraft.world.gen.structure.MapGenStructureIO
 import net.minecraft.world.gen.structure.StructureComponent

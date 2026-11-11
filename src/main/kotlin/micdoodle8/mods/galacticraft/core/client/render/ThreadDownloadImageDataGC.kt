@@ -4,10 +4,10 @@ import net.minecraft.client.renderer.IImageBuffer
 import net.minecraft.client.renderer.texture.SimpleTexture
 import net.minecraft.client.renderer.texture.TextureUtil
 import net.minecraft.client.resources.IResourceManager
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.common.FMLLog
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import foundation.logging.FoundationLog as FMLLog
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.apache.commons.io.FileUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -19,7 +19,7 @@ import java.net.URL
 import java.util.concurrent.atomic.AtomicInteger
 import javax.imageio.ImageIO
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class ThreadDownloadImageDataGC constructor(
     private val field_152434_e: File?,
     private val imageUrl: String,

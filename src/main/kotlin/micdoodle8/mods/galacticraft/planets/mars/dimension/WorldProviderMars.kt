@@ -14,13 +14,13 @@ import micdoodle8.mods.galacticraft.planets.mars.MarsModule
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
 import micdoodle8.mods.galacticraft.planets.mars.world.gen.ChunkProviderMars
 import micdoodle8.mods.galacticraft.planets.mars.world.gen.RoomTreasureMars
-import net.minecraft.block.Block
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
+import net.minecraft.world.level.block.Block
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.gen.IChunkGenerator
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.*
 
 open class WorldProviderMars : WorldProviderSpace(), IGalacticraftWorldProvider, ISolarLevel {
@@ -48,7 +48,7 @@ open class WorldProviderMars : WorldProviderSpace(), IGalacticraftWorldProvider,
         return ChunkProviderMars::class.java
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val f1: Float = this.world.getCelestialAngle(par1)
         var f2: Float = 1.0f - (MathHelper.cos(f1 * Constants.twoPI) * 2.0f + 0.25f)

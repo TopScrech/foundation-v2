@@ -19,16 +19,16 @@ import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.WorldServer
+import net.minecraft.server.level.ServerLevel as WorldServer
 import java.lang.Exception
 import java.lang.reflect.Field
 import java.util.ArrayList
@@ -137,8 +137,8 @@ abstract class EntityTieredRocket : EntityAutoRocket, IRocketType, IDockable, IW
                     this.motionY = this.motionZ
                     this.motionX = this.motionY
                     passenger.motionZ = 0.0
-                    passenger.motionY = passenger.motionZ
-                    passenger.motionX = passenger.motionY
+                    passenger.motionY = passenger.deltaMovement.z
+                    passenger.motionX = passenger.deltaMovement.y
                 }
             } else {
                 this.motionZ = 0.0
@@ -435,12 +435,12 @@ abstract class EntityTieredRocket : EntityAutoRocket, IRocketType, IDockable, IW
 
     override fun writeEntityToNBT(nbt: NBTTagCompound) {
         if (world.isRemote) return
-        nbt.setInteger("Type", this.rocketType!!.getIndex())
+        nbt.putInt("Type", this.rocketType!!.getIndex())
         super.writeEntityToNBT(nbt)
     }
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
-        this.rocketType = IRocketType.EnumRocketType.entries[nbt.getInteger("Type")]
+        this.rocketType = IRocketType.EnumRocketType.entries[nbt.getIntOr("Type", 0)]
         super.readEntityFromNBT(nbt)
     }
 
@@ -448,7 +448,7 @@ abstract class EntityTieredRocket : EntityAutoRocket, IRocketType, IDockable, IW
         return this.rocketType
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         if (this.rocketType == null) return 2
         return this.rocketType!!.getInventorySpace()
     }

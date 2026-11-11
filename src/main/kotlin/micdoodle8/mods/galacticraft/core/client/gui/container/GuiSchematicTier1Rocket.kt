@@ -6,9 +6,9 @@ import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.inventory.ContainerSchematicTier1Rocket
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
 import org.lwjgl.opengl.GL11
 
 open class GuiSchematicTier1Rocket constructor(par1InventoryPlayer: InventoryPlayer, pos: BlockPos) :
@@ -71,6 +71,6 @@ open class GuiSchematicTier1Rocket constructor(par1InventoryPlayer: InventoryPla
     }
 
     companion object {
-        private val rocketBenchTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/rocketbench.png")
+        private val rocketBenchTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/rocketbench.png")
     }
 }

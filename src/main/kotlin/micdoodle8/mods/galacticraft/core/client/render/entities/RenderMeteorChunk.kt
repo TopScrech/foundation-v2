@@ -6,7 +6,7 @@ import micdoodle8.mods.galacticraft.core.entities.EntityMeteorChunk
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class RenderMeteorChunk constructor(renderManager: RenderManager) :
     Render<EntityMeteorChunk>(renderManager) {
@@ -46,8 +46,8 @@ open class RenderMeteorChunk constructor(renderManager: RenderManager) :
     }
 
     companion object {
-        private val meteorChunkTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/blocks/meteor_chunk.png")
+        private val meteorChunkTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/blocks/meteor_chunk.png")
         private val meteorChunkHotTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/blocks/meteor_chunk_hot.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/blocks/meteor_chunk_hot.png")
     }
 }

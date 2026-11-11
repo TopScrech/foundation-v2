@@ -18,9 +18,9 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.settings.KeyBinding
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import org.lwjgl.input.Keyboard
 
@@ -46,13 +46,13 @@ open class KeyHandlerClient constructor() : KeyHandler(
                         GalacticraftCore.instance,
                         GuiIdsCore.GALAXY_MAP,
                         mc.world,
-                        mc.player.posX.toInt(),
-                        mc.player.posY.toInt(),
-                        mc.player.posZ.toInt()
+                        mc.player.x.toInt(),
+                        mc.player.y.toInt(),
+                        mc.player.z.toInt()
                     )
                 }
             } else if ((kb)!!.getKeyCode() == openFuelGui.getKeyCode()) {
-                if (playerBase.getRidingEntity() is EntitySpaceshipBase || playerBase.getRidingEntity() is EntityBuggy) {
+                if (playerBase.getVehicle() is EntitySpaceshipBase || playerBase.getVehicle() is EntityBuggy) {
                     (GalacticraftCore.packetPipeline)!!.sendToServer(
                         PacketSimple(
                             PacketSimple.EnumSimplePacket.S_OPEN_FUEL_GUI,
@@ -85,7 +85,7 @@ open class KeyHandlerClient constructor() : KeyHandler(
                 keyNum = 5
             }
 
-            val entityTest: Entity? = mc.player.getRidingEntity()
+            val entityTest: Entity? = mc.player.getVehicle()
             if (entityTest != null && entityTest is IControllableEntity && keyNum != -1) {
                 val entity: IControllableEntity = entityTest as IControllableEntity
 
@@ -179,7 +179,7 @@ open class KeyHandlerClient constructor() : KeyHandler(
 
         @JvmField
         var leftShiftKey: KeyBinding? = null
-        private val mc: Minecraft = Minecraft.getMinecraft()
+        private val mc: Minecraft = Minecraft.getInstance()
 
         @JvmStatic
         private fun getVanillaKeyBindings(): Array<KeyBinding?> {

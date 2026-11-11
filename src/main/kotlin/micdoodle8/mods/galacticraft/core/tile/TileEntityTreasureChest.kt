@@ -1,5 +1,10 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import net.minecraft.network.chat.Component
+
+import net.minecraft.world.ContainerHelper
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.galacticraft.api.item.IKeyable
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
@@ -7,33 +12,34 @@ import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.init.SoundEvents
-import net.minecraft.inventory.Container
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
 import net.minecraft.inventory.ContainerChest
-import net.minecraft.inventory.IInventory
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.InventoryLargeChest
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraft.util.ITickable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.text.ITextComponent
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.util.text.TextComponentTranslation
-import net.minecraft.world.WorldServer
+import net.minecraft.core.NonNullList
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.network.chat.Component as ITextComponent
+
+
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraft.world.storage.loot.LootContext
 import net.minecraft.world.storage.loot.LootTable
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : TileEntityAdvanced(), ITickable,
@@ -72,40 +78,40 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
         this.tier = tier
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return 27
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack {
+    override fun getItem(var1: Int): ItemStack {
         return this.stacks.get(var1)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        val oldstack: ItemStack = ItemStackHelper.getAndRemove(this.stacks, index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        val oldstack: ItemStack = ContainerHelper.takeItem(this.stacks, index)
         if (!oldstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
         return oldstack
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.stacks.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
     override fun isEmpty(): Boolean {
@@ -121,8 +127,8 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
     /**
      * Gets the name of this command sender (usually username, but possibly "Rcon")
      */
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.treasurechest.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return Component.translatable("container.treasurechest.name")
     }
 
     /**
@@ -138,10 +144,10 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.locked = nbt.getBoolean("isLocked")
-        this.tier = nbt.getInteger("tier")
+        this.locked = nbt.getBooleanOr("isLocked", false)
+        this.tier = nbt.getIntOr("tier", 0)
 
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, this.stacks)
 
         checkLootAndRead(nbt)
@@ -149,8 +155,8 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setBoolean("isLocked", this.locked)
-        nbt.setInteger("tier", this.tier)
+        nbt.putBoolean("isLocked", this.locked)
+        nbt.putInt("tier", this.tier)
         ItemStackHelper.saveAllItems(nbt, this.stacks)
 
         checkLootAndWrite(nbt)
@@ -166,15 +172,15 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
      * Returns the maximum stack size for a inventory slot. Seems to always be 64, possibly will be extended. *Isn't
      * this more of a set than a get?*
      */
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
     /**
      * Do not make give this method the name canInteractWith because it clashes with Container
      */
-    override fun isUsableByPlayer(player: EntityPlayer): Boolean {
-        return if (this.world.getTileEntity(this.pos) !== this) false else player.getDistanceSq(
+    override fun stillValid(player: EntityPlayer): Boolean {
+        return if (this.world.getBlockEntity(this.pos) !== this) false else player.getDistanceSq(
             this.pos.getX().toDouble() + 0.5, this.pos.getY().toDouble() + 0.5, this.pos.getZ().toDouble() + 0.5
         ) <= 64.0
     }
@@ -295,8 +301,8 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
         }
     }
 
-    override fun openInventory(player: EntityPlayer) {
-        if (!player.isSpectator()) {
+    override fun startOpen(player: net.minecraft.world.entity.ContainerUser) {
+        if (!player.getLivingEntity().isSpectator()) {
             if (this.numPlayersUsing < 0) {
                 this.numPlayersUsing = 0
             }
@@ -308,8 +314,8 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
         }
     }
 
-    override fun closeInventory(player: EntityPlayer) {
-        if (!player.isSpectator()) {
+    override fun stopOpen(player: net.minecraft.world.entity.ContainerUser) {
+        if (!player.getLivingEntity().isSpectator()) {
 //            --this.numPlayersUsing;
 //            this.world.addBlockEvent(this.pos, this.getBlockType(), 1, this.numPlayersUsing);
 //            this.world.notifyNeighborsOfStateChange(this.pos, this.getBlockType());
@@ -320,7 +326,7 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
     /**
      * Returns true if automation is allowed to insert the given stack (ignoring stack size) into the given slot.
      */
-    override fun isItemValidForSlot(index: Int, stack: ItemStack): Boolean {
+    override fun canPlaceItem(index: Int, stack: ItemStack): Boolean {
         return true
     }
 
@@ -340,29 +346,16 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
         return ContainerChest(playerInventory, this, playerIn)
     }
 
-    override fun getField(id: Int): Int {
-        return 0
+
+
+
+    override fun clearContent() {
+        if (isEmpty) return
+        stacks.clear()
+        setChanged()
     }
 
-    override fun setField(id: Int, value: Int) {
-    }
-
-    override fun getFieldCount(): Int {
-        return 0
-    }
-
-    override fun clear() {
-        for (i: Int in this.stacks.indices) {
-            this.stacks.set(i, ItemStack.EMPTY)
-        }
-    }
-
-    override fun getDisplayName(): ITextComponent? {
-        return (if (this.hasCustomName()) TextComponentString(this.getName()) else TextComponentTranslation(
-            this.getName(),
-            *arrayOfNulls<Any>(0)
-        )) as ITextComponent
-    }
+    override fun getDisplayName(): ITextComponent = getName()
 
     override fun getPacketRange(): Double {
         return 20.0
@@ -389,7 +382,7 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
                 // 1.0F);
             } else {
                 if (!(player)!!.capabilities.isCreativeMode) {
-                    (player)!!.inventory.getCurrentItem().shrink(1)
+                    (player)!!.inventory.getSelectedItem().shrink(1)
                 }
 
                 return true
@@ -401,7 +394,7 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
 
     override fun onActivatedWithoutKey(player: EntityPlayer?, face: EnumFacing?): Boolean {
         if (this.locked) {
-            if ((player)!!.world.isRemote) {
+            if ((player)!!.level().isRemote) {
                 (GalacticraftCore.packetPipeline)!!.sendToServer(
                     PacketSimple(
                         PacketSimple.EnumSimplePacket.S_ON_FAILED_CHEST_UNLOCK,
@@ -421,9 +414,9 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
     }
 
     protected open fun checkLootAndRead(compound: NBTTagCompound): Boolean {
-        if (compound.hasKey("LootTable", 8)) {
-            this.lootTable = ResourceLocation(compound.getString("LootTable"))
-            this.lootTableSeed = compound.getLong("LootTableSeed")
+        if (compound.containsTag("LootTable", 8)) {
+            this.lootTable = ResourceLocation(compound.getStringOr("LootTable", ""))
+            this.lootTableSeed = compound.getLongOr("LootTableSeed", 0L)
             return true
         } else {
             return false
@@ -432,10 +425,10 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
 
     protected open fun checkLootAndWrite(compound: NBTTagCompound): Boolean {
         if (this.lootTable != null) {
-            compound.setString("LootTable", this.lootTable.toString())
+            compound.putString("LootTable", this.lootTable.toString())
 
             if (this.lootTableSeed != 0L) {
-                compound.setLong("LootTableSeed", this.lootTableSeed)
+                compound.putLong("LootTableSeed", this.lootTableSeed)
             }
 
             return true
@@ -475,7 +468,7 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
         this.lootTableSeed = lootTableSeed
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         if (this.renderAABB == null) {
             this.renderAABB = AxisAlignedBB(pos, pos.add(1, 2, 1))
@@ -483,7 +476,7 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
         return this.renderAABB!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return Constants.RENDERDISTANCE_MEDIUM
     }
@@ -492,11 +485,11 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
         return IntArray(0)
     }
 
-    override fun canInsertItem(index: Int, itemStackIn: ItemStack, direction: EnumFacing): Boolean {
+    override fun canPlaceItemThroughFace(index: Int, itemStackIn: ItemStack, direction: EnumFacing?): Boolean {
         return false
     }
 
-    override fun canExtractItem(index: Int, stack: ItemStack, direction: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(index: Int, stack: ItemStack, direction: EnumFacing): Boolean {
         return false
     }
 
@@ -505,7 +498,7 @@ open class TileEntityTreasureChest @JvmOverloads constructor(tier: Int = 1) : Ti
         fun findClosest(entity: Entity, tier: Int): TileEntityTreasureChest? {
             var distance: Double = Double.MAX_VALUE
             var chest: TileEntityTreasureChest? = null
-            for (tile: TileEntity? in entity.world.loadedTileEntityList) {
+            for (tile: TileEntity? in entity.level().loadedTileEntityList) {
                 if (tile is TileEntityTreasureChest && tile.getTierOfKeyRequired() == tier) {
                     val dist: Double = entity.getDistanceSq(
                         tile.getPos().getX() + 0.5,

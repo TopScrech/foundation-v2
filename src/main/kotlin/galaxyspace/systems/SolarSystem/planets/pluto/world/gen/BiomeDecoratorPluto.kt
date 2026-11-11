@@ -2,7 +2,7 @@ package galaxyspace.systems.SolarSystem.planets.pluto.world.gen
 
 import galaxyspace.systems.SolarSystem.planets.pluto.world.gen.BiomeDecoratorPluto
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 
 open class BiomeDecoratorPluto  //private WorldGenerator nickelGen;
 constructor() : BiomeDecoratorSpace() {

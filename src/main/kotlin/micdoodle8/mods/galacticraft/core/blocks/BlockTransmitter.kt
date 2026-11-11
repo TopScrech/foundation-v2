@@ -10,22 +10,22 @@ import micdoodle8.mods.galacticraft.core.energy.EnergyUtil
 import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.OxygenUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyBool
-import net.minecraft.block.state.IBlockState
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.properties.BooleanProperty as PropertyBool
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.common.network.NetworkRegistry
 
 abstract class BlockTransmitter(material: Material?) : BlockAdvanced((material)!!) {
     override fun neighborChanged(state: IBlockState, worldIn: World, pos: BlockPos, blockIn: Block, fromPos: BlockPos) {
         super.neighborChanged(state, worldIn, pos, blockIn, fromPos)
 
-        val tile: TileEntity? = worldIn.getTileEntity(pos)
+        val tile: TileEntity? = worldIn.getBlockEntity(pos)
 
         //        this.setBlockBoundsBasedOnState(worldIn, pos);
         (GalacticraftCore.packetPipeline)!!.sendToAllAround(
@@ -67,7 +67,7 @@ abstract class BlockTransmitter(material: Material?) : BlockAdvanced((material)!
     //    @Override
     //    public void setBlockBoundsBasedOnState(IBlockAccess worldIn, BlockPos pos)
     //    {
-    //        TileEntity tileEntity = worldIn.getTileEntity(pos);
+    //        TileEntity tileEntity = worldIn.getBlockEntity(pos);
     //
     //        if (tileEntity instanceof ITransmitter)
     //        {
@@ -137,7 +137,7 @@ abstract class BlockTransmitter(material: Material?) : BlockAdvanced((material)!
     //        this.setBlockBounds((float) minVector.x, (float) minVector.y, (float) minVector.z, (float) maxVector.x, (float) maxVector.y, (float) maxVector.z);
     //        super.addCollisionBoxesToList(worldIn, pos, state, mask, list, collidingEntity);
     //
-    //        TileEntity tileEntity = worldIn.getTileEntity(pos);
+    //        TileEntity tileEntity = worldIn.getBlockEntity(pos);
     //        if (tileEntity instanceof ITransmitter)
     //        {
     //            TileEntity[] connectable;
@@ -193,7 +193,7 @@ abstract class BlockTransmitter(material: Material?) : BlockAdvanced((material)!
     //        this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
     //    }
     override fun getActualState(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState {
-        val tileEntity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileEntity: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tileEntity is ITransmitter) {
             var connectable: Array<TileEntity?> = arrayOfNulls<TileEntity>(6)
@@ -203,12 +203,12 @@ abstract class BlockTransmitter(material: Material?) : BlockAdvanced((material)!
                 else -> {}
             }
 
-            return state.withProperty(DOWN, connectable[EnumFacing.DOWN.ordinal] != null)
-                .withProperty(UP, connectable[EnumFacing.UP.ordinal] != null)
-                .withProperty(NORTH, connectable[EnumFacing.NORTH.ordinal] != null)
-                .withProperty(EAST, connectable[EnumFacing.EAST.ordinal] != null)
-                .withProperty(SOUTH, connectable[EnumFacing.SOUTH.ordinal] != null)
-                .withProperty(WEST, connectable[EnumFacing.WEST.ordinal] != null)
+            return state.setValue(DOWN, connectable[EnumFacing.DOWN.ordinal] != null)
+                .setValue(UP, connectable[EnumFacing.UP.ordinal] != null)
+                .setValue(NORTH, connectable[EnumFacing.NORTH.ordinal] != null)
+                .setValue(EAST, connectable[EnumFacing.EAST.ordinal] != null)
+                .setValue(SOUTH, connectable[EnumFacing.SOUTH.ordinal] != null)
+                .setValue(WEST, connectable[EnumFacing.WEST.ordinal] != null)
         }
 
         return state

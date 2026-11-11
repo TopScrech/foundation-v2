@@ -9,27 +9,27 @@ import micdoodle8.mods.galacticraft.core.client.EventHandlerClient
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import net.minecraft.client.Minecraft
-import net.minecraft.client.audio.PositionedSoundRecord
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.resources.sounds.SimpleSoundInstance as PositionedSoundRecord
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 import net.minecraft.client.network.NetHandlerPlayClient
 import net.minecraft.client.network.NetworkPlayerInfo
-import net.minecraft.entity.Entity
-import net.minecraft.entity.MoverType
-import net.minecraft.init.MobEffects
-import net.minecraft.init.SoundEvents
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.MoverType
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.sounds.SoundEvents
 import net.minecraft.stats.RecipeBook
 import net.minecraft.stats.StatisticsManager
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.EnumDifficulty
-import net.minecraft.world.World
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.Difficulty as EnumDifficulty
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.fml.common.FMLLog
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import foundation.logging.FoundationLog as FMLLog
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.RuntimeException
 import kotlin.math.abs
 import kotlin.math.atan
@@ -87,8 +87,8 @@ open class GCEntityClientPlayerMP constructor(
                     }
 
                     if (this.timeInPortal == 0.0f) {
-                        this.mc.getSoundHandler().playSound(
-                            PositionedSoundRecord.getMasterRecord(
+                        this.mc.getSoundManager().play(
+                            PositionedSoundRecord.forUI(
                                 SoundEvents.BLOCK_PORTAL_TRIGGER,
                                 this.rand.nextFloat() * 0.4f + 0.8f
                             )
@@ -102,7 +102,7 @@ open class GCEntityClientPlayerMP constructor(
                     }
 
                     this.inPortal = false
-                } else if (this.isPotionActive(MobEffects.NAUSEA) && this.getActivePotionEffect(MobEffects.NAUSEA)!!
+                } else if (this.hasEffect(MobEffects.NAUSEA) && this.getEffect(MobEffects.NAUSEA)!!
                         .getDuration() > 60
                 ) {
                     this.timeInPortal += 0.006666667f
@@ -166,7 +166,7 @@ open class GCEntityClientPlayerMP constructor(
                 val flag4: Boolean =
                     this.getFoodStats().getFoodLevel().toFloat() > 6.0f || this.capabilities.allowFlying
 
-                if (this.onGround && !flag1 && !flag2 && this.movementInput.moveForward >= 0.8f && !this.isSprinting() && flag4 && !this.isHandActive() && !this.isPotionActive(
+                if (this.onGround && !flag1 && !flag2 && this.movementInput.moveForward >= 0.8f && !this.isSprinting() && flag4 && !this.isHandActive() && !this.hasEffect(
                         MobEffects.BLINDNESS
                     )
                 ) {
@@ -177,7 +177,7 @@ open class GCEntityClientPlayerMP constructor(
                     }
                 }
 
-                if (!this.isSprinting() && this.movementInput.moveForward >= sprintlevel && flag4 && !this.isHandActive() && !this.isPotionActive(
+                if (!this.isSprinting() && this.movementInput.moveForward >= sprintlevel && flag4 && !this.isHandActive() && !this.hasEffect(
                         MobEffects.BLINDNESS
                     ) && this.mc.gameSettings.keyBindSprint.isKeyDown()
                 ) {
@@ -216,7 +216,7 @@ open class GCEntityClientPlayerMP constructor(
                     }
                 }
 
-                this.inventory.decrementAnimations()
+                this.inventory.tick()
                 this.prevCameraYaw = this.cameraYaw
 
                 //  from: EntityLivingBase
@@ -326,7 +326,7 @@ open class GCEntityClientPlayerMP constructor(
                     for (i: Int in list.indices) {
                         val entity: Entity = list.get(i) as Entity
 
-                        if (!entity.isDead) {
+                        if (!entity.isRemoved()) {
                             entity.onCollideWithPlayer(this)
                         }
                     }
@@ -361,9 +361,9 @@ open class GCEntityClientPlayerMP constructor(
     override fun isSneaking(): Boolean {
         if (this.world.provider is IZeroGDimension) {
             val zeroGEvent: ZeroGravityEvent = ZeroGravityEvent.SneakOverride(this)
-            MinecraftForge.EVENT_BUS.post(zeroGEvent)
-            if (zeroGEvent.isCanceled()) {
-                return super.isSneaking()
+            val zeroGravityCancelled = zeroGEvent.post()
+            if (zeroGravityCancelled) {
+                return super.isShiftKeyDown()
             }
 
             val stats: GCPlayerStatsClient = (GCPlayerStatsClient.Companion.get(this))!!
@@ -390,17 +390,17 @@ open class GCEntityClientPlayerMP constructor(
             this.sneakLast = if (this.movementInput == null) false else this.movementInput.sneak
         } else {
             this.sneakLast = false
-            if (EventHandlerClient.sneakRenderOverride && this.onGround && this.inventory.getCurrentItem() != null && this.inventory.getCurrentItem()
+            if (EventHandlerClient.sneakRenderOverride && this.onGround && this.inventory.getSelectedItem() != null && this.inventory.getSelectedItem()
                     .getItem() is IHoldableItem && (this.getRidingEntity() !is ICameraZoomEntity)
             ) {
-                val holdableItem: IHoldableItem = this.inventory.getCurrentItem().getItem() as IHoldableItem
+                val holdableItem: IHoldableItem = this.inventory.getSelectedItem().getItem() as IHoldableItem
 
                 if (holdableItem.shouldCrouch(this)) {
                     return true
                 }
             }
         }
-        return super.isSneaking()
+        return super.isShiftKeyDown()
     }
 
     override fun getEyeHeight(): Float {
@@ -430,14 +430,14 @@ open class GCEntityClientPlayerMP constructor(
         return f - ySize
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getBedOrientationInDegrees(): Float {
         return ClientProxyCore.playerClientHandler.getBedOrientationInDegrees(this, super.getBedOrientationInDegrees())
     }
 
     //
     //    @Override
-    //    @SideOnly(Side.CLIENT)
+    //    @OnlyIn(Dist.CLIENT)
     //    public void setVelocity(double xx, double yy, double zz)
     //    {
     //    	if (this.world.provider instanceof WorldProviderOrbit)
@@ -476,7 +476,7 @@ open class GCEntityClientPlayerMP constructor(
         return vanillaCape
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getBrightnessForRender(): Int {
         var height: Double = this.posY + this.getEyeHeight().toDouble()
         if (height > 255.0) height = 255.0

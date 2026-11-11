@@ -9,15 +9,15 @@ import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.client.render.entities.RenderPlayerGC
 import micdoodle8.mods.galacticraft.core.wrappers.PlayerGearData
-import net.minecraft.client.entity.AbstractClientPlayer
+import net.minecraft.client.player.AbstractClientPlayer
 import net.minecraft.client.model.ModelBiped
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.util.Mth as MathHelper
 import net.minecraftforge.common.MinecraftForge
 import kotlin.math.sin
 
@@ -35,10 +35,10 @@ object ModelBipedGC {
     ) {
         if (par7Entity !is EntityPlayer) return
         val player: EntityPlayer = par7Entity
-        val currentItemStack: ItemStack = player.inventory.getCurrentItem()
+        val currentItemStack: ItemStack = player.inventory.getSelectedItem()
         val floatPI: Float = 3.1415927f
 
-        if (!par7Entity.onGround && par7Entity.world.provider is IGalacticraftWorldProvider && par7Entity.getRidingEntity() == null && !(currentItemStack != null && currentItemStack.getItem() is IHoldableItem)) {
+        if (!par7Entity.onGround && par7Entity.level().provider is IGalacticraftWorldProvider && par7Entity.getVehicle() == null && !(currentItemStack != null && currentItemStack.getItem() is IHoldableItem)) {
             val speedModifier: Float = 0.1162f * 2
 
             val angularSwingArm: Float = MathHelper.cos(par1 * (speedModifier / 2))
@@ -68,13 +68,13 @@ object ModelBipedGC {
         var heldItemStack: ItemStack? = null
 
         for (hand: EnumHand in EnumHand.entries) {
-            val item: ItemStack = player.getHeldItem(hand)
+            val item: ItemStack = player.getItemInHand(hand)
             if (item != null && item.getItem() is IHoldableItem) {
                 heldItemStack = item
             }
         }
 
-        if (heldItemStack != null && player.getRidingEntity() !is ICameraZoomEntity) {
+        if (heldItemStack != null && player.getVehicle() !is ICameraZoomEntity) {
             val heldItem: Item = heldItemStack.getItem()
             val holdableItem: IHoldableItem = heldItem as IHoldableItem
             val holdableItemCustom: IHoldableItemCustom? =
@@ -113,9 +113,9 @@ object ModelBipedGC {
             }
         }
 
-        val l: MutableList<*> = player.world.getEntitiesWithinAABBExcludingEntity(
+        val l: MutableList<*> = player.level().getEntitiesWithinAABBExcludingEntity(
             player,
-            AxisAlignedBB(player.posX - 20, 0.0, player.posZ - 20, player.posX + 20, 200.0, player.posZ + 20)
+            AxisAlignedBB(player.x - 20, 0.0, player.z - 20, player.x + 20, 200.0, player.z + 20)
         )
 
         for (i: Int in l.indices) {
@@ -140,7 +140,7 @@ object ModelBipedGC {
             MinecraftForge.EVENT_BUS.post(event)
 
             if (event.vanillaOverride && (event.shouldRotate == null || (event.shouldRotate)!!)) {
-                biped.bipedHead.rotateAngleX = (20.0f - sin((player.ticksExisted / 10.0f).toDouble()) / 7.0f).toFloat()
+                biped.bipedHead.rotateAngleX = (20.0f - sin((player.tickCount / 10.0f).toDouble()) / 7.0f).toFloat()
                 biped.bipedHead.rotateAngleY = 0.0f
                 biped.bipedHead.rotateAngleZ = 0.0f
                 biped.bipedLeftArm.rotateAngleX = 0.0f

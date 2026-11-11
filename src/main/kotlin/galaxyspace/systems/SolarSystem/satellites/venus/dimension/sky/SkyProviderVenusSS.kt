@@ -13,11 +13,11 @@ import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 
 open class SkyProviderVenusSS : SkyProviderBase() {
-    private val venus_texture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/venus.png")
+    private val venus_texture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/venus.png")
 
     @JvmField
     var spinAngle: Float = 0f
@@ -49,7 +49,7 @@ open class SkyProviderVenusSS : SkyProviderBase() {
 
         //GL11.glDisable(GL11.GL_BLEND);
         val mod: Double = ((this.mc.world.provider as WorldProviderSpace).getDayLength() / 24000).toDouble()
-        val time: Long = this.mc.player.getEntityWorld()
+        val time: Long = this.mc.player.level()
             .getWorldTime() % (this.mc.world.provider as WorldProviderSpace).getDayLength()
         var k: Double = (time / 8) / mod
 
@@ -97,7 +97,7 @@ open class SkyProviderVenusSS : SkyProviderBase() {
     }
 
     override fun sunImage(): ResourceLocation {
-        return ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
+        return ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
     }
 
     override fun enableStar(): Boolean {

@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.api.transmission.tile
 
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType
-import net.minecraft.util.EnumFacing
+import net.minecraft.core.Direction as EnumFacing
 
 /**
  * Applied to TileEntities that can connect to an electrical OR oxygen network.

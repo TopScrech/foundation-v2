@@ -1,5 +1,7 @@
 package galaxyspace.core.client.gui.tile
 
+import foundation.item.legacyItemValue
+
 import java.util.ArrayList
 
 import asmodeuscore.core.utils.Utils
@@ -16,18 +18,18 @@ import micdoodle8.mods.galacticraft.core.inventory.SlotSpecific
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraft.init.Items
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.text.TextFormatting
+import net.minecraft.world.item.Items
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.ChatFormatting as TextFormatting
 import net.minecraftforge.fluids.FluidTank
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 abstract class GuiTileBase(container: Container?, header: Int, split: Int) : GuiContainerGC((container)!!) {
     protected enum class Style {
         CLASSIC,
@@ -88,8 +90,8 @@ protected var moduleInfoY: Int
             desc.add(GCCoreUtil.translate("gui.battery_slot.desc.0"))
             desc.add(GCCoreUtil.translate("gui.battery_slot.desc.1"))
             batteryInfoRegion.tooltipStrings = desc
-            batteryInfoRegion.xPosition = (this.width - this.xSize) / 2 + getBatterySlot()!!.xPos
-            batteryInfoRegion.yPosition = (this.height - this.ySize) / 2 + getBatterySlot()!!.yPos
+            batteryInfoRegion.xPosition = (this.width - this.xSize) / 2 + getBatterySlot()!!.x
+            batteryInfoRegion.yPosition = (this.height - this.ySize) / 2 + getBatterySlot()!!.y
             batteryInfoRegion.parentWidth = this.width
             batteryInfoRegion.parentHeight = this.height
             this.infoRegions.add(batteryInfoRegion)
@@ -226,7 +228,7 @@ protected var moduleInfoY: Int
             } else if (this.inventorySlots.getSlot(i) is SlotSpecific) {
                 val slot: SlotSpecific = this.inventorySlots.getSlot(i) as SlotSpecific
 
-                if (slot.isItemValid(ItemStack(GCItems.battery))) this.drawTexturedModalRect(
+                if (slot.mayPlace(ItemStack(GCItems.battery))) this.drawTexturedModalRect(
                     containerWidth + x,
                     containerHeight + y,
                     21,
@@ -234,8 +236,8 @@ protected var moduleInfoY: Int
                     18,
                     18
                 )
-                else if (slot.isItemValid(ItemStack(Items.DYE, 1, 0)) && slot.getStack()
-                        .getItemDamage() == 15
+                else if (slot.mayPlace(ItemStack(Items.DYE, 1, 0)) && slot.getStack()
+                        .legacyItemValue == 15
                 ) this.drawTexturedModalRect(containerWidth + x, containerHeight + y, 105, 62, 18, 18)
                 else this.drawTexturedModalRect(containerWidth + x, containerHeight + y, 0, 62, 18, 18)
             } else this.drawTexturedModalRect(containerWidth + x, containerHeight + y, 0, 62, 18, 18)

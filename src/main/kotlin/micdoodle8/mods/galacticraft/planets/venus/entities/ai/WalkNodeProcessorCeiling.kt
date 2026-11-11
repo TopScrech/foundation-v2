@@ -1,24 +1,24 @@
 package micdoodle8.mods.galacticraft.planets.venus.entities.ai
 
 import com.google.common.collect.Sets
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockDoor
 import net.minecraft.block.BlockFence
 import net.minecraft.block.BlockFenceGate
 import net.minecraft.block.BlockRailBase
 import net.minecraft.block.BlockWall
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.entity.EntityLiving
-import net.minecraft.init.Blocks
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.pathfinding.NodeProcessor
 import net.minecraft.pathfinding.PathNodeType
 import net.minecraft.pathfinding.PathPoint
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.IBlockAccess
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.BlockGetter as IBlockAccess
 import java.util.EnumSet
 import kotlin.math.max
 
@@ -63,10 +63,10 @@ open class WalkNodeProcessorCeiling : NodeProcessor() {
                     .getMaterial() === Material.AIR || this.blockaccess.getBlockState(blockpos).getBlock()
                     .isPassable(this.blockaccess, blockpos)) && blockpos.getY() > 0
             ) {
-                blockpos = blockpos.down()
+                blockpos = blockpos.below()
             }
 
-            i = blockpos.up().getY()
+            i = blockpos.above().getY()
         }
 
         val blockpos2: BlockPos = BlockPos(this.entity)
@@ -138,7 +138,7 @@ open class WalkNodeProcessorCeiling : NodeProcessor() {
             j = MathHelper.floor(max(1.0f, this.entity.stepHeight))
         }
 
-        val blockpos: BlockPos = (BlockPos(currentPoint.x, currentPoint.y, currentPoint.z)).down()
+        val blockpos: BlockPos = (BlockPos(currentPoint.x, currentPoint.y, currentPoint.z)).below()
         val d0: Double = currentPoint.y.toDouble() - (1.0 - this.blockaccess.getBlockState(blockpos)
             .getBoundingBox(this.blockaccess, blockpos).maxY)
         val pathpoint: PathPoint? =
@@ -224,7 +224,7 @@ open class WalkNodeProcessorCeiling : NodeProcessor() {
         var y: Int = y
         var pathpoint: PathPoint? = null
         val blockpos: BlockPos = BlockPos(x, y, z)
-        val blockpos1: BlockPos = blockpos.down()
+        val blockpos1: BlockPos = blockpos.below()
         val d0: Double = y.toDouble() - (1.0 - this.blockaccess.getBlockState(blockpos1)
             .getBoundingBox(this.blockaccess, blockpos1).maxY)
 
@@ -248,8 +248,8 @@ open class WalkNodeProcessorCeiling : NodeProcessor() {
                     pathpoint = this.getSafePoint(x, y + 1, z, p_186332_4_ - 1, p_186332_5_, facing)
 
                     if (pathpoint != null && (pathpoint.nodeType == PathNodeType.OPEN || pathpoint.nodeType == PathNodeType.WALKABLE) && this.entity.width < 1.0f) {
-                        val d2: Double = (x - facing.getXOffset()).toDouble() + 0.5
-                        val d3: Double = (z - facing.getZOffset()).toDouble() + 0.5
+                        val d2: Double = (x - facing.getStepX()).toDouble() + 0.5
+                        val d3: Double = (z - facing.getStepZ()).toDouble() + 0.5
                         val axisalignedbb: AxisAlignedBB = AxisAlignedBB(
                             d2 - d1,
                             y.toDouble() + 0.001,
@@ -357,7 +357,7 @@ open class WalkNodeProcessorCeiling : NodeProcessor() {
                     }
 
                     if (pathnodetype1 == PathNodeType.RAIL && (blockaccessIn.getBlockState(blockpos)
-                            .getBlock() !is BlockRailBase) && (blockaccessIn.getBlockState(blockpos.down())
+                            .getBlock() !is BlockRailBase) && (blockaccessIn.getBlockState(blockpos.below())
                             .getBlock() !is BlockRailBase)
                     ) {
                         pathnodetype1 = PathNodeType.FENCE

@@ -1,8 +1,8 @@
 package asmodeuscore.core.handler.capabilities
 
 import asmodeuscore.core.astronomy.SpaceData.Engine_Type
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import java.lang.ref.WeakReference
 
 interface IStatsCapability {

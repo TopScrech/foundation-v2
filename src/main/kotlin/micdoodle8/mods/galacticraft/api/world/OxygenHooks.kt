@@ -1,11 +1,11 @@
 package micdoodle8.mods.galacticraft.api.world
 
-import net.minecraft.block.Block
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
 import java.lang.Exception
 import java.lang.reflect.Method

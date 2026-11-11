@@ -14,20 +14,20 @@ import net.minecraft.client.renderer.block.model.IBakedModel
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.renderer.texture.TextureMap
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.lang.RuntimeException
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderSpiderQueen constructor(renderManager: RenderManager) :
     RenderLiving<EntitySpiderQueen>(renderManager, ModelSpiderQueen(), 1.0f) {
     private fun updateModels() {
         if (webModel == null) {
             try {
                 webModel = ClientUtil.modelFromOBJ(
-                    ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "web.obj"),
+                    ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "web.obj"),
                     ImmutableList.of<String?>("Sphere")
                 )
             } catch (e: Exception) {
@@ -99,7 +99,7 @@ open class RenderSpiderQueen constructor(renderManager: RenderManager) :
 
     companion object {
         private val spiderTexture =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/model/spider_queen.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/model/spider_queen.png")
 
         @JvmField
         var webModel: IBakedModel? = null

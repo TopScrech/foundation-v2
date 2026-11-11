@@ -4,7 +4,7 @@ import asmodeuscore.api.space.IBookPage
 import asmodeuscore.core.utils.BookUtils.Book_Cateroies
 import galaxyspace.api.IPage
 import net.minecraft.client.gui.FontRenderer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 @IPage
 open class Page_Bosses : IBookPage {

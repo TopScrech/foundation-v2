@@ -9,8 +9,8 @@ import micdoodle8.mods.galacticraft.api.transmission.tile.ITransmitter
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
 import micdoodle8.mods.galacticraft.core.tile.TileEntityAdvanced
 import micdoodle8.mods.galacticraft.planets.venus.tick.VenusTickHandlerServer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
 
 abstract class TileEntitySolarTransmitter : TileEntityAdvanced(), ITransmitter {
     private var network: IGridNetwork<*, *, *>? = null
@@ -107,7 +107,7 @@ abstract class TileEntitySolarTransmitter : TileEntityAdvanced(), ITransmitter {
             this.adjacentConnections = null
 
             val thisVec: BlockVec3 = BlockVec3(this)
-            for (side: EnumFacing in EnumFacing.VALUES) {
+            for (side: EnumFacing in EnumFacing.values()) {
                 val tileEntity: TileEntity? = thisVec.getTileEntityOnSide(this.world, side)
 
                 if (tileEntity != null) {
@@ -140,11 +140,11 @@ abstract class TileEntitySolarTransmitter : TileEntityAdvanced(), ITransmitter {
          * Cache the adjacentConnections.
          */
         if (this.adjacentConnections == null) {
-            this.adjacentConnections = arrayOfNulls<TileEntity>(EnumFacing.VALUES.size)
+            this.adjacentConnections = arrayOfNulls<TileEntity>(EnumFacing.values().size)
 
 
             val thisVec: BlockVec3 = BlockVec3(this)
-            for (direction: EnumFacing in EnumFacing.VALUES) {
+            for (direction: EnumFacing in EnumFacing.values()) {
                 val tileEntity: TileEntity? = thisVec.getTileEntityOnSide(this.world, direction)
 
                 if (tileEntity is TileEntitySolarArrayModule) {

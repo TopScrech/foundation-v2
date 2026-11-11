@@ -1,10 +1,10 @@
 package micdoodle8.mods.galacticraft.core.entities
 
 import net.minecraft.entity.EntityLiving
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.IRangedAttackMob
 import net.minecraft.entity.ai.EntityAIBase
-import net.minecraft.util.math.MathHelper
+import net.minecraft.util.Mth as MathHelper
 
 open class EntityAIArrowAttack constructor(
     par1IRangedAttackMob: IRangedAttackMob?,
@@ -82,9 +82,9 @@ open class EntityAIArrowAttack constructor(
      */
     override fun updateTask() {
         val d0: Double = this.entityHost.getDistanceSq(
-            this.attackTarget!!.posX,
-            this.attackTarget!!.getEntityBoundingBox().minY,
-            this.attackTarget!!.posZ
+            this.attackTarget!!.x,
+            this.attackTarget!!.getBoundingBox().minY,
+            this.attackTarget!!.z
         )
         val flag: Boolean = this.entityHost.getEntitySenses().canSee(this.attackTarget)
 

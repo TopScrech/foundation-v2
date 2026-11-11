@@ -4,7 +4,7 @@ import micdoodle8.mods.galacticraft.core.Constants
 import net.minecraft.entity.EntityLiving
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.EntityMoveHelper
-import net.minecraft.util.math.MathHelper
+import net.minecraft.util.Mth as MathHelper
 
 open class EntityMoveHelperCeiling constructor(entitylivingIn: EntityLiving) : EntityMoveHelper(entitylivingIn) {
     override fun onUpdateMoveHelper() {

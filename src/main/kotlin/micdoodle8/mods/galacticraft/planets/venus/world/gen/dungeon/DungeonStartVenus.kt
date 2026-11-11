@@ -1,11 +1,13 @@
 package micdoodle8.mods.galacticraft.planets.venus.world.gen.dungeon
 
+import foundation.level.horizontalStructureBounds
+
 import java.util.Random
 
 import com.google.common.collect.Lists
 import micdoodle8.mods.galacticraft.core.util.GCLog
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.StructureComponent
 import java.util.*
 
@@ -14,7 +16,7 @@ open class DungeonStartVenus : RoomEntranceVenus {
     var attachedComponents: MutableList<StructureComponent?> = Lists.newArrayList<StructureComponent?>()
 
     @JvmField
-    var componentBounds: MutableList<StructureBoundingBox> = Lists.newArrayList<StructureBoundingBox>()
+    var componentBounds: MutableList<BoundingBox> = Lists.newArrayList<BoundingBox>()
 
     constructor()
 
@@ -59,20 +61,20 @@ open class DungeonStartVenus : RoomEntranceVenus {
         GCLog.debug("Dungeon generation took " + attempts + " attempt(s)")
 
         if (!validAttempt) {
-            val xPos: Int = this.boundingBox.minX + (this.boundingBox.maxX - this.boundingBox.minX) / 2
-            val zPos: Int = this.boundingBox.minZ + (this.boundingBox.maxZ - this.boundingBox.minZ) / 2
+            val xPos: Int = this.boundingBox.minX() + (this.boundingBox.maxX() - this.boundingBox.minX()) / 2
+            val zPos: Int = this.boundingBox.minZ() + (this.boundingBox.maxZ() - this.boundingBox.minZ()) / 2
             System.err.println("Could not find valid venus dungeon layout! This is a bug, please report it, including your world seed (/seed) and dungeon location (" + xPos + ", " + zPos + ")")
         }
     }
 
     open fun checkIntersection(blockX: Int, blockZ: Int, sizeX: Int, sizeZ: Int): Boolean {
-        return this.checkIntersection(StructureBoundingBox(blockX, blockZ, blockX + sizeX, blockZ + sizeZ))
+        return this.checkIntersection(horizontalStructureBounds(blockX, blockZ, blockX + sizeX, blockZ + sizeZ))
     }
 
-    open fun checkIntersection(bounds: StructureBoundingBox): Boolean {
+    open fun checkIntersection(bounds: BoundingBox): Boolean {
         for (i: Int in 0..<componentBounds.size - 1) {
-            val boundingBox: StructureBoundingBox = componentBounds.get(i)
-            if (boundingBox.intersectsWith(bounds)) {
+            val boundingBox: BoundingBox = componentBounds.get(i)
+            if (boundingBox.intersects(bounds)) {
                 return true
             }
         }

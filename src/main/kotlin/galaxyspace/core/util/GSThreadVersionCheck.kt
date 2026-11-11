@@ -1,5 +1,7 @@
 package galaxyspace.core.util
 
+import net.minecraft.network.chat.Component
+
 import galaxyspace.GalaxySpace
 import galaxyspace.core.util.GSUtils
 import java.io.BufferedReader
@@ -7,10 +9,10 @@ import galaxyspace.core.configs.GSConfigCore
 import galaxyspace.core.util.GSThreadVersionCheck
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.util.text.TextComponentString
+
 import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.FMLCommonHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.io.InputStreamReader
 import java.lang.Exception
 import java.net.HttpURLConnection
@@ -61,7 +63,7 @@ open class GSThreadVersionCheck constructor() : Thread("Galaxy Space Version Che
                                 GSUtils.start()
 
                                 FMLClientHandler.instance()
-                                    .getClient().player.sendMessage(TextComponentString(EnumColor.GREY.toString() + "New " + EnumColor.DARK_AQUA + GalaxySpace.NAME + EnumColor.GREY + " version available! v" + remoteMajVer.toString() + "." + remoteMinVer.toString() + "." + remoteBuildVer.toString() + EnumColor.DARK_BLUE + " http://micdoodle8.com/"))
+                                    .getClient().player.sendMessage(Component.literal(EnumColor.GREY.toString() + "New " + EnumColor.DARK_AQUA + GalaxySpace.NAME + EnumColor.GREY + " version available! v" + remoteMajVer.toString() + "." + remoteMinVer.toString() + "." + remoteBuildVer.toString() + EnumColor.DARK_BLUE + " http://micdoodle8.com/"))
                             } else if (sideToCheck == Side.SERVER) {
                                 GalaxySpace.info("New version available! v" + remoteMajVer.toString() + "." + remoteMinVer.toString() + "." + remoteBuildVer.toString() + " ")
                             }

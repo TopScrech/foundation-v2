@@ -1,5 +1,13 @@
 package galaxyspace.core.prefab.items.rockets
 
+import foundation.item.legacyItemValue
+
+import foundation.block.getMetaFromState
+
+import foundation.level.offset
+
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.galacticraft.api.entity.IRocketType.EnumRocketType
 
 import galaxyspace.core.util.GSCreativeTabs
@@ -22,25 +30,25 @@ import micdoodle8.mods.galacticraft.core.tile.TileEntityLandingPad
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemTier5Rocket constructor(assetName: String) : Item(), IHoldableItem, ISortableItem,
     IModificationItem {
@@ -52,12 +60,12 @@ open class ItemTier5Rocket constructor(assetName: String) : Item(), IHoldableIte
         //this.setTextureName("arrow");
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCreativeTab(): CreativeTabs? {
         return GSCreativeTabs.GSVehiclesTab
     }
@@ -74,9 +82,9 @@ open class ItemTier5Rocket constructor(assetName: String) : Item(), IHoldableIte
     ): EnumActionResult {
         var padFound: Boolean = false
         var tile: TileEntity? = null
-        val stack: ItemStack = playerIn.getHeldItem(hand)
+        val stack: ItemStack = playerIn.getItemInHand(hand)
 
-        if (worldIn.isRemote) {
+        if (worldIn.isClientSide) {
             return EnumActionResult.PASS
         } else {
             var centerX: Float = -1f
@@ -85,14 +93,14 @@ open class ItemTier5Rocket constructor(assetName: String) : Item(), IHoldableIte
 
             for (i: Int in -1..1) {
                 for (j: Int in -1..1) {
-                    val pos1: BlockPos = pos.add(i, 0, j)
+                    val pos1: BlockPos = pos.offset(i, 0, j)
                     val state: IBlockState = worldIn.getBlockState(pos1)
                     val id: Block = state.getBlock()
                     val meta: Int = id.getMetaFromState(state)
 
                     if ( /*id == GCBlocks.landingPadFull && meta == 0 ||*/id === GSBlocks.ADVANCED_LANDING_PAD && meta == 0) {
                         padFound = true
-                        tile = worldIn.getTileEntity(pos1)
+                        tile = worldIn.getBlockEntity(pos1)
 
                         centerX = pos.getX() + i + 0.5f
                         centerY = pos.getY() + 0.4f
@@ -130,7 +138,7 @@ open class ItemTier5Rocket constructor(assetName: String) : Item(), IHoldableIte
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(
         par1ItemStack: ItemStack,
         worldIn: World?,
@@ -141,10 +149,10 @@ open class ItemTier5Rocket constructor(assetName: String) : Item(), IHoldableIte
 
         tooltip.add(EnumColor.YELLOW.toString() + GCCoreUtil.translate("gui.message.need_advanced_lp.desc"))
 
-        if (par1ItemStack.getItemDamage() < 10) {
-            type = IRocketType.EnumRocketType.entries[par1ItemStack.getItemDamage()]
+        if (par1ItemStack.legacyItemValue < 10) {
+            type = IRocketType.EnumRocketType.entries[par1ItemStack.legacyItemValue]
         } else {
-            type = IRocketType.EnumRocketType.entries[par1ItemStack.getItemDamage() - 10]
+            type = IRocketType.EnumRocketType.entries[par1ItemStack.legacyItemValue - 10]
         }
 
         if (!type.getTooltip().isEmpty()) {
@@ -156,25 +164,25 @@ open class ItemTier5Rocket constructor(assetName: String) : Item(), IHoldableIte
         }
 
         if (par1ItemStack.hasTagCompound()) {
-            if (par1ItemStack.getTagCompound()!!.hasKey("RocketFuel")) {
+            if (par1ItemStack.getTagCompound()!!.containsTag("RocketFuel")) {
                 val rocket: EntityTier5Rocket = EntityTier5Rocket(
                     FMLClientHandler.instance().getWorldClient(),
                     0.0,
                     0.0,
                     0.0,
-                    IRocketType.EnumRocketType.entries[par1ItemStack.getItemDamage()]
+                    IRocketType.EnumRocketType.entries[par1ItemStack.legacyItemValue]
                 )
                 tooltip.add(
                     GCCoreUtil.translate("gui.message.fuel.name") + ": " + par1ItemStack.getTagCompound()!!
-                        .getInteger("RocketFuel") + " / " + rocket.fuelTank.getCapacity()
+                        .getIntOr("RocketFuel", 0) + " / " + rocket.fuelTank.getCapacity()
                 )
             }
 
             for (engines: Engine_Type in Engine_Type.entries) {
-                if (par1ItemStack.getTagCompound()!!.hasKey(engines.getName())) {
-                    //int engine = par1ItemStack.getTagCompound().getInteger("engine_type");
+                if (par1ItemStack.getTagCompound()!!.containsTag(engines.getName())) {
+                    //int engine = par1ItemStack.getTagCompound().getIntOr("engine_type", 0);
                     val meta: Int =
-                        if (par1ItemStack.getItemDamage() >= 5) par1ItemStack.getItemDamage() - 5 else par1ItemStack.getItemDamage()
+                        if (par1ItemStack.legacyItemValue >= 5) par1ItemStack.legacyItemValue - 5 else par1ItemStack.legacyItemValue
                     val rocket: EntityTier5Rocket = EntityTier5Rocket(
                         FMLClientHandler.instance().getWorldClient(),
                         0.0,
@@ -248,29 +256,29 @@ open class ItemTier5Rocket constructor(assetName: String) : Item(), IHoldableIte
                 centerX.toDouble(),
                 centerY.toDouble(),
                 centerZ.toDouble(),
-                IRocketType.EnumRocketType.entries[stack.getItemDamage()]
+                IRocketType.EnumRocketType.entries[stack.legacyItemValue]
             )
 
             for (engines: Engine_Type in Engine_Type.entries) if (stack.hasTagCompound() && stack.getTagCompound()!!
-                    .hasKey(engines.getName())
+                    .containsTag(engines.getName())
             ) {
                 rocket.setEngine(engines)
             }
 
             rocket.rotationYaw += 45f
             rocket.setPosition(rocket.posX, rocket.posY + rocket.getOnPadYOffset(), rocket.posZ)
-            worldIn.spawnEntity(rocket)
+            worldIn.addFreshEntity(rocket)
 
             if ((rocket.getType())!!.getPreFueled()) {
                 rocket.fuelTank.fill(
                     FluidStack(GCFluids.fluidFuel,  /*GSFluids.HeliumHydrogen*/rocket.getMaxFuel()),
                     true
                 )
-            } else if (stack.hasTagCompound() && stack.getTagCompound()!!.hasKey("RocketFuel")) {
+            } else if (stack.hasTagCompound() && stack.getTagCompound()!!.containsTag("RocketFuel")) {
                 rocket.fuelTank.fill(
                     FluidStack(
                         GCFluids.fluidFuel,  /*GSFluids.HeliumHydrogen*/
-                        stack.getTagCompound()!!.getInteger("RocketFuel")
+                        stack.getTagCompound()!!.getIntOr("RocketFuel", 0)
                     ), true
                 )
             }

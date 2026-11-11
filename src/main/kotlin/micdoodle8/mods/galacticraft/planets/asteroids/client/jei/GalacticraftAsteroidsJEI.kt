@@ -18,7 +18,7 @@ import micdoodle8.mods.galacticraft.core.client.jei.RecipeCategories
 import micdoodle8.mods.galacticraft.planets.asteroids.client.jei.astrominer.AstroMinerRecipeCategory
 import micdoodle8.mods.galacticraft.planets.asteroids.client.jei.tier3rocket.Tier3RocketRecipeCategory
 import micdoodle8.mods.galacticraft.planets.asteroids.client.jei.tier3rocket.Tier3RocketRecipeMaker
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 @JEIPlugin
 open class GalacticraftAsteroidsJEI : BlankModPlugin() {

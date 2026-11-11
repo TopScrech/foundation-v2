@@ -11,26 +11,25 @@ import micdoodle8.mods.galacticraft.core.util.ColorUtil
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.OxygenUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 object OverlayDetectors : Overlay() {
-    private val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+    private val minecraft: Minecraft = Minecraft.getInstance()
 
     @JvmStatic
     fun renderPressureIndicator(pressureLevel: Float, invalid: Boolean, right: Boolean, top: Boolean) {
         var pressureLevel: Float = pressureLevel
         val player: EntityPlayerSP = minecraft.player
-        val guiTexture: ResourceLocation = ResourceLocation("asmodeuscore", "textures/gui/gui.png")
+        val guiTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/gui.png")
         val scaledresolution: ScaledResolution =
             ClientUtil.getScaledRes(minecraft, minecraft.displayWidth, minecraft.displayHeight)
         val width: Int = scaledresolution.getScaledWidth()
@@ -45,7 +44,7 @@ object OverlayDetectors : Overlay() {
         GlStateManager.enableDepth()
         GlStateManager.enableAlpha()
         GlStateManager.disableLighting()
-        FMLClientHandler.instance().getClient().renderEngine.bindTexture(guiTexture)
+        Minecraft.getInstance().renderEngine.bindTexture(guiTexture)
         var minLeftX: Int = 0
         var maxLeftX: Int = 0
         var minRightX: Int = 0
@@ -60,7 +59,7 @@ object OverlayDetectors : Overlay() {
             topY = (height - 68).toDouble()
         }
 
-        if (OxygenUtil.noAtmosphericCombustion(player.world.provider)) {
+        if (OxygenUtil.noAtmosphericCombustion(player.level().provider)) {
             bottomY = topY + 57.5
         } else {
             bottomY = topY + 5.5
@@ -154,7 +153,7 @@ object OverlayDetectors : Overlay() {
     fun renderWaterPressureIndicator(pressureLevel: Float, invalid: Boolean, right: Boolean, top: Boolean) {
         var pressureLevel: Float = pressureLevel
         val player: EntityPlayerSP? = minecraft.player
-        val guiTexture: ResourceLocation = ResourceLocation("asmodeuscore", "textures/gui/gui.png")
+        val guiTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/gui.png")
         val scaledresolution: ScaledResolution =
             ClientUtil.getScaledRes(minecraft, minecraft.displayWidth, minecraft.displayHeight)
         val width: Int = scaledresolution.getScaledWidth()
@@ -169,7 +168,7 @@ object OverlayDetectors : Overlay() {
         GlStateManager.enableDepth()
         GlStateManager.enableAlpha()
         GlStateManager.disableLighting()
-        FMLClientHandler.instance().getClient().renderEngine.bindTexture(guiTexture)
+        Minecraft.getInstance().renderEngine.bindTexture(guiTexture)
         var minLeftX: Int = 0
         var maxLeftX: Int = 0
         var minRightX: Int = 0
@@ -258,7 +257,7 @@ object OverlayDetectors : Overlay() {
     @JvmStatic
     fun renderRadiationIndicator(radLevel: Int, invalid: Boolean, right: Boolean, top: Boolean) {
         val player: EntityPlayerSP = minecraft.player
-        val guiTexture: ResourceLocation = ResourceLocation("asmodeuscore", "textures/gui/gui.png")
+        val guiTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/gui.png")
         val scaledresolution: ScaledResolution =
             ClientUtil.getScaledRes(minecraft, minecraft.displayWidth, minecraft.displayHeight)
         val width: Int = scaledresolution.getScaledWidth()
@@ -273,7 +272,7 @@ object OverlayDetectors : Overlay() {
         GlStateManager.enableDepth()
         GlStateManager.enableAlpha()
         GlStateManager.disableLighting()
-        FMLClientHandler.instance().getClient().renderEngine.bindTexture(guiTexture)
+        Minecraft.getInstance().renderEngine.bindTexture(guiTexture)
         var minLeftX: Int = 0
         var maxLeftX: Int = 0
         var minRightX: Int = 0
@@ -288,7 +287,7 @@ object OverlayDetectors : Overlay() {
             topY = (height - 68).toDouble()
         }
 
-        if (OxygenUtil.noAtmosphericCombustion(player.world.provider)) {
+        if (OxygenUtil.noAtmosphericCombustion(player.level().provider)) {
             bottomY = topY + 10.5
         } else {
             bottomY = topY + 5.5
@@ -359,7 +358,7 @@ object OverlayDetectors : Overlay() {
     fun renderInfoPanel(tempLevel: Float, invalid: Boolean, right: Boolean, top: Boolean) {
         val player: EntityPlayerSP = minecraft.player
         val stats: GCPlayerStatsClient? = GCPlayerStatsClient.get(player)
-        val guiTexture: ResourceLocation = ResourceLocation("asmodeuscore", "textures/gui/gui.png")
+        val guiTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath("asmodeuscore", "textures/gui/gui.png")
         val scaledresolution: ScaledResolution =
             ClientUtil.getScaledRes(minecraft, minecraft.displayWidth, minecraft.displayHeight)
         val width: Int = scaledresolution.getScaledWidth()
@@ -374,7 +373,7 @@ object OverlayDetectors : Overlay() {
         GlStateManager.enableDepth()
         GlStateManager.enableAlpha()
         GlStateManager.disableLighting()
-        FMLClientHandler.instance().getClient().renderEngine.bindTexture(guiTexture)
+        Minecraft.getInstance().renderEngine.bindTexture(guiTexture)
         var minLeftX: Int = 0
         var maxLeftX: Int = 0
         var minRightX: Int = 0
@@ -384,7 +383,7 @@ object OverlayDetectors : Overlay() {
         val zLevel: Double = -190.0
         val texMod: Float = 0.00390625f
         topY = if (top) 0.0 else (height - 160).toDouble()
-        if (!OxygenUtil.noAtmosphericCombustion(player.world.provider)) {
+        if (!OxygenUtil.noAtmosphericCombustion(player.level().provider)) {
             bottomY = topY + 15.5
         } else {
             bottomY = topY + 67.0

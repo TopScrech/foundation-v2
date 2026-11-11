@@ -1,12 +1,12 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
-import net.minecraft.init.Blocks
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.tileentity.TileEntityMobSpawner
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.StructureComponent
 import java.util.Random
 
@@ -18,16 +18,16 @@ abstract class StructureComponentGC(var1: Int) : StructureComponent(var1) {
         var4: Int,
         var5: Int,
         var6: ResourceLocation?,
-        var7: StructureBoundingBox
+        var7: BoundingBox
     ) {
         val var8: Int = this.getXWithOffset(var3, var5)
         val var9: Int = this.getYWithOffset(var4)
         val var10: Int = this.getZWithOffset(var3, var5)
 
         val pos: BlockPos = BlockPos(var8, var9, var10)
-        if (var7.isVecInside(pos) && var1.getBlockState(pos).getBlock() !== Blocks.MOB_SPAWNER) {
-            var1.setBlockState(pos, Blocks.MOB_SPAWNER.getDefaultState(), 2)
-            val var11: TileEntityMobSpawner? = var1.getTileEntity(pos) as TileEntityMobSpawner?
+        if (var7.isInside(pos) && var1.getBlockState(pos).getBlock() !== Blocks.MOB_SPAWNER) {
+            var1.setBlock(pos, Blocks.MOB_SPAWNER.defaultBlockState(), 2)
+            val var11: TileEntityMobSpawner? = var1.getBlockEntity(pos) as TileEntityMobSpawner?
 
             if (var11 != null) {
                 var11.getSpawnerBaseLogic().setEntityId(var6)
@@ -63,13 +63,13 @@ abstract class StructureComponentGC(var1: Int) : StructureComponent(var1) {
 
     override fun getXWithOffset(var1: Int, var2: Int): Int {
         when (getCoordBaseMode()!!.getHorizontalIndex()) {
-            0 -> return this.boundingBox.minX + var1
+            0 -> return this.boundingBox.minX() + var1
 
-            1 -> return this.boundingBox.maxX - var2
+            1 -> return this.boundingBox.maxX() - var2
 
-            2 -> return this.boundingBox.maxX - var1
+            2 -> return this.boundingBox.maxX() - var1
 
-            3 -> return this.boundingBox.minX + var2
+            3 -> return this.boundingBox.minX() + var2
 
             else -> return var1
         }
@@ -77,13 +77,13 @@ abstract class StructureComponentGC(var1: Int) : StructureComponent(var1) {
 
     override fun getZWithOffset(var1: Int, var2: Int): Int {
         when (getCoordBaseMode()!!.getHorizontalIndex()) {
-            0 -> return this.boundingBox.minZ + var2
+            0 -> return this.boundingBox.minZ() + var2
 
-            1 -> return this.boundingBox.minZ + var1
+            1 -> return this.boundingBox.minZ() + var1
 
-            2 -> return this.boundingBox.maxZ - var2
+            2 -> return this.boundingBox.maxZ() - var2
 
-            3 -> return this.boundingBox.maxZ - var1
+            3 -> return this.boundingBox.maxZ() - var1
 
             else -> return var2
         }
@@ -95,7 +95,7 @@ abstract class StructureComponentGC(var1: Int) : StructureComponent(var1) {
 
     protected object SwitchEnumFacing {
         @JvmField
-        var field_176064_a: IntArray = IntArray(EnumFacing.VALUES.size)
+        var field_176064_a: IntArray = IntArray(EnumFacing.values().size)
 
         init {
             try {
@@ -133,10 +133,10 @@ abstract class StructureComponentGC(var1: Int) : StructureComponent(var1) {
             height: Int,
             width: Int,
             coordBaseMode: EnumFacing?
-        ): StructureBoundingBox {
+        ): BoundingBox {
             if (coordBaseMode != null) {
                 when (SwitchEnumFacing.field_176064_a[coordBaseMode.ordinal]) {
-                    0 -> return StructureBoundingBox(
+                    0 -> return BoundingBox(
                         x + lengthOffset,
                         y + heightOffset,
                         z + widthOffset,
@@ -145,7 +145,7 @@ abstract class StructureComponentGC(var1: Int) : StructureComponent(var1) {
                         z + width + widthOffset
                     )
 
-                    1 -> return StructureBoundingBox(
+                    1 -> return BoundingBox(
                         x - width + widthOffset,
                         y + heightOffset,
                         z + lengthOffset,
@@ -154,7 +154,7 @@ abstract class StructureComponentGC(var1: Int) : StructureComponent(var1) {
                         z + length + lengthOffset
                     )
 
-                    2 -> return StructureBoundingBox(
+                    2 -> return BoundingBox(
                         x - length - lengthOffset,
                         y + heightOffset,
                         z - width - widthOffset,
@@ -163,7 +163,7 @@ abstract class StructureComponentGC(var1: Int) : StructureComponent(var1) {
                         z - widthOffset
                     )
 
-                    3 -> return StructureBoundingBox(
+                    3 -> return BoundingBox(
                         x + widthOffset,
                         y + heightOffset,
                         z - length,
@@ -173,7 +173,7 @@ abstract class StructureComponentGC(var1: Int) : StructureComponent(var1) {
                     )
                 }
             }
-            return StructureBoundingBox(
+            return BoundingBox(
                 x + lengthOffset,
                 y + heightOffset,
                 z + widthOffset,

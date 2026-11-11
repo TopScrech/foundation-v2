@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.core.dimension
 
+import net.minecraft.network.chat.Component
+
+import foundation.persistence.listOfType
+
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.network.PacketSimple.EnumSimplePacket
 import micdoodle8.mods.galacticraft.core.wrappers.FlagData
@@ -16,15 +20,15 @@ import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.text.Style
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.util.text.TextFormatting
-import net.minecraft.world.WorldServer
+import net.minecraft.network.chat.Style
+
+import net.minecraft.ChatFormatting as TextFormatting
+import net.minecraft.server.level.ServerLevel as WorldServer
 
 object SpaceRaceManager {
     private val spaceRaces: MutableSet<SpaceRace> = Sets.newHashSet<SpaceRace>()
@@ -49,7 +53,7 @@ object SpaceRaceManager {
             for (player in PlayerUtil.getPlayersOnline()) {
                 if ((race.getPlayerNames())!!.contains((PlayerUtil.getName(player))!!)) {
                     val body: CelestialBody? =
-                        GalaxyRegistry.getCelestialBodyFromDimensionID((player)!!.world.provider.getDimension())
+                        GalaxyRegistry.getCelestialBodyFromDimensionID((player)!!.level().provider.getDimension())
 
                     if (body != null) {
                         if (!(race.getCelestialBodyStatusList())!!.containsKey(body)) {
@@ -69,10 +73,10 @@ object SpaceRaceManager {
 
     @JvmStatic
     fun loadSpaceRaces(nbt: NBTTagCompound) {
-        val tagList: NBTTagList = nbt.getTagList("SpaceRaceList", 10)
+        val tagList: NBTTagList = nbt.listOfType("SpaceRaceList", 10)
 
-        for (i: Int in 0..<tagList.tagCount()) {
-            val nbt2: NBTTagCompound = tagList.getCompoundTagAt(i)
+        for (i: Int in 0..<tagList.size) {
+            val nbt2: NBTTagCompound = tagList.getCompoundOrEmpty(i)
             val race: SpaceRace = SpaceRace()
             race.loadFromNBT(nbt2)
             spaceRaces.add(race)
@@ -86,10 +90,10 @@ object SpaceRaceManager {
         for (race: SpaceRace in spaceRaces) {
             val nbt2: NBTTagCompound = NBTTagCompound()
             race.saveToNBT(nbt2)
-            tagList.appendTag(nbt2)
+            tagList.add(nbt2)
         }
 
-        nbt.setTag("SpaceRaceList", tagList)
+        nbt.put("SpaceRaceList", tagList)
         return nbt
     }
 
@@ -129,7 +133,7 @@ object SpaceRaceManager {
                 (GalacticraftCore.packetPipeline)!!.sendTo(
                     PacketSimple(
                         PacketSimple.EnumSimplePacket.C_UPDATE_SPACE_RACE_DATA,
-                        GCCoreUtil.getDimensionID(toPlayer.world),
+                        GCCoreUtil.getDimensionID(toPlayer.level()),
                         objList
                     ), toPlayer
                 )
@@ -159,8 +163,8 @@ object SpaceRaceManager {
             val memberObj: EntityPlayerMP? = PlayerUtil.getPlayerForUsernameVanilla(server, (member)!!)
 
             if (memberObj != null) {
-                memberObj.sendMessage(
-                    TextComponentString(
+                memberObj.sendSystemMessage(
+                    Component.literal(
                         EnumColor.DARK_AQUA.toString() + GCCoreUtil.translateWithFormat(
                             "gui.space_race.chat.remove_success",
                             EnumColor.RED.toString() + player + EnumColor.DARK_AQUA

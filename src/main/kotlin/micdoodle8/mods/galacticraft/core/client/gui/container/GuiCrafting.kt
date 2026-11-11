@@ -4,12 +4,12 @@ import micdoodle8.mods.galacticraft.core.inventory.ContainerCrafting
 import micdoodle8.mods.galacticraft.core.tile.TileEntityCrafting
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.resources.I18n
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiCrafting constructor(playerInv: InventoryPlayer, tile: TileEntityCrafting?) :
     GuiContainerGC(ContainerCrafting(playerInv, (tile)!!)) {
     override fun drawGuiContainerForegroundLayer(mouseX: Int, mouseY: Int) {
@@ -31,6 +31,6 @@ open class GuiCrafting constructor(playerInv: InventoryPlayer, tile: TileEntityC
     }
 
     companion object {
-        private val craftingTableGuiTextures = ResourceLocation("textures/gui/container/crafting_table.png")
+        private val craftingTableGuiTextures = ResourceLocation.parse("textures/gui/container/crafting_table.png")
     }
 }

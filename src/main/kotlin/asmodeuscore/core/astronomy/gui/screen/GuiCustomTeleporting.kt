@@ -16,20 +16,20 @@ import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiCustomTeleporting constructor(private val dimID: Int) : GuiTeleporting(dimID) {
     private var data = TeleportData(
-        ResourceLocation("asmodeuscore:textures/gui/celestial_teleport.png"),
+        ResourceLocation.parse("asmodeuscore:textures/gui/celestial_teleport.png"),
         arrayOf<String>("Taking one small step", "Taking one giant leap", "Prepare for entry!"),
         -1
     )
     private val teleportMessage: String
-    private val teleportMinecraft: Minecraft = Minecraft.getMinecraft()
+    private val teleportMinecraft: Minecraft = Minecraft.getInstance()
     private val timer = 0
 
     init {
@@ -101,7 +101,7 @@ open class GuiCustomTeleporting constructor(private val dimID: Int) : GuiTelepor
     }
 
     override fun updateScreen() {
-        if (this.teleportMinecraft.player != null && this.teleportMinecraft.player.world != null && this.teleportMinecraft.player.world.provider.getDimension() == this.dimID && (this.teleportMinecraft.player.world.provider is WorldProviderSpaceStation || this.teleportMinecraft.player.posY - this.teleportMinecraft.player.lastTickPosY < 0.0)) {
+        if (this.teleportMinecraft.player != null && this.teleportMinecraft.player.level() != null && this.teleportMinecraft.player.level().provider.getDimension() == this.dimID && (this.teleportMinecraft.player.level().provider is WorldProviderSpaceStation || this.teleportMinecraft.player.y - this.teleportMinecraft.player.lastTickPosY < 0.0)) {
             this.teleportMinecraft.displayGuiScreen(null)
             TickHandlerClient.teleportingGui = null
         }

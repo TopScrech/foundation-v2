@@ -13,13 +13,13 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.model.ModelBiped
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.monster.EntityGiantZombie
 import net.minecraft.entity.monster.EntitySkeleton
 import net.minecraft.entity.monster.EntityZombie
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.MobEffects
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.util.Mth as MathHelper
 
 abstract class ModelOBJArmor : ModelBiped() {
     @JvmField
@@ -40,7 +40,7 @@ abstract class ModelOBJArmor : ModelBiped() {
 
         GL11.glPushMatrix()
 
-        if (entity.isSneaking()) {
+        if (entity.isShiftKeyDown()) {
             GlStateManager.translate(0.0f, 0.2f, 0.0f)
         }
 
@@ -60,7 +60,7 @@ abstract class ModelOBJArmor : ModelBiped() {
                         (GalacticraftCore.packetPipeline)!!.sendToServer(
                             PacketSimple(
                                 PacketSimple.EnumSimplePacket.S_REQUEST_GEAR_DATA,
-                                GCCoreUtil.getDimensionID(player.world),
+                                GCCoreUtil.getDimensionID(player.level()),
                                 arrayOf<Any?>(id)
                             )
                         )
@@ -95,10 +95,10 @@ abstract class ModelOBJArmor : ModelBiped() {
 			}
 			*/
             run { // rendering held items (rockets)
-                if (player.inventory.getCurrentItem() != null && player.inventory.getCurrentItem()
+                if (player.inventory.getSelectedItem() != null && player.inventory.getSelectedItem()
                         .getItem() is IHoldableItem
                 ) {
-                    val holdableItem: IHoldableItem = player.inventory.getCurrentItem().getItem() as IHoldableItem
+                    val holdableItem: IHoldableItem = player.inventory.getSelectedItem().getItem() as IHoldableItem
 
                     if (holdableItem.shouldHoldLeftHandUp(player)) {
                         this.bipedLeftArm.rotateAngleX = 0f
@@ -169,7 +169,7 @@ abstract class ModelOBJArmor : ModelBiped() {
             this.hurt(player, parTicks)
         }
 
-        if (Minecraft.getMinecraft().player.getActivePotionEffect(MobEffects.INVISIBILITY) != null) return
+        if (Minecraft.getInstance().player.getEffect(MobEffects.INVISIBILITY) != null) return
 
         run {
             //partHead

@@ -1,0 +1,42 @@
+{
+  "has_fixed_time": false,
+  "has_skylight": true,
+  "has_ceiling": false,
+  "has_ender_dragon_fight": false,
+  "coordinate_scale": 1.0,
+  "min_y": 0,
+  "height": 256,
+  "logical_height": 256,
+  "infiniburn": "#minecraft:infiniburn_overworld",
+  "ambient_light": 0.0,
+  "monster_spawn_light_level": 7,
+  "monster_spawn_block_light_limit": 0,
+  "skybox": "overworld",
+  "attributes": {
+    "foundation:space_environment": {
+      "body": "galacticraftcore:moon",
+      "save_name": "moon",
+      "atmosphere": {
+        "breathable": false,
+        "precipitation": false,
+        "corrosive": false,
+        "temperature": 0.0,
+        "wind": 0.0,
+        "density": 0.0,
+        "gases": []
+      },
+      "weather": false,
+      "day_length": 192000,
+      "star_scale": 0.5,
+      "star_offset": 0.3
+    },
+    "minecraft:gameplay/bed_rule": {
+      "can_sleep": "never",
+      "can_set_spawn": "never",
+      "destroy_on_use": true
+    },
+    "minecraft:visual/fog_color": "#000000",
+    "minecraft:visual/sky_color": "#000000"
+  },
+  "default_clock": "galacticraftcore:moon"
+}

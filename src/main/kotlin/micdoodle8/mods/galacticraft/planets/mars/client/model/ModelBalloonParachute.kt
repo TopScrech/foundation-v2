@@ -3,7 +3,7 @@ package micdoodle8.mods.galacticraft.planets.mars.client.model
 import micdoodle8.mods.galacticraft.core.Constants
 import net.minecraft.client.model.ModelBase
 import net.minecraft.client.model.ModelRenderer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 
 open class ModelBalloonParachute @JvmOverloads constructor(par1: Float = 0.0f) : ModelBase() {
@@ -87,6 +87,6 @@ open class ModelBalloonParachute @JvmOverloads constructor(par1: Float = 0.0f) :
     }
 
     companion object {
-        private val grayParachuteTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/parachute/gray.png")
+        private val grayParachuteTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/parachute/gray.png")
     }
 }

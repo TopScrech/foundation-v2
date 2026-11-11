@@ -11,12 +11,12 @@ import net.minecraft.command.CommandBase
 import net.minecraft.command.CommandException
 import net.minecraft.command.ICommandSender
 import net.minecraft.command.WrongUsageException
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.WorldServer
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.server.level.ServerLevel as WorldServer
 
 open class CommandPlanetTeleport : CommandBase() {
     override fun getUsage(var1: ICommandSender): String {

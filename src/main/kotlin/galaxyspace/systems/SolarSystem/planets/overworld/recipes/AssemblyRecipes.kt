@@ -1,16 +1,21 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.recipes
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.api.recipe.CompressorRecipes
 import micdoodle8.mods.galacticraft.api.recipe.ShapedRecipesGC
 import micdoodle8.mods.galacticraft.api.recipe.ShapelessOreRecipeGC
 import micdoodle8.mods.galacticraft.core.GCItems
-import net.minecraft.block.Block
-import net.minecraft.init.Blocks
-import net.minecraft.inventory.InventoryCrafting
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.inventory.CraftingContainer as InventoryCrafting
+import foundation.inventory.getSizeInventory
+import foundation.inventory.getStackInSlot
+import foundation.inventory.getStackInRowAndColumn
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.MutableList
@@ -134,8 +139,8 @@ object AssemblyRecipes {
         if (i == 2 && itemstack.getItem() === itemstack1.getItem() && itemstack.getCount() == 1 && itemstack1.getCount() == 1 && itemstack.getItem()
                 .isRepairable()
         ) {
-            val k: Int = itemstack.getItem().getMaxDamage() - itemstack.getItemDamage()
-            val l: Int = itemstack.getItem().getMaxDamage() - itemstack1.getItemDamage()
+            val k: Int = itemstack.getItem().getMaxDamage() - itemstack.legacyItemValue
+            val l: Int = itemstack.getItem().getMaxDamage() - itemstack1.legacyItemValue
             val i1: Int = k + l + itemstack.getItem().getMaxDamage() * 5 / 100
             var j1: Int = itemstack.getItem().getMaxDamage() - i1
 
@@ -195,7 +200,7 @@ object AssemblyRecipes {
             for (recipe: IRecipe in result) {
                 val output: ItemStack = recipe.getRecipeOutput()
                 if (output == null) continue
-                if (output.getItemDamage() == 9 && output.getItem() === GCItems.basicItem && recipe is ShapelessOreRecipeGC) {
+                if (output.legacyItemValue == 9 && output.getItem() === GCItems.basicItem && recipe is ShapelessOreRecipeGC) {
                     if (recipe.matches((CompressorRecipes.steelRecipeGC)!!)) {
                         continue
                     }

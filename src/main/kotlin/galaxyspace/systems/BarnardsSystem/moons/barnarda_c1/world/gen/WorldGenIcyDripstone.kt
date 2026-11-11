@@ -6,9 +6,9 @@ import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.blocks.Barnarda_C1_D
 import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.blocks.Barnarda_C1_Blocks
 import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.blocks.Barnarda_C1_Decorations
 import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.world.gen.WorldGenIcyDripstone
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 import java.util.HashSet
 import java.util.Random
@@ -25,7 +25,7 @@ open class WorldGenIcyDripstone : WorldGenerator() {
 
             if (world.canBlockSeeSky(pos)) continue
 
-            if (isValidSurface(world, pos) && world.isAirBlock(pos.down())) {
+            if (isValidSurface(world, pos) && world.isEmptyBlock(pos.below())) {
                 generateStalactite(world, rand, pos)
             }
         }
@@ -33,7 +33,7 @@ open class WorldGenIcyDripstone : WorldGenerator() {
         for (y: Int in 20..59) {
             val pos: BlockPos = BlockPos(randPosX, y, randPosZ)
 
-            if (isValidSurface(world, pos) && world.isAirBlock(pos.up())) {
+            if (isValidSurface(world, pos) && world.isEmptyBlock(pos.above())) {
                 generateStalagmite(world, rand, pos)
             }
         }
@@ -49,11 +49,11 @@ open class WorldGenIcyDripstone : WorldGenerator() {
         var length: Int = 0
 
 
-        if (!up) while (world.isAirBlock(pos.down(length + 1))) {
+        if (!up) while (world.isEmptyBlock(pos.below(length + 1))) {
             length++
         }
         else {
-            while (world.isAirBlock(pos.up(length + 1))) {
+            while (world.isEmptyBlock(pos.above(length + 1))) {
                 length++
             }
         }
@@ -67,50 +67,50 @@ open class WorldGenIcyDripstone : WorldGenerator() {
         val length: Int = calculateLength(world, pos, rand, false)
         if (length < 3) return
 
-        world.setBlockState(
+        world.setBlock(
             pos,
-            BRBlocks.BARNARDA_C1_BLOCKS.getDefaultState().withProperty(
+            BRBlocks.BARNARDA_C1_BLOCKS.defaultBlockState().setValue(
                 Barnarda_C1_Blocks.Companion.BASIC_TYPE,
                 EnumBlockBarnardaC1.ICY_SUBSURFACE
             ),
             2
         )
-        world.setBlockState(
-            pos.down(), BRBlocks.BARNARDA_C1_DECORATIONS.getDefaultState()
-                .withProperty(
+        world.setBlock(
+            pos.below(), BRBlocks.BARNARDA_C1_DECORATIONS.defaultBlockState()
+                .setValue(
                     Barnarda_C1_Decorations.Companion.BASIC_TYPE,
                     EnumBlockBarnardaC1Decoration.ICY_DRIPSTONE_BASE
                 )
-                .withProperty(Barnarda_C1_Decorations.Companion.UP, true), 2
+                .setValue(Barnarda_C1_Decorations.Companion.UP, true), 2
         )
 
         for (i: Int in 2..length) {
             if (i < length - 1) {
-                world.setBlockState(
-                    pos.down(i), BRBlocks.BARNARDA_C1_DECORATIONS.getDefaultState()
-                        .withProperty(
+                world.setBlock(
+                    pos.below(i), BRBlocks.BARNARDA_C1_DECORATIONS.defaultBlockState()
+                        .setValue(
                             Barnarda_C1_Decorations.Companion.BASIC_TYPE,
                             (EnumBlockBarnardaC1Decoration.ICY_DRIPSTONE_LARGE)
                         )
-                        .withProperty(Barnarda_C1_Decorations.Companion.UP, true), 2
+                        .setValue(Barnarda_C1_Decorations.Companion.UP, true), 2
                 )
             } else if (i == length - 1) {
-                world.setBlockState(
-                    pos.down(i), BRBlocks.BARNARDA_C1_DECORATIONS.getDefaultState()
-                        .withProperty(
+                world.setBlock(
+                    pos.below(i), BRBlocks.BARNARDA_C1_DECORATIONS.defaultBlockState()
+                        .setValue(
                             Barnarda_C1_Decorations.Companion.BASIC_TYPE,
                             EnumBlockBarnardaC1Decoration.ICY_DRIPSTONE_MEDIUM
                         )
-                        .withProperty(Barnarda_C1_Decorations.Companion.UP, true), 2
+                        .setValue(Barnarda_C1_Decorations.Companion.UP, true), 2
                 )
             } else {
-                world.setBlockState(
-                    pos.down(i), BRBlocks.BARNARDA_C1_DECORATIONS.getDefaultState()
-                        .withProperty(
+                world.setBlock(
+                    pos.below(i), BRBlocks.BARNARDA_C1_DECORATIONS.defaultBlockState()
+                        .setValue(
                             Barnarda_C1_Decorations.Companion.BASIC_TYPE,
                             (if (rand.nextBoolean()) EnumBlockBarnardaC1Decoration.ICY_DRIPSTONE_THIN else EnumBlockBarnardaC1Decoration.ICY_DRIPSTONE_SMALL)
                         )
-                        .withProperty(Barnarda_C1_Decorations.Companion.UP, true), 2
+                        .setValue(Barnarda_C1_Decorations.Companion.UP, true), 2
                 )
             }
         }
@@ -120,51 +120,51 @@ open class WorldGenIcyDripstone : WorldGenerator() {
         val length: Int = calculateLength(world, pos, rand, true)
         if (length < 3) return
 
-        world.setBlockState(
+        world.setBlock(
             pos,
-            BRBlocks.BARNARDA_C1_BLOCKS.getDefaultState().withProperty(
+            BRBlocks.BARNARDA_C1_BLOCKS.defaultBlockState().setValue(
                 Barnarda_C1_Blocks.Companion.BASIC_TYPE,
                 EnumBlockBarnardaC1.ICY_SUBSURFACE
             ),
             2
         )
-        world.setBlockState(
-            pos.up(), BRBlocks.BARNARDA_C1_DECORATIONS.getDefaultState()
-                .withProperty(
+        world.setBlock(
+            pos.above(), BRBlocks.BARNARDA_C1_DECORATIONS.defaultBlockState()
+                .setValue(
                     Barnarda_C1_Decorations.Companion.BASIC_TYPE,
                     EnumBlockBarnardaC1Decoration.ICY_DRIPSTONE_BASE
                 )
-                .withProperty(Barnarda_C1_Decorations.Companion.UP, false), 2
+                .setValue(Barnarda_C1_Decorations.Companion.UP, false), 2
         )
 
 
         for (i: Int in 2..length) {
             if (i < length - 1) {
-                world.setBlockState(
-                    pos.up(i), BRBlocks.BARNARDA_C1_DECORATIONS.getDefaultState()
-                        .withProperty(
+                world.setBlock(
+                    pos.above(i), BRBlocks.BARNARDA_C1_DECORATIONS.defaultBlockState()
+                        .setValue(
                             Barnarda_C1_Decorations.Companion.BASIC_TYPE,
                             EnumBlockBarnardaC1Decoration.ICY_DRIPSTONE_LARGE
                         )
-                        .withProperty(Barnarda_C1_Decorations.Companion.UP, false), 2
+                        .setValue(Barnarda_C1_Decorations.Companion.UP, false), 2
                 )
             } else if (i == length - 1) {
-                world.setBlockState(
-                    pos.up(i), BRBlocks.BARNARDA_C1_DECORATIONS.getDefaultState()
-                        .withProperty(
+                world.setBlock(
+                    pos.above(i), BRBlocks.BARNARDA_C1_DECORATIONS.defaultBlockState()
+                        .setValue(
                             Barnarda_C1_Decorations.Companion.BASIC_TYPE,
                             EnumBlockBarnardaC1Decoration.ICY_DRIPSTONE_MEDIUM
                         )
-                        .withProperty(Barnarda_C1_Decorations.Companion.UP, false), 2
+                        .setValue(Barnarda_C1_Decorations.Companion.UP, false), 2
                 )
             } else {
-                world.setBlockState(
-                    pos.up(i), BRBlocks.BARNARDA_C1_DECORATIONS.getDefaultState()
-                        .withProperty(
+                world.setBlock(
+                    pos.above(i), BRBlocks.BARNARDA_C1_DECORATIONS.defaultBlockState()
+                        .setValue(
                             Barnarda_C1_Decorations.Companion.BASIC_TYPE,
                             (if (rand.nextBoolean()) EnumBlockBarnardaC1Decoration.ICY_DRIPSTONE_THIN else EnumBlockBarnardaC1Decoration.ICY_DRIPSTONE_SMALL)
                         )
-                        .withProperty(Barnarda_C1_Decorations.Companion.UP, false), 2
+                        .setValue(Barnarda_C1_Decorations.Companion.UP, false), 2
                 )
             }
         }
@@ -175,22 +175,22 @@ open class WorldGenIcyDripstone : WorldGenerator() {
 
         init {
             VALID_BLOCKS.add(
-                BRBlocks.BARNARDA_C1_BLOCKS.getDefaultState()
-                    .withProperty(
+                BRBlocks.BARNARDA_C1_BLOCKS.defaultBlockState()
+                    .setValue(
                         Barnarda_C1_Blocks.Companion.BASIC_TYPE,
                         EnumBlockBarnardaC1.SNOWY_SUBSURFACE
                     )
             )
             VALID_BLOCKS.add(
-                BRBlocks.BARNARDA_C1_BLOCKS.getDefaultState()
-                    .withProperty(
+                BRBlocks.BARNARDA_C1_BLOCKS.defaultBlockState()
+                    .setValue(
                         Barnarda_C1_Blocks.Companion.BASIC_TYPE,
                         EnumBlockBarnardaC1.ICY_SUBSURFACE
                     )
             )
             VALID_BLOCKS.add(
-                BRBlocks.BARNARDA_C1_BLOCKS.getDefaultState()
-                    .withProperty(
+                BRBlocks.BARNARDA_C1_BLOCKS.defaultBlockState()
+                    .setValue(
                         Barnarda_C1_Blocks.Companion.BASIC_TYPE,
                         EnumBlockBarnardaC1.STONE
                     )

@@ -7,9 +7,9 @@ import com.google.common.collect.ImmutableTable
 import com.google.common.collect.Iterables
 import com.google.common.base.Predicates
 import micdoodle8.mods.galacticraft.core.util.JavaUtil
-import net.minecraft.block.Block
-import net.minecraft.block.properties.IProperty
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.properties.Property as IProperty
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraftforge.common.property.ExtendedBlockState
 import net.minecraftforge.common.property.IExtendedBlockState
 import net.minecraftforge.common.property.IUnlistedProperty
@@ -59,7 +59,7 @@ open class BlockGratingExtendedState constructor(
             @Nonnull property: IProperty<T>,
             @Nonnull value: V?
         ): IBlockState {
-            val clean: IBlockState = super.withProperty(property, (value)!!)
+            val clean: IBlockState = super.setValue(property, (value)!!)
             if (clean === this.cleanState) {
                 return this
             }

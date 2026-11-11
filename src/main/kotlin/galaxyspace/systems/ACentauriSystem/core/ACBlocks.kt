@@ -9,9 +9,9 @@ import galaxyspace.systems.ACentauriSystem.planets.proxima_b.items.ItemBlocksPro
 import galaxyspace.core.prefab.items.GSItemBlockDesc
 import galaxyspace.systems.ACentauriSystem.planets.proxima_b.items.ItemBlocksProxima_B_Dandelions
 import micdoodle8.mods.galacticraft.core.GCBlocks
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.item.ItemBlock
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.oredict.OreDictionary
 
 object ACBlocks {

@@ -3,22 +3,21 @@ package micdoodle8.mods.galacticraft.planets
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.venus.tick.VenusTickHandlerServer
 import micdoodle8.mods.galacticraft.planets.venus.tile.SolarModuleNetwork
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.world.World
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.common.event.FMLServerStartedEvent
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
+import net.minecraftforge.event.server.ServerStartedEvent as FMLServerStartedEvent
+import net.minecraftforge.event.server.ServerStartingEvent as FMLServerStartingEvent
 import net.minecraftforge.fml.common.network.IGuiHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.util.ArrayList
 
 open class PlanetsProxy : IGuiHandler {
-    open fun preInit(event: FMLPreInitializationEvent?) {
+    open fun preInit() {
         for (module: IPlanetsModule in GalacticraftPlanets.Companion.commonModules) {
-            module.preInit(event)
+            module.preInit()
         }
     }
 

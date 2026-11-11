@@ -3,7 +3,7 @@ package asmodeuscore.core.astronomy.dimension.world.gen
 import asmodeuscore.core.astronomy.dimension.world.gen.ACBiome
 import asmodeuscore.core.astronomy.dimension.world.gen.biome.ACBiomeGen
 import micdoodle8.mods.galacticraft.api.world.BiomeGenBaseGC
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 
 abstract class ACBiome(properties: BiomeProperties?) : BiomeGenBaseGC((properties)!!) {
     @JvmField

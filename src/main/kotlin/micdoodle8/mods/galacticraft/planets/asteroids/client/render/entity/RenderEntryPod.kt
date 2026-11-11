@@ -12,8 +12,8 @@ import net.minecraft.client.renderer.culling.ICamera
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.renderer.texture.TextureMap
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.AABB as AxisAlignedBB
 import org.lwjgl.opengl.GL11
 
 open class RenderEntryPod constructor(manager: RenderManager) : Render<EntityEntryPod>(manager) {
@@ -23,7 +23,7 @@ open class RenderEntryPod constructor(manager: RenderManager) : Render<EntityEnt
         if (this.modelEntryPod == null) {
             try {
                 this.modelEntryPod = ClientUtil.modelFromOBJ(
-                    ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "pod.obj"),
+                    ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "pod.obj"),
                     ImmutableList.of<String?>("PodBody")
                 )
             } catch (e: Exception) {

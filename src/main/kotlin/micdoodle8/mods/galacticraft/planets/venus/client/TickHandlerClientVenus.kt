@@ -11,26 +11,26 @@ import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.planets.venus.ConfigManagerVenus
 import micdoodle8.mods.galacticraft.planets.venus.dimension.WorldProviderVenus
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.client.multiplayer.WorldClient
-import net.minecraft.init.SoundEvents
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.BlockPos
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.core.BlockPos
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.cos
 import kotlin.math.sin
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class TickHandlerClientVenus {
     private val lightning: MutableMap<BlockPos?,Int> = Maps.newHashMap<BlockPos?,Int>()
 
     @SubscribeEvent
     open fun onRenderTick(event: TickEvent.RenderTickEvent) {
-        val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+        val minecraft: Minecraft = Minecraft.getInstance()
         val player: EntityPlayerSP? = minecraft.player
         val playerBaseClient: EntityPlayerSP? = PlayerUtil.getPlayerBaseClientFromPlayer(player, false)
 
@@ -40,7 +40,7 @@ open class TickHandlerClientVenus {
 
     @SubscribeEvent
     open fun renderLightning(event: ClientProxyCore.EventSpecialRender?) {
-        val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+        val minecraft: Minecraft = Minecraft.getInstance()
         val player: EntityPlayerSP? = minecraft.player
         if (player != null && !ConfigManagerVenus.disableAmbientLightning) {
             val it: MutableIterator<MutableMap.MutableEntry<BlockPos?,Int>> = lightning.entries.iterator()
@@ -57,10 +57,10 @@ open class TickHandlerClientVenus {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onClientTick(event: TickEvent.ClientTickEvent?) {
-        val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+        val minecraft: Minecraft = Minecraft.getInstance()
 
         val world: WorldClient? = minecraft.world
 
@@ -81,12 +81,12 @@ open class TickHandlerClientVenus {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onPlayerTick(event: TickEvent.PlayerTickEvent) {
         if (event.side != Side.CLIENT) return
 
-        val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+        val minecraft: Minecraft = Minecraft.getInstance()
         val player: EntityPlayerSP = minecraft.player ?: return
         val world: WorldClient = minecraft.world ?: return
 
@@ -103,16 +103,16 @@ open class TickHandlerClientVenus {
                     }
                 }
 
-                if (player.getRNG()
+                if (player.getRandom()
                         .nextInt(300 + (800f * world.rainingStrength).toInt()) == 0 && world.provider is WorldProviderVenus
                 ) {
-                    val freq: Double = player.getRNG().nextDouble() * Math.PI * 2.0f
+                    val freq: Double = player.getRandom().nextDouble() * Math.PI * 2.0f
                     val dist: Double = 180.0
                     val dX: Double = dist * cos(freq)
                     val dZ: Double = dist * sin(freq)
-                    val posX: Double = player.posX + dX
+                    val posX: Double = player.x + dX
                     val posY: Double = 70.0
-                    val posZ: Double = player.posZ + dZ
+                    val posZ: Double = player.z + dZ
                     world.playSound(
                         player,
                         posX,
@@ -120,8 +120,8 @@ open class TickHandlerClientVenus {
                         posZ,
                         SoundEvents.ENTITY_LIGHTNING_THUNDER,
                         SoundCategory.WEATHER,
-                        500.0f + player.getRNG().nextFloat() * 500f,
-                        1.0f + player.getRNG().nextFloat() * 0.2f
+                        500.0f + player.getRandom().nextFloat() * 500f,
+                        1.0f + player.getRandom().nextFloat() * 0.2f
                     )
                     lightning.put(BlockPos(posX, posY, posZ), 20)
                 }

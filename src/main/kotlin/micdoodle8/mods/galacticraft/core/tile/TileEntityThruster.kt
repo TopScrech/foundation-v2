@@ -1,9 +1,9 @@
 package micdoodle8.mods.galacticraft.core.tile
 
-import net.minecraft.block.state.IBlockState
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 
 open class TileEntityThruster : TileEntity() {
     //    @Override

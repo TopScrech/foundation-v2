@@ -1,11 +1,14 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.dimension
 
+import foundation.persistence.containsTag
+import foundation.persistence.listOfType
+
 import com.google.common.collect.Maps
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
 import micdoodle8.mods.galacticraft.planets.asteroids.tick.AsteroidsTickHandlerServer
 import micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityShortRangeTelepad
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
 import net.minecraft.world.storage.WorldSavedData
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -32,19 +35,19 @@ open class ShortRangeTelepadHandler constructor(saveDataID: String) : WorldSaved
     }
 
     override fun readFromNBT(nbt: NBTTagCompound) {
-        val tagList: NBTTagList = nbt.getTagList("TelepadList", 10)
+        val tagList: NBTTagList = nbt.listOfType("TelepadList", 10)
         tileMap.clear()
 
-        for (i: Int in 0..<tagList.tagCount()) {
-            val nbt2: NBTTagCompound = tagList.getCompoundTagAt(i)
-            val address: Int = nbt2.getInteger("Address")
-            val dimID: Int = nbt2.getInteger("DimID")
-            val posX: Int = nbt2.getInteger("PosX")
-            val posY: Int = nbt2.getInteger("PosY")
-            val posZ: Int = nbt2.getInteger("PosZ")
+        for (i: Int in 0..<tagList.size) {
+            val nbt2: NBTTagCompound = tagList.getCompoundOrEmpty(i)
+            val address: Int = nbt2.getIntOr("Address", 0)
+            val dimID: Int = nbt2.getIntOr("DimID", 0)
+            val posX: Int = nbt2.getIntOr("PosX", 0)
+            val posY: Int = nbt2.getIntOr("PosY", 0)
+            val posZ: Int = nbt2.getIntOr("PosZ", 0)
             var enabled: Boolean = true
-            if (nbt2.hasKey("Enabled")) {
-                enabled = nbt2.getBoolean("Enabled")
+            if (nbt2.containsTag("Enabled")) {
+                enabled = nbt2.getBooleanOr("Enabled", false)
             }
             tileMap.put(address, TelepadEntry(dimID, BlockVec3(posX, posY, posZ), enabled))
         }
@@ -55,16 +58,16 @@ open class ShortRangeTelepadHandler constructor(saveDataID: String) : WorldSaved
 
         for (e: MutableMap.MutableEntry<Int, TelepadEntry?> in tileMap.entries) {
             val nbt2: NBTTagCompound = NBTTagCompound()
-            nbt2.setInteger("Address", e.key!!)
-            nbt2.setInteger("DimID", e.value!!.dimensionID)
-            nbt2.setInteger("PosX", e.value!!.position.x)
-            nbt2.setInteger("PosY", e.value!!.position.y)
-            nbt2.setInteger("PosZ", e.value!!.position.z)
-            nbt2.setBoolean("Enabled", e.value!!.enabled)
-            tagList.appendTag(nbt2)
+            nbt2.putInt("Address", e.key!!)
+            nbt2.putInt("DimID", e.value!!.dimensionID)
+            nbt2.putInt("PosX", e.value!!.position.x)
+            nbt2.putInt("PosY", e.value!!.position.y)
+            nbt2.putInt("PosZ", e.value!!.position.z)
+            nbt2.putBoolean("Enabled", e.value!!.enabled)
+            tagList.add(nbt2)
         }
 
-        nbt.setTag("TelepadList", tagList)
+        nbt.put("TelepadList", tagList)
         return nbt
     }
 

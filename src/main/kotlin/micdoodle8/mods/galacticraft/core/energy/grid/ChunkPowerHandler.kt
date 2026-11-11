@@ -7,10 +7,10 @@ import micdoodle8.mods.galacticraft.api.transmission.tile.INetworkConnection
 import micdoodle8.mods.galacticraft.core.event.EventHandlerGC
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.world.ChunkEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 
 open class ChunkPowerHandler {
     @SubscribeEvent

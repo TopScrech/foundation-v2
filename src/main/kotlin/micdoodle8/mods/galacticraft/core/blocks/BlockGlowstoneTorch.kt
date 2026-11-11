@@ -4,26 +4,26 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.IProperty
+import net.minecraft.world.level.block.state.properties.Property as IProperty
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class BlockGlowstoneTorch constructor(assetName: String?) : BlockTorchBase(Material.CIRCUITS),
     IShiftDescription, ISortableBlock {
     init {
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(FACING, EnumFacing.UP)
+            this.blockState.getBaseState().setValue(FACING, EnumFacing.UP)
         )
         this.setTickRandomly(true)
         this.setTranslationKey(assetName)
@@ -74,7 +74,7 @@ open class BlockGlowstoneTorch constructor(assetName: String?) : BlockTorchBase(
 
             if (flag) {
                 this.dropBlockAsItem(worldIn, pos, state, 0)
-                worldIn.setBlockToAir(pos)
+                worldIn.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
             }
         }
     }
@@ -117,7 +117,7 @@ open class BlockGlowstoneTorch constructor(assetName: String?) : BlockTorchBase(
     //
     //        return super.collisionRayTrace(worldIn, pos, start, end);
     //    }
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT
     }

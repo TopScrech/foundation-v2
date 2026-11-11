@@ -6,20 +6,19 @@ import micdoodle8.mods.galacticraft.core.util.ColorUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import kotlin.math.floor
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 object OverlayLaunchCountdown : Overlay() {
-    private val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+    private val minecraft: Minecraft = Minecraft.getInstance()
 
     @JvmStatic
     fun renderCountdownOverlay() {
         GlStateManager.disableLighting()
-        var count: Int = (minecraft.player.getRidingEntity() as EntitySpaceshipBase).timeUntilLaunch / 2
+        var count: Int = (minecraft.player.getVehicle() as EntitySpaceshipBase).timeUntilLaunch / 2
 
         count = floor((count / 10.0f).toDouble()).toInt()
 

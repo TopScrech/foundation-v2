@@ -1,5 +1,11 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.item.legacyItemValue
+
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.api.item.IPaintable
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
@@ -10,38 +16,39 @@ import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.PropertyObject
 import micdoodle8.mods.galacticraft.core.util.RedstoneUtil
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.IProperty
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.Property as IProperty
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.BlockRenderLayer
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraft.world.EnumSkyBlock
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.property.ExtendedBlockState
 import net.minecraftforge.common.property.IExtendedBlockState
 import net.minecraftforge.common.property.IUnlistedProperty
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 
 open class BlockPanelLighting constructor(assetName: String?) : BlockAdvancedTile(Material.IRON), ISortableBlock,
-    IShiftDescription, IPaintable {
+    IShiftDescription, IPaintable, LegacyBlockMetadata {
     enum class PanelType(private val serializedName: String, private val light: Int) : IStringSerializable {
         SQUARE("square", 11),
         SPOTS("spots", 7),
@@ -52,7 +59,9 @@ open class BlockPanelLighting constructor(assetName: String?) : BlockAdvancedTil
             2
         ); //IF ADDING TO THIS ENUM, MAKE SURE TO CHANGE DEFINITION OF PacketSimple.C_UPDATE_STATS!!!!!!
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -72,7 +81,7 @@ open class BlockPanelLighting constructor(assetName: String?) : BlockAdvancedTil
         return ExtendedBlockState(this, arrayOf<IProperty<*>?>(TYPE), arrayOf<IUnlistedProperty<*>?>(BASE_STATE))
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (i: Int in 0..<PANELTYPES_LENGTH) {
             list.add(ItemStack(this, 1, i))
@@ -114,15 +123,15 @@ open class BlockPanelLighting constructor(assetName: String?) : BlockAdvancedTil
         placer: EntityLivingBase,
         stack: ItemStack
     ) {
-        var damage: Int = stack.getItemDamage()
+        var damage: Int = stack.legacyItemValue
         if (damage >= PANELTYPES_LENGTH) damage = 0
-        val tile: TileEntity? = worldIn.getTileEntity(pos)
+        val tile: TileEntity? = worldIn.getBlockEntity(pos)
         if (tile is TileEntityPanelLight && placer is EntityPlayer) {
             tile.initialise(
                 damage,
                 EnumFacing.getDirectionFromEntityLiving(pos, placer),
                 placer,
-                worldIn.isRemote,
+                worldIn.isClientSide,
                 superState[damage]
             )
         }
@@ -139,7 +148,7 @@ open class BlockPanelLighting constructor(assetName: String?) : BlockAdvancedTil
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val tile: TileEntity? = (world)!!.getTileEntity(pos)
+        val tile: TileEntity? = (world)!!.getBlockEntity(pos)
         if (tile !is TileEntityPanelLight) {
             return false
         }
@@ -202,7 +211,7 @@ open class BlockPanelLighting constructor(assetName: String?) : BlockAdvancedTil
     override fun getStateFromMeta(meta: Int): IBlockState {
         var meta: Int = meta
         if (meta >= PANELTYPES_LENGTH) meta = 0
-        return this.getDefaultState().withProperty(TYPE, PanelType.entries[meta])
+        return this.defaultBlockState().setValue(TYPE, PanelType.entries[meta])
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -211,9 +220,9 @@ open class BlockPanelLighting constructor(assetName: String?) : BlockAdvancedTil
 
     override fun getExtendedState(state: IBlockState, world: IBlockAccess, pos: BlockPos): IBlockState {
         var state: IBlockState = state
-        val tile: TileEntity? = world.getTileEntity(pos)
+        val tile: TileEntity? = world.getBlockEntity(pos)
         if (tile is TileEntityPanelLight) {
-            state = (state as IExtendedBlockState).withProperty(BASE_STATE, tile.getBaseBlock())
+            state = (state as IExtendedBlockState).setValue(BASE_STATE, tile.getBaseBlock())
         }
 
         return state
@@ -259,7 +268,7 @@ open class BlockPanelLighting constructor(assetName: String?) : BlockAdvancedTil
         private val superState = arrayOfNulls<IBlockState>(PANELTYPES_LENGTH) // - only used clientSide
 
         @JvmStatic
-        @SideOnly(value = Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         fun updateClient(type: Int, state: IBlockState?) {
             var type: Int = type
             if (type >= PANELTYPES_LENGTH) type = 0
@@ -267,7 +276,7 @@ open class BlockPanelLighting constructor(assetName: String?) : BlockAdvancedTil
         }
 
         @JvmStatic
-        @SideOnly(value = Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         fun updateClient(data: MutableList<Any?>) {
             var state: IBlockState?
             for (i: Int in 0..<PANELTYPES_LENGTH) {
@@ -288,7 +297,7 @@ open class BlockPanelLighting constructor(assetName: String?) : BlockAdvancedTil
             var bs: IBlockState?
             for (i: Int in 0..<PANELTYPES_LENGTH) {
                 bs = panel_lighting[i]
-                if (bs == null) bs = Blocks.AIR.getDefaultState()
+                if (bs == null) bs = Blocks.AIR.defaultBlockState()
                 block = (bs)!!.getBlock()
                 result[i + i + 1] = net.minecraft.block.Block.REGISTRY.getNameForObject(block).toString()
                 result[i + i + 2] = block.getMetaFromState(bs)

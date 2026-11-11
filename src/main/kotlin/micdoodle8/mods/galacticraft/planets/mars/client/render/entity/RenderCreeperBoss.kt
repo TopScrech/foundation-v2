@@ -7,7 +7,7 @@ import micdoodle8.mods.galacticraft.planets.mars.entities.EntityCreeperBoss
 import net.minecraft.client.model.ModelBase
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 import kotlin.math.pow
 
@@ -80,7 +80,7 @@ open class RenderCreeperBoss constructor(renderManager: RenderManager) :
     //    }
 
     companion object {
-        private val creeperTexture = ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/model/creeper.png")
-        private val powerTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/power.png")
+        private val creeperTexture = ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/model/creeper.png")
+        private val powerTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/power.png")
     }
 }

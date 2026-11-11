@@ -1,11 +1,13 @@
 package micdoodle8.mods.galacticraft.planets.mars.world.gen
 
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
-import net.minecraft.block.Block
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.ChunkPrimer
 import java.util.Random
 import kotlin.math.abs
@@ -215,7 +217,7 @@ open class MapGenCavernMars : MapGenBaseMeta() {
                                             val block: Block = primer.getBlockState(var42, var50, var45).getBlock()
 
                                             if (block === MarsBlocks.marsBlock || block === MarsBlocks.blockSludge || block === MarsBlocks.vine) {
-                                                primer.setBlockState(var42, var50, var45, Blocks.AIR.getDefaultState())
+                                                primer.setBlockState(var42, var50, var45, Blocks.AIR.defaultBlockState())
                                             }
                                         }
                                     }

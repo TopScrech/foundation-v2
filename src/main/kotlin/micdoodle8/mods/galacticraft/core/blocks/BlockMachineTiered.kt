@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseUniversalElectrical
@@ -10,29 +12,31 @@ import micdoodle8.mods.galacticraft.core.tile.TileEntityElectricFurnace
 import micdoodle8.mods.galacticraft.core.tile.TileEntityEnergyStorageModule
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.SoundType
-import net.minecraft.block.properties.PropertyDirection
-import net.minecraft.block.properties.PropertyEnum
-import net.minecraft.block.properties.PropertyInteger
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
+import net.minecraft.world.level.block.state.properties.IntegerProperty as PropertyInteger
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import kotlin.math.floor
 
 open class BlockMachineTiered constructor(assetName: String?) : BlockTileGC(GCBlocks.machine), IShiftDescription,
-    ISortableBlock {
+    ISortableBlock, LegacyBlockMetadata {
     enum class EnumTieredMachineType(private val meta: Int, private val serializedName: String) : IStringSerializable {
         STORAGE_MODULE(0, "energy_storage"),
         ELECTRIC_FURNACE(1, "electric_furnace"),
@@ -43,7 +47,9 @@ open class BlockMachineTiered constructor(assetName: String?) : BlockTileGC(GCBl
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -76,17 +82,17 @@ open class BlockMachineTiered constructor(assetName: String?) : BlockTileGC(GCBl
     ) {
         val metadata: Int = getMetaFromState(state)
 
-        val angle: Int = MathHelper.floor(placer.rotationYaw * 4.0f / 360.0f + 0.5) and 3
+        val angle: Int = MathHelper.floor(placer.yRot * 4.0f / 360.0f + 0.5) and 3
         val change: Int = EnumFacing.byHorizontalIndex(angle).getOpposite().getHorizontalIndex()
 
         if (metadata >= ELECTRIC_FURNACE_METADATA + 8) {
-            worldIn.setBlockState(pos, getStateFromMeta(ELECTRIC_FURNACE_METADATA + 8 + change), 3)
+            worldIn.setBlock(pos, getStateFromMeta(ELECTRIC_FURNACE_METADATA + 8 + change), 3)
         } else if (metadata >= STORAGE_MODULE_METADATA + 8) {
-            worldIn.setBlockState(pos, getStateFromMeta(STORAGE_MODULE_METADATA + 8 + change), 3)
+            worldIn.setBlock(pos, getStateFromMeta(STORAGE_MODULE_METADATA + 8 + change), 3)
         } else if (metadata >= ELECTRIC_FURNACE_METADATA) {
-            worldIn.setBlockState(pos, getStateFromMeta(ELECTRIC_FURNACE_METADATA + change), 3)
+            worldIn.setBlock(pos, getStateFromMeta(ELECTRIC_FURNACE_METADATA + change), 3)
         } else if (metadata >= STORAGE_MODULE_METADATA) {
-            worldIn.setBlockState(pos, getStateFromMeta(STORAGE_MODULE_METADATA + change), 3)
+            worldIn.setBlock(pos, getStateFromMeta(STORAGE_MODULE_METADATA + change), 3)
         }
     }
 
@@ -121,7 +127,7 @@ open class BlockMachineTiered constructor(assetName: String?) : BlockTileGC(GCBl
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        if (!(world)!!.isRemote) {
+        if (!(world)!!.isClientSide) {
             (entityPlayer)!!.openGui(GalacticraftCore.instance, -1, world, (pos)!!.getX(), (pos)!!.getY(), (pos)!!.getZ())
         }
 
@@ -185,8 +191,8 @@ open class BlockMachineTiered constructor(assetName: String?) : BlockTileGC(GCBl
     override fun getStateFromMeta(meta: Int): IBlockState {
         val enumfacing: EnumFacing = EnumFacing.byHorizontalIndex(meta % 4)
         val type: EnumTieredMachineType = EnumTieredMachineType.Companion.byMetadata(floor(meta / 4.0).toInt())
-        return this.getDefaultState().withProperty(FACING, enumfacing)
-            .withProperty(TYPE, type)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
+            .setValue(TYPE, type)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -201,15 +207,15 @@ open class BlockMachineTiered constructor(assetName: String?) : BlockTileGC(GCBl
 
     override fun getActualState(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState {
         var state: IBlockState = state
-        val tile: TileEntity? = worldIn.getTileEntity(pos)
+        val tile: TileEntity? = worldIn.getBlockEntity(pos)
         state = IMachineSides.addPropertyForTile(state, tile, MACHINESIDES_RENDERTYPE, (SIDES)!!)
 
         if (tile !is TileEntityEnergyStorageModule) {
-            return state.withProperty(FILL_VALUE, 0)
+            return state.setValue(FILL_VALUE, 0)
         }
         var energyLevel: Int = tile.scaledEnergyLevel
         if (state.getValue(TYPE) == EnumTieredMachineType.STORAGE_CLUSTER) energyLevel += 17
-        return state.withProperty(FILL_VALUE, energyLevel)
+        return state.setValue(FILL_VALUE, energyLevel)
     }
 
     override fun getCategory(meta: Int): EnumSortCategoryBlock {
@@ -227,7 +233,7 @@ open class BlockMachineTiered constructor(assetName: String?) : BlockTileGC(GCBl
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val tile: TileEntity? = (world)!!.getTileEntity(pos)
+        val tile: TileEntity? = (world)!!.getBlockEntity(pos)
         if (tile is IMachineSides) {
             (tile as IMachineSides).nextSideConfiguration(tile)
             return true
@@ -244,7 +250,7 @@ open class BlockMachineTiered constructor(assetName: String?) : BlockTileGC(GCBl
         var MACHINESIDES_RENDERTYPE: IMachineSidesProperties = IMachineSidesProperties.TWOFACES_HORIZ
 
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL)
+        val FACING: EnumProperty<Direction> = BlockStateProperties.HORIZONTAL_FACING
 
         @JvmField
         val TYPE: PropertyEnum<EnumTieredMachineType> =

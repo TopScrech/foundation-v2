@@ -1,5 +1,10 @@
 package galaxyspace.core.client.gui.overlay
 
+import foundation.item.legacyItemValue
+
+import foundation.inventory.armorItems
+import foundation.persistence.containsTag
+
 import asmodeuscore.AsmodeusCore
 import asmodeuscore.core.astronomy.gui.overlay.OverlayDetectors
 import galaxyspace.api.item.IModificationItem
@@ -12,26 +17,25 @@ import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStatsClient
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.RenderHelper
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 object OverlaySpaceSuit : Overlay() {
     @JvmStatic
     fun renderSpaceSuitOverlay(player: EntityPlayer?) {
         if (player == null) return
 
-        val mc: Minecraft = Minecraft.getMinecraft()
+        val mc: Minecraft = Minecraft.getInstance()
         val scaled: ScaledResolution = ScaledResolution(mc)
         val playerBaseClient: EntityPlayerSP = (PlayerUtil.getPlayerBaseClientFromPlayer(player, false))!!
         val stats: GCPlayerStatsClient? = GCPlayerStatsClient.get(playerBaseClient)
@@ -49,13 +53,13 @@ object OverlaySpaceSuit : Overlay() {
 		}
 		*/
         var hasSuit: Boolean = false
-        for (stack: ItemStack in player.inventory.armorInventory) {
+        for (stack: ItemStack in player.inventory.armorItems) {
             if (!stack.isEmpty() && stack.getItem() is ItemSpaceSuit) {
                 var hasModule: Boolean = false
                 var module: ItemStack = ItemStack.EMPTY
 
                 if ((stack.getItem() as IModificationItem).getAvailableModules() != null) for (modules in ((stack.getItem() as IModificationItem).getAvailableModules())!!) {
-                    if (stack.getTagCompound()!!.hasKey((modules)!!.getName()) && (modules)!!.isActiveModule()) {
+                    if (stack.getTagCompound()!!.containsTag((modules)!!.getName()) && (modules)!!.isActiveModule()) {
                         hasModule = stack.getTagCompound()!!.getBoolean((modules)!!.getName())
                         module = ((modules)!!.getIcon())!!
                     }
@@ -80,7 +84,7 @@ object OverlaySpaceSuit : Overlay() {
 
         val xOffset: Int = -35
         var yOffset: Int = scaled.getScaledHeight() - 140
-        val guiTexture: ResourceLocation = ResourceLocation(AsmodeusCore.ASSET_PREFIX, "textures/gui/gui.png")
+        val guiTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(AsmodeusCore.ASSET_PREFIX, "textures/gui/gui.png")
 
         if (GSConfigCore.spacesuit_pos == "up" || GSConfigCore.spacesuit_pos == "top") yOffset = 70
 
@@ -99,7 +103,7 @@ object OverlaySpaceSuit : Overlay() {
             GlStateManager.disableLighting()
             GlStateManager.enableDepth()
             GlStateManager.enableAlpha()
-            FMLClientHandler.instance().getClient().renderEngine.bindTexture(guiTexture)
+            Minecraft.getInstance().renderEngine.bindTexture(guiTexture)
             OverlayDetectors.drawTexturedModalRect(
                 xOffset.toDouble() + 35,
                 yOffset.toDouble() - 78,
@@ -120,7 +124,7 @@ object OverlaySpaceSuit : Overlay() {
         }
 
 
-        for (stack: ItemStack in player.inventory.armorInventory) {
+        for (stack: ItemStack in player.inventory.armorItems) {
             if (stack.isEmpty() || stack.getItem() !is ItemSpaceSuit) continue
 
             if (!stack.isEmpty() && stack.getItem() is ItemSpaceSuit) {
@@ -128,7 +132,7 @@ object OverlaySpaceSuit : Overlay() {
                 var module: ItemStack = ItemStack.EMPTY
 
                 if ((stack.getItem() as IModificationItem).getAvailableModules() != null) for (modules in ((stack.getItem() as IModificationItem).getAvailableModules())!!) {
-                    if (stack.getTagCompound()!!.hasKey((modules)!!.getName()) && (modules)!!.isActiveModule()) {
+                    if (stack.getTagCompound()!!.containsTag((modules)!!.getName()) && (modules)!!.isActiveModule()) {
                         hasModule = stack.getTagCompound()!!.getBoolean((modules)!!.getName())
                         module = ((modules)!!.getIcon())!!
                     }
@@ -171,13 +175,13 @@ object OverlaySpaceSuit : Overlay() {
                 }
 
 
-                val key: String = keys[3 - player.inventory.armorInventory.indexOf(stack)]
+                val key: String = keys[3 - player.inventory.armorItems.indexOf(stack)]
 
 
                 val horizontal: Boolean = false
                 if (!module.isEmpty()) {
                     var status: EnumColor = if (enable) EnumColor.BRIGHT_GREEN else EnumColor.RED
-                    if (stack.getItemDamage() >= stack.getMaxDamage()) status = EnumColor.ORANGE
+                    if (stack.legacyItemValue >= stack.getMaxDamage()) status = EnumColor.ORANGE
 
 
                     RenderHelper.enableStandardItemLighting()
@@ -196,7 +200,7 @@ object OverlaySpaceSuit : Overlay() {
                     } else {
                         mc.getRenderItem().renderItemIntoGUI(module, xOffset + 40, yOffset - (i * 20) - 15)
                         if (status == EnumColor.ORANGE) {
-                            FMLClientHandler.instance().getClient().renderEngine.bindTexture(guiTexture)
+                            Minecraft.getInstance().renderEngine.bindTexture(guiTexture)
                             GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
                             OverlayDetectors.drawTexturedModalRect(
                                 (xOffset.toFloat() + 50).toDouble(),

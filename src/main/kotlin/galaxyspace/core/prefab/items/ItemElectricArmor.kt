@@ -1,5 +1,7 @@
 package galaxyspace.core.prefab.items
 
+import foundation.persistence.containsTag
+
 import galaxyspace.core.util.GSCreativeTabs
 import galaxyspace.GalaxySpace
 import galaxyspace.core.prefab.items.ItemElectricArmor
@@ -7,18 +9,18 @@ import cofh.redstoneflux.api.IEnergyContainerItem
 import micdoodle8.mods.galacticraft.api.item.IItemElectricBase
 import micdoodle8.mods.galacticraft.core.energy.EnergyConfigHandler
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.Item
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemArmor
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTBase
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.Tag as NBTBase
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.nbt.NBTTagDouble
 import net.minecraft.nbt.NBTTagFloat
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.ICapabilityProvider
 import net.minecraftforge.energy.CapabilityEnergy
@@ -87,7 +89,7 @@ open class ItemElectricArmor constructor(materialIn: ArmorMaterial, armorIndex: 
         }
 
         var energyStored: Float = 0.0f
-        if ((stack)!!.getTagCompound()!!.hasKey("electricity")) {
+        if ((stack)!!.getTagCompound()!!.containsTag("electricity")) {
             val obj: NBTBase = (stack)!!.getTagCompound()!!.getTag("electricity")
             if (obj is NBTTagDouble) {
                 energyStored = obj.getFloat()
@@ -113,7 +115,7 @@ open class ItemElectricArmor constructor(materialIn: ArmorMaterial, armorIndex: 
         }
 
         val electricityStored: Float = max(min(joules, this.getMaxElectricityStored(stack)), 0.0f)
-        (stack)!!.getTagCompound()!!.setFloat("electricity", electricityStored)
+        (stack)!!.getTagCompound()!!.putFloat("electricity", electricityStored)
         (stack)!!.setItemDamage(
             ((stack)!!.getMaxDamage() - electricityStored / this.getMaxElectricityStored(stack) * (stack)!!.getMaxDamage()
                 .toFloat()).toInt()

@@ -5,13 +5,13 @@ import java.io.IOException
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.inventory.IInventorySettable
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
 
 open class PacketDynamicInventory : PacketBase {
     private var type = 0
@@ -20,25 +20,25 @@ open class PacketDynamicInventory : PacketBase {
 
     constructor() : super()
 
-    constructor(entity: Entity) : super(GCCoreUtil.getDimensionID(entity.world)) {
+    constructor(entity: Entity) : super(GCCoreUtil.getDimensionID(entity.level())) {
         assert(entity is IInventory) { "Entity does not implement " + IInventory::class.java.getSimpleName() }
         this.type = 0
-        this.data = ((arrayOf<Any>(entity.getEntityId()) as Array<Any?>?))!!
-        this.stacks = arrayOfNulls<ItemStack>((entity as IInventory).getSizeInventory())
+        this.data = ((arrayOf<Any>(entity.getId()) as Array<Any?>?))!!
+        this.stacks = arrayOfNulls<ItemStack>((entity as IInventory).getContainerSize())
 
         for (i: Int in this.stacks!!.indices) {
-            this.stacks!![i] = (entity as IInventory).getStackInSlot(i)
+            this.stacks!![i] = (entity as IInventory).getItem(i)
         }
     }
 
-    constructor(chest: TileEntity) : super(GCCoreUtil.getDimensionID(chest.getWorld())) {
+    constructor(chest: TileEntity) : super(GCCoreUtil.getDimensionID(chest.getLevel())) {
         assert(chest is IInventory) { "Tile does not implement " + IInventory::class.java.getSimpleName() }
         this.type = 1
-        this.data = ((arrayOf<Any>(chest.getPos()) as Array<Any?>?))!!
-        this.stacks = arrayOfNulls<ItemStack>((chest as IInventory).getSizeInventory())
+        this.data = ((arrayOf<Any>(chest.getBlockPos()) as Array<Any?>?))!!
+        this.stacks = arrayOfNulls<ItemStack>((chest as IInventory).getContainerSize())
 
         for (i: Int in this.stacks!!.indices) {
-            this.stacks!![i] = (chest as IInventory).getStackInSlot(i)
+            this.stacks!![i] = (chest as IInventory).getItem(i)
         }
     }
 
@@ -94,13 +94,13 @@ open class PacketDynamicInventory : PacketBase {
     }
 
     override fun handleClientSide(player: EntityPlayer?) {
-        if ((player)!!.world == null) {
+        if ((player)!!.level() == null) {
             return
         }
 
         when (this.type) {
             0 -> {
-                val entity: Entity? = (player)!!.world.getEntityByID((this.data!![0] as kotlin.Int?)!!)
+                val entity: Entity? = (player)!!.level().getEntityByID((this.data!![0] as kotlin.Int?)!!)
 
                 if (entity is IInventorySettable) {
                     this.setInventoryStacks(entity as IInventorySettable)
@@ -108,7 +108,7 @@ open class PacketDynamicInventory : PacketBase {
             }
 
             1 -> {
-                val tile: TileEntity? = (player)!!.world.getTileEntity(this.data!![0] as BlockPos?)
+                val tile: TileEntity? = (player)!!.level().getBlockEntity(this.data!![0] as BlockPos?)
 
                 if (tile is IInventorySettable) {
                     this.setInventoryStacks(tile as IInventorySettable)
@@ -120,7 +120,7 @@ open class PacketDynamicInventory : PacketBase {
     override fun handleServerSide(player: EntityPlayer?) {
         when (this.type) {
             0 -> {
-                val entity: Entity? = (player)!!.world.getEntityByID((this.data!![0] as kotlin.Int?)!!)
+                val entity: Entity? = (player)!!.level().getEntityByID((this.data!![0] as kotlin.Int?)!!)
 
                 if (entity is IInventorySettable) {
                     (GalacticraftCore.packetPipeline)!!.sendTo(PacketDynamicInventory(entity), player as EntityPlayerMP)
@@ -128,7 +128,7 @@ open class PacketDynamicInventory : PacketBase {
             }
 
             1 -> {
-                val tile: TileEntity? = (player)!!.world.getTileEntity(this.data!![0] as BlockPos?)
+                val tile: TileEntity? = (player)!!.level().getBlockEntity(this.data!![0] as BlockPos?)
 
                 if (tile is IInventorySettable) {
                     (GalacticraftCore.packetPipeline)!!.sendTo(PacketDynamicInventory(tile), player as EntityPlayerMP)
@@ -141,7 +141,7 @@ open class PacketDynamicInventory : PacketBase {
         inv.setSizeInventory(this.stacks!!.size)
 
         for (i: Int in this.stacks!!.indices) {
-            inv.setInventorySlotContents(i, this.stacks!![i])
+            inv.setItem(i, this.stacks!![i])
         }
     }
 }

@@ -12,8 +12,8 @@ import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.entities.EntityAlienVillager
 import micdoodle8.mods.galacticraft.core.items.ItemBasic
 import micdoodle8.mods.galacticraft.core.items.ItemCanisterGeneric
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
 import net.minecraft.village.MerchantRecipeList
 import org.spongepowered.asm.mixin.Mixin
 

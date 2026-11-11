@@ -12,7 +12,7 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.resources.I18n
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import java.awt.Desktop
 import java.io.IOException
 import java.net.URI
@@ -20,7 +20,7 @@ import java.net.URISyntaxException
 
 @IPage
 open class Page_ActualUpdate : Page_WithScroll {
-    private val mc: Minecraft = Minecraft.getMinecraft()
+    private val mc: Minecraft = Minecraft.getInstance()
     private val count = 0
 
     private var ex = false
@@ -41,7 +41,7 @@ open class Page_ActualUpdate : Page_WithScroll {
 
     override fun hookBackButton(): Boolean {
         if (this.ex) {
-            Minecraft.getMinecraft().setIngameFocus()
+            Minecraft.getInstance().setIngameFocus()
             return true
         }
         return false
@@ -60,7 +60,7 @@ open class Page_ActualUpdate : Page_WithScroll {
                 I18n.format("gs.update.available"),
                 x + 180,
                 y + 40,
-                ColorUtil.to32BitColor(255, if (mc.player.ticksExisted % 5 == 0) 150 else 50, 200, 255)
+                ColorUtil.to32BitColor(255, if (mc.player.tickCount % 5 == 0) 150 else 50, 200, 255)
             )
         }
 
@@ -175,6 +175,6 @@ open class Page_ActualUpdate : Page_WithScroll {
     }
 
     companion object {
-        private val bookPageTexture = ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/tablet.png")
+        private val bookPageTexture = ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/tablet.png")
     }
 }

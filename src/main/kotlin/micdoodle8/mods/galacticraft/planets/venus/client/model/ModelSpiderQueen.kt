@@ -2,8 +2,8 @@ package micdoodle8.mods.galacticraft.planets.venus.client.model
 
 import micdoodle8.mods.galacticraft.core.client.model.ModelRendererGC
 import net.minecraft.client.model.ModelBase
-import net.minecraft.entity.Entity
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.util.Mth as MathHelper
 
 open class ModelSpiderQueen constructor() : ModelBase() {
     @JvmField

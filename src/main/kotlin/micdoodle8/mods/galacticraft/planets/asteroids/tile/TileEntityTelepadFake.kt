@@ -4,14 +4,14 @@ import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseElectricBlock
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraftforge.fml.LogicalSide as Side
 import java.lang.ref.WeakReference
 import java.util.ArrayList
 
@@ -30,7 +30,7 @@ open class TileEntityTelepadFake : TileBaseElectricBlock() {
 
         if (!this.world.isRemote) {
             val state: IBlockState = this.world.getBlockState(this.getPos())
-            this.world.notifyBlockUpdate(this.getPos(), state, state, 3)
+            this.world.sendBlockUpdated(this.getPos(), state, state, 3)
         }
     }
 
@@ -71,7 +71,7 @@ open class TileEntityTelepadFake : TileBaseElectricBlock() {
         }
 
         if (mainTelepad == null) {
-            val tileEntity: TileEntity? = this.world.getTileEntity(this.mainBlockPosition)
+            val tileEntity: TileEntity? = this.world.getBlockEntity(this.mainBlockPosition)
 
             if (tileEntity != null) {
                 if (tileEntity is TileEntityShortRangeTelepad) {
@@ -81,7 +81,7 @@ open class TileEntityTelepadFake : TileBaseElectricBlock() {
         }
 
         if (mainTelepad == null) {
-            this.world.setBlockToAir(this.mainBlockPosition)
+            this.world.setBlockAndUpdate(this.mainBlockPosition, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
         } else {
             val telepad: TileEntityShortRangeTelepad? = this.mainTelepad!!.get()
 
@@ -97,12 +97,12 @@ open class TileEntityTelepadFake : TileBaseElectricBlock() {
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        val tagCompound: NBTTagCompound = nbt.getCompoundTag("mainBlockPosition")
+        val tagCompound: NBTTagCompound = nbt.getCompoundOrEmpty("mainBlockPosition")
         this.setMainBlockInternal(
             BlockPos(
-                tagCompound.getInteger("x"),
-                tagCompound.getInteger("y"),
-                tagCompound.getInteger("z")
+                tagCompound.getIntOr("x", 0),
+                tagCompound.getIntOr("y", 0),
+                tagCompound.getIntOr("z", 0)
             )
         )
     }
@@ -112,10 +112,10 @@ open class TileEntityTelepadFake : TileBaseElectricBlock() {
 
         if (this.mainBlockPosition != null) {
             val tagCompound: NBTTagCompound = NBTTagCompound()
-            tagCompound.setInteger("x", this.mainBlockPosition!!.getX())
-            tagCompound.setInteger("y", this.mainBlockPosition!!.getY())
-            tagCompound.setInteger("z", this.mainBlockPosition!!.getZ())
-            nbt.setTag("mainBlockPosition", tagCompound)
+            tagCompound.putInt("x", this.mainBlockPosition!!.getX())
+            tagCompound.putInt("y", this.mainBlockPosition!!.getY())
+            tagCompound.putInt("z", this.mainBlockPosition!!.getZ())
+            nbt.put("mainBlockPosition", tagCompound)
         }
 
         return nbt
@@ -148,7 +148,7 @@ open class TileEntityTelepadFake : TileBaseElectricBlock() {
                 var y: Int = -2
                 while (y < 1) {
                     val vecToCheck: BlockPos = this.getPos().add(x, y, z)
-                    if (this.world.getTileEntity(vecToCheck) is TileEntityShortRangeTelepad) {
+                    if (this.world.getBlockEntity(vecToCheck) is TileEntityShortRangeTelepad) {
                         this.setMainBlock(vecToCheck)
                         return true
                     }

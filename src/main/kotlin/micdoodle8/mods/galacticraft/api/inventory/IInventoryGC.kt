@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.api.inventory
 
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.IInventory
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.Container as IInventory
 
 /**
  * An interface for other mods to access the Galacticraft

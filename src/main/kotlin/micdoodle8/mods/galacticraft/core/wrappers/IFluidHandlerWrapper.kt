@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.core.wrappers
 
-import net.minecraft.util.EnumFacing
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTankInfo

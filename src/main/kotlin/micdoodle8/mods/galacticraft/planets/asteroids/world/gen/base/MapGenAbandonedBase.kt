@@ -4,10 +4,10 @@ import micdoodle8.mods.galacticraft.api.vector.BlockVec3
 import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import micdoodle8.mods.galacticraft.core.world.gen.dungeon.MapGenDungeon
 import micdoodle8.mods.galacticraft.planets.asteroids.dimension.WorldProviderAsteroids
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.structure.MapGenStructure
 import net.minecraft.world.gen.structure.MapGenStructureIO

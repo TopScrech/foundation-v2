@@ -1,11 +1,13 @@
 package galaxyspace.systems.SolarSystem.planets.mars.items
 
+import foundation.item.legacyItemValue
+
 import galaxyspace.systems.SolarSystem.planets.mars.blocks.MarsOresBlocks
 
 import galaxyspace.core.prefab.items.GSItemBlockDesc
 import galaxyspace.systems.SolarSystem.planets.mars.blocks.MarsOresBlocks.EnumMarsOresBlocks
-import net.minecraft.block.Block
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.ItemStack
 
 open class ItemBlocksMarsOres constructor(block: Block?) : GSItemBlockDesc((block)!!) {
     init {
@@ -18,7 +20,7 @@ open class ItemBlocksMarsOres constructor(block: Block?) : GSItemBlockDesc((bloc
     }
 
     override fun getTranslationKey(`is`: ItemStack): String {
-        val metadata: Int = `is`.getItemDamage()
+        val metadata: Int = `is`.legacyItemValue
 
         return "tile." + (EnumMarsOresBlocks.Companion.byMetadata(metadata))!!.getName()
     }

@@ -4,17 +4,17 @@ import java.util.LinkedList
 
 import micdoodle8.mods.galacticraft.core.blocks.BlockGrating
 import net.minecraft.block.BlockAir
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.particle.Particle
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.*
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 abstract class EntityFXLaunchParticle(
     worldIn: World,
     xCoordIn: Double,

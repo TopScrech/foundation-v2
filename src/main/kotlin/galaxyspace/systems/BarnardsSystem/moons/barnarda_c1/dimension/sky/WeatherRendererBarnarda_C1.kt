@@ -2,17 +2,17 @@ package galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.dimension.sky
 
 import galaxyspace.systems.BarnardsSystem.moons.barnarda_c1.dimension.sky.WeatherRendererBarnarda_C1
 import net.minecraft.client.Minecraft
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.Entity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.entity.Entity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraftforge.client.IRenderHandler
 
 open class WeatherRendererBarnarda_C1 constructor() : IRenderHandler() {
@@ -46,9 +46,9 @@ open class WeatherRendererBarnarda_C1 constructor() : IRenderHandler() {
             mc.entityRenderer.enableLightmap()
             val entity: Entity? = mc.getRenderViewEntity()
             val world: World = mc.world
-            val i: Int = MathHelper.floor(entity!!.posX)
-            val j: Int = MathHelper.floor(entity.posY)
-            val k: Int = MathHelper.floor(entity.posZ)
+            val i: Int = MathHelper.floor(entity!!.x)
+            val j: Int = MathHelper.floor(entity.y)
+            val k: Int = MathHelper.floor(entity.z)
             val tessellator: Tessellator = Tessellator.getInstance()
             val bufferbuilder: BufferBuilder = tessellator.getBuffer()
             GlStateManager.disableCull()
@@ -61,9 +61,9 @@ open class WeatherRendererBarnarda_C1 constructor() : IRenderHandler() {
                 GlStateManager.DestFactor.ZERO
             )
             GlStateManager.alphaFunc(516, 0.1f)
-            val d0: Double = entity.lastTickPosX + (entity.posX - entity.lastTickPosX) * partialTicks.toDouble()
-            val d1: Double = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * partialTicks.toDouble()
-            val d2: Double = entity.lastTickPosZ + (entity.posZ - entity.lastTickPosZ) * partialTicks.toDouble()
+            val d0: Double = entity.lastTickPosX + (entity.x - entity.lastTickPosX) * partialTicks.toDouble()
+            val d1: Double = entity.lastTickPosY + (entity.y - entity.lastTickPosY) * partialTicks.toDouble()
+            val d2: Double = entity.lastTickPosZ + (entity.z - entity.lastTickPosZ) * partialTicks.toDouble()
             val l: Int = MathHelper.floor(d1)
             var i1: Int = 5
 
@@ -105,7 +105,7 @@ open class WeatherRendererBarnarda_C1 constructor() : IRenderHandler() {
                         }
 
                         if (k2 != l2) {
-                            world.rand.setSeed((l1 * l1 * 3121 + l1 * 45238971 xor k1 * k1 * 418711 + k1 * 13761).toLong())
+                            world.random.setSeed((l1 * l1 * 3121 + l1 * 45238971 xor k1 * k1 * 418711 + k1 * 13761).toLong())
                             `blockpos$mutableblockpos`.setPos(l1, k2, k1)
                             val f2: Float = biome.getTemperature(`blockpos$mutableblockpos`)
 
@@ -121,9 +121,9 @@ open class WeatherRendererBarnarda_C1 constructor() : IRenderHandler() {
                                 }
 
                                 val d5: Double =
-                                    -((this.rendererUpdateCount + l1 * l1 * 3121 + l1 * 45238971 + k1 * k1 * 418711 + k1 * 13761 and 31).toDouble() + partialTicks.toDouble()) / 32.0 * (3.0 + world.rand.nextDouble())
-                                val d6: Double = (l1.toFloat() + 0.5f).toDouble() - entity.posX
-                                val d7: Double = (k1.toFloat() + 0.5f).toDouble() - entity.posZ
+                                    -((this.rendererUpdateCount + l1 * l1 * 3121 + l1 * 45238971 + k1 * k1 * 418711 + k1 * 13761 and 31).toDouble() + partialTicks.toDouble()) / 32.0 * (3.0 + world.random.nextDouble())
+                                val d6: Double = (l1.toFloat() + 0.5f).toDouble() - entity.x
+                                val d7: Double = (k1.toFloat() + 0.5f).toDouble() - entity.z
                                 val f3: Float = MathHelper.sqrt(d6 * d6 + d7 * d7) / i1.toFloat()
                                 val f4: Float = ((1.0f - f3 * f3) * 0.5f + 0.5f) * f
                                 `blockpos$mutableblockpos`.setPos(l1, i3, k1)
@@ -156,12 +156,12 @@ open class WeatherRendererBarnarda_C1 constructor() : IRenderHandler() {
                                 val d8: Double =
                                     (-((this.rendererUpdateCount and 511).toFloat() + partialTicks) / 512.0f).toDouble()
                                 val d9: Double =
-                                    world.rand.nextDouble() + f1.toDouble() * 0.01 * (world.rand.nextGaussian()
+                                    world.random.nextDouble() + f1.toDouble() * 0.01 * (world.random.nextGaussian()
                                         .toFloat()).toDouble()
-                                val d10: Double = world.rand.nextDouble() + (f1 * world.rand.nextGaussian()
+                                val d10: Double = world.random.nextDouble() + (f1 * world.random.nextGaussian()
                                     .toFloat()).toDouble() * 0.001
-                                val d11: Double = (l1.toFloat() + 0.5f).toDouble() - entity.posX
-                                val d12: Double = (k1.toFloat() + 0.5f).toDouble() - entity.posZ
+                                val d11: Double = (l1.toFloat() + 0.5f).toDouble() - entity.x
+                                val d12: Double = (k1.toFloat() + 0.5f).toDouble() - entity.z
                                 val f6: Float = MathHelper.sqrt(d11 * d11 + d12 * d12) / i1.toFloat()
                                 val f5: Float = ((1.0f - f6 * f6) * 0.3f + 0.5f) * f
                                 `blockpos$mutableblockpos`.setPos(l1, i3, k1)
@@ -199,7 +199,7 @@ open class WeatherRendererBarnarda_C1 constructor() : IRenderHandler() {
     }
 
     companion object {
-        private val RAIN_TEXTURES = ResourceLocation("textures/environment/rain.png")
-        private val SNOW_TEXTURES = ResourceLocation("textures/environment/snow.png")
+        private val RAIN_TEXTURES = ResourceLocation.parse("textures/environment/rain.png")
+        private val SNOW_TEXTURES = ResourceLocation.parse("textures/environment/snow.png")
     }
 }

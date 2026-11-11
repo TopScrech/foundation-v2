@@ -5,9 +5,9 @@ import micdoodle8.mods.miccore.Annotations.RuntimeInterface
 import micdoodle8.mods.galacticraft.core.energy.EnergyConfigHandler
 import micdoodle8.mods.galacticraft.core.energy.EnergyUtil
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.Mth as MathHelper
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.energy.CapabilityEnergy
 import net.minecraftforge.energy.IEnergyStorage

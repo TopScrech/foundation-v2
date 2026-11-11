@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.api.item
 
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import java.lang.Exception
 import java.lang.reflect.Field
 import java.util.HashMap
@@ -191,8 +191,8 @@ object GCItems {
             }
 
             if (itemsList != null) {
-                val stack: ItemStack = itemsList!!.get(key)!!
-                return ItemStack(stack.getItem(), amount, stack.getItemDamage())
+                val stack: ItemStack = itemsList!!.get(key) ?: return null
+                return stack.copyWithCount(amount)
             }
         } catch (ex: Exception) {
             ex.printStackTrace()
@@ -226,8 +226,8 @@ object GCItems {
             }
 
             if (blocksList != null) {
-                val stack: ItemStack = blocksList!!.get(key)!!
-                return ItemStack(stack.getItem(), amount, stack.getItemDamage())
+                val stack: ItemStack = blocksList!!.get(key) ?: return null
+                return stack.copyWithCount(amount)
             }
         } catch (ex: Exception) {
             ex.printStackTrace()

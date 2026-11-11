@@ -5,26 +5,26 @@ import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.mars.MarsModule
 import micdoodle8.mods.galacticraft.planets.mars.entities.EntitySludgeling
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.SoundEvents
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.BlockFluidClassic
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class BlockSludge constructor(assetName: String?) :
     BlockFluidClassic(MarsModule.Companion.sludge, MarsModule.Companion.sludgeMaterial) {
-    //    @SideOnly(Side.CLIENT)
+    //    @OnlyIn(Dist.CLIENT)
     //    IIcon stillIcon;
-    //    @SideOnly(Side.CLIENT)
+    //    @OnlyIn(Dist.CLIENT)
     //    IIcon flowingIcon;
     public override fun onEntityCollision(
         worldIn: World,
@@ -32,7 +32,7 @@ open class BlockSludge constructor(assetName: String?) :
         state: IBlockState?,
         entityIn: Entity?
     ) {
-        if (!worldIn.isRemote) {
+        if (!worldIn.isClientSide) {
             if (entityIn is EntityPlayer && entityIn.capabilities.isFlying || entityIn is EntitySludgeling) {
                 return
             }
@@ -53,11 +53,11 @@ open class BlockSludge constructor(assetName: String?) :
             if (l.size < 3) {
                 val sludgeling: EntitySludgeling = EntitySludgeling(worldIn)
                 sludgeling.setPosition(
-                    (pos.getX() + worldIn.rand.nextInt(5) - 2).toDouble(),
+                    (pos.getX() + worldIn.random.nextInt(5) - 2).toDouble(),
                     pos.getY().toDouble(),
-                    (pos.getZ() + worldIn.rand.nextInt(5) - 2).toDouble()
+                    (pos.getZ() + worldIn.random.nextInt(5) - 2).toDouble()
                 )
-                worldIn.spawnEntity(sludgeling)
+                worldIn.addFreshEntity(sludgeling)
             }
         }
 
@@ -84,14 +84,14 @@ open class BlockSludge constructor(assetName: String?) :
     }
 
     /*@Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public IIcon getIcon(int par1, int par2)
     {
         return par1 != 0 && par1 != 1 ? this.flowingIcon : this.stillIcon;
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void registerBlockIcons(IIconRegister par1IconRegister)
     {
         this.stillIcon = par1IconRegister.registerIcon(MarsModule.TEXTURE_PREFIX + "sludge_still");
@@ -113,7 +113,7 @@ open class BlockSludge constructor(assetName: String?) :
         return super.displaceIfPossible(world, pos)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun randomDisplayTick(stateIn: IBlockState, worldIn: World, pos: BlockPos, rand: Random) {
         super.randomDisplayTick(stateIn, worldIn, pos, rand)
 
@@ -130,10 +130,10 @@ open class BlockSludge constructor(assetName: String?) :
             )
         }
         if (rand.nextInt(10) == 0) {
-            val below: BlockPos = pos.down()
+            val below: BlockPos = pos.below()
             val state: IBlockState = worldIn.getBlockState(below)
             if (state.getBlock()
-                    .isSideSolid(state, worldIn, below, EnumFacing.UP) && !worldIn.getBlockState(pos.down(2))
+                    .isSideSolid(state, worldIn, below, EnumFacing.UP) && !worldIn.getBlockState(pos.below(2))
                     .getMaterial().blocksMovement()
             ) {
                 GalacticraftPlanets.spawnParticle(

@@ -6,7 +6,7 @@ import mezz.jei.api.gui.IDrawableStatic
 import mezz.jei.api.gui.IGuiFluidStackGroup
 import mezz.jei.api.gui.IGuiItemStackGroup
 import mezz.jei.api.gui.IRecipeLayout
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 import javax.annotation.Nonnull
 
@@ -20,7 +20,7 @@ import mezz.jei.api.ingredients.IIngredients
 import mezz.jei.api.recipe.IRecipeCategory
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class UniversalRecyclerRecipeCategory constructor(guiHelper: IGuiHelper) :
     IRecipeCategory<UniversalRecyclerRecipeWrapper> {
@@ -132,6 +132,6 @@ open class UniversalRecyclerRecipeCategory constructor(guiHelper: IGuiHelper) :
     }
 
     companion object {
-        private val guiTexture = ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/base_gui.png")
+        private val guiTexture = ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/base_gui.png")
     }
 }

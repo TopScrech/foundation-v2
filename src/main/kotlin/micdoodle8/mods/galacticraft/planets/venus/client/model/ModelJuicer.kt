@@ -3,8 +3,8 @@ package micdoodle8.mods.galacticraft.planets.venus.client.model
 import micdoodle8.mods.galacticraft.planets.venus.entities.EntityJuicer
 import net.minecraft.client.model.ModelBase
 import net.minecraft.client.model.ModelRenderer
-import net.minecraft.entity.Entity
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.util.Mth as MathHelper
 
 open class ModelJuicer constructor() : ModelBase() {
     private val body1: ModelRenderer

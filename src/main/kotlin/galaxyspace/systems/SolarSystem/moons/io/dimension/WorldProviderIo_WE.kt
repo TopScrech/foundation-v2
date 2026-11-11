@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.moons.io.dimension
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import galaxyspace.systems.SolarSystem.moons.io.world.gen.dungeon.RoomTreasureIo
 import asmodeuscore.api.dimension.IProviderFreeze
@@ -22,18 +24,18 @@ import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.client.CloudRenderer
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.block.Block
-import net.minecraft.init.Blocks
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.biome.BiomeProvider
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class WorldProviderIo_WE : WE_WorldProviderSpace(), IProviderFreeze {
     override fun getHorizon(): Double {
@@ -88,7 +90,7 @@ open class WorldProviderIo_WE : WE_WorldProviderSpace(), IProviderFreeze {
         return !ConfigManagerCore.forceOverworldRespawn
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val var2: Float = this.world.getCelestialAngle(par1)
         var var3: Float = 1.0f - (MathHelper.cos(var2 * Math.PI.toFloat() * 2.0f) * 2.0f + 0.25f)
@@ -108,7 +110,7 @@ open class WorldProviderIo_WE : WE_WorldProviderSpace(), IProviderFreeze {
         return CloudRenderer()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyRenderer(): IRenderHandler? {
         if (super.getSkyRenderer() == null) {
             this.setSkyRenderer(SkyProviderIo())
@@ -153,7 +155,7 @@ open class WorldProviderIo_WE : WE_WorldProviderSpace(), IProviderFreeze {
         val cg: WE_CaveGen = WE_CaveGen()
         cg.replaceBlocksList.clear()
         cg.addReplacingBlock(terrainGenerator.worldStoneBlock)
-        cg.lavaBlock = Blocks.LAVA.getDefaultState()
+        cg.lavaBlock = Blocks.LAVA.defaultBlockState()
         (cp)!!.createChunkGen_List.add(cg)
 
 
@@ -161,7 +163,7 @@ open class WorldProviderIo_WE : WE_WorldProviderSpace(), IProviderFreeze {
         val rg: WE_RavineGen = WE_RavineGen()
         rg.replaceBlocksList.clear()
         rg.addReplacingBlock(terrainGenerator.worldStoneBlock)
-        rg.lavaBlock = Blocks.LAVA.getDefaultState()
+        rg.lavaBlock = Blocks.LAVA.defaultBlockState()
         (cp)!!.createChunkGen_List.add(rg)
 
         (cp as WE_ChunkProviderSpace).worldGenerators.clear()

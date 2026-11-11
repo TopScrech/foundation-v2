@@ -8,14 +8,14 @@ import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.particle.Particle
 import net.minecraft.client.renderer.BufferBuilder
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class ParticleLaunchFlame constructor(
     par1World: World,
     position: Vector3,
@@ -137,13 +137,13 @@ open class ParticleLaunchFlame constructor(
                 for (var4: Int in var3.indices) {
                     val var5: Entity? = var3.get(var4) as Entity?
 
-                    if (var5 is EntityLivingBase && !var5.isDead && !var5.isBurning() && (var5 != this.ridingEntity)) {
+                    if (var5 is EntityLivingBase && !var5.isRemoved() && !var5.isBurning() && (var5 != this.ridingEntity)) {
                         var5.setFire(3)
                         (GalacticraftCore.packetPipeline)!!.sendToServer(
                             PacketSimple(
                                 PacketSimple.EnumSimplePacket.S_SET_ENTITY_FIRE,
-                                GCCoreUtil.getDimensionID(var5.world),
-                                arrayOf<Any>(var5.getEntityId())
+                                GCCoreUtil.getDimensionID(var5.level()),
+                                arrayOf<Any>(var5.getId())
                             )
                         )
                     }

@@ -10,19 +10,19 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.energy.EnergyConfigHandler
 import micdoodle8.mods.galacticraft.core.recipe.RecipeManagerGC
 import micdoodle8.mods.galacticraft.core.tick.TickHandlerClient
-import net.minecraft.block.Block
-import net.minecraft.init.Blocks
-import net.minecraft.item.Item
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemBlock
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.common.config.ConfigCategory
-import net.minecraftforge.common.config.ConfigElement
-import net.minecraftforge.common.config.Configuration
-import net.minecraftforge.common.config.Property
-import net.minecraftforge.fml.client.config.IConfigElement
-import net.minecraftforge.fml.common.FMLLog
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import foundation.config.FoundationConfigCategory as ConfigCategory
+import foundation.config.FoundationConfigElement as ConfigElement
+import foundation.config.FoundationConfiguration as Configuration
+import foundation.config.FoundationConfigProperty as Property
+import foundation.config.FoundationConfigEntry as IConfigElement
+import foundation.logging.FoundationLog as FMLLog
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.input.Keyboard
 import java.io.File
 import java.lang.Exception
@@ -1030,7 +1030,7 @@ object ConfigManagerCore {
 
         var block: Block? = Block.getBlockFromName(name)
         if (block == null) {
-            val item: Item? = Item.REGISTRY.getObject(ResourceLocation(name))
+            val item: Item? = Item.REGISTRY.getObject(ResourceLocation.parse(name))
             if (item is ItemBlock) {
                 block = item.getBlock()
             }
@@ -1085,7 +1085,7 @@ object ConfigManagerCore {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun setConfigOverride(configs: MutableList<Any?>) {
         var dataCount: Int = 0
         val modeFlag: Int = configs.get(dataCount++) as Int
@@ -1144,83 +1144,10 @@ object ConfigManagerCore {
     }
 
     @JvmStatic
-    private fun parseKeyValue(key: kotlin.String?): Int {
-        if (key == "KEY_A") {
-            return Keyboard.KEY_A
-        } else if (key == "KEY_B") {
-            return Keyboard.KEY_B
-        } else if (key == "KEY_C") {
-            return Keyboard.KEY_C
-        } else if (key == "KEY_D") {
-            return Keyboard.KEY_D
-        } else if (key == "KEY_E") {
-            return Keyboard.KEY_E
-        } else if (key == "KEY_F") {
-            return Keyboard.KEY_F
-        } else if (key == "KEY_G") {
-            return Keyboard.KEY_G
-        } else if (key == "KEY_H") {
-            return Keyboard.KEY_H
-        } else if (key == "KEY_I") {
-            return Keyboard.KEY_I
-        } else if (key == "KEY_J") {
-            return Keyboard.KEY_J
-        } else if (key == "KEY_K") {
-            return Keyboard.KEY_K
-        } else if (key == "KEY_L") {
-            return Keyboard.KEY_L
-        } else if (key == "KEY_M") {
-            return Keyboard.KEY_M
-        } else if (key == "KEY_N") {
-            return Keyboard.KEY_N
-        } else if (key == "KEY_O") {
-            return Keyboard.KEY_O
-        } else if (key == "KEY_P") {
-            return Keyboard.KEY_P
-        } else if (key == "KEY_Q") {
-            return Keyboard.KEY_Q
-        } else if (key == "KEY_R") {
-            return Keyboard.KEY_R
-        } else if (key == "KEY_S") {
-            return Keyboard.KEY_S
-        } else if (key == "KEY_T") {
-            return Keyboard.KEY_T
-        } else if (key == "KEY_U") {
-            return Keyboard.KEY_U
-        } else if (key == "KEY_V") {
-            return Keyboard.KEY_V
-        } else if (key == "KEY_W") {
-            return Keyboard.KEY_W
-        } else if (key == "KEY_X") {
-            return Keyboard.KEY_X
-        } else if (key == "KEY_Y") {
-            return Keyboard.KEY_Y
-        } else if (key == "KEY_Z") {
-            return Keyboard.KEY_Z
-        } else if (key == "KEY_1") {
-            return Keyboard.KEY_1
-        } else if (key == "KEY_2") {
-            return Keyboard.KEY_2
-        } else if (key == "KEY_3") {
-            return Keyboard.KEY_3
-        } else if (key == "KEY_4") {
-            return Keyboard.KEY_4
-        } else if (key == "KEY_5") {
-            return Keyboard.KEY_5
-        } else if (key == "KEY_6") {
-            return Keyboard.KEY_6
-        } else if (key == "KEY_7") {
-            return Keyboard.KEY_7
-        } else if (key == "KEY_8") {
-            return Keyboard.KEY_8
-        } else if (key == "KEY_9") {
-            return Keyboard.KEY_9
-        } else if (key == "KEY_0") {
-            return Keyboard.KEY_0
+    private fun parseKeyValue(key: String?): Int {
+        return foundation.input.FoundationKeyCodes.fromLegacyName(key) ?: run {
+            GCLog.severe("Failed to parse keyboard key: $key — use KEY_A through KEY_Z or KEY_0 through KEY_9")
+            -1
         }
-
-        GCLog.severe("Failed to parse keyboard key: " + key + "... Use values A-Z or 0-9")
-
-        return 0
     }
 }

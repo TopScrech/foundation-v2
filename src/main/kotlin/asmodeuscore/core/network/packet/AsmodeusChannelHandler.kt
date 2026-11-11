@@ -8,13 +8,13 @@ import io.netty.channel.ChannelHandlerContext
 import asmodeuscore.core.network.packet.AsmodeusChannelHandler
 import asmodeuscore.core.network.packet.AsmodeusPacketHandler
 import asmodeuscore.api.network.IMessage
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.network.FMLEmbeddedChannel
 import net.minecraftforge.fml.common.network.FMLIndexedMessageToMessageCodec
 import net.minecraftforge.fml.common.network.FMLOutboundHandler
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.lang.Exception
 
 open class AsmodeusChannelHandler private constructor() : FMLIndexedMessageToMessageCodec<IMessage>() {

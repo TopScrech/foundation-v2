@@ -1,32 +1,19 @@
 package micdoodle8.mods.galacticraft.core.items
 
-import micdoodle8.mods.galacticraft.core.GCItems
-import micdoodle8.mods.galacticraft.core.GalacticraftCore
-import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
+import foundation.item.FoundationItemProperties
+import foundation.item.FoundationSteelTools
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
-import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.item.EnumRarity
-import net.minecraft.item.ItemPickaxe
-import net.minecraft.item.ItemStack
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.component.DataComponents
+import net.minecraft.network.chat.Component
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.Rarity
 
-open class ItemPickaxeGC constructor(assetName: String?) : ItemPickaxe(GCItems.TOOL_STEEL), ISortableItem {
-    init {
-        this.setTranslationKey(assetName)
-        //this.setTextureName(Constants.TEXTURE_PREFIX + assetName);
-    }
+open class ItemPickaxeGC(properties: Item.Properties) : Item(properties), ISortableItem {
+    constructor(assetName: String?) : this(
+        FoundationItemProperties.named("galacticraftcore", requireNotNull(assetName))
+            .pickaxe(FoundationSteelTools.MATERIAL, 1f, -2.8f).rarity(Rarity.RARE)
+            .overrideDescription("item.$assetName.name")
+    )
 
-    override fun getCreativeTab(): CreativeTabs? {
-        return GalacticraftCore.galacticraftItemsTab
-    }
-
-    @SideOnly(Side.CLIENT)
-    override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
-        return (ClientProxyCore.galacticraftItem)!!
-    }
-
-    override fun getCategory(meta: Int): EnumSortCategoryItem {
-        return EnumSortCategoryItem.TOOLS
-    }
+    override fun getCategory(meta: Int): EnumSortCategoryItem = EnumSortCategoryItem.TOOLS
 }

@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.core.tick
 
+import foundation.inventory.getArmorItem
+import foundation.block.getMetaFromState
+
 import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type
 import micdoodle8.mods.galacticraft.core.network.PacketSimple.EnumSimplePacket
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent
@@ -63,15 +66,15 @@ import org.lwjgl.opengl.GL11
 import micdoodle8.mods.galacticraft.core.util.ThreadRequirementMissing
 import micdoodle8.mods.galacticraft.core.wrappers.BlockMetaList
 import micdoodle8.mods.galacticraft.core.wrappers.Footprint
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
-import net.minecraft.client.audio.ISound
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.client.resources.sounds.SoundInstance as ISound
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.GuiIngameMenu
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.Tessellator
@@ -79,18 +82,18 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.client.resources.DefaultPlayerSkin
 import net.minecraft.client.resources.I18n
 import net.minecraft.client.settings.GameSettings
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.world.WorldProviderSurface
 import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.event.world.WorldEvent
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.input.Mouse
 import java.util.HashSet
 import java.util.Random
@@ -106,7 +109,7 @@ open class TickHandlerClient {
 
     @SubscribeEvent
     open fun onRenderTick(event: TickEvent.RenderTickEvent) {
-        val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+        val minecraft: Minecraft = Minecraft.getInstance()
         val player: EntityPlayerSP? = minecraft.player
         val playerBaseClient: EntityPlayerSP? = PlayerUtil.getPlayerBaseClientFromPlayer(player, false)
         if (player == null || playerBaseClient == null) {
@@ -174,15 +177,15 @@ open class TickHandlerClient {
             }
 
             ClientProxyCore.Companion.playerPosX =
-                player.prevPosX + (player.posX - player.prevPosX) * event.renderTickTime
+                player.prevPosX + (player.x - player.prevPosX) * event.renderTickTime
             ClientProxyCore.Companion.playerPosY =
-                player.prevPosY + (player.posY - player.prevPosY) * event.renderTickTime
+                player.prevPosY + (player.y - player.prevPosY) * event.renderTickTime
             ClientProxyCore.Companion.playerPosZ =
-                player.prevPosZ + (player.posZ - player.prevPosZ) * event.renderTickTime
+                player.prevPosZ + (player.z - player.prevPosZ) * event.renderTickTime
             ClientProxyCore.Companion.playerRotationYaw =
-                player.prevRotationYaw + (player.rotationYaw - player.prevRotationYaw) * event.renderTickTime
+                player.yRotO + (player.yRot - player.yRotO) * event.renderTickTime
             ClientProxyCore.Companion.playerRotationPitch =
-                player.prevRotationPitch + (player.rotationPitch - player.prevRotationPitch) * event.renderTickTime
+                player.xRotO + (player.xRot - player.xRotO) * event.renderTickTime
 
             //            if (player != null && player.getRidingEntity() != null && player.getRidingEntity() instanceof EntityTier1Rocket)
 //            {
@@ -213,24 +216,24 @@ open class TickHandlerClient {
 //                GL11.glEnable(GL11.GL_ALPHA_TEST);
 //                GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 //            }
-            if (minecraft.currentScreen == null && player.getRidingEntity() is EntitySpaceshipBase && minecraft.gameSettings.thirdPersonView != 0 && !minecraft.gameSettings.hideGUI) {
-                OverlayRocket.renderSpaceshipOverlay((player.getRidingEntity() as EntitySpaceshipBase).getSpaceshipGui())
+            if (minecraft.currentScreen == null && player.getVehicle() is EntitySpaceshipBase && minecraft.gameSettings.thirdPersonView != 0 && !minecraft.gameSettings.hideGUI) {
+                OverlayRocket.renderSpaceshipOverlay((player.getVehicle() as EntitySpaceshipBase).getSpaceshipGui())
             }
 
-            if (minecraft.currentScreen == null && player.getRidingEntity() is EntityLander && minecraft.gameSettings.thirdPersonView != 0 && !minecraft.gameSettings.hideGUI) {
+            if (minecraft.currentScreen == null && player.getVehicle() is EntityLander && minecraft.gameSettings.thirdPersonView != 0 && !minecraft.gameSettings.hideGUI) {
                 OverlayLander.renderLanderOverlay()
             }
 
-            if (minecraft.currentScreen == null && player.getRidingEntity() is EntityAutoRocket && minecraft.gameSettings.thirdPersonView != 0 && !minecraft.gameSettings.hideGUI) {
+            if (minecraft.currentScreen == null && player.getVehicle() is EntityAutoRocket && minecraft.gameSettings.thirdPersonView != 0 && !minecraft.gameSettings.hideGUI) {
                 OverlayDockingRocket.renderDockingOverlay()
             }
 
-            if (minecraft.currentScreen == null && player.getRidingEntity() is EntitySpaceshipBase && minecraft.gameSettings.thirdPersonView != 0 && !minecraft.gameSettings.hideGUI && !(minecraft.player.getRidingEntity() as EntitySpaceshipBase).getLaunched()) {
+            if (minecraft.currentScreen == null && player.getVehicle() is EntitySpaceshipBase && minecraft.gameSettings.thirdPersonView != 0 && !minecraft.gameSettings.hideGUI && !(minecraft.player.getVehicle() as EntitySpaceshipBase).getLaunched()) {
                 OverlayLaunchCountdown.renderCountdownOverlay()
             }
 
-            if (player.world.provider is IGalacticraftWorldProvider && OxygenUtil.shouldDisplayTankGui(minecraft.currentScreen) && OxygenUtil.noAtmosphericCombustion(
-                    player.world.provider
+            if (player.level().provider is IGalacticraftWorldProvider && OxygenUtil.shouldDisplayTankGui(minecraft.currentScreen) && OxygenUtil.noAtmosphericCombustion(
+                    player.level().provider
                 ) && !playerBaseClient.isSpectator() && !minecraft.gameSettings.showDebugInfo
             ) {
                 var var6: Int = (airRemaining - 90) * -1
@@ -256,8 +259,8 @@ open class TickHandlerClient {
                 )
             }
 
-            if (playerBaseClient != null && player.world.provider is IGalacticraftWorldProvider && !stats.isOxygenSetupValid() && OxygenUtil.noAtmosphericCombustion(
-                    player.world.provider
+            if (playerBaseClient != null && player.level().provider is IGalacticraftWorldProvider && !stats.isOxygenSetupValid() && OxygenUtil.noAtmosphericCombustion(
+                    player.level().provider
                 ) && minecraft.currentScreen == null && !minecraft.gameSettings.hideGUI && !playerBaseClient.capabilities.isCreativeMode && !playerBaseClient.isSpectator()
             ) {
                 OverlayOxygenWarning.renderOxygenWarningOverlay()
@@ -267,11 +270,11 @@ open class TickHandlerClient {
 
     @SubscribeEvent
     open fun onPreGuiRender(event: RenderGameOverlayEvent.Pre) {
-        val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+        val minecraft: Minecraft = Minecraft.getInstance()
         val player: EntityPlayerSP? = minecraft.player
 
         if (event.getType() == RenderGameOverlayEvent.ElementType.ALL) {
-            if (player != null && player.getRidingEntity() != null && player.getRidingEntity() is IIgnoreShift && (player.getRidingEntity() as IIgnoreShift).shouldIgnoreShiftExit()) {
+            if (player != null && player.getVehicle() != null && player.getVehicle() is IIgnoreShift && (player.getVehicle() as IIgnoreShift).shouldIgnoreShiftExit()) {
                 // Remove "Press shift to dismount" message when shift-exiting is disabled (not ideal, but the only option)
                 val str: String = I18n.format(
                     "mount.onboard",
@@ -284,10 +287,10 @@ open class TickHandlerClient {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     open fun onClientTick(event: TickEvent.ClientTickEvent) {
-        val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+        val minecraft: Minecraft = Minecraft.getInstance()
         val world: WorldClient? = minecraft.world
         val player: EntityPlayerSP? = minecraft.player
 
@@ -334,7 +337,7 @@ open class TickHandlerClient {
             if (tickCount % 20 == 0L) {
                 BubbleRenderer.clearBubbles()
 
-                for (tile: TileEntity? in player.world.tickableTileEntities) {
+                for (tile: TileEntity? in player.level().tickableTileEntities) {
                     if (tile is IBubbleProviderColored) {
                         BubbleRenderer.addBubble(tile as IBubbleProviderColored)
                     }
@@ -356,7 +359,7 @@ open class TickHandlerClient {
                         val fp: Footprint = fpIt.next()
                         fp.age = (fp.age + 20).toShort()
                         fp.lightmapVal =
-                            player.world.getCombinedLight(BlockPos((fp.position)!!.x, (fp.position)!!.y, (fp.position)!!.z), 0)
+                            player.level().getCombinedLight(BlockPos((fp.position)!!.x, (fp.position)!!.y, (fp.position)!!.z), 0)
 
                         if (fp.age >= Footprint.MAX_AGE) {
                             fpIt.remove()
@@ -364,20 +367,20 @@ open class TickHandlerClient {
                     }
                 }
 
-                if (!player.inventory.armorItemInSlot(3).isEmpty() && player.inventory.armorItemInSlot(3)
+                if (!player.inventory.getArmorItem(3).isEmpty() && player.inventory.getArmorItem(3)
                         .getItem() is ISensorGlassesArmor
                 ) {
                     ClientProxyCore.Companion.valueableBlocks.clear()
 
                     for (i: Int in -4..4) {
-                        val x: Int = MathHelper.floor(player.posX + i)
+                        val x: Int = MathHelper.floor(player.x + i)
                         for (j: Int in -4..4) {
-                            val y: Int = MathHelper.floor(player.posY + j)
+                            val y: Int = MathHelper.floor(player.y + j)
                             for (k: Int in -4..4) {
-                                val z: Int = MathHelper.floor(player.posZ + k)
+                                val z: Int = MathHelper.floor(player.z + k)
                                 val pos: BlockPos = BlockPos(x, y, z)
 
-                                val state: IBlockState = player.world.getBlockState(pos)
+                                val state: IBlockState = player.level().getBlockState(pos)
                                 val block: Block = state.getBlock()
 
                                 if (block.getMaterial(state) !== Material.AIR) {
@@ -406,9 +409,9 @@ open class TickHandlerClient {
 
                     val nearestSealer: TileEntityOxygenSealer? = TileEntityOxygenSealer.getNearestSealer(
                         (world)!!,
-                        MathHelper.floor(player.posX).toDouble(),
-                        MathHelper.floor(player.posY).toDouble(),
-                        MathHelper.floor(player.posZ).toDouble()
+                        MathHelper.floor(player.x).toDouble(),
+                        MathHelper.floor(player.y).toDouble(),
+                        MathHelper.floor(player.z).toDouble()
                     )
                     if (nearestSealer != null && !nearestSealer.sealed) {
                         ClientProxyCore.Companion.leakTrace = nearestSealer.getLeakTraceClient()
@@ -432,10 +435,10 @@ open class TickHandlerClient {
                 player.openGui(
                     GalacticraftCore.instance,
                     GuiIdsCore.SPACE_RACE_START,
-                    player.world,
-                    player.posX.toInt(),
-                    player.posY.toInt(),
-                    player.posZ.toInt()
+                    player.level(),
+                    player.x.toInt(),
+                    player.y.toInt(),
+                    player.z.toInt()
                 )
                 spaceRaceGuiScheduled = false
             }
@@ -446,19 +449,19 @@ open class TickHandlerClient {
             }
 
             var inSpaceShip: Boolean = false
-            if (player.getRidingEntity() is EntitySpaceshipBase) {
+            if (player.getVehicle() is EntitySpaceshipBase) {
                 inSpaceShip = true
-                val rocket: EntitySpaceshipBase? = player.getRidingEntity() as EntitySpaceshipBase?
+                val rocket: EntitySpaceshipBase? = player.getVehicle() as EntitySpaceshipBase?
                 if (rocket!!.prevRotationPitch != rocket.rotationPitch || rocket.prevRotationYaw != rocket.rotationYaw) {
-                    (GalacticraftCore.packetPipeline)!!.sendToServer(PacketRotateRocket((player.getRidingEntity())!!))
+                    (GalacticraftCore.packetPipeline)!!.sendToServer(PacketRotateRocket((player.getVehicle())!!))
                 }
             }
 
             if (world != null) {
                 if (world.provider is WorldProviderSurface) {
-                    if (world.provider.getSkyRenderer() == null && inSpaceShip && player.getRidingEntity()!!.posY > Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT) {
+                    if (world.provider.getSkyRenderer() == null && inSpaceShip && player.getVehicle()!!.posY > Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT) {
                         world.provider.setSkyRenderer(SkyProviderOverworld())
-                    } else if (world.provider.getSkyRenderer() is SkyProviderOverworld && player.posY <= Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT) {
+                    } else if (world.provider.getSkyRenderer() is SkyProviderOverworld && player.y <= Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT) {
                         world.provider.setSkyRenderer(null)
                     }
                 } else if (world.provider is WorldProviderSpaceStation) {
@@ -477,7 +480,7 @@ open class TickHandlerClient {
             }
 
             if (inSpaceShip) {
-                val ship: EntitySpaceshipBase? = player.getRidingEntity() as EntitySpaceshipBase?
+                val ship: EntitySpaceshipBase? = player.getVehicle() as EntitySpaceshipBase?
                 var hasChanged: Boolean = false
 
                 if (minecraft.gameSettings.keyBindLeft.isKeyDown()) {
@@ -515,16 +518,16 @@ open class TickHandlerClient {
                     if (e is IEntityNoisy) {
                         val vehicle: IEntityNoisy = e
                         if (vehicle.getSoundUpdater() == null) {
-                            val noise: ISound? = vehicle.setSoundUpdater(FMLClientHandler.instance().getClient().player)
+                            val noise: ISound? = vehicle.setSoundUpdater(Minecraft.getInstance().player)
                             if (noise != null) {
-                                FMLClientHandler.instance().getClient().getSoundHandler().playSound(noise)
+                                Minecraft.getInstance().getSoundManager().play(noise)
                             }
                         }
                     }
                 }
             }
 
-            if (FMLClientHandler.instance().getClient().currentScreen is GuiCelestialSelection) {
+            if (Minecraft.getInstance().gui.screen() is GuiCelestialSelection) {
                 player.motionY = 0.0
             }
 
@@ -541,11 +544,11 @@ open class TickHandlerClient {
                 ClientProxyCore.Companion.lastSpacebarDown = false
             }
 
-            if (player.getRidingEntity() != null && isPressed && !ClientProxyCore.Companion.lastSpacebarDown) {
+            if (player.getVehicle() != null && isPressed && !ClientProxyCore.Companion.lastSpacebarDown) {
                 (GalacticraftCore.packetPipeline)!!.sendToServer(
                     PacketSimple(
                         PacketSimple.EnumSimplePacket.S_IGNITE_ROCKET,
-                        GCCoreUtil.getDimensionID(player.world),
+                        GCCoreUtil.getDimensionID(player.level()),
                         arrayOf<Any?>()
                     )
                 )
@@ -741,8 +744,8 @@ open class TickHandlerClient {
 
         @JvmStatic
         fun zoom(value: Float) {
-//        FMLClientHandler.instance().getClient().entityRenderer.thirdPersonDistance = value;
-//        FMLClientHandler.instance().getClient().entityRenderer.thirdPersonDistancePrev = value;
+//        Minecraft.getInstance().entityRenderer.thirdPersonDistance = value;
+//        Minecraft.getInstance().entityRenderer.thirdPersonDistancePrev = value;
         }
     }
 }

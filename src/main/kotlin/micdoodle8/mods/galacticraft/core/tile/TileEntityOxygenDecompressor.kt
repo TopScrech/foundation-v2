@@ -1,5 +1,6 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import net.minecraft.world.ContainerHelper
 import java.util.EnumSet
 import micdoodle8.mods.galacticraft.core.blocks.BlockOxygenCompressor
 import micdoodle8.mods.galacticraft.core.energy.item.ItemElectricBase
@@ -7,19 +8,19 @@ import micdoodle8.mods.galacticraft.core.inventory.IInventoryDefaults
 import micdoodle8.mods.galacticraft.core.items.ItemCanisterOxygenInfinite
 import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
 import kotlin.math.min
 
 open class TileEntityOxygenDecompressor constructor() : TileEntityOxygen(1200, 0), IInventoryDefaults,
     ISidedInventory {
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent? = super<TileEntityOxygen>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = super<TileEntityOxygen>.getDisplayName()
 
     private var stacks: NonNullList<ItemStack> = NonNullList.withSize<ItemStack>(2, ItemStack.EMPTY)
 
@@ -33,8 +34,8 @@ open class TileEntityOxygenDecompressor constructor() : TileEntityOxygen(1200, 0
             val tank1: ItemStack = this.stacks.get(0)
 
             if (!tank1.isEmpty() && this.hasEnoughEnergyToRun && this.getOxygenStored() < this.getMaxOxygenStored()) {
-                if (tank1.getItem() is ItemOxygenTank && tank1.getItemDamage() < tank1.getMaxDamage()) {
-                    tank1.setItemDamage(tank1.getItemDamage() + 1)
+                if (tank1.getItem() is ItemOxygenTank && ItemOxygenTank.used(tank1) < ItemOxygenTank.capacityOf(tank1)) {
+                    ItemOxygenTank.setUsed(tank1, ItemOxygenTank.used(tank1) + 1)
                     this.receiveOxygen(1, true)
                     this.usingEnergy = true
                 } else if (tank1.getItem() is ItemCanisterOxygenInfinite) {
@@ -50,7 +51,7 @@ open class TileEntityOxygenDecompressor constructor() : TileEntityOxygen(1200, 0
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
 
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, this.stacks)
     }
 
@@ -60,40 +61,40 @@ open class TileEntityOxygenDecompressor constructor() : TileEntityOxygen(1200, 0
         return nbt
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.stacks.size
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack {
+    override fun getItem(var1: Int): ItemStack {
         return this.stacks.get(var1)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        val oldstack: ItemStack = ItemStackHelper.getAndRemove(this.stacks, index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        val oldstack: ItemStack = ContainerHelper.takeItem(this.stacks, index)
         if (!oldstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
         return oldstack
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.stacks.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
     override fun isEmpty(): Boolean {
@@ -106,16 +107,16 @@ open class TileEntityOxygenDecompressor constructor() : TileEntityOxygen(1200, 0
         return true
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.oxygendecompressor.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.oxygendecompressor.name")
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 1
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
     }
@@ -125,10 +126,10 @@ open class TileEntityOxygenDecompressor constructor() : TileEntityOxygen(1200, 0
         return intArrayOf(0, 1)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
-        if (this.isItemValidForSlot(slotID, itemstack)) {
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        if (this.canPlaceItem(slotID, itemstack)) {
             when (slotID) {
-                0 -> return itemstack.getItemDamage() < itemstack.getMaxDamage()
+                0 -> return ItemOxygenTank.used(itemstack) < ItemOxygenTank.capacityOf(itemstack)
                 1 -> return ItemElectricBase.isElectricItemCharged(itemstack)
                 else -> return false
             }
@@ -136,10 +137,10 @@ open class TileEntityOxygenDecompressor constructor() : TileEntityOxygen(1200, 0
         return false
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
-        if (this.isItemValidForSlot(slotID, itemstack)) {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
+        if (this.canPlaceItem(slotID, itemstack)) {
             when (slotID) {
-                0 -> return itemstack.getItemDamage() == itemstack.getMaxDamage()
+                0 -> return ItemOxygenTank.used(itemstack) == ItemOxygenTank.capacityOf(itemstack)
                 1 -> return ItemElectricBase.isElectricItemEmpty(itemstack)
                 else -> return false
             }
@@ -147,7 +148,7 @@ open class TileEntityOxygenDecompressor constructor() : TileEntityOxygen(1200, 0
         return false
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         when (slotID) {
             0 -> return itemstack.getItem() is ItemOxygenTank
             1 -> return ItemElectricBase.isElectricItem(itemstack.getItem())
@@ -177,7 +178,7 @@ open class TileEntityOxygenDecompressor constructor() : TileEntityOxygen(1200, 0
     }
 
     override fun getBatteryInSlot(): ItemStack {
-        return this.getStackInSlot(1)
+        return this.getItem(1)
     }
 
     open fun getOxygenOutputDirection(): EnumFacing {

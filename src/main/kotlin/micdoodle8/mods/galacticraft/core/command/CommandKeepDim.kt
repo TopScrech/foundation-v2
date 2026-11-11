@@ -1,14 +1,15 @@
 package micdoodle8.mods.galacticraft.core.command
 
+import net.minecraft.network.chat.Component
+
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import net.minecraft.command.CommandBase
 import net.minecraft.command.CommandException
 import net.minecraft.command.ICommandSender
 import net.minecraft.command.WrongUsageException
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.text.TextComponentString
 
 open class CommandKeepDim : CommandBase() {
     override fun getUsage(var1: ICommandSender): String {
@@ -53,12 +54,12 @@ open class CommandKeepDim : CommandBase() {
                     }
 
                     if (ConfigManagerCore.setLoaded(dimID)) {
-                        playerBase.sendMessage(TextComponentString("[GCKeepLoaded] Successfully set dimension " + dimID + " to load staticly"))
+                        playerBase.sendSystemMessage(Component.literal("[GCKeepLoaded] Successfully set dimension " + dimID + " to load staticly"))
                     } else {
                         if (ConfigManagerCore.setUnloaded(dimID)) {
-                            playerBase.sendMessage(TextComponentString("[GCKeepLoaded] Successfully set dimension " + dimID + " to not load staticly"))
+                            playerBase.sendSystemMessage(Component.literal("[GCKeepLoaded] Successfully set dimension " + dimID + " to not load staticly"))
                         } else {
-                            playerBase.sendMessage(TextComponentString("[GCKeepLoaded] Failed to set dimension as not static"))
+                            playerBase.sendSystemMessage(Component.literal("[GCKeepLoaded] Failed to set dimension as not static"))
                         }
                     }
                 }

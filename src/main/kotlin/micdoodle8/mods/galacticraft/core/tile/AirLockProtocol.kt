@@ -1,8 +1,8 @@
 package micdoodle8.mods.galacticraft.core.tile
 
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.ArrayList
 import java.util.HashSet
 
@@ -39,12 +39,12 @@ constructor(private val head: TileEntity) {
     init {
         this.adjacentAirLocks = ArrayList<BlockPos>()
         this.checked = HashSet<BlockPos?>()
-        this.world = head.getWorld()
+        this.world = head.getLevel()
     }
 
     private fun loopThrough(pos: BlockPos, loops: Int) {
-        val xAligned: Int = this.head.getPos().getX()
-        val zAligned: Int = this.head.getPos().getZ()
+        val xAligned: Int = this.head.getBlockPos().getX()
+        val zAligned: Int = this.head.getBlockPos().getZ()
         for (x: Int in -1..1) {
             val xTest: Int = pos.getX() + x
             for (z: Int in -1..1) {
@@ -56,7 +56,7 @@ constructor(private val head: TileEntity) {
                             val testPos: BlockPos = BlockPos(xTest, pos.getY() + y, zTest)
                             if (!this.checked.contains(testPos)) {
                                 this.checked.add(testPos)
-                                if (this.world.getTileEntity(testPos) is TileEntityAirLock) {
+                                if (this.world.getBlockEntity(testPos) is TileEntityAirLock) {
                                     this.adjacentAirLocks.add(testPos)
                                     if (loops > 1) {
                                         this.loopThrough(testPos, loops - 1)
@@ -79,7 +79,7 @@ constructor(private val head: TileEntity) {
                     val testPos: BlockPos = BlockPos(xTest, yTest, pos.getZ() + z)
                     if (!this.checked.contains(testPos)) {
                         this.checked.add(testPos)
-                        if (this.world.getTileEntity(testPos) is TileEntityAirLock) {
+                        if (this.world.getBlockEntity(testPos) is TileEntityAirLock) {
                             this.adjacentAirLocks.add(testPos)
                             if (loops > 1) {
                                 this.loopThroughHorizontal(testPos, loops - 1)
@@ -92,7 +92,7 @@ constructor(private val head: TileEntity) {
     }
 
     open fun calculate(horizontal: Boolean): Int {
-        if (this.world.isRemote) {
+        if (this.world.isClientSide) {
             return -1
         }
 
@@ -105,7 +105,7 @@ constructor(private val head: TileEntity) {
 
         this.adjacentAirLocks = ArrayList<BlockPos>()
         this.checked.clear()
-        val headPos: BlockPos = this.head.getPos()
+        val headPos: BlockPos = this.head.getBlockPos()
         this.checked.add(headPos)
         this.adjacentAirLocks.add(headPos)
 
@@ -171,7 +171,7 @@ constructor(private val head: TileEntity) {
 
     private fun checkDimensions() {
         for (y: Int in this.minY..this.maxY) {
-            val tileAt: TileEntity? = this.world.getTileEntity(BlockPos(this.minX, y, this.minZ))
+            val tileAt: TileEntity? = this.world.getBlockEntity(BlockPos(this.minX, y, this.minZ))
 
             if (tileAt is TileEntityAirLock) {
                 this.airLocksDimension1Min++
@@ -179,7 +179,7 @@ constructor(private val head: TileEntity) {
         }
 
         for (y: Int in this.minY..this.maxY) {
-            val tileAt: TileEntity? = this.world.getTileEntity(BlockPos(this.maxX, y, this.maxZ))
+            val tileAt: TileEntity? = this.world.getBlockEntity(BlockPos(this.maxX, y, this.maxZ))
 
             if (tileAt is TileEntityAirLock) {
                 this.airLocksDimension1Max++
@@ -188,7 +188,7 @@ constructor(private val head: TileEntity) {
 
         if (this.minX != this.maxX) {
             for (x: Int in this.minX..this.maxX) {
-                val tileAt: TileEntity? = this.world.getTileEntity(BlockPos(x, this.maxY, this.maxZ))
+                val tileAt: TileEntity? = this.world.getBlockEntity(BlockPos(x, this.maxY, this.maxZ))
 
                 if (tileAt is TileEntityAirLock) {
                     this.airLocksDimension2Max++
@@ -196,7 +196,7 @@ constructor(private val head: TileEntity) {
             }
 
             for (x: Int in this.minX..this.maxX) {
-                val tileAt: TileEntity? = this.world.getTileEntity(BlockPos(x, this.minY, this.maxZ))
+                val tileAt: TileEntity? = this.world.getBlockEntity(BlockPos(x, this.minY, this.maxZ))
 
                 if (tileAt is TileEntityAirLock) {
                     this.airLocksDimension2Min++
@@ -204,7 +204,7 @@ constructor(private val head: TileEntity) {
             }
         } else if (this.minZ != this.maxZ) {
             for (z: Int in this.minZ..this.maxZ) {
-                val tileAt: TileEntity? = this.world.getTileEntity(BlockPos(this.maxX, this.maxY, z))
+                val tileAt: TileEntity? = this.world.getBlockEntity(BlockPos(this.maxX, this.maxY, z))
 
                 if (tileAt is TileEntityAirLock) {
                     this.airLocksDimension2Max++
@@ -212,7 +212,7 @@ constructor(private val head: TileEntity) {
             }
 
             for (z: Int in this.minZ..this.maxZ) {
-                val tileAt: TileEntity? = this.world.getTileEntity(BlockPos(this.maxX, this.minY, z))
+                val tileAt: TileEntity? = this.world.getBlockEntity(BlockPos(this.maxX, this.minY, z))
 
                 if (tileAt is TileEntityAirLock) {
                     this.airLocksDimension2Min++
@@ -224,7 +224,7 @@ constructor(private val head: TileEntity) {
     private fun checkDimensionsHorizontal() {
         if (this.minX != this.maxX) {
             for (x: Int in this.minX..this.maxX) {
-                val tileAt: TileEntity? = this.world.getTileEntity(BlockPos(x, this.minY, this.maxZ))
+                val tileAt: TileEntity? = this.world.getBlockEntity(BlockPos(x, this.minY, this.maxZ))
 
                 if (tileAt is TileEntityAirLock) {
                     this.airLocksDimension1Max++
@@ -232,7 +232,7 @@ constructor(private val head: TileEntity) {
             }
 
             for (x: Int in this.minX..this.maxX) {
-                val tileAt: TileEntity? = this.world.getTileEntity(BlockPos(x, this.minY, this.minZ))
+                val tileAt: TileEntity? = this.world.getBlockEntity(BlockPos(x, this.minY, this.minZ))
 
                 if (tileAt is TileEntityAirLock) {
                     this.airLocksDimension1Min++
@@ -242,7 +242,7 @@ constructor(private val head: TileEntity) {
 
         if (this.minZ != this.maxZ) {
             for (z: Int in this.minZ..this.maxZ) {
-                val tileAt: TileEntity? = this.world.getTileEntity(BlockPos(this.maxX, this.minY, z))
+                val tileAt: TileEntity? = this.world.getBlockEntity(BlockPos(this.maxX, this.minY, z))
 
                 if (tileAt is TileEntityAirLock) {
                     this.airLocksDimension2Max++
@@ -250,7 +250,7 @@ constructor(private val head: TileEntity) {
             }
 
             for (z: Int in this.minZ..this.maxZ) {
-                val tileAt: TileEntity? = this.world.getTileEntity(BlockPos(this.minX, this.minY, z))
+                val tileAt: TileEntity? = this.world.getBlockEntity(BlockPos(this.minX, this.minY, z))
 
                 if (tileAt is TileEntityAirLock) {
                     this.airLocksDimension2Min++

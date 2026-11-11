@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.recipe
 
+import foundation.item.FoundationItemVariants
+
 import micdoodle8.mods.galacticraft.core.blocks.BlockEnclosed.EnumEnclosedBlockType
 import net.minecraftforge.oredict.RecipeSorter.Category
 
@@ -17,7 +19,6 @@ import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.blocks.BlockEnclosed
 import micdoodle8.mods.galacticraft.core.items.ItemBasic
-import micdoodle8.mods.galacticraft.core.items.ItemEmergencyKit
 import micdoodle8.mods.galacticraft.core.tick.TickHandlerClient
 import micdoodle8.mods.galacticraft.core.util.CompatibilityManager
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
@@ -29,14 +30,14 @@ import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
 import micdoodle8.mods.galacticraft.planets.venus.VenusBlocks
 import micdoodle8.mods.galacticraft.planets.venus.VenusItems
-import net.minecraft.block.Block
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.CraftingManager
 import net.minecraft.item.crafting.FurnaceRecipes
 import net.minecraft.item.crafting.IRecipe
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import net.minecraftforge.oredict.OreDictionary
 import net.minecraftforge.oredict.RecipeSorter
 import java.lang.Exception
@@ -75,40 +76,36 @@ object RecipeManagerGC {
             "after:minecraft:shaped before:minecraft:shapeless"
         )
 
-        val meteoricIronIngot: Any = ItemStack(GCItems.itemBasicMoon, 1, 0)
-        val meteoricIronPlate: Any = ItemStack(GCItems.itemBasicMoon, 1, 1)
-        val deshIngot: Any? = if (GalacticraftCore.isPlanetsLoaded) ItemStack(
-            MarsItems.marsItemBasic,
-            1,
-            2
-        ) else GCItems.heavyPlatingTier1
+        val meteoricIronIngot: Any = FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 0)
+        val meteoricIronPlate: Any = FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 1)
+        val deshIngot: Any? = if (GalacticraftCore.isPlanetsLoaded) FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 2) else GCItems.heavyPlatingTier1
 
         FurnaceRecipes.instance()
-            .addSmeltingRecipe(ItemStack(GCBlocks.basicBlock, 1, 5), ItemStack(GCItems.basicItem, 1, 3), 0.5f)
+            .addSmeltingRecipe(ItemStack(GCBlocks.basicBlock, 1, 5), FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 3), 0.5f)
         FurnaceRecipes.instance()
-            .addSmeltingRecipe(ItemStack(GCBlocks.basicBlock, 1, 6), ItemStack(GCItems.basicItem, 1, 4), 0.5f)
+            .addSmeltingRecipe(ItemStack(GCBlocks.basicBlock, 1, 6), FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 4), 0.5f)
         FurnaceRecipes.instance()
-            .addSmeltingRecipe(ItemStack(GCBlocks.basicBlock, 1, 7), ItemStack(GCItems.basicItem, 1, 5), 0.5f)
+            .addSmeltingRecipe(ItemStack(GCBlocks.basicBlock, 1, 7), FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 5), 0.5f)
         FurnaceRecipes.instance()
             .addSmeltingRecipe(ItemStack(GCItems.meteorChunk, 1, 0), ItemStack(GCItems.meteorChunk, 1, 1), 0.1f)
-        FurnaceRecipes.instance().addSmelting(GCItems.meteoricIronRaw, ItemStack(GCItems.itemBasicMoon), 1.0f)
+        FurnaceRecipes.instance().addSmelting(GCItems.meteoricIronRaw, FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 0), 1.0f)
         FurnaceRecipes.instance()
-            .addSmeltingRecipe(ItemStack(GCBlocks.blockMoon, 1, 0), ItemStack(GCItems.basicItem, 1, 3), 1.0f)
+            .addSmeltingRecipe(ItemStack(GCBlocks.blockMoon, 1, 0), FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 3), 1.0f)
         FurnaceRecipes.instance()
-            .addSmeltingRecipe(ItemStack(GCBlocks.blockMoon, 1, 1), ItemStack(GCItems.basicItem, 1, 4), 1.0f)
+            .addSmeltingRecipe(ItemStack(GCBlocks.blockMoon, 1, 1), FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 4), 1.0f)
         FurnaceRecipes.instance()
             .addSmeltingRecipe(ItemStack(GCBlocks.blockMoon, 1, 2), ItemStack(GCItems.cheeseCurd), 1.0f)
         //Recycling: smelt tin/copper canisters back into ingots
         FurnaceRecipes.instance()
-            .addSmeltingRecipe(ItemStack(GCItems.canister, 1, 0), ItemStack(GCItems.basicItem, 3, 4), 1.0f)
+            .addSmeltingRecipe(foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.canister), 1, 0), FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 3, 4), 1.0f)
         FurnaceRecipes.instance()
-            .addSmeltingRecipe(ItemStack(GCItems.canister, 1, 1), ItemStack(GCItems.basicItem, 3, 3), 1.0f)
+            .addSmeltingRecipe(foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.canister), 1, 1), FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 3, 3), 1.0f)
         if (CompatibilityManager.useAluDust()) {
             FurnaceRecipes.instance()
-                .addSmeltingRecipe(ItemStack(GCItems.ic2compat, 1, 0), ItemStack(GCItems.basicItem, 1, 5), 1.0f)
+                .addSmeltingRecipe(ItemStack(GCItems.ic2compat, 1, 0), FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 5), 1.0f)
         }
         FurnaceRecipes.instance()
-            .addSmeltingRecipe(ItemStack(GCItems.foodItem, 1, 6), ItemStack(GCItems.foodItem, 1, 7), 1.0f)
+            .addSmeltingRecipe(foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.foodItem), 1, 6), foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.foodItem), 1, 7), 1.0f)
 
         var input: HashMap<Int, ItemStack?> = HashMap<Int, ItemStack?>()
         input.put(1, ItemStack(GCItems.partNoseCone))
@@ -270,7 +267,7 @@ object RecipeManagerGC {
         val spaceStationRequirements: HashMap<Any?,Int> = HashMap<Any?,Int>(4, 1.0f)
         spaceStationRequirements.put("ingotTin", 32)
         spaceStationRequirements.put(aluminumIngots, 16)
-        spaceStationRequirements.put(ItemStack(GCItems.basicItem, 1, ItemBasic.WAFER_ADVANCED), 1)
+        spaceStationRequirements.put(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, ItemBasic.WAFER_ADVANCED), 1)
         spaceStationRequirements.put(Items.IRON_INGOT, 24)
         GalacticraftRegistry.registerSpaceStation(
             SpaceStationType(
@@ -281,11 +278,10 @@ object RecipeManagerGC {
         )
 
         //EmergencyKit
-        RecipeUtil.addCustomRecipe(ShapedRecipeNBT(ItemStack(GCItems.emergencyKit), ItemEmergencyKit.getRecipe()))
 
-        CompressorRecipes.addShapelessRecipe(ItemStack(GCItems.basicItem, 1, 6), "ingotCopper", "ingotCopper")
-        CompressorRecipes.addShapelessRecipe(ItemStack(GCItems.basicItem, 1, 7), "ingotTin", "ingotTin")
-        CompressorRecipes.addShapelessRecipe(ItemStack(GCItems.basicItem, 1, 8), "ingotAluminum", "ingotAluminum")
+        CompressorRecipes.addShapelessRecipe(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 6), "ingotCopper", "ingotCopper")
+        CompressorRecipes.addShapelessRecipe(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 7), "ingotTin", "ingotTin")
+        CompressorRecipes.addShapelessRecipe(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 8), "ingotAluminum", "ingotAluminum")
 
         /*        // Support for all the spellings of Aluminum
         for (ItemStack stack : aluminumIngots)
@@ -294,43 +290,43 @@ object RecipeManagerGC {
         }
 */
         if (OreDictionary.getOres("ingotBronze").size > 0) {
-            CompressorRecipes.addShapelessRecipe(ItemStack(GCItems.basicItem, 1, 10), "ingotBronze", "ingotBronze")
+            CompressorRecipes.addShapelessRecipe(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 10), "ingotBronze", "ingotBronze")
         }
         if (OreDictionary.getOres("ingotSteel").size > 0) {
-            CompressorRecipes.addShapelessRecipe(ItemStack(GCItems.basicItem, 1, 9), "ingotSteel", "ingotSteel")
+            CompressorRecipes.addShapelessRecipe(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 9), "ingotSteel", "ingotSteel")
             CompressorRecipes.steelIngotsPresent = true
         }
         CompressorRecipes.steelRecipeGC =
-            Arrays.asList<ItemStack?>(ItemStack(Items.COAL), ItemStack(GCItems.basicItem, 1, 11), ItemStack(Items.COAL))
+            Arrays.asList<ItemStack?>(ItemStack(Items.COAL), FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 11), ItemStack(Items.COAL))
         CompressorRecipes.addShapelessRecipe(
-            ItemStack(GCItems.basicItem, 1, 9),
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 9),
             Items.COAL,
-            ItemStack(GCItems.basicItem, 1, 11),
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 11),
             Items.COAL
         )
         CompressorRecipes.addShapelessRecipe(
-            ItemStack(GCItems.basicItem, 1, 10),
-            ItemStack(GCItems.basicItem, 1, 6),
-            ItemStack(GCItems.basicItem, 1, 7)
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 10),
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 6),
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 7)
         )
-        CompressorRecipes.addShapelessRecipe(ItemStack(GCItems.basicItem, 1, 11), Items.IRON_INGOT, Items.IRON_INGOT)
-        CompressorRecipes.addShapelessRecipe(ItemStack(GCItems.itemBasicMoon, 1, 1), meteoricIronIngot)
+        CompressorRecipes.addShapelessRecipe(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 11), Items.IRON_INGOT, Items.IRON_INGOT)
+        CompressorRecipes.addShapelessRecipe(FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 1), meteoricIronIngot)
         CompressorRecipes.addRecipe(
             ItemStack(GCItems.heavyPlatingTier1, 2, 0),
             "XYZ",
             "XYZ",
             'X',
-            ItemStack(GCItems.basicItem, 1, 9),
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 9),
             'Y',
-            ItemStack(GCItems.basicItem, 1, 8),
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 8),
             'Z',
-            ItemStack(GCItems.basicItem, 1, 10)
+            FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 10)
         )
 
-        val solarPanels: ItemStack = ItemStack(GCItems.basicItem, 9, 12)
-        val basicWafers: ItemStack = ItemStack(GCItems.basicItem, 3, 13)
-        val advancedWafers: ItemStack = ItemStack(GCItems.basicItem, 1, 14)
-        val silicon: ItemStack = ItemStack(GCItems.basicItem, 1, 2)
+        val solarPanels: ItemStack = FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 9, 12)
+        val basicWafers: ItemStack = FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 3, 13)
+        val advancedWafers: ItemStack = FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 14)
+        val silicon: ItemStack = FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 2)
         CircuitFabricatorRecipes.addRecipe(
             solarPanels,
             Arrays.asList<Any?>(
@@ -374,8 +370,8 @@ object RecipeManagerGC {
         val doQuickMode: Boolean = ConfigManagerCore.quickMode != configSaved_QuickMode
         configSaved_QuickMode = ConfigManagerCore.quickMode
 
-        val meteoricIronIngot: ItemStack = ItemStack(GCItems.itemBasicMoon, 1, 0)
-        val meteoricIronPlate: ItemStack = ItemStack(GCItems.itemBasicMoon, 1, 1)
+        val meteoricIronIngot: ItemStack = FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 0)
+        val meteoricIronPlate: ItemStack = FoundationItemVariants.stack(requireNotNull(GCItems.itemBasicMoon), 1, 1)
         val doMetalsToOreDict: Boolean =
             configSaved_RequireGCmetals && !ConfigManagerCore.recipesRequireGCAdvancedMetals
         val doMetalsToGC: Boolean = !configSaved_RequireGCmetals && ConfigManagerCore.recipesRequireGCAdvancedMetals
@@ -400,23 +396,23 @@ object RecipeManagerGC {
                         recipe.replaceInput(meteoricIronPlate, OreDictionary.getOres("compressedMeteoricIron"))
                         if (GalacticraftCore.isPlanetsLoaded) {
                             recipe.replaceInput(
-                                ItemStack(MarsItems.marsItemBasic, 1, 2),
+                                FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 2),
                                 OreDictionary.getOres("ingotDesh")
                             )
                             recipe.replaceInput(
-                                ItemStack(MarsItems.marsItemBasic, 1, 5),
+                                FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 5),
                                 OreDictionary.getOres("compressedDesh")
                             )
                             recipe.replaceInput(
-                                ItemStack(AsteroidsItems.basicItem, 1, 0),
+                                FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 0),
                                 OreDictionary.getOres("ingotTitanium")
                             )
                             recipe.replaceInput(
-                                ItemStack(AsteroidsItems.basicItem, 1, 6),
+                                FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 6),
                                 OreDictionary.getOres("compressedTitanium")
                             )
                             recipe.replaceInput(
-                                ItemStack(VenusItems.basicItem, 1, 1),
+                                FoundationItemVariants.stack(requireNotNull(VenusItems.basicItem), 1, 1),
                                 OreDictionary.getOres("ingotLead")
                             )
                         }
@@ -424,11 +420,11 @@ object RecipeManagerGC {
                         recipe.replaceInput(meteoricIronIngot)
                         recipe.replaceInput(meteoricIronPlate)
                         if (GalacticraftCore.isPlanetsLoaded) {
-                            recipe.replaceInput(ItemStack(MarsItems.marsItemBasic, 1, 2))
-                            recipe.replaceInput(ItemStack(MarsItems.marsItemBasic, 1, 5))
-                            recipe.replaceInput(ItemStack(AsteroidsItems.basicItem, 1, 0))
-                            recipe.replaceInput(ItemStack(AsteroidsItems.basicItem, 1, 6))
-                            recipe.replaceInput(ItemStack(VenusItems.basicItem, 1, 1))
+                            recipe.replaceInput(FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 2))
+                            recipe.replaceInput(FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 5))
+                            recipe.replaceInput(FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 0))
+                            recipe.replaceInput(FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 6))
+                            recipe.replaceInput(FoundationItemVariants.stack(requireNotNull(VenusItems.basicItem), 1, 1))
                         }
                     }
                 }
@@ -436,7 +432,7 @@ object RecipeManagerGC {
         }
 
         if (doSilicon) {
-            val siliconGC: ItemStack = ItemStack(GCItems.basicItem, 1, 2)
+            val siliconGC: ItemStack = FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 2)
             var needNewList: Boolean = true
             var silicons: MutableList<ItemStack> = OreDictionary.getOres(ConfigManagerCore.otherModsSilicon)
             if (silicons.size > 0) {
@@ -468,7 +464,7 @@ object RecipeManagerGC {
 
 
             // Update Advanced Wafer in space station recipe
-            val sswafer: ItemStack = ItemStack(GCItems.basicItem, 1, ItemBasic.WAFER_ADVANCED)
+            val sswafer: ItemStack = FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, ItemBasic.WAFER_ADVANCED)
             for (station: SpaceStationType in GalacticraftRegistry.getSpaceStationData()) {
                 val ssrecipe: HashMap<Any?,Int> = (station.getRecipeForSpaceStation())!!.getInput()
                 if (doMetalsToOreDict) {
@@ -503,15 +499,15 @@ object RecipeManagerGC {
     @JvmStatic
     private fun setConfigurableRecipesPlanets() {
         if (ConfigManagerCore.recipesRequireGCAdvancedMetals) {
-            CompressorRecipes.replaceRecipeIngredient(ItemStack(MarsItems.marsItemBasic, 1, 2))
-            CompressorRecipes.replaceRecipeIngredient(ItemStack(AsteroidsItems.basicItem, 1, 0))
+            CompressorRecipes.replaceRecipeIngredient(FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 2))
+            CompressorRecipes.replaceRecipeIngredient(FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 0))
         } else {
             CompressorRecipes.replaceRecipeIngredient(
-                ItemStack(MarsItems.marsItemBasic, 1, 2),
+                FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 2),
                 OreDictionary.getOres("ingotDesh")
             )
             CompressorRecipes.replaceRecipeIngredient(
-                ItemStack(AsteroidsItems.basicItem, 1, 0),
+                FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 0),
                 OreDictionary.getOres("ingotTitanium")
             )
         }
@@ -560,7 +556,7 @@ object RecipeManagerGC {
                 val ironDust: Optional<ItemStack?> = AEApi.instance().definitions().materials().ironDust().maybeStack(1)
                 a.addRecipe(
                     a.builder().withInput(ItemStack(AsteroidBlocks.blockBasic, 1, 4))
-                        .withOutput(ItemStack(AsteroidsItems.basicItem, 1, 9)).withFirstOptional(ironDust.get(), 1.0f)
+                        .withOutput(FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 9)).withFirstOptional(ironDust.get(), 1.0f)
                         .withTurns(8).build()
                 )
             }

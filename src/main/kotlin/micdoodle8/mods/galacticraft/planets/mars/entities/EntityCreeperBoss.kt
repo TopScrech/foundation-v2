@@ -18,22 +18,22 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.asteroids.ConfigManagerAsteroids
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
-import net.minecraft.enchantment.EnchantmentHelper
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.IRangedAttackMob
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.ai.*
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.DamageSource
-import net.minecraft.util.SoundEvent
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.core.BlockPos
 import net.minecraft.world.BossInfo
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.common.network.NetworkRegistry
 import java.util.*
 
@@ -254,9 +254,9 @@ open class EntityCreeperBoss constructor(par1World: World?) : EntityBossBase((pa
         val d3: Double = this.posX
         val d4: Double = this.posY + 5.5
         val d5: Double = this.posZ
-        val d6: Double = entitylivingbase.posX - d3
-        val d7: Double = entitylivingbase.posY + entitylivingbase.getEyeHeight() * 0.5 - d4
-        val d8: Double = entitylivingbase.posZ - d5
+        val d6: Double = entitylivingbase.x - d3
+        val d7: Double = entitylivingbase.y + entitylivingbase.getEyeHeight() * 0.5 - d4
+        val d8: Double = entitylivingbase.z - d5
         val projectileTNT: EntityProjectileTNT = EntityProjectileTNT(this.world, this, d6 * 0.5, d7 * 0.5, d8 * 0.5)
 
         projectileTNT.posY = d4
@@ -270,7 +270,7 @@ open class EntityCreeperBoss constructor(par1World: World?) : EntityBossBase((pa
     }
 
     override fun dropKey() {
-        this.entityDropItem(ItemStack(MarsItems.key, 1, 0), 0.5f)
+        this.entityDropItem(ItemStack(requireNotNull(MarsItems.key)), 0.5f)
     }
 
     override fun getHealthBarColor(): BossInfo.Color {

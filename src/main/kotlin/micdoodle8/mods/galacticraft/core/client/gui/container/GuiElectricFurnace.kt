@@ -9,13 +9,13 @@ import micdoodle8.mods.galacticraft.core.inventory.ContainerElectricFurnace
 import micdoodle8.mods.galacticraft.core.tile.TileEntityElectricFurnace
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiElectricFurnace constructor(
     par1InventoryPlayer: InventoryPlayer,
     private val tileEntity: TileEntityElectricFurnace
@@ -111,8 +111,8 @@ open class GuiElectricFurnace constructor(
 
     companion object {
         private val electricFurnaceTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/electric_furnace.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/electric_furnace.png")
         private val arcFurnaceTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/electric_arc_furnace.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/electric_arc_furnace.png")
     }
 }

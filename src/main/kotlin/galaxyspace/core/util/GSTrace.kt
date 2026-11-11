@@ -1,12 +1,12 @@
 package galaxyspace.core.util
 
 import galaxyspace.core.util.GSTrace
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.phys.AABB as AxisAlignedBB
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.Level as World
 
 object GSTrace {
     @JvmStatic
@@ -95,7 +95,7 @@ object GSTrace {
             val f1: Float = 1.0f
             val list: MutableList<*> = world.getEntitiesWithinAABBExcludingEntity(
                 viewer,
-                viewer.getEntityBoundingBox().grow((dir)!!.x * distance, (dir)!!.y * distance, (dir)!!.z * distance)
+                viewer.getBoundingBox().grow((dir)!!.x * distance, (dir)!!.y * distance, (dir)!!.z * distance)
                     .expand(f1.toDouble(), f1.toDouble(), f1.toDouble())
             )
             var d2: Double = d1
@@ -106,7 +106,7 @@ object GSTrace {
                 if (entity.canBeCollidedWith()) {
                     val f2: Float = entity.getCollisionBorderSize()
                     val axisalignedbb: AxisAlignedBB =
-                        entity.getEntityBoundingBox().expand(f2.toDouble(), f2.toDouble(), f2.toDouble())
+                        entity.getBoundingBox().expand(f2.toDouble(), f2.toDouble(), f2.toDouble())
                     val movingobjectposition: RayTraceResult? = axisalignedbb.calculateIntercept(Vec3d, Vec3d2)
 
                     if (axisalignedbb.contains(Vec3d)) {
@@ -198,11 +198,11 @@ object GSTrace {
     @JvmStatic
     fun getPosition(entity: EntityLivingBase, p_70666_1_: Float): Vec3d {
         if (p_70666_1_ == 1.0f) {
-            return Vec3d(entity.posX, entity.posY, entity.posZ)
+            return Vec3d(entity.x, entity.y, entity.z)
         } else {
-            val d0: Double = entity.prevPosX + (entity.posX - entity.prevPosX) * p_70666_1_.toDouble()
-            val d1: Double = entity.prevPosY + (entity.posY - entity.prevPosY) * p_70666_1_.toDouble()
-            val d2: Double = entity.prevPosZ + (entity.posZ - entity.prevPosZ) * p_70666_1_.toDouble()
+            val d0: Double = entity.prevPosX + (entity.x - entity.prevPosX) * p_70666_1_.toDouble()
+            val d1: Double = entity.prevPosY + (entity.y - entity.prevPosY) * p_70666_1_.toDouble()
+            val d2: Double = entity.prevPosZ + (entity.z - entity.prevPosZ) * p_70666_1_.toDouble()
             return Vec3d(d0, d1, d2)
         }
     }

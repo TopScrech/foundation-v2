@@ -4,7 +4,7 @@ import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import net.minecraft.client.Minecraft
 import net.minecraft.client.audio.MusicTicker
-import net.minecraft.util.math.MathHelper
+import net.minecraft.util.Mth as MathHelper
 import net.minecraftforge.fml.client.FMLClientHandler
 import kotlin.math.min
 

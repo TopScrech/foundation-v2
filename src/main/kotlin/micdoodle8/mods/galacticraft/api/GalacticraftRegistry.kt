@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.api
 
+import foundation.item.legacyItemValue
+
 import com.google.common.collect.Lists
 import micdoodle8.mods.galacticraft.api.client.IGameScreen
 import micdoodle8.mods.galacticraft.api.item.EnumExtendedInventorySlot
@@ -8,16 +10,16 @@ import micdoodle8.mods.galacticraft.api.recipe.SpaceStationRecipe
 import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import micdoodle8.mods.galacticraft.api.world.ITeleportType
 import micdoodle8.mods.galacticraft.api.world.SpaceStationType
-import net.minecraft.block.Block
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
-import net.minecraft.world.DimensionType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.WorldProvider
 import net.minecraft.world.WorldProviderSurface
 import net.minecraftforge.fml.relauncher.FMLRelaunchLog
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.apache.logging.log4j.Level
 import java.lang.IllegalArgumentException
 import java.lang.RuntimeException
@@ -260,7 +262,7 @@ open class GalacticraftRegistry {
         }
 
         @JvmStatic
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         fun getResouceLocationForDimension(clazz: Class<out WorldProvider>?): ResourceLocation? {
             var clazz: Class<out WorldProvider>? = clazz
             if (!IGalacticraftWorldProvider::class.java.isAssignableFrom(clazz)) {
@@ -434,7 +436,7 @@ open class GalacticraftRegistry {
                             return entry.key!!
                         }
                     } else if (o is ItemStack) {
-                        if (stack.getItem() === o.getItem() && stack.getItemDamage() == o.getItemDamage()) {
+                        if (stack.getItem() === o.getItem() && stack.legacyItemValue == o.legacyItemValue) {
                             return entry.key!!
                         }
                     }

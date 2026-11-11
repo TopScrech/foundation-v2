@@ -1,9 +1,9 @@
 package asmodeuscore.core.astronomy.dimension.world.gen.features.trees
 
 import asmodeuscore.core.astronomy.dimension.world.gen.WorldGenCustomStructure
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class WorldGenTree_Forest2 constructor(
@@ -166,8 +166,8 @@ open class WorldGenTree_Forest2 constructor(
 
     override fun generateBlock(world: World?, random: Random?, position: BlockPos?, matrixValue: Int) {
         when (matrixValue) {
-            2, 3, 4 -> (world)!!.setBlockState(position, this.log)
-            1, 7 -> (world)!!.setBlockState(position, this.leaves)
+            2, 3, 4 -> (world)!!.setBlockAndUpdate(position, this.log)
+            1, 7 -> (world)!!.setBlockAndUpdate(position, this.leaves)
             else -> {}
         }
     }

@@ -1,8 +1,8 @@
 package micdoodle8.mods.galacticraft.api.prefab.world.gen
 
 import micdoodle8.mods.galacticraft.api.event.wgen.GCCoreEventPopulate
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 import net.minecraftforge.common.MinecraftForge
 import java.lang.RuntimeException
@@ -37,9 +37,9 @@ abstract class BiomeDecoratorSpace {
             this.posX = posX
             this.posZ = posZ
             val pos: BlockPos = BlockPos(this.posX, 0, this.posZ)
-            MinecraftForge.EVENT_BUS.post(GCCoreEventPopulate.Pre(world, this.rand, pos))
+            GCCoreEventPopulate.Pre(world, this.rand, pos).post()
             this.decorate()
-            MinecraftForge.EVENT_BUS.post(GCCoreEventPopulate.Post(world, this.rand, pos))
+            GCCoreEventPopulate.Post(world, this.rand, pos).post()
             this.setCurrentWorld(null)
             this.rand = null
         }

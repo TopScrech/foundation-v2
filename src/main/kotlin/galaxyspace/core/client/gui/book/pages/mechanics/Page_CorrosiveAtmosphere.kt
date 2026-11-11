@@ -6,11 +6,11 @@ import galaxyspace.api.IPage
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.FontRenderer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 
 @IPage
 open class Page_CorrosiveAtmosphere : IBookPage {
-    private val mc: Minecraft = Minecraft.getMinecraft()
+    private val mc: Minecraft = Minecraft.getInstance()
 
     override fun titlePage(): String {
         return "corrosive_atmosphere"

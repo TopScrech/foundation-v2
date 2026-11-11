@@ -2,13 +2,13 @@ package micdoodle8.mods.galacticraft.core.client.gui.screen
 
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.util.ClientUtil
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.GL11
 import org.lwjgl.util.glu.GLU
@@ -276,7 +276,7 @@ abstract class GuiStarBackground : GuiScreen() {
     abstract fun doCustomTranslation(type: Int, coord1: Float, coord2: Float, coord3: Float, mX: Float, mY: Float)
 
     companion object {
-        private val backgroundTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/stars.png")
-        private val blackTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/black.png")
+        private val backgroundTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/stars.png")
+        private val blackTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/black.png")
     }
 }

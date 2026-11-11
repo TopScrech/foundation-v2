@@ -10,19 +10,18 @@ import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import kotlin.math.max
 import kotlin.math.min
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 object OverlayOxygenTanks : Overlay() {
-    private val guiTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/gui.png")
+    private val guiTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/gui.png")
 
-    private val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+    private val minecraft: Minecraft = Minecraft.getInstance()
 
     /**
      * Render the GUI that displays oxygen level in tanks
@@ -47,7 +46,7 @@ object OverlayOxygenTanks : Overlay() {
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
         GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f)
         GlStateManager.disableAlpha()
-        FMLClientHandler.instance().getClient().renderEngine.bindTexture(guiTexture)
+        Minecraft.getInstance().renderEngine.bindTexture(guiTexture)
         val tessellator: Tessellator = Tessellator.getInstance()
         val worldRenderer: BufferBuilder = tessellator.getBuffer()
         GlStateManager.enableDepth()

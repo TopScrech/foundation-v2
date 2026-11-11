@@ -4,7 +4,7 @@ import crafttweaker.api.item.IItemStack
 import crafttweaker.IAction
 import crafttweaker.api.minecraft.CraftTweakerMC
 import galaxyspace.systems.SolarSystem.planets.overworld.recipes.RocketAssemblyRecipes
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 open class ActionRocketAssemblerRecipes {
     open class Add constructor(private val output: IItemStack?, vararg inputs: IItemStack?) : IAction {

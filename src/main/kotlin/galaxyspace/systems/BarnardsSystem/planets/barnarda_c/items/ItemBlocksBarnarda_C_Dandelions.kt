@@ -1,11 +1,13 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.items
 
+import foundation.item.legacyItemValue
+
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Dandelions.EnumBlockDandelions
 
 import galaxyspace.core.prefab.items.GSItemBlockDesc
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Dandelions
-import net.minecraft.block.Block
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.ItemStack
 
 open class ItemBlocksBarnarda_C_Dandelions constructor(block: Block?) : GSItemBlockDesc((block)!!) {
     init {
@@ -18,7 +20,7 @@ open class ItemBlocksBarnarda_C_Dandelions constructor(block: Block?) : GSItemBl
     }
 
     override fun getTranslationKey(`is`: ItemStack): String {
-        val metadata: Int = `is`.getItemDamage()
+        val metadata: Int = `is`.legacyItemValue
 
         if (metadata > Barnarda_C_Dandelions.EnumBlockDandelions.entries.size) return "tile." + (Barnarda_C_Dandelions.EnumBlockDandelions.byMetadata(
             0

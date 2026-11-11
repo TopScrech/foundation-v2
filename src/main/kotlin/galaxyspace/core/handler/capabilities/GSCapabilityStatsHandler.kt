@@ -5,10 +5,10 @@ import galaxyspace.core.handler.capabilities.GSCapabilityStatsHandler
 import galaxyspace.core.handler.capabilities.StatsCapabilityClient
 import galaxyspace.core.handler.capabilities.GSStatsCapability
 import galaxyspace.core.handler.capabilities.GSStatsCapabilityClient
-import net.minecraft.nbt.NBTBase
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
+import net.minecraft.nbt.Tag as NBTBase
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
 import net.minecraftforge.common.capabilities.CapabilityManager
@@ -25,10 +25,10 @@ object GSCapabilityStatsHandler {
 
     @JvmField
     val GS_PLAYER_PROPERTIES_CLIENT: ResourceLocation =
-        ResourceLocation(GalaxySpace.ASSET_PREFIX, "player_stats_client")
+        ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "player_stats_client")
 
     @JvmField
-    val GS_PLAYER_PROPERTIES: ResourceLocation = ResourceLocation(GalaxySpace.ASSET_PREFIX, "player_stats")
+    val GS_PLAYER_PROPERTIES: ResourceLocation = ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "player_stats")
 
     @JvmStatic
     fun register() {

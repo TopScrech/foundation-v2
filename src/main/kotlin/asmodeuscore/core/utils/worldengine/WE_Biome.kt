@@ -1,5 +1,10 @@
 package asmodeuscore.core.utils.worldengine
 
+import foundation.block.LegacyVanillaBlockStates
+import foundation.block.LegacyVanillaBlockIds
+
+import foundation.block.getStateFromMeta
+
 import net.minecraft.world.biome.Biome.BiomeProperties
 
 import asmodeuscore.core.utils.worldengine.additions.WE_CreateChunkGen_InXYZ
@@ -10,10 +15,10 @@ import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_WorldTreeGen
 import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_GrassGen
 import asmodeuscore.core.utils.worldengine.perlinnoise.PerlinNoise
 import asmodeuscore.core.utils.worldengine.additions.WE_CreateChunkGen_InXZ
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.gen.feature.WorldGenerator
 import net.minecraftforge.fml.common.IWorldGenerator
 import java.util.ArrayList
@@ -87,9 +92,9 @@ open class WE_Biome constructor(prop: BiomeProperties) : Biome(prop) {
         this.biomeBlockWaterColor = colors[1]
         this.biomeBlockLeavesColor = colors[2]
         val standardBiomeLayers: WE_BiomeLayer = WE_BiomeLayer()
-        standardBiomeLayers.add(Blocks.DIRT.getDefaultState(), Blocks.STONE.getDefaultState(), -256, 0, -4, -2, true)
-        standardBiomeLayers.add(Blocks.GRASS.getDefaultState(), Blocks.DIRT.getDefaultState(), -256, 0, -256, 0, false)
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.DIRT.defaultBlockState(), Blocks.STONE.defaultBlockState(), -256, 0, -4, -2, true)
+        standardBiomeLayers.add(Blocks.GRASS.defaultBlockState(), Blocks.DIRT.defaultBlockState(), -256, 0, -256, 0, false)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         this.createChunkGen_InXZ_List.add(standardBiomeLayers)
         this.createChunkGen_InXZ_List.add(WE_SnowGen())
         this.decorateChunkGen_List.add(WE_LakeGen())
@@ -123,12 +128,12 @@ open class WE_Biome constructor(prop: BiomeProperties) : Biome(prop) {
         )
         this.decorateChunkGen_List.add(treeGen)
         val grassGen: WE_GrassGen = WE_GrassGen()
-        grassGen.add(Blocks.TALLGRASS.getStateFromMeta(1), 8, false, Blocks.GRASS.getDefaultState())
-        grassGen.add(Blocks.TALLGRASS.getStateFromMeta(2), 16, false, Blocks.GRASS.getDefaultState())
-        grassGen.add(Blocks.RED_FLOWER.getDefaultState(), 128, false, Blocks.GRASS.getDefaultState())
-        grassGen.add(Blocks.YELLOW_FLOWER.getDefaultState(), 128, false, Blocks.GRASS.getDefaultState())
-        grassGen.add(Blocks.DEADBUSH.getDefaultState(), 512, false, Blocks.GRASS.getDefaultState())
-        grassGen.add(Blocks.WATERLILY.getDefaultState(), 256, false, Blocks.WATER.getDefaultState())
+        grassGen.add(LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.TALLGRASS, 1), 8, false, Blocks.GRASS.defaultBlockState())
+        grassGen.add(LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.TALLGRASS, 2), 16, false, Blocks.GRASS.defaultBlockState())
+        grassGen.add(Blocks.RED_FLOWER.defaultBlockState(), 128, false, Blocks.GRASS.defaultBlockState())
+        grassGen.add(Blocks.YELLOW_FLOWER.defaultBlockState(), 128, false, Blocks.GRASS.defaultBlockState())
+        grassGen.add(Blocks.DEADBUSH.defaultBlockState(), 512, false, Blocks.GRASS.defaultBlockState())
+        grassGen.add(Blocks.WATERLILY.defaultBlockState(), 256, false, Blocks.WATER.defaultBlockState())
         this.decorateChunkGen_List.add(grassGen)
     }
 

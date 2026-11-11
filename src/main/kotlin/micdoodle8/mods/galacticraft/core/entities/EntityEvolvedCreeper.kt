@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.entities
 
+import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
+
 import java.util.UUID
 import micdoodle8.mods.galacticraft.api.entity.IEntityBreathable
 import micdoodle8.mods.galacticraft.core.Constants
@@ -20,19 +22,19 @@ import net.minecraft.entity.ai.attributes.AttributeModifier
 import net.minecraft.entity.ai.attributes.IAttributeInstance
 import net.minecraft.entity.monster.EntityCreeper
 import net.minecraft.entity.passive.EntityOcelot
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
-import net.minecraft.init.MobEffects
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
-import net.minecraft.util.DamageSource
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.ForgeHooks
 
 open class EntityEvolvedCreeper constructor(par1World: World) : EntityCreeper(par1World), IEntityBreathable {
@@ -70,14 +72,14 @@ open class EntityEvolvedCreeper constructor(par1World: World) : EntityCreeper(pa
         super.writeEntityToNBT(nbt)
 
         if (this.isChild()) {
-            nbt.setBoolean("IsBaby", true)
+            nbt.putBoolean("IsBaby", true)
         }
     }
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
         super.readEntityFromNBT(nbt)
 
-        if (nbt.getBoolean("IsBaby")) {
+        if (nbt.getBooleanOr("IsBaby", false)) {
             this.setChild(true)
         }
     }
@@ -138,8 +140,8 @@ open class EntityEvolvedCreeper constructor(par1World: World) : EntityCreeper(pa
             this.motionY = 0.22
         }
 
-        if (this.isPotionActive(MobEffects.JUMP_BOOST)) {
-            this.motionY += ((this.getActivePotionEffect(MobEffects.JUMP_BOOST)!!.getAmplifier() + 1) * 0.1f).toDouble()
+        if (this.hasEffect(MobEffects.JUMP_BOOST)) {
+            this.motionY += ((this.getEffect(MobEffects.JUMP_BOOST)!!.getAmplifier() + 1) * 0.1f).toDouble()
         }
 
         if (this.isSprinting()) {
@@ -163,7 +165,7 @@ open class EntityEvolvedCreeper constructor(par1World: World) : EntityCreeper(pa
         when (this.rand.nextInt(12)) {
             0, 1, 2, 3 -> this.entityDropItem(ItemStack(Blocks.SAND), 0.0f)
             4, 5 ->             //Oxygen tank half empty or less
-                this.entityDropItem(ItemStack(GCItems.oxTankMedium, 1, 901 + this.rand.nextInt(900)), 0.0f)
+                this.entityDropItem(ItemOxygenTank.stack(requireNotNull(GCItems.oxTankMedium), 1, 901 + this.rand.nextInt(900)), 0.0f)
 
             6 -> this.dropItem(GCItems.oxygenGear, 1)
             7, 8 -> this.entityDropItem(ItemStack(Blocks.ICE), 0.0f)

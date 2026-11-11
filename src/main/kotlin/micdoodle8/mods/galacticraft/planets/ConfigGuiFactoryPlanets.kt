@@ -3,7 +3,7 @@ package micdoodle8.mods.galacticraft.planets
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 import net.minecraftforge.fml.client.IModGuiFactory
 import net.minecraftforge.fml.client.config.GuiConfig
 

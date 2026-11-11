@@ -8,12 +8,12 @@ import net.minecraft.client.renderer.block.model.ModelResourceLocation
 
 import com.google.common.collect.ImmutableList
 import micdoodle8.mods.galacticraft.core.blocks.BlockPanelLighting
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.block.model.*
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraftforge.client.MinecraftForgeClient
 import net.minecraftforge.common.property.IExtendedBlockState
 
@@ -25,11 +25,11 @@ open class ModelPanelLightBase constructor(private val callingBlock: ModelResour
             val layer: BlockRenderLayer? = MinecraftForgeClient.getRenderLayer()
             if (baseState == null) {
                 if (layer == null || layer == BlockRenderLayer.SOLID) {
-                    return Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getModelManager()
+                    return Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes().getModelManager()
                         .getModel(this.callingBlock).getQuads(state, side, rand)
                 }
             } else if (layer == null || baseState.getBlock().canRenderInLayer(baseState, layer)) {
-                return Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes()
+                return Minecraft.getInstance().getBlockRendererDispatcher().getBlockModelShapes()
                     .getModelForState(baseState).getQuads(baseState, side, rand)
             }
         }
@@ -49,7 +49,7 @@ open class ModelPanelLightBase constructor(private val callingBlock: ModelResour
     }
 
     override fun getParticleTexture(): TextureAtlasSprite {
-        return Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("minecraft:blocks/glass")
+        return Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite("minecraft:blocks/glass")
     }
 
     override fun getItemCameraTransforms(): ItemCameraTransforms {

@@ -1,29 +1,35 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.item.legacyItemValue
+
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockSlab
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.IProperty
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.Property as IProperty
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
-open class BlockSlabGC : BlockSlab, ISortableBlock {
+open class BlockSlabGC : BlockSlab, ISortableBlock, LegacyBlockMetadata {
     constructor(name: String?, material: Material) : super(material) {
         this.setTranslationKey(name)
         this.useNeighborBrightness = true
@@ -31,7 +37,7 @@ open class BlockSlabGC : BlockSlab, ISortableBlock {
 
     constructor(material: Material) : super(material)
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (i: Int in 0..<(if (GalacticraftCore.isPlanetsLoaded) 7 else 4)) {
             list.add(ItemStack(this, 1, i))
@@ -92,15 +98,15 @@ open class BlockSlabGC : BlockSlab, ISortableBlock {
     }
 
     override fun getTypeForItem(stack: ItemStack): Comparable<*> {
-        return BlockType.Companion.byMetadata(stack.getMetadata() and 7)!!
+        return BlockType.Companion.byMetadata(stack.legacyItemValue and 7)!!
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        var state: IBlockState = this.getDefaultState()
-            .withProperty(VARIANT, (BlockType.Companion.byMetadata(meta and 7))!!)
+        var state: IBlockState = this.defaultBlockState()
+            .setValue(VARIANT, (BlockType.Companion.byMetadata(meta and 7))!!)
 
         if (!this.isDouble()) {
-            state = state.withProperty(
+            state = state.setValue(
                 HALF,
                 if ((meta and 8) == 0) EnumBlockHalf.BOTTOM else EnumBlockHalf.TOP
             )
@@ -139,7 +145,9 @@ open class BlockSlabGC : BlockSlab, ISortableBlock {
             return this.getName()
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.langName
         }
 

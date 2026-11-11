@@ -2,7 +2,7 @@ package galaxyspace.systems.SolarSystem.moons.callisto.world.gen
 
 import galaxyspace.systems.SolarSystem.moons.callisto.world.gen.BiomeDecoratorCallisto
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 
 open class BiomeDecoratorCallisto constructor() : BiomeDecoratorSpace() {
     private var currentWorld: World? = null

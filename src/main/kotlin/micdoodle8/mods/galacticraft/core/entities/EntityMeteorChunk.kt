@@ -1,36 +1,38 @@
 package micdoodle8.mods.galacticraft.core.entities
 
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.TransformerHooks
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.enchantment.EnchantmentHelper
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.IProjectile
 import net.minecraft.entity.monster.EntityEnderman
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
 import net.minecraft.network.play.server.SPacketChangeGameState
-import net.minecraft.util.DamageSource
+import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.util.EntityDamageSourceIndirect
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.atan2
 
 open class EntityMeteorChunk : Entity, IProjectile {
@@ -73,11 +75,11 @@ open class EntityMeteorChunk : Entity, IProjectile {
 
         this.setSize(0.5f, 0.5f)
         this.setLocationAndAngles(
-            par2EntityLivingBase.posX,
-            par2EntityLivingBase.posY + par2EntityLivingBase.getEyeHeight(),
-            par2EntityLivingBase.posZ,
-            par2EntityLivingBase.rotationYaw,
-            par2EntityLivingBase.rotationPitch
+            par2EntityLivingBase.x,
+            par2EntityLivingBase.y + par2EntityLivingBase.getEyeHeight(),
+            par2EntityLivingBase.z,
+            par2EntityLivingBase.yRot,
+            par2EntityLivingBase.xRot
         )
         this.posX -= (MathHelper.cos(this.rotationYaw / Constants.RADIANS_TO_DEGREES) * 0.16f).toDouble()
         this.posY -= 0.10000000149011612
@@ -116,7 +118,7 @@ open class EntityMeteorChunk : Entity, IProjectile {
         this.ticksInGround = 0
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setVelocity(par1: Double, par3: Double, par5: Double) {
         this.motionX = par1
         this.motionY = par3
@@ -214,7 +216,7 @@ open class EntityMeteorChunk : Entity, IProjectile {
                 val entity1: Entity = list.get(l)
 
                 if (entity1.canBeCollidedWith() && (entity1 !== this.shootingEntity || this.ticksInAir >= 5)) {
-                    val axisalignedbb1: AxisAlignedBB = entity1.getEntityBoundingBox().grow(border, border, border)
+                    val axisalignedbb1: AxisAlignedBB = entity1.getBoundingBox().grow(border, border, border)
                     val movingobjectposition1: RayTraceResult? = axisalignedbb1.calculateIntercept(vec3, vec31)
 
                     if (movingobjectposition1 != null) {
@@ -407,7 +409,7 @@ open class EntityMeteorChunk : Entity, IProjectile {
             var flag: Boolean =
                 this.canBePickedUp == 1 || this.canBePickedUp == 2 && par1EntityPlayer.capabilities.isCreativeMode
 
-            if (this.canBePickedUp == 1 && !par1EntityPlayer.inventory.addItemStackToInventory(
+            if (this.canBePickedUp == 1 && !par1EntityPlayer.inventory.add(
                     ItemStack(
                         GCItems.meteorChunk,
                         1,

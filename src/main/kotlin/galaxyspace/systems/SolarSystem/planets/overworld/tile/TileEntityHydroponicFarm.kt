@@ -1,10 +1,10 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
 import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityHydroponicFarm
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.network.NetworkManager
 import net.minecraft.network.play.server.SPacketUpdateTileEntity
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 
 open class TileEntityHydroponicFarm : TileEntity() {
     @JvmField

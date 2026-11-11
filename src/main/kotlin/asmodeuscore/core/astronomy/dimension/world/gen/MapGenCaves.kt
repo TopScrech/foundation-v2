@@ -1,12 +1,15 @@
 package asmodeuscore.core.astronomy.dimension.world.gen
 
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
 import asmodeuscore.core.astronomy.dimension.world.gen.MapGenCaves.BlockGen
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.ChunkPrimer
 import java.util.ArrayList
 import java.util.Random
@@ -248,13 +251,13 @@ open class MapGenCaves : MapGenBaseMeta {
                                                         localX,
                                                         localY,
                                                         localZ,
-                                                        Blocks.AIR.getDefaultState()
+                                                        Blocks.AIR.defaultBlockState()
                                                     )
                                                 } else primer.setBlockState(
                                                     localX,
                                                     localY,
                                                     localZ,
-                                                    Blocks.AIR.getDefaultState()
+                                                    Blocks.AIR.defaultBlockState()
                                                 )
                                             }
                                         }

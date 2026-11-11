@@ -1,0 +1,160 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:component",
+    "component": "foundation:legacy_metadata",
+    "cases": [
+      {
+        "when": 0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/basic_item"
+        }
+      },
+      {
+        "when": 1,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/solar_module_1"
+        }
+      },
+      {
+        "when": 2,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/raw_silicon"
+        }
+      },
+      {
+        "when": 3,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/ingot_copper"
+        }
+      },
+      {
+        "when": 4,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/ingot_tin"
+        }
+      },
+      {
+        "when": 5,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/ingot_aluminum"
+        }
+      },
+      {
+        "when": 6,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/compressed_copper"
+        }
+      },
+      {
+        "when": 7,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/compressed_tin"
+        }
+      },
+      {
+        "when": 8,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/compressed_aluminum"
+        }
+      },
+      {
+        "when": 9,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/compressed_steel"
+        }
+      },
+      {
+        "when": 10,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/compressed_bronze"
+        }
+      },
+      {
+        "when": 11,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/compressed_iron"
+        }
+      },
+      {
+        "when": 12,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/wafer_solar"
+        }
+      },
+      {
+        "when": 13,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/wafer_basic"
+        }
+      },
+      {
+        "when": 14,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/wafer_advanced"
+        }
+      },
+      {
+        "when": 15,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/food"
+        }
+      },
+      {
+        "when": 16,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/dehydrated_carrot"
+        }
+      },
+      {
+        "when": 17,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/dehydrated_melon"
+        }
+      },
+      {
+        "when": 18,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/dehydrated_potato"
+        }
+      },
+      {
+        "when": 19,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/frequency_module"
+        }
+      },
+      {
+        "when": 20,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galacticraftcore:item/ambient_thermal_controller"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "galacticraftcore:item/basic_item"
+    }
+  }
+}

@@ -14,8 +14,8 @@ import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.venus.inventory.ContainerSolarArrayController
 import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntitySolarArrayController
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import java.util.ArrayList
 import kotlin.math.floor
 import kotlin.math.min
@@ -244,6 +244,6 @@ open class GuiSolarArrayController constructor(
 
     companion object {
         private val solarGuiTexture =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/solar_array_controller.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/solar_array_controller.png")
     }
 }

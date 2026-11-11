@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.core
 
+import foundation.item.legacyItemValue
+
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.core.blocks.MaterialOleaginous
 import micdoodle8.mods.galacticraft.core.entities.EntityMeteorChunk
 import micdoodle8.mods.galacticraft.core.event.EventHandlerGC
@@ -13,22 +17,22 @@ import micdoodle8.mods.galacticraft.planets.mars.items.ItemTier2Rocket
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
 import micdoodle8.mods.galacticraft.planets.venus.VenusItems
 import net.minecraft.block.BlockDispenser
-import net.minecraft.block.material.MapColor
+import net.minecraft.world.level.material.MapColor
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.dispenser.BehaviorDefaultDispenseItem
 import net.minecraft.dispenser.BehaviorProjectileDispense
 import net.minecraft.dispenser.IBehaviorDispenseItem
 import net.minecraft.dispenser.IBlockSource
 import net.minecraft.dispenser.IPosition
 import net.minecraft.entity.IProjectile
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
 
@@ -64,8 +68,8 @@ object GCFluids {
 
         // Oil:
         if (!FluidRegistry.isFluidRegistered(oilID)) {
-            val flowingOil: ResourceLocation = ResourceLocation(Constants.TEXTURE_PREFIX + "blocks/fluids/oil_flow")
-            val stillOil: ResourceLocation = ResourceLocation(Constants.TEXTURE_PREFIX + "blocks/fluids/oil_still")
+            val flowingOil: ResourceLocation = ResourceLocation.parse(Constants.TEXTURE_PREFIX + "blocks/fluids/oil_flow")
+            val stillOil: ResourceLocation = ResourceLocation.parse(Constants.TEXTURE_PREFIX + "blocks/fluids/oil_still")
             val gcFluidOil: Fluid = Fluid(oilID, stillOil, flowingOil).setDensity(800).setViscosity(1500)
             FluidRegistry.registerFluid(gcFluidOil)
         } else {
@@ -91,8 +95,8 @@ object GCFluids {
 
         // Fuel:
         if (!FluidRegistry.isFluidRegistered(fuelID)) {
-            val flowingFuel: ResourceLocation = ResourceLocation(Constants.TEXTURE_PREFIX + "blocks/fluids/fuel_flow")
-            val stillFuel: ResourceLocation = ResourceLocation(Constants.TEXTURE_PREFIX + "blocks/fluids/fuel_still")
+            val flowingFuel: ResourceLocation = ResourceLocation.parse(Constants.TEXTURE_PREFIX + "blocks/fluids/fuel_flow")
+            val stillFuel: ResourceLocation = ResourceLocation.parse(Constants.TEXTURE_PREFIX + "blocks/fluids/fuel_still")
             val gcFluidFuel: Fluid = Fluid(fuelID, stillFuel, flowingFuel).setDensity(400).setViscosity(900)
             FluidRegistry.registerFluid(gcFluidFuel)
         } else {
@@ -129,7 +133,7 @@ object GCFluids {
         var returnFluid: Fluid? = FluidRegistry.getFluid(fluidName)
 
         if (returnFluid == null) {
-            val texture: ResourceLocation = ResourceLocation(Constants.TEXTURE_PREFIX + "blocks/fluids/" + fluidTexture)
+            val texture: ResourceLocation = ResourceLocation.parse(Constants.TEXTURE_PREFIX + "blocks/fluids/" + fluidTexture)
             FluidRegistry.registerFluid(
                 Fluid(fluidName, texture, texture).setDensity(density).setViscosity(viscosity)
                     .setTemperature(temperature).setGaseous(gaseous)
@@ -163,10 +167,10 @@ object GCFluids {
         //This is for legacy compatibility with any 'in the world' tanks and items filled in different GC versions or with different GC config
         //In those cases, FluidUtil methods (and TileEntityRefinery) will attempt to fresh containers/tanks with the current fuel or oil type
 
-        val flowingOil: ResourceLocation = ResourceLocation(Constants.TEXTURE_PREFIX + "blocks/fluids/oil_flow")
-        val flowingFuel: ResourceLocation = ResourceLocation(Constants.TEXTURE_PREFIX + "blocks/fluids/fuel_flow")
-        val stillOil: ResourceLocation = ResourceLocation(Constants.TEXTURE_PREFIX + "blocks/fluids/oil_still")
-        val stillFuel: ResourceLocation = ResourceLocation(Constants.TEXTURE_PREFIX + "blocks/fluids/fuel_still")
+        val flowingOil: ResourceLocation = ResourceLocation.parse(Constants.TEXTURE_PREFIX + "blocks/fluids/oil_flow")
+        val flowingFuel: ResourceLocation = ResourceLocation.parse(Constants.TEXTURE_PREFIX + "blocks/fluids/fuel_flow")
+        val stillOil: ResourceLocation = ResourceLocation.parse(Constants.TEXTURE_PREFIX + "blocks/fluids/oil_still")
+        val stillFuel: ResourceLocation = ResourceLocation.parse(Constants.TEXTURE_PREFIX + "blocks/fluids/fuel_still")
         if (!FluidRegistry.isFluidRegistered("oil")) {
             FluidRegistry.registerFluid(Fluid("oil", stillOil, flowingOil).setDensity(800).setViscosity(1500))
         }
@@ -219,7 +223,7 @@ object GCFluids {
             override fun getProjectileEntity(worldIn: World, position: IPosition, stack: ItemStack): IProjectile {
                 val meteor: EntityMeteorChunk = EntityMeteorChunk(worldIn)
                 meteor.setPosition(position.getX(), position.getY(), position.getZ())
-                if (stack.getItemDamage() > 0) {
+                if (stack.legacyItemValue > 0) {
                     meteor.setFire(20)
                     meteor.isHot = true
                 }
@@ -251,7 +255,7 @@ object GCFluids {
                         rocketPlaced = ItemTier1Rocket.placeRocketOnPad(
                             stack,
                             world,
-                            world.getTileEntity(pos),
+                            world.getBlockEntity(pos),
                             centerX,
                             centerY,
                             centerZ
@@ -287,7 +291,7 @@ object GCFluids {
                             rocketPlaced = ItemTier2Rocket.placeRocketOnPad(
                                 stack,
                                 world,
-                                world.getTileEntity(pos),
+                                world.getBlockEntity(pos),
                                 centerX,
                                 centerY,
                                 centerZ
@@ -322,7 +326,7 @@ object GCFluids {
                             rocketPlaced = ItemTier3Rocket.placeRocketOnPad(
                                 stack,
                                 world,
-                                world.getTileEntity(pos),
+                                world.getBlockEntity(pos),
                                 centerX,
                                 centerY,
                                 centerZ

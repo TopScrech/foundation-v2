@@ -7,14 +7,14 @@ import asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart.Dungeon
 import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.blocks.BlockTier1TreasureChest
-import net.minecraft.init.Blocks
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.tileentity.TileEntityChest
 import net.minecraft.tileentity.TileEntityMobSpawner
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import java.util.Random
 
 open class RoomChestCeres : RoomEmptyCeres {
@@ -48,7 +48,7 @@ open class RoomChestCeres : RoomEmptyCeres {
         entranceDir: EnumFacing
     ) : super((configuration)!!, rand, blockPosX, blockPosZ, sizeX, sizeY, sizeZ, entranceDir)
 
-    override fun addComponentParts(worldIn: World, rand: Random, boundingBox: StructureBoundingBox): Boolean {
+    override fun addComponentParts(worldIn: World, rand: Random, boundingBox: BoundingBox): Boolean {
         if (super.addComponentParts(worldIn, rand, boundingBox)) {
             val chestX: Int = this.sizeX / 2
             val chestY: Int = 2
@@ -58,7 +58,7 @@ open class RoomChestCeres : RoomEmptyCeres {
             for (x: Int in -1..1) for (z: Int in -1..1) {
                 this.setBlockState(
                     worldIn,
-                    Blocks.PACKED_ICE.getDefaultState(),
+                    Blocks.PACKED_ICE.defaultBlockState(),
                     chestX + x,
                     chestY - 1,
                     chestZ + z,
@@ -68,7 +68,7 @@ open class RoomChestCeres : RoomEmptyCeres {
                 for (y: Int in 0..1) {
                     if (x % 2 != 0 && z % 2 != 0) this.setBlockState(
                         worldIn,
-                        Blocks.PACKED_ICE.getDefaultState(),
+                        Blocks.PACKED_ICE.defaultBlockState(),
                         chestX + x,
                         chestY + y,
                         chestZ + z,
@@ -76,7 +76,7 @@ open class RoomChestCeres : RoomEmptyCeres {
                     )
                     else this.setBlockState(
                         worldIn,
-                        Blocks.ICE.getDefaultState(),
+                        Blocks.ICE.defaultBlockState(),
                         chestX + x,
                         chestY + y,
                         chestZ + z,
@@ -86,7 +86,7 @@ open class RoomChestCeres : RoomEmptyCeres {
 
                 if (x != 0 || z != 0) for (y: Int in 2..<(this.configuration)!!.getRoomHeight() - 2) this.setBlockState(
                     worldIn,
-                    Blocks.PACKED_ICE.getDefaultState(),
+                    Blocks.PACKED_ICE.defaultBlockState(),
                     chestX + x,
                     chestY + y,
                     chestZ + z,
@@ -96,7 +96,7 @@ open class RoomChestCeres : RoomEmptyCeres {
 
 
             this.setBlockState(
-                worldIn, Blocks.CHEST.getDefaultState().withProperty(
+                worldIn, Blocks.CHEST.defaultBlockState().setValue(
                     BlockTier1TreasureChest.FACING,
                     (this.getDirection())!!.getOpposite()
                 ), chestX, chestY, chestZ, boundingBox
@@ -106,7 +106,7 @@ open class RoomChestCeres : RoomEmptyCeres {
                 this.getXWithOffset(chestX, chestZ), this.getYWithOffset(chestY),
                 this.getZWithOffset(chestX, chestZ)
             )
-            val chest: TileEntityChest? = worldIn.getTileEntity(blockpos) as TileEntityChest?
+            val chest: TileEntityChest? = worldIn.getBlockEntity(blockpos) as TileEntityChest?
 
             if (chest != null) {
                 var chesttype: ResourceLocation = RoomTreasureCeres.Companion.CERESCHEST
@@ -116,8 +116,8 @@ open class RoomChestCeres : RoomEmptyCeres {
                 chest.setLootTable(chesttype, rand.nextLong())
             }
 
-            this.setBlockState(worldIn, Blocks.MOB_SPAWNER.getDefaultState(), chestX, chestY + 1, chestZ, boundingBox)
-            val spawner: TileEntityMobSpawner? = worldIn.getTileEntity(blockpos.up()) as TileEntityMobSpawner?
+            this.setBlockState(worldIn, Blocks.MOB_SPAWNER.defaultBlockState(), chestX, chestY + 1, chestZ, boundingBox)
+            val spawner: TileEntityMobSpawner? = worldIn.getBlockEntity(blockpos.above()) as TileEntityMobSpawner?
 
             if (spawner != null) {
                 spawner.getSpawnerBaseLogic().setEntityId(getMob(rand))
@@ -133,11 +133,11 @@ open class RoomChestCeres : RoomEmptyCeres {
         @JvmStatic
         private fun getMob(rand: Random): ResourceLocation {
             when (rand.nextInt(4)) {
-                0 -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_spider")
-                1 -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_creeper")
-                2 -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_skeleton")
-                3 -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_zombie")
-                else -> return ResourceLocation(Constants.MOD_ID_CORE, "evolved_zombie")
+                0 -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_spider")
+                1 -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_creeper")
+                2 -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_skeleton")
+                3 -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_zombie")
+                else -> return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_CORE, "evolved_zombie")
             }
         }
     }

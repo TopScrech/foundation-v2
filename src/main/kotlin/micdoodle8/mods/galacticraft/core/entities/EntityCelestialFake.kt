@@ -1,19 +1,21 @@
 package micdoodle8.mods.galacticraft.core.entities
 
+import foundation.persistence.containsTag
+
 import io.netty.buffer.ByteBuf
 import micdoodle8.mods.galacticraft.api.entity.IIgnoreShift
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import net.minecraft.client.particle.Particle
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.util.DamageSource
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.client.FMLClientHandler
 import java.util.*
 
@@ -42,8 +44,8 @@ open class EntityCelestialFake constructor(var1: World?) : EntityAdvancedMotion(
         this.setPosition(var2, var4, var6)
     }
 
-    constructor(player: EntityPlayerMP) : this(player.world, player.posX, player.posY, player.posZ) {
-        this.setPositionAndRotation(player.posX, player.posY, player.posZ, 0f, 0f)
+    constructor(player: EntityPlayerMP) : this(player.level(), player.x, player.y, player.z) {
+        this.setPositionAndRotation(player.x, player.y, player.z, 0f, 0f)
 
         player.startRiding(this, true)
     }
@@ -59,7 +61,7 @@ open class EntityCelestialFake constructor(var1: World?) : EntityAdvancedMotion(
             if (this.getPassengers().isEmpty()) {
                 val player: EntityPlayer? = this.world.getClosestPlayerToEntity(this, 5.0)
 
-                if (player != null && player.getRidingEntity() == null) {
+                if (player != null && player.getVehicle() == null) {
                     player.startRiding(this, true)
                 }
             }
@@ -80,8 +82,8 @@ open class EntityCelestialFake constructor(var1: World?) : EntityAdvancedMotion(
 
     private fun pushEntityAway(entityToPush: Entity) {
         if (!this.getPassengers().contains(entityToPush) && this.getRidingEntity() !== entityToPush) {
-            var d0: Double = this.posX - entityToPush.posX
-            var d1: Double = this.posZ - entityToPush.posZ
+            var d0: Double = this.posX - entityToPush.x
+            var d1: Double = this.posZ - entityToPush.z
             var d2: Double = MathHelper.absMax(d0, d1)
 
             if (d2 >= 0.009999999776482582) {
@@ -106,8 +108,8 @@ open class EntityCelestialFake constructor(var1: World?) : EntityAdvancedMotion(
     }
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
-        if (nbt.hasKey("RiderUUID_LSB")) {
-            this.persistantRiderUUID = UUID(nbt.getLong("RiderUUID_LSB"), nbt.getLong("RiderUUID_MSB"))
+        if (nbt.containsTag("RiderUUID_LSB")) {
+            this.persistantRiderUUID = UUID(nbt.getLongOr("RiderUUID_LSB", 0L), nbt.getLongOr("RiderUUID_MSB", 0L))
         }
     }
 
@@ -117,8 +119,8 @@ open class EntityCelestialFake constructor(var1: World?) : EntityAdvancedMotion(
         val id: UUID? = this.getOwnerUUID()
 
         if (id != null) {
-            nbt.setLong("RiderUUID_LSB", id.getLeastSignificantBits())
-            nbt.setLong("RiderUUID_MSB", id.getMostSignificantBits())
+            nbt.putLong("RiderUUID_LSB", id.getLeastSignificantBits())
+            nbt.putLong("RiderUUID_MSB", id.getMostSignificantBits())
         }
     }
 
@@ -146,7 +148,7 @@ open class EntityCelestialFake constructor(var1: World?) : EntityAdvancedMotion(
             this.shouldMoveServer = this.shouldMove()
             objList.add(this.shouldMoveServer)
             //Server send rider information for client to check
-            objList.add(if (this.getPassengers().isEmpty()) -1 else this.getPassengers().get(0).getEntityId())
+            objList.add(if (this.getPassengers().isEmpty()) -1 else this.getPassengers().get(0).getId())
         }
 
         this.networkDataChanged = objList != this.prevData
@@ -185,7 +187,7 @@ open class EntityCelestialFake constructor(var1: World?) : EntityAdvancedMotion(
                             e.startRiding(this, true)
                         }
                     }
-                } else if (this.getPassengers().get(0).getEntityId() != shouldBeMountedId) {
+                } else if (this.getPassengers().get(0).getId() != shouldBeMountedId) {
                     if (shouldBeMountedId == -1) {
                         this.removePassengers()
                     } else {
@@ -211,7 +213,7 @@ open class EntityCelestialFake constructor(var1: World?) : EntityAdvancedMotion(
         return null
     }
 
-    override fun isItemValidForSlot(var1: Int, var2: ItemStack): Boolean {
+    override fun canPlaceItem(var1: Int, var2: ItemStack): Boolean {
         return false
     }
 
@@ -241,12 +243,12 @@ open class EntityCelestialFake constructor(var1: World?) : EntityAdvancedMotion(
         return false
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return 0
     }
 
-    override fun getName(): String {
-        return ""
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.literal("")
     }
 
     override fun hasCustomName(): Boolean {

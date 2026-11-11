@@ -7,12 +7,12 @@ import net.minecraft.client.renderer.*
 import net.minecraft.client.renderer.block.model.IBakedModel
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class TileEntityArclampRenderer : TileEntitySpecialRenderer<TileEntityArclamp>() {
     override fun render(
         tileEntity: TileEntityArclamp,
@@ -117,7 +117,7 @@ open class TileEntityArclampRenderer : TileEntitySpecialRenderer<TileEntityArcla
     private fun updateModels() {
         if (lampMetal == null) {
             try {
-                lampMetal = ClientUtil.modelFromOBJ(ResourceLocation(Constants.ASSET_PREFIX, "arclamp_metal.obj"))
+                lampMetal = ClientUtil.modelFromOBJ(ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "arclamp_metal.obj"))
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -126,10 +126,10 @@ open class TileEntityArclampRenderer : TileEntitySpecialRenderer<TileEntityArcla
 
     companion object {
         @JvmField
-        val lampTexture: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "textures/misc/underoil.png")
+        val lampTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/misc/underoil.png")
 
         @JvmField
-        val lightTexture: ResourceLocation = ResourceLocation(Constants.ASSET_PREFIX, "textures/misc/light.png")
+        val lightTexture: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/misc/light.png")
         private var lampMetal: IBakedModel? = null
     }
 }

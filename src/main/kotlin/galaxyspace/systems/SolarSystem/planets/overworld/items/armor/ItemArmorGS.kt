@@ -1,15 +1,17 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items.armor
 
+import foundation.item.legacyItemValue
+
 import galaxyspace.GalaxySpace
 import galaxyspace.core.util.GSCreativeTabs
 import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.items.ISortableItem
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.Entity
-import net.minecraft.inventory.EntityEquipmentSlot
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
 import net.minecraft.item.ItemArmor
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import java.util.*
 
 open class ItemArmorGS constructor(
@@ -41,6 +43,6 @@ open class ItemArmorGS constructor(
     }
 
     override fun getIsRepairable(toRepair: ItemStack, repair: ItemStack): Boolean {
-        return repair.getItem() === GCItems.basicItem && repair.getItemDamage() == 9
+        return repair.getItem() === GCItems.basicItem && repair.legacyItemValue == 9
     }
 }

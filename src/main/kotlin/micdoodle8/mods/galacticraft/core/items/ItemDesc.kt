@@ -1,37 +1,38 @@
 package micdoodle8.mods.galacticraft.core.items
 
-import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.client.settings.GameSettings
-import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
-import org.lwjgl.input.Keyboard
+import com.mojang.blaze3d.platform.InputConstants
+import foundation.item.FoundationItemVariants
+import net.minecraft.client.Minecraft
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.FormattedText
+import net.minecraft.network.chat.Style
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.world.item.component.TooltipDisplay
+import net.minecraftforge.api.distmarker.Dist
+import net.minecraftforge.api.distmarker.OnlyIn
+import java.util.Optional
+import java.util.function.Consumer
 
-abstract class ItemDesc : Item(), IShiftDescription {
-    @SideOnly(Side.CLIENT)
-    override fun addInformation(stack: ItemStack, worldIn: World?, info: MutableList<String?>, flagIn: ITooltipFlag) {
-        if (this.showDescription(stack.getItemDamage())) {
-            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
-                info.addAll(
-                    FMLClientHandler.instance().getClient().fontRenderer.listFormattedStringToWidth(
-                        this.getShiftDescription(stack.getItemDamage()),
-                        150
-                    )
-                )
-            } else {
-                info.add(
-                    GCCoreUtil.translateWithFormat(
-                        "item_desc.shift.name",
-                        GameSettings.getKeyDisplayString(
-                            FMLClientHandler.instance().getClient().gameSettings.keyBindSneak.getKeyCode()
-                        )
-                    )
-                )
+abstract class ItemDesc(properties: Item.Properties) : Item(properties), IShiftDescription {
+    @OnlyIn(Dist.CLIENT)
+    override fun appendHoverText(stack: ItemStack, context: TooltipContext, display: TooltipDisplay, builder: Consumer<Component>, flag: TooltipFlag) {
+        val metadata = FoundationItemVariants.metadata(stack)
+        if (!showDescription(metadata)) return
+        val client = Minecraft.getInstance()
+        if (InputConstants.isKeyDown(InputConstants.KEY_LSHIFT)) {
+            val description = Component.literal(getShiftDescription(metadata).orEmpty())
+            for (line in client.font.splitter.splitLines(description, 150, Style.EMPTY)) {
+                val component = Component.empty()
+                line.visit(FormattedText.StyledContentConsumer<Unit> { style, text ->
+                    component.append(Component.literal(text).setStyle(style))
+                    Optional.empty()
+                }, Style.EMPTY)
+                builder.accept(component)
             }
+        } else {
+            builder.accept(Component.translatable("item_desc.shift.name", client.options.keyShift.translatedKeyMessage))
         }
     }
 }

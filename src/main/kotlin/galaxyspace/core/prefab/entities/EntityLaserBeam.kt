@@ -1,11 +1,11 @@
 package galaxyspace.core.prefab.entities
 
 import galaxyspace.GalaxySpace
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.projectile.EntityThrowable
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 
 open class EntityLaserBeam : EntityThrowable {
     @JvmField

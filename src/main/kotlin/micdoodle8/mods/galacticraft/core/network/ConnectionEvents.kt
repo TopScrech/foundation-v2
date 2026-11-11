@@ -22,12 +22,12 @@ import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.PlayerUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import micdoodle8.mods.galacticraft.core.world.ChunkLoadingCallback
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.network.EnumConnectionState
 import net.minecraft.network.EnumPacketDirection
 import net.minecraft.network.INetHandler
-import net.minecraft.network.Packet
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraft.network.protocol.Packet
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.PlayerEvent
 import net.minecraftforge.fml.common.network.FMLNetworkEvent
 import org.apache.logging.log4j.LogManager
@@ -50,7 +50,7 @@ open class ConnectionEvents {
             (GalacticraftCore.packetPipeline)!!.sendTo(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.C_UPDATE_SPACESTATION_CLIENT_ID,
-                    GCCoreUtil.getDimensionID(thePlayer.world),
+                    GCCoreUtil.getDimensionID(thePlayer.level()),
                     arrayOf<Any>(WorldUtil.spaceStationDataToString((stats.getSpaceStationDimensionData())!!))
                 ), thePlayer
             )

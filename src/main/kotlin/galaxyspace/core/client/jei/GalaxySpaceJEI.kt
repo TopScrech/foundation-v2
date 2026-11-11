@@ -58,7 +58,7 @@ import micdoodle8.mods.galacticraft.api.recipe.ShapelessOreRecipeGC
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.client.jei.RecipeCategories
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import java.util.*
 
 @JEIPlugin

@@ -3,6 +3,7 @@ package micdoodle8.mods.galacticraft.core.fluid
 import micdoodle8.mods.galacticraft.api.block.IPartialSealableBlock
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
 import micdoodle8.mods.galacticraft.core.GCBlocks
+import micdoodle8.mods.galacticraft.core.blocks.BlockBreathableAir
 import micdoodle8.mods.galacticraft.core.blocks.BlockUnlitTorch
 import micdoodle8.mods.galacticraft.core.tick.TickHandlerServer
 import micdoodle8.mods.galacticraft.core.tile.TileEntityOxygenSealer
@@ -12,12 +13,12 @@ import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.wrappers.ScheduledBlockChange
 import net.minecraft.block.*
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.init.Blocks
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -332,7 +333,7 @@ run initialization@ {
                 changeList.add(
                     ScheduledBlockChange(
                         checkedVec.toBlockPos(),
-                        breatheableAirID.getStateFromMeta(metadata),
+                        breatheableAirID.defaultBlockState().setValue(BlockBreathableAir.THERMAL, metadata % 2 == 1),
                         0
                     )
                 )
@@ -341,7 +342,7 @@ run initialization@ {
                 changeList.add(
                     ScheduledBlockChange(
                         checkedVec.toBlockPos(),
-                        breatheableAirIDBright.getStateFromMeta(metadata),
+                        breatheableAirIDBright.defaultBlockState().setValue(BlockBreathableAir.THERMAL, metadata % 2 == 1),
                         0
                     )
                 )
@@ -351,7 +352,7 @@ run initialization@ {
                     changeList.add(
                         ScheduledBlockChange(
                             checkedVec.toBlockPos(),
-                            breatheableAirID.getStateFromMeta(metadata),
+                            breatheableAirID.defaultBlockState().setValue(BlockBreathableAir.THERMAL, metadata % 2 == 1),
                             0
                         )
                     )
@@ -362,7 +363,7 @@ run initialization@ {
                     changeList.add(
                         ScheduledBlockChange(
                             checkedVec.toBlockPos(),
-                            breatheableAirIDBright.getStateFromMeta(metadata),
+                            breatheableAirIDBright.defaultBlockState().setValue(BlockBreathableAir.THERMAL, metadata % 2 == 1),
                             0
                         )
                     )
@@ -380,13 +381,13 @@ run initialization@ {
         if (!this.breatheableToReplace!!.isEmpty() || !this.breatheableToReplaceBright!!.isEmpty()) {
             val changeList: MutableList<ScheduledBlockChange?> = LinkedList<ScheduledBlockChange?>()
             for (checkedVec: BlockVec3 in this.breatheableToReplace!!) {
-                changeList.add(ScheduledBlockChange(checkedVec.toBlockPos(), Blocks.AIR.getDefaultState(), 0))
+                changeList.add(ScheduledBlockChange(checkedVec.toBlockPos(), Blocks.AIR.defaultBlockState(), 0))
             }
             for (checkedVec: BlockVec3 in this.fireToReplace!!) {
-                changeList.add(ScheduledBlockChange(checkedVec.toBlockPos(), Blocks.AIR.getDefaultState(), 2))
+                changeList.add(ScheduledBlockChange(checkedVec.toBlockPos(), Blocks.AIR.defaultBlockState(), 2))
             }
             for (checkedVec: BlockVec3 in this.breatheableToReplaceBright!!) {
-                changeList.add(ScheduledBlockChange(checkedVec.toBlockPos(), (GCBlocks.brightAir)!!.getDefaultState(), 0))
+                changeList.add(ScheduledBlockChange(checkedVec.toBlockPos(), (GCBlocks.brightAir)!!.defaultBlockState(), 0))
             }
             TickHandlerServer.scheduleNewBlockChange(GCCoreUtil.getDimensionID(this.world), changeList)
         }
@@ -888,7 +889,7 @@ run initialization@ {
 
     private fun canBlockPassAirCheck(block: Block, vec: BlockVec3?, side: Int): Boolean {
         if (block is IPartialSealableBlock) {
-            val testSide: EnumFacing? = EnumFacing.byIndex(side)
+            val testSide: EnumFacing? = EnumFacing.from3DDataValue(side)
             val blockPartial: IPartialSealableBlock = block as IPartialSealableBlock
             val vecPos: BlockPos = BlockPos(vec!!.x, vec.y, vec.z)
             if (blockPartial.isSealed(this.world, vecPos, testSide)) {
@@ -901,7 +902,7 @@ run initialization@ {
             }
 
             //Find the solid sides so they don't get iterated into, when doing the next layer
-            for (face: EnumFacing in EnumFacing.VALUES) {
+            for (face: EnumFacing in EnumFacing.values()) {
                 if (face == testSide) {
                     continue
                 }
@@ -994,7 +995,7 @@ run initialization@ {
         //General case - this should cover any block which correctly implements isBlockSolidOnSide
         //including most modded blocks - Forge microblocks in particular is covered by this.
         // ### Any exceptions in mods should implement the IPartialSealableBlock interface ###
-        if (block.isSideSolid(state, this.world, vec.toBlockPos(), EnumFacing.byIndex(side xor 1))) {
+        if (block.isSideSolid(state, this.world, vec.toBlockPos(), EnumFacing.from3DDataValue(side xor 1))) {
             //Solid on all sides
             if (block.getMaterial(state).blocksMovement() && block.isFullCube(state)) {
                 checkedAdd(vec)
@@ -1017,7 +1018,7 @@ run initialization@ {
             if (i == (side xor 1)) {
                 continue
             }
-            if (block.isSideSolid(state, this.world, BlockPos(vec.x, vec.y, vec.z), EnumFacing.byIndex(i))) {
+            if (block.isSideSolid(state, this.world, BlockPos(vec.x, vec.y, vec.z), EnumFacing.from3DDataValue(i))) {
                 vec.setSideDone(i)
             }
         }

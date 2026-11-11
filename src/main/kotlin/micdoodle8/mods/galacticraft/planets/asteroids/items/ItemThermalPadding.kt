@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.items
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.api.item.IItemThermal
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
@@ -7,18 +9,18 @@ import micdoodle8.mods.galacticraft.core.items.ISortableItem
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.NonNullList
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemThermalPadding constructor(assetName: String?) : Item(), IItemThermal, ISortableItem {
     init {
@@ -28,12 +30,12 @@ open class ItemThermalPadding constructor(assetName: String?) : Item(), IItemThe
         this.setTranslationKey(assetName)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftItemsTab
     }
@@ -47,8 +49,8 @@ open class ItemThermalPadding constructor(assetName: String?) : Item(), IItemThe
     }
 
     public override fun getTranslationKey(par1ItemStack: ItemStack): String {
-        if (names.size > par1ItemStack.getItemDamage()) {
-            return "item." + names[par1ItemStack.getItemDamage()]
+        if (names.size > par1ItemStack.legacyItemValue) {
+            return "item." + names[par1ItemStack.legacyItemValue]
         }
 
         return "unnamed"
@@ -63,7 +65,7 @@ open class ItemThermalPadding constructor(assetName: String?) : Item(), IItemThe
     }
 
     override fun isValidForSlot(stack: ItemStack?, armorSlot: Int): Boolean {
-        return (stack)!!.getItemDamage() == armorSlot
+        return (stack)!!.legacyItemValue == armorSlot
     }
 
     override fun getCategory(meta: Int): EnumSortCategoryItem {
@@ -71,7 +73,7 @@ open class ItemThermalPadding constructor(assetName: String?) : Item(), IItemThe
     }
 
     override fun onItemRightClick(worldIn: World, player: EntityPlayer, hand: EnumHand): ActionResult<ItemStack?> {
-        val itemStack: ItemStack = player.getHeldItem(hand)
+        val itemStack: ItemStack = player.getItemInHand(hand)
 
         if (player is EntityPlayerMP) {
             val stats: GCPlayerStats = (GCPlayerStats.get(player))!!
@@ -80,22 +82,22 @@ open class ItemThermalPadding constructor(assetName: String?) : Item(), IItemThe
             val gear2: ItemStack = (stats.getExtendedInventory())!!.getStackInSlot(8)
             val gear3: ItemStack = (stats.getExtendedInventory())!!.getStackInSlot(9)
 
-            if (itemStack.getItemDamage() == 0) {
+            if (itemStack.legacyItemValue == 0) {
                 if (gear.isEmpty()) {
                     (stats.getExtendedInventory())!!.setInventorySlotContents(6, itemStack.copy())
                     itemStack.setCount(0)
                 }
-            } else if (itemStack.getItemDamage() == 1) {
+            } else if (itemStack.legacyItemValue == 1) {
                 if (gear1.isEmpty()) {
                     (stats.getExtendedInventory())!!.setInventorySlotContents(7, itemStack.copy())
                     itemStack.setCount(0)
                 }
-            } else if (itemStack.getItemDamage() == 2) {
+            } else if (itemStack.legacyItemValue == 2) {
                 if (gear2.isEmpty()) {
                     (stats.getExtendedInventory())!!.setInventorySlotContents(8, itemStack.copy())
                     itemStack.setCount(0)
                 }
-            } else if (itemStack.getItemDamage() == 3) {
+            } else if (itemStack.legacyItemValue == 3) {
                 if (gear3.isEmpty()) {
                     (stats.getExtendedInventory())!!.setInventorySlotContents(9, itemStack.copy())
                     itemStack.setCount(0)

@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.planets.venus.world.gen
 
+import foundation.level.offset
+
 import java.util.Random
 
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeAdaptive
@@ -13,16 +15,16 @@ import micdoodle8.mods.galacticraft.planets.venus.world.gen.dungeon.MapGenDungeo
 import micdoodle8.mods.galacticraft.planets.venus.world.gen.dungeon.RoomBossVenus
 import micdoodle8.mods.galacticraft.planets.venus.world.gen.dungeon.RoomTreasureVenus
 import net.minecraft.block.BlockFalling
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.entity.EnumCreatureType
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldEntitySpawner
 import net.minecraft.world.WorldType
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.NoiseGenerator
 import net.minecraft.world.gen.NoiseGeneratorOctaves
@@ -54,13 +56,13 @@ open class ChunkProviderVenus constructor(private val world: World, seed: Long, 
     private var octaves4: DoubleArray? = null
     private val dungeonGenerator = MapGenDungeonVenus(
         DungeonConfigurationVenus(
-            (VenusBlocks.venusBlock)!!.getDefaultState()
-                .withProperty(
+            (VenusBlocks.venusBlock)!!.defaultBlockState()
+                .setValue(
                     BlockBasicVenus.BASIC_TYPE_VENUS,
                     BlockBasicVenus.EnumBlockBasicVenus.DUNGEON_BRICK_1
                 ),
-            (VenusBlocks.venusBlock)!!.getDefaultState()
-                .withProperty(
+            (VenusBlocks.venusBlock)!!.defaultBlockState()
+                .setValue(
                     BlockBasicVenus.BASIC_TYPE_VENUS,
                     BlockBasicVenus.EnumBlockBasicVenus.DUNGEON_BRICK_2
                 ),
@@ -337,7 +339,7 @@ open class ChunkProviderVenus constructor(private val world: World, seed: Long, 
         val i: Int = x * 16
         val j: Int = z * 16
         val blockpos: BlockPos = BlockPos(i, 0, j)
-        val biomegenbase: Biome = this.world.getBiome(blockpos.add(16, 0, 16))
+        val biomegenbase: Biome = this.world.getBiome(blockpos.offset(16, 0, 16))
         this.rand.setSeed(this.world.getSeed())
         val k: Long = this.rand.nextLong() / 2L * 2L + 1L
         val l: Long = this.rand.nextLong() / 2L * 2L + 1L
@@ -350,7 +352,7 @@ open class ChunkProviderVenus constructor(private val world: World, seed: Long, 
             val l2: Int = this.rand.nextInt(this.rand.nextInt(248) + 8)
             val k3: Int = this.rand.nextInt(16) + 8
 
-            (WorldGenLakesVenus()).generate(this.world, this.rand, blockpos.add(i2, l2, k3))
+            (WorldGenLakesVenus()).generate(this.world, this.rand, blockpos.offset(i2, l2, k3))
         }
 
 
@@ -359,15 +361,15 @@ open class ChunkProviderVenus constructor(private val world: World, seed: Long, 
                 val i2: Int = this.rand.nextInt(16) + 8
                 val k3: Int = this.rand.nextInt(16) + 8
                 val l2: Int =
-                    this.world.getTopSolidOrLiquidBlock(blockpos.add(i2, 0, k3)).getY() - 10 - this.rand.nextInt(5)
+                    this.world.getTopSolidOrLiquidBlock(blockpos.offset(i2, 0, k3)).getY() - 10 - this.rand.nextInt(5)
 
-                (WorldGenVaporPool()).generate(this.world, this.rand, blockpos.add(i2, l2, k3))
+                (WorldGenVaporPool()).generate(this.world, this.rand, blockpos.offset(i2, l2, k3))
             } else if (this.rand.nextInt(190) == 0) {
                 val i2: Int = this.rand.nextInt(16) + 8
                 val k3: Int = this.rand.nextInt(16) + 8
-                val l2: Int = this.world.getTopSolidOrLiquidBlock(blockpos.add(i2, 0, k3)).getY()
+                val l2: Int = this.world.getTopSolidOrLiquidBlock(blockpos.offset(i2, 0, k3)).getY()
 
-                (WorldGenCrashedProbe()).generate(this.world, this.rand, blockpos.add(i2, l2, k3))
+                (WorldGenCrashedProbe()).generate(this.world, this.rand, blockpos.offset(i2, l2, k3))
             }
         }
 
@@ -394,8 +396,8 @@ open class ChunkProviderVenus constructor(private val world: World, seed: Long, 
 
     companion object {
         @JvmField
-        val BLOCK_FILL: IBlockState = (VenusBlocks.venusBlock)!!.getDefaultState()
-            .withProperty(
+        val BLOCK_FILL: IBlockState = (VenusBlocks.venusBlock)!!.defaultBlockState()
+            .setValue(
                 BlockBasicVenus.BASIC_TYPE_VENUS,
                 BlockBasicVenus.EnumBlockBasicVenus.ROCK_HARD
             )

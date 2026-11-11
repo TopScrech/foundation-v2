@@ -1,13 +1,15 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.world.gen
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.core.GSBlocks
 import galaxyspace.systems.SolarSystem.planets.overworld.blocks.BlockOres.EnumBlockOres
 import galaxyspace.systems.SolarSystem.planets.overworld.blocks.BlockOres
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.planets.asteroids.blocks.AsteroidBlocks
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.IChunkProvider
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.fml.common.IWorldGenerator
@@ -16,8 +18,8 @@ import kotlin.math.max
 
 open class NickelGenerator : IWorldGenerator {
     private val asteroidBlock: IBlockState = (AsteroidBlocks.blockBasic)!!.getStateFromMeta(0)
-    private val nickelBlock: IBlockState = GSBlocks.OVERWORLD_ORES.getDefaultState()
-        .withProperty(BlockOres.BASIC_TYPE, EnumBlockOres.NICKEL)
+    private val nickelBlock: IBlockState = GSBlocks.OVERWORLD_ORES.defaultBlockState()
+        .setValue(BlockOres.BASIC_TYPE, EnumBlockOres.NICKEL)
     private val copperBlock: IBlockState = (GCBlocks.basicBlock)!!.getStateFromMeta(5)
 
     private val maxGenerateLevel = 40
@@ -105,9 +107,9 @@ open class NickelGenerator : IWorldGenerator {
 
 
         when (matrixValue) {
-            1 -> world.setBlockState(position, asteroidBlock)
-            2 -> world.setBlockState(position, nickelBlock)
-            3 -> world.setBlockState(position, rand_block)
+            1 -> world.setBlockAndUpdate(position, asteroidBlock)
+            2 -> world.setBlockAndUpdate(position, nickelBlock)
+            3 -> world.setBlockAndUpdate(position, rand_block)
             else -> {}
         }
     }

@@ -45,24 +45,23 @@ import micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityTelepadFake
 import micdoodle8.mods.galacticraft.planets.asteroids.world.gen.BiomeAsteroids
 import micdoodle8.mods.galacticraft.planets.asteroids.world.gen.ChunkProviderAsteroids
 import micdoodle8.mods.galacticraft.planets.mars.MarsModule
-import net.minecraft.block.Block
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.common.config.Configuration
+import foundation.config.FoundationConfiguration as Configuration
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.common.event.FMLServerStartedEvent
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
+import net.minecraftforge.event.server.ServerStartedEvent as FMLServerStartedEvent
+import net.minecraftforge.event.server.ServerStartingEvent as FMLServerStartingEvent
 import net.minecraftforge.fml.common.registry.GameRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import net.minecraftforge.oredict.RecipeSorter
 import java.lang.Exception
 import java.lang.reflect.Method
@@ -79,7 +78,7 @@ open class AsteroidsModule : IPlanetsModule {
         var returnFluid: Fluid? = FluidRegistry.getFluid(fluidName)
         if (returnFluid == null) {
             val texture: ResourceLocation =
-                ResourceLocation(GalacticraftPlanets.Companion.TEXTURE_PREFIX + "blocks/fluids/" + fluidName)
+                ResourceLocation.parse(GalacticraftPlanets.Companion.TEXTURE_PREFIX + "blocks/fluids/" + fluidName)
             FluidRegistry.registerFluid(
                 Fluid(fluidName, texture, texture).setDensity(density).setViscosity(viscosity)
                     .setTemperature(temperature).setGaseous(gaseous)
@@ -89,7 +88,7 @@ open class AsteroidsModule : IPlanetsModule {
         return returnFluid
     }
 
-    override fun preInit(event: FMLPreInitializationEvent?) {
+    override fun preInit() {
         planetAsteroids = Planet("asteroids").setParentSolarSystem(GalacticraftCore.solarSystemSol)
 
         playerHandler = AsteroidsPlayerHandler()
@@ -220,7 +219,7 @@ open class AsteroidsModule : IPlanetsModule {
 
     override fun getGuiElement(side: Side?, ID: Int, player: EntityPlayer?, world: World?, x: Int, y: Int, z: Int): Any? {
         if (side == Side.SERVER) {
-            val tile: TileEntity? = (world)!!.getTileEntity(BlockPos(x, y, z))
+            val tile: TileEntity? = (world)!!.getBlockEntity(BlockPos(x, y, z))
 
             when (ID) {
                 GuiIdsPlanets.MACHINE_ASTEROIDS -> {

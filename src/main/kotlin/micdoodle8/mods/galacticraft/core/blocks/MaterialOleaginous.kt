@@ -4,7 +4,7 @@ import micdoodle8.mods.galacticraft.core.util.JavaUtil
 import net.minecraft.block.BlockDynamicLiquid
 import net.minecraft.block.BlockLiquid
 import net.minecraft.block.BlockStaticLiquid
-import net.minecraft.block.material.MapColor
+import net.minecraft.world.level.material.MapColor
 import net.minecraft.block.material.MaterialLiquid
 
 //This avoids water and oil mixing, by being a different material

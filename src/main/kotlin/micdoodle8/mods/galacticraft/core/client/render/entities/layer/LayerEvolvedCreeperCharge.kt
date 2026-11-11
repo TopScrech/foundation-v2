@@ -5,11 +5,11 @@ import micdoodle8.mods.galacticraft.core.client.render.entities.RenderEvolvedCre
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedCreeper
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.layers.LayerRenderer
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class LayerEvolvedCreeperCharge constructor(private val render: RenderEvolvedCreeper) :
     LayerRenderer<EntityEvolvedCreeper> {
     private val creeperModel = ModelEvolvedCreeper(2.0f)
@@ -27,7 +27,7 @@ open class LayerEvolvedCreeperCharge constructor(private val render: RenderEvolv
         if (entity.getPowered()) {
             val flag: Boolean = entity.isInvisible()
             GlStateManager.depthMask(!flag)
-            this.render.bindTexture(ResourceLocation("textures/entity/creeper/creeper_armor.png"))
+            this.render.bindTexture(ResourceLocation.parse("textures/entity/creeper/creeper_armor.png"))
             GlStateManager.matrixMode(5890)
             GlStateManager.loadIdentity()
             val f: Float = entity.ticksExisted + partialTicks

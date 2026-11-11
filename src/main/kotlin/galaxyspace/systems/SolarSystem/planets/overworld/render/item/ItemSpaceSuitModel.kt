@@ -14,9 +14,9 @@ import net.minecraft.client.renderer.GLAllocation
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.item.EntityArmorStand
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.client.model.IModel
 import net.minecraftforge.client.model.obj.OBJModel
 import java.lang.Exception
@@ -38,7 +38,7 @@ open class ItemSpaceSuitModel constructor(private val partType: Int) : ModelOBJA
     override fun pre() {
         GL11.glEnable(GL11.GL_BLEND)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
-        Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
+        Minecraft.getInstance().renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)
     }
 
     override fun post() {
@@ -50,7 +50,7 @@ open class ItemSpaceSuitModel constructor(private val partType: Int) : ModelOBJA
             GL11.glTranslatef(0f, -1.9f, 0f)
             //GL11.glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
             if (entity != null && entity is EntityArmorStand) {
-                val i: Float = entity.rotationYaw
+                val i: Float = entity.yRot
                 //GalaxySpace.debug(i + "");			
                 if (i == 0f) GL11.glRotatef(i + 180, 0.0f, 1.0f, 0.0f)
                 if (i == 90f || i == -90f) GL11.glRotatef(i, 0.0f, 1.0f, 0.0f)
@@ -241,7 +241,7 @@ var jetpackList: Int
                     )
                     val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> =
                         Function { location: ResourceLocation? ->
-                            Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+                            Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
                         }
 
                     G = model.bake(
@@ -278,10 +278,10 @@ var jetpackList: Int
                     ) as OBJModel.OBJBakedModel
 
                     val jetpackmodel: IModel =
-                        OBJLoaderGC.instance.loadModel(ResourceLocation(GalaxySpace.ASSET_PREFIX, "models/jetpack.obj"))
+                        OBJLoaderGC.instance.loadModel(ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "models/jetpack.obj"))
                     val jetspriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> =
                         Function { location: ResourceLocation? ->
-                            Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+                            Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
                         }
 
                     wing1 = jetpackmodel.bake(

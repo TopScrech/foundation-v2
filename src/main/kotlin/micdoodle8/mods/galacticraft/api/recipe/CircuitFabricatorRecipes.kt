@@ -1,226 +1,98 @@
 package micdoodle8.mods.galacticraft.api.recipe
 
-import java.util.List
-
-import micdoodle8.mods.galacticraft.core.util.RecipeUtil
-import net.minecraft.item.ItemStack
-import net.minecraft.util.NonNullList
-import java.lang.RuntimeException
+import foundation.item.FoundationRecipeStacks
+import micdoodle8.mods.galacticraft.core.recipe.NasaWorkbenchRecipe
+import net.minecraft.core.NonNullList
+import net.minecraft.world.item.ItemStack
 import java.util.ArrayList
 
 object CircuitFabricatorRecipes {
-    private val recipeInputs: MutableList<NonNullList<Any?>> = ArrayList<NonNullList<Any?>>()
-    private val recipeOutputs: MutableList<ItemStack?> = ArrayList<ItemStack?>()
+    private data class Recipe(val inputs: NonNullList<Any>, val output: ItemStack)
+    private val recipes = ArrayList<Recipe>()
 
     @JvmField
-    var slotValidItems: ArrayList<ArrayList<ItemStack?>> = ArrayList<ArrayList<ItemStack?>>(5)
+    var slotValidItems: ArrayList<ArrayList<ItemStack?>> = ArrayList(5)
 
-    /**
-     * Input list must be array with 5 elements matching the 5 slots in the machine.  Use null if no
-     * item is used in the slot.  Use a List<ItemStack> for Oredicted ingredients.
-     *
-     *
-     * 0: Diamond  1: Silicon  2: Silicon  3: Redstone dust  4: Recipe item
-     *
-     * @param output  ItemStack
-     * @param inputList  Object array.  Must contain only null, ItemStack, or List<ItemStack>.
-     *
-     * @return
-    </ItemStack></ItemStack> */
+    /** Each of the five slots accepts one stack, a nonempty stack list, or null for an empty slot */
     @JvmStatic
     fun addRecipe(output: ItemStack?, inputList: MutableList<Any?>) {
-        if (inputList.size != 5) {
-            throw RuntimeException("Invalid circuit fabricator recipe!  Inputs length should be 5, was " + inputList.size)
-        }
-        for (o: Any? in inputList) {
-            if (o == null || o is ItemStack) {
-                continue
-            }
-            if (o is MutableList<*> && o.size > 0) {
-                continue
-            }
-            throw RuntimeException("Invalid circuit fabricator recipe!  Input must be ItemStack or List<ItemStack>: " + o.toString())
-        }
-
-        val inputs: NonNullList<Any?> = NonNullList.create<Any?>()
-        inputs.addAll(inputList)
-        recipeInputs.add(inputs)
-        recipeOutputs.add(output)
-        validateItems(inputList)
+        require(output != null && !output.isEmpty) { "Circuit fabricator recipe requires an output" }
+        require(inputList.size == 5) { "Circuit fabricator recipe requires five inputs" }
+        val inputs = snapshotInputs(inputList)
+        recipes.add(Recipe(inputs, output.copy()))
+        rebuildValidItems()
     }
 
-    /** Add the recipe ingredients to the valid items for each slot
-     *
-     * @param inputList
-     */
-    @JvmStatic
-    private fun validateItems(inputList: MutableList<Any?>) {
-        //First initialise the ArrayList if this is the first time it's used
-        if (slotValidItems.size == 0) {
-            for (i: Int in 0..4) {
-                val entry: ArrayList<ItemStack?> = ArrayList<ItemStack?>(3)
-                slotValidItems.add(entry)
+    private fun snapshotIngredient(value: Any?): Any = when (value) {
+        null -> ItemStack.EMPTY
+        is ItemStack -> value.copy()
+        is List<*> -> {
+            require(value.isNotEmpty()) { "Circuit ingredient alternatives cannot be empty" }
+            value.mapTo(ArrayList<ItemStack>()) {
+                require(it is ItemStack && !it.isEmpty) { "Circuit ingredient alternatives must be nonempty item stacks" }
+                it.copy()
             }
         }
-        //Now see if the recipe items are already valid for their slots, if not add them
-        for (i: Int in 0..4) {
-            val input: Any? = inputList.get(i)
-            if (input is ItemStack) {
-                validateItem(i, input)
-            } else if (input is MutableList<*>) {
-                for (stack: ItemStack in input as MutableList<ItemStack>) {
-                    validateItem(i, stack)
+        else -> error("Invalid circuit fabricator ingredient $value")
+    }
+
+    private fun snapshotInputs(values: List<Any?>): NonNullList<Any> = NonNullList.create<Any>().also { result ->
+        values.forEach { result.add(snapshotIngredient(it)) }
+    }
+
+    private fun alternatives(ingredient: Any?): List<ItemStack> = when (ingredient) {
+        is ItemStack -> listOf(ingredient)
+        is List<*> -> ingredient.map { it as ItemStack }
+        else -> error("Invalid stored circuit ingredient")
+    }
+
+    private fun rebuildValidItems() {
+        slotValidItems.clear()
+        repeat(5) { slotValidItems.add(ArrayList()) }
+        recipes.forEach { recipe ->
+            recipe.inputs.forEachIndexed { slot, ingredient ->
+                alternatives(ingredient).forEach { stack ->
+                    if (!stack.isEmpty && slotValidItems[slot].none {
+                        it != null && NasaWorkbenchRecipe.matchesIngredient(it, stack)
+                    }) slotValidItems[slot].add(stack.copy())
                 }
             }
         }
     }
 
     @JvmStatic
-    private fun validateItem(i: Int, inputStack: ItemStack) {
-        if (inputStack.isEmpty()) {
-            return
-        }
-
-        val validItems: ArrayList<ItemStack?> = slotValidItems.get(i)
-
-        var found: Boolean = false
-        for (j: Int in validItems.indices) {
-            if (inputStack.isItemEqual(validItems.get(j))) {
-                found = true
-                break
+    fun getOutputForInput(inputList: MutableList<ItemStack>): ItemStack {
+        if (inputList.size != 5) return ItemStack.EMPTY
+        return recipes.firstOrNull { recipe ->
+            recipe.inputs.indices.all { slot ->
+                alternatives(recipe.inputs[slot]).any { FoundationRecipeStacks.matches(it, inputList[slot]) }
             }
-        }
-        if (!found) {
-            validItems.add(inputStack.copy())
-        }
-    }
-
-    /**
-     * Gets the output ItemStack for the passed input.
-     *
-     * @param inputList ItemStack array of input items
-     * @return The result ItemStack
-     */
-    @JvmStatic
-    fun getOutputForInput(inputList: MutableList<ItemStack>): ItemStack? {
-        if (inputList.size != 5) {
-            return ItemStack.EMPTY
-        }
-
-        var count: Int = 0
-        for (recipe in recipeInputs) {
-            var found: Boolean = true
-            for (i: Int in 0..4) {
-                val recipeStack: Any = recipe.get(i)
-                val inputStack: ItemStack = inputList.get(i)
-
-                if (recipeStack is ItemStack && recipeStack.isEmpty() || inputStack.isEmpty()) {
-                    if (!(recipeStack is ItemStack && recipeStack.isEmpty()) || !inputStack.isEmpty()) {
-                        found = false
-                        break
-                    }
-                } else if (recipeStack is ItemStack) {
-                    val stack: ItemStack = recipeStack
-                    if (stack.getItem() !== inputStack.getItem() || stack.getItemDamage() != inputStack.getItemDamage() || !RecipeUtil.areItemStackTagsEqual(
-                            stack,
-                            inputStack
-                        )
-                    ) {
-                        found = false
-                        break
-                    }
-                } else if (recipeStack is MutableList<*>) {
-                    var listMatchOne: Boolean = false
-                    for (stack: ItemStack in recipeStack as MutableList<ItemStack>) {
-                        if (stack.getItem() === inputStack.getItem() && stack.getItemDamage() == inputStack.getItemDamage() && RecipeUtil.areItemStackTagsEqual(
-                                stack,
-                                inputStack
-                            )
-                        ) {
-                            listMatchOne = true
-                            break
-                        }
-                    }
-                    if (listMatchOne == false) {
-                        found = false
-                        break
-                    }
-                }
-            }
-
-            if (found) {
-                return recipeOutputs.get(count)
-            }
-
-            count++
-        }
-
-        return ItemStack.EMPTY
+        }?.output?.copy() ?: ItemStack.EMPTY
     }
 
     @JvmStatic
-    fun getRecipes(): MutableList<NonNullList<Any?>> {
-        return recipeInputs
-    }
+    fun getRecipes(): MutableList<MutableList<Any?>> = recipes.mapTo(ArrayList()) { ArrayList<Any?>(snapshotInputs(it.inputs)) }
 
     @JvmStatic
-    fun getOutput(count: Int): ItemStack? {
-        return recipeOutputs.get(count)
-    }
+    fun getOutput(count: Int): ItemStack = recipes[count].output.copy()
 
-    /**
-     * Caution: call this BEFORE the JEI plugin registers recipes - or else the removed recipe will still be shown in JEI.
-     */
     @JvmStatic
     fun removeRecipe(match: ItemStack) {
-        var count: Int = 0
-        for (output: ItemStack in ArrayList<ItemStack>(recipeOutputs)) {
-            if (ItemStack.areItemStacksEqual(match, output)) {
-                recipeInputs.removeAt(count)
-                recipeOutputs.removeAt(count)
-                // Do not increment count if we just removed the element!
-            } else count++
-        }
+        recipes.removeAll { ItemStack.matches(match, it.output) }
+        rebuildValidItems()
     }
 
     @JvmStatic
     fun replaceRecipeIngredient(ingredient: ItemStack?, replacement: MutableList<ItemStack?>) {
         if (ingredient == null) return
-        slotValidItems.clear()
-        val newIngredient: Any = replacement
-
-        for (recipe: NonNullList<Any?> in recipeInputs) {
-            for (i: Int in 0..4) {
-                val recipeStack: Any = recipe.get(i)
-                if (recipeStack == null) {
-                    continue
-                }
-
-                if (recipeStack is ItemStack) {
-                    val stack: ItemStack = recipeStack
-                    if (stack.getItem() === ingredient.getItem() && stack.getItemDamage() == ingredient.getItemDamage() && ItemStack.areItemStackTagsEqual(
-                            stack,
-                            ingredient
-                        )
-                    ) {
-                        recipe.set(i, newIngredient)
-                    }
-                } else if (recipeStack is MutableList<*>) {
-                    val listMatchOne: Boolean = false
-                    for (stack: ItemStack in recipeStack as MutableList<ItemStack>) {
-                        if (stack.getItem() === ingredient.getItem() && stack.getItemDamage() == ingredient.getItemDamage() && ItemStack.areItemStackTagsEqual(
-                                stack,
-                                ingredient
-                            )
-                        ) {
-                            recipe.set(i, newIngredient)
-                            break
-                        }
-                    }
+        val normalized = snapshotIngredient(replacement)
+        recipes.forEach { recipe ->
+            recipe.inputs.indices.forEach { slot ->
+                if (alternatives(recipe.inputs[slot]).any { ItemStack.isSameItemSameComponents(it, ingredient) }) {
+                    recipe.inputs[slot] = snapshotIngredient(normalized)
                 }
             }
-
-            validateItems(recipe)
         }
+        rebuildValidItems()
     }
 }

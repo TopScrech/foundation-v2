@@ -1,5 +1,9 @@
 package galaxyspace.systems.SolarSystem.planets.mars.world.gen.we
 
+import foundation.block.getStateFromMeta
+
+import foundation.level.offset
+
 import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_BiomeLayer
 import galaxyspace.systems.SolarSystem.planets.mars.world.gen.we.Mars_High_Plains
 import galaxyspace.core.prefab.entities.EntityEvolvedColdBlaze
@@ -10,9 +14,9 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSpider
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedZombie
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
 import micdoodle8.mods.galacticraft.planets.mars.world.gen.WorldGenEggs
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 import java.util.Random
 
@@ -59,7 +63,7 @@ open class Mars_High_Plains constructor(min: Double, max: Double) :
             -1,
             true
         )
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         createChunkGen_InXZ_List.add(standardBiomeLayers)
 
         this.eggGenerator = WorldGenEggs((MarsBlocks.rock)!!)
@@ -69,7 +73,7 @@ open class Mars_High_Plains constructor(min: Double, max: Double) :
         var blockpos: BlockPos = (world)!!.getHeight(BlockPos(x, 0, z))
 
         if ((rand)!!.nextInt(4) == 0) {
-            blockpos = blockpos.add((rand)!!.nextInt(16) + 8, 0, (rand)!!.nextInt(16) + 8)
+            blockpos = blockpos.offset((rand)!!.nextInt(16) + 8, 0, (rand)!!.nextInt(16) + 8)
             this.eggGenerator.generate(world, rand, blockpos)
         }
     }

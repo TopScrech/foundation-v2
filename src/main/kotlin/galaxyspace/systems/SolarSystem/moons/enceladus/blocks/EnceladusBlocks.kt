@@ -1,39 +1,42 @@
 package galaxyspace.systems.SolarSystem.moons.enceladus.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import galaxyspace.systems.SolarSystem.moons.enceladus.blocks.EnceladusBlocks.EnumEnceladusBlocks
 import galaxyspace.systems.SolarSystem.moons.enceladus.blocks.EnceladusBlocks
 import micdoodle8.mods.galacticraft.api.block.IDetectableResource
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
-open class EnceladusBlocks constructor() : Block(Material.ROCK), IDetectableResource, ISortableBlock {
+open class EnceladusBlocks constructor() : Block(Material.ROCK), IDetectableResource, ISortableBlock, LegacyBlockMetadata {
     init {
         this.setTranslationKey("enceladusblocks")
         this.setSoundType(SoundType.STONE)
         this.setHarvestLevel(
             "shovel",
             1,
-            this.getDefaultState().withProperty(
+            this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumEnceladusBlocks.ENCELADUS_SNOW
             )
@@ -41,7 +44,7 @@ open class EnceladusBlocks constructor() : Block(Material.ROCK), IDetectableReso
         this.setHarvestLevel(
             "pickaxe",
             2,
-            this.getDefaultState().withProperty(
+            this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumEnceladusBlocks.ENCELADUS_GRUNT
             )
@@ -49,7 +52,7 @@ open class EnceladusBlocks constructor() : Block(Material.ROCK), IDetectableReso
         this.setHarvestLevel(
             "pickaxe",
             2,
-            this.getDefaultState().withProperty(
+            this.defaultBlockState().setValue(
                 BASIC_TYPE,
                 EnumEnceladusBlocks.ENCELADUS_COAL_ORE
             )
@@ -65,7 +68,7 @@ open class EnceladusBlocks constructor() : Block(Material.ROCK), IDetectableReso
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         for (blockBasic: EnumEnceladusBlocks in EnumEnceladusBlocks.entries) {
             list.add(ItemStack(this, 1, blockBasic.getMeta()))
@@ -93,7 +96,7 @@ open class EnceladusBlocks constructor() : Block(Material.ROCK), IDetectableReso
         state: IBlockState,
         fortune: Int
     ) {
-        val rand: Random = if (world is World) world.rand else RANDOM
+        val rand: Random = if (world is World) world.random else RANDOM
 
         val count: Int = quantityDropped(state, fortune, rand)
         for (i: Int in 0..<count) {
@@ -137,7 +140,9 @@ open class EnceladusBlocks constructor() : Block(Material.ROCK), IDetectableReso
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -152,8 +157,8 @@ open class EnceladusBlocks constructor() : Block(Material.ROCK), IDetectableReso
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(BASIC_TYPE, (EnumEnceladusBlocks.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(BASIC_TYPE, (EnumEnceladusBlocks.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {

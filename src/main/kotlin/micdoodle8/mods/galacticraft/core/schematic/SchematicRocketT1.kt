@@ -5,13 +5,13 @@ import micdoodle8.mods.galacticraft.core.client.gui.GuiIdsCore
 import micdoodle8.mods.galacticraft.core.client.gui.container.GuiSchematicTier1Rocket
 import micdoodle8.mods.galacticraft.core.inventory.ContainerSchematicTier1Rocket
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.client.gui.GuiScreen
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.client.gui.screens.Screen as GuiScreen
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class SchematicRocketT1 : SchematicPage() {
     override fun getPageID(): Int {
@@ -26,7 +26,7 @@ open class SchematicRocketT1 : SchematicPage() {
         return null //This null is OK, it's used only as a flag by the calling code in SchematicRegistry
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getResultScreen(player: EntityPlayer?, pos: BlockPos?): GuiScreen {
         return GuiSchematicTier1Rocket((player)!!.inventory, (pos)!!)
     }

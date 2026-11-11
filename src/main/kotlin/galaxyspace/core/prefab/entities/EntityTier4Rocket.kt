@@ -16,16 +16,16 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.blocks.BlockLandingPadFull
 import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
 import micdoodle8.mods.galacticraft.core.event.EventLandingPadRemoval
-import net.minecraft.block.Block
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.SoundEvents
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.MinecraftForge
 import kotlin.math.cos
 import kotlin.math.max
@@ -90,8 +90,8 @@ open class EntityTier4Rocket : EntityTieredRocketWithEngine {
                         (stats)!!.setLaunchpadStack(null)
 
                         if (this.world.provider !is IOrbitDimension) {
-                            (stats)!!.setCoordsTeleportedFromX(player.posX)
-                            (stats)!!.setCoordsTeleportedFromZ(player.posZ)
+                            (stats)!!.setCoordsTeleportedFromX(player.x)
+                            (stats)!!.setCoordsTeleportedFromZ(player.z)
                         }
                     }
                 }
@@ -118,7 +118,7 @@ open class EntityTier4Rocket : EntityTieredRocketWithEngine {
 
                             if (block is BlockAdvancedLandingPadFull && amountRemoved < 25) {
                                 if (event.allow) {
-                                    this.world.setBlockToAir(pos)
+                                    this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                                     amountRemoved = 25
                                 }
                                 searched = true
@@ -126,7 +126,7 @@ open class EntityTier4Rocket : EntityTieredRocketWithEngine {
 
                             if (block is BlockLandingPadFull && amountRemoved < 9) {
                                 if (event.allow) {
-                                    this.world.setBlockToAir(pos)
+                                    this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                                     amountRemoved = 9
                                 }
                                 searched = true

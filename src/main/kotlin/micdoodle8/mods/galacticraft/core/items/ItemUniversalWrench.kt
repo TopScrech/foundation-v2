@@ -1,25 +1,30 @@
 package micdoodle8.mods.galacticraft.core.items
 
+import foundation.item.legacyItemValue
+
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.client.entity.EntityPlayerSP
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemUniversalWrench constructor(assetName: String?) : Item(), ISortableItem {
     init {
@@ -33,23 +38,23 @@ open class ItemUniversalWrench constructor(assetName: String?) : Item(), ISortab
         return GalacticraftCore.galacticraftItemsTab
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.Companion.galacticraftItem)!!
     }
 
     open fun wrenchUsed(entityPlayer: EntityPlayer, pos: BlockPos?) {
-        val stack: ItemStack = entityPlayer.inventory.getCurrentItem()
+        val stack: ItemStack = entityPlayer.inventory.getSelectedItem()
 
         if (!stack.isEmpty()) {
             stack.damageItem(1, entityPlayer)
 
-            if (stack.getItemDamage() >= stack.getMaxDamage()) {
+            if (stack.legacyItemValue >= stack.getMaxDamage()) {
                 stack.shrink(1)
             }
 
             if (stack.getCount() <= 0) {
-                entityPlayer.inventory.setInventorySlotContents(entityPlayer.inventory.currentItem, ItemStack.EMPTY)
+                entityPlayer.inventory.setItem(entityPlayer.inventory.selectedSlot, ItemStack.EMPTY)
             }
         }
     }
@@ -77,7 +82,7 @@ open class ItemUniversalWrench constructor(assetName: String?) : Item(), ISortab
     }
 
     override fun onCreated(stack: ItemStack, world: World, player: EntityPlayer) {
-        if (world.isRemote && player is EntityPlayerSP) {
+        if (world.isClientSide && player is EntityPlayerSP) {
             ClientProxyCore.Companion.playerClientHandler.onBuild(3, player)
         }
     }
@@ -92,7 +97,7 @@ open class ItemUniversalWrench constructor(assetName: String?) : Item(), ISortab
         hitZ: Float,
         hand: EnumHand
     ): EnumActionResult {
-        if (world.isRemote || player.isSneaking()) {
+        if (world.isClientSide || player.isShiftKeyDown()) {
             return EnumActionResult.PASS
         }
         val state: IBlockState = world.getBlockState(pos)
@@ -101,7 +106,7 @@ open class ItemUniversalWrench constructor(assetName: String?) : Item(), ISortab
         if (blockID === Blocks.FURNACE || blockID === Blocks.LIT_FURNACE || blockID === Blocks.DISPENSER || blockID === Blocks.DROPPER) {
             val metadata: Int = blockID.getMetaFromState(state)
 
-            world.setBlockState(pos, blockID.getStateFromMeta(EnumFacing.byIndex(metadata).rotateY().ordinal), 3)
+            world.setBlock(pos, blockID.getStateFromMeta(EnumFacing.from3DDataValue(metadata).rotateY().ordinal), 3)
             this.wrenchUsed(player, pos)
 
             return EnumActionResult.SUCCESS
@@ -122,7 +127,7 @@ open class ItemUniversalWrench constructor(assetName: String?) : Item(), ISortab
                 metaDir = 2
             }
 
-            world.setBlockState(pos, blockID.getStateFromMeta((metadata and 8) + metaDir), 3)
+            world.setBlock(pos, blockID.getStateFromMeta((metadata and 8) + metaDir), 3)
             this.wrenchUsed(player, pos)
 
             return EnumActionResult.SUCCESS

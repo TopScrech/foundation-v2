@@ -1,5 +1,12 @@
 package micdoodle8.mods.galacticraft.api.prefab.entity
 
+import net.minecraft.network.chat.Component
+
+import foundation.item.legacyItemValue
+
+import net.minecraft.world.ContainerHelper
+import foundation.persistence.containsTag
+
 import io.netty.buffer.ByteBuf
 import micdoodle8.mods.galacticraft.api.entity.ICargoEntity
 import micdoodle8.mods.galacticraft.api.entity.IEntityNoisy
@@ -27,33 +34,33 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.util.RedstoneUtil
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
-import net.minecraft.block.Block
-import net.minecraft.client.audio.ISound
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.SoundEvents
+import net.minecraft.world.level.block.Block
+import net.minecraft.client.resources.sounds.SoundInstance as ISound
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.sounds.SoundEvents
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.ClassInheritanceMultiMap
-import net.minecraft.util.ITickable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.text.TextComponentString
+import net.minecraft.client.resources.sounds.TickableSoundInstance as ITickable
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+
 import net.minecraft.util.text.translation.I18n
-import net.minecraft.world.World
-import net.minecraft.world.WorldServer
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.Level as World
+import net.minecraft.server.level.ServerLevel as WorldServer
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.network.ByteBufUtils
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.lang.Exception
 import java.util.ArrayList
 import java.util.HashSet
@@ -68,7 +75,7 @@ import kotlin.math.sqrt
  */
 abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILandable, IInventoryDefaults,
     IEntityNoisy {
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent? = super<EntitySpaceshipBase>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = super<EntitySpaceshipBase>.getDisplayName()
 
     @JvmField
     var destinationFrequency: Int = -1
@@ -117,7 +124,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
     private var rocketSoundToStop = false
 
     init {
-        if (world != null && world.isRemote) {
+        if (world != null && world.isClientSide) {
             (GalacticraftCore.packetPipeline)!!.sendToServer(PacketDynamic(this))
         }
     }
@@ -209,7 +216,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
                     var tile: TileEntity? = tile
                     if (!controllerClass!!.isInstance(tile)) continue
 
-                    tile = world.getTileEntity(tile!!.getPos())
+                    tile = world.getBlockEntity(tile!!.getBlockPos())
                     if (!controllerClass!!.isInstance(tile)) continue
 
                     val controllerFrequency: Int = controllerClass!!.getField("frequency").getInt(tile)
@@ -219,7 +226,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
 
                         blockLoop@ for (x: Int in -2..2) {
                             for (z: Int in -2..2) {
-                                val pos: BlockPos = BlockPos(tile!!.getPos().add(x, 0, z))
+                                val pos: BlockPos = BlockPos(tile!!.getBlockPos().add(x, 0, z))
                                 val block: Block = world.getBlockState(pos).getBlock()
 
                                 if (block is BlockLandingPadFull) {
@@ -234,7 +241,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
                         }
 
                         if (doSet) {
-                            this.targetDimension = tile!!.getWorld().provider.getDimension()
+                            this.targetDimension = tile!!.getLevel().provider.getDimension()
                         }
 
                         if (!targetSet) {
@@ -349,7 +356,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
                         for (z: Int in zMin..zMax) {
                             //Doing y as the inner loop may help with cacheing of chunks
                             for (y: Int in yMin..yMax) {
-                                if (this.world.getTileEntity(BlockPos(x, y, z)) is IFuelDock) {
+                                if (this.world.getBlockEntity(BlockPos(x, y, z)) is IFuelDock) {
                                     //Land the rocket on the pad found
                                     this.rotationPitch = 0f
                                     this.failRocket()
@@ -411,7 +418,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
 
         if (this.launchPhase >= EnumLaunchPhase.IGNITED.ordinal) {
             if (this.rocketSoundUpdater != null) {
-                this.rocketSoundUpdater!!.update()
+                this.rocketSoundUpdater?.tick()
                 this.rocketSoundToStop = true
             }
         } else {
@@ -479,7 +486,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
     abstract fun isPlayerRocket(): Boolean
 
     override fun landEntity(pos: BlockPos?) {
-        val tile: TileEntity? = this.world.getTileEntity(pos)
+        val tile: TileEntity? = this.world.getBlockEntity(pos)
 
         if (tile is IFuelDock) {
             val dock: IFuelDock = tile as IFuelDock
@@ -569,7 +576,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
         super.setDead()
 
         if (this.rocketSoundUpdater != null) {
-            this.rocketSoundUpdater!!.update()
+            this.rocketSoundUpdater?.tick()
         }
     }
 
@@ -617,7 +624,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
         }
 
         if (this.stacks == null) {
-            this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+            this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         }
 
         this.setWaitForPlayer((buffer)!!.readBoolean())
@@ -639,8 +646,8 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
                             if (e is EntityPlayer) {
                                 e = WorldUtil.forceRespawnClient(
                                     this.dimension,
-                                    e.world.getDifficulty().getId(),
-                                    e.world.getWorldInfo().getTerrainType().getName(),
+                                    e.level().getDifficulty().getId(),
+                                    e.level().getWorldInfo().getTerrainType().getName(),
                                     (e as EntityPlayerMP).interactionManager.getGameType().getID()
                                 )
                                 (e)!!.startRiding(this)
@@ -648,7 +655,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
                         } else e.startRiding(this)
                     }
                 }
-            } else if (this.getPassengers().get(0).getEntityId() != shouldBeMountedId) {
+            } else if (this.getPassengers().get(0).getId() != shouldBeMountedId) {
                 if (shouldBeMountedId == -1) {
                     this.removePassengers()
                 } else {
@@ -658,8 +665,8 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
                             if (e is EntityPlayer) {
                                 e = WorldUtil.forceRespawnClient(
                                     this.dimension,
-                                    e.world.getDifficulty().getId(),
-                                    e.world.getWorldInfo().getTerrainType().getName(),
+                                    e.level().getDifficulty().getId(),
+                                    e.level().getWorldInfo().getTerrainType().getName(),
                                     (e as EntityPlayerMP).interactionManager.getGameType().getID()
                                 )
                                 (e)!!.startRiding(this)
@@ -710,7 +717,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
         (list)!!.add(this.statusValid)
 
         if (!this.world.isRemote) {
-            (list)!!.add(if (this.getPassengers().isEmpty()) -1 else this.getPassengers().get(0).getEntityId())
+            (list)!!.add(if (this.getPassengers().isEmpty()) -1 else this.getPassengers().get(0).getId())
         }
         (list)!!.add(if (this.statusColour != null) this.statusColour else "")
     }
@@ -724,7 +731,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
             for (i: Int in -3..3) {
                 val pos: BlockPos =
                     BlockPos(floor(this.posX).toInt(), floor(this.posY + i).toInt(), floor(this.posZ).toInt())
-                if (this.launchPhase == EnumLaunchPhase.LANDING.ordinal && this.targetVec != null && this.world.getTileEntity(
+                if (this.launchPhase == EnumLaunchPhase.LANDING.ordinal && this.targetVec != null && this.world.getBlockEntity(
                         pos
                     ) is IFuelDock && this.posY - this.targetVec!!.getY() < 5
                 ) {
@@ -732,7 +739,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
                         for (y: Int in MathHelper.floor(this.posY - 3.0)..MathHelper.floor(this.posY) + 1) {
                             for (z: Int in MathHelper.floor(this.posZ) - 1..MathHelper.floor(this.posZ) + 1) {
                                 val pos1: BlockPos = BlockPos(x, y, z)
-                                val tile: TileEntity? = this.world.getTileEntity(pos1)
+                                val tile: TileEntity? = this.world.getBlockEntity(pos1)
 
                                 if (tile is IFuelDock) {
                                     this.landEntity(pos1)
@@ -761,23 +768,20 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
     fun cancelLaunch() {
         this.setLaunchPhase(EnumLaunchPhase.UNIGNITED)
         this.timeUntilLaunch = 0
-        if (!this.world.isRemote && !this.getPassengers().isEmpty() && this.getPassengers().get(0) is EntityPlayerMP) {
-            this.getPassengers().get(0)
-                .sendMessage(TextComponentString(GCCoreUtil.translate("gui.rocket.warning.nogyroscope")))
-        }
+        sendLaunchWarning("gui.rocket.warning.nogyroscope")
     }
 
     fun failMessageLaunchController() {
-        if (!this.world.isRemote && !this.getPassengers().isEmpty() && this.getPassengers().get(0) is EntityPlayerMP) {
-            (this.getPassengers()
-                .get(0) as EntityPlayerMP).sendMessage(TextComponentString(GCCoreUtil.translate("gui.rocket.warning.launchcontroller")))
-        }
+        sendLaunchWarning("gui.rocket.warning.launchcontroller")
     }
 
     fun failMessageInsufficientFuel() {
-        if (!this.world.isRemote && !this.getPassengers().isEmpty() && this.getPassengers().get(0) is EntityPlayerMP) {
-            (this.getPassengers()
-                .get(0) as EntityPlayerMP).sendMessage(TextComponentString(GCCoreUtil.translate("gui.rocket.warning.fuelinsufficient")))
+        sendLaunchWarning("gui.rocket.warning.fuelinsufficient")
+    }
+
+    private fun sendLaunchWarning(key: String) {
+        if (!level().isClientSide) {
+            (passengers.firstOrNull() as? EntityPlayerMP)?.sendSystemMessage(Component.translatable(key))
         }
     }
 
@@ -810,8 +814,8 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
                         (stats)!!.setLaunchpadStack(null)
 
                         if (this.world.provider !is IOrbitDimension) {
-                            (stats)!!.setCoordsTeleportedFromX(player.posX)
-                            (stats)!!.setCoordsTeleportedFromZ(player.posZ)
+                            (stats)!!.setCoordsTeleportedFromX(player.x)
+                            (stats)!!.setCoordsTeleportedFromZ(player.z)
                         }
                     }
                 }
@@ -834,7 +838,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
                                 MinecraftForge.EVENT_BUS.post(event)
 
                                 if (event.allow) {
-                                    this.world.setBlockToAir(pos)
+                                    this.world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                                     amountRemoved = 9
                                 }
                                 break@PADSEARCH
@@ -861,57 +865,57 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
         super.writeEntityToNBT(nbt)
 
         if (this.fuelTank.getFluid() != null) {
-            nbt.setTag("fuelTank", this.fuelTank.writeToNBT(NBTTagCompound()))
+            nbt.put("fuelTank", this.fuelTank.writeToNBT(NBTTagCompound()))
         }
 
-        if (this.getSizeInventory() > 0) {
+        if (this.getContainerSize() > 0) {
             ItemStackHelper.saveAllItems(nbt, this.stacks)
         }
 
-        nbt.setBoolean("TargetValid", this.targetVec != null)
+        nbt.putBoolean("TargetValid", this.targetVec != null)
 
         if (this.targetVec != null) {
-            nbt.setDouble("targetTileX", this.targetVec!!.getX().toDouble())
-            nbt.setDouble("targetTileY", this.targetVec!!.getY().toDouble())
-            nbt.setDouble("targetTileZ", this.targetVec!!.getZ().toDouble())
+            nbt.putDouble("targetTileX", this.targetVec!!.getX().toDouble())
+            nbt.putDouble("targetTileY", this.targetVec!!.getY().toDouble())
+            nbt.putDouble("targetTileZ", this.targetVec!!.getZ().toDouble())
         }
 
-        nbt.setBoolean("WaitingForPlayer", this.getWaitForPlayer())
-        nbt.setBoolean("Landing", this.launchPhase == EnumLaunchPhase.LANDING.ordinal)
-        nbt.setInteger(
+        nbt.putBoolean("WaitingForPlayer", this.getWaitForPlayer())
+        nbt.putBoolean("Landing", this.launchPhase == EnumLaunchPhase.LANDING.ordinal)
+        nbt.putInt(
             "AutoLaunchSetting",
             if (this.autoLaunchSetting != null) this.autoLaunchSetting!!.getIndex() else -1
         )
-        nbt.setInteger("TimeUntilAutoLaunch", this.autoLaunchCountdown)
-        nbt.setInteger("DestinationFrequency", this.destinationFrequency)
+        nbt.putInt("TimeUntilAutoLaunch", this.autoLaunchCountdown)
+        nbt.putInt("DestinationFrequency", this.destinationFrequency)
         if (this.activeLaunchController != null) this.activeLaunchController!!.writeToNBT(nbt, "ALCat")
     }
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
         super.readEntityFromNBT(nbt)
 
-        if (nbt.hasKey("fuelTank")) {
-            this.fuelTank.readFromNBT(nbt.getCompoundTag("fuelTank"))
+        if (nbt.containsTag("fuelTank")) {
+            this.fuelTank.readFromNBT(nbt.getCompoundOrEmpty("fuelTank"))
         }
 
-        if (this.getSizeInventory() > 0) {
-            this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        if (this.getContainerSize() > 0) {
+            this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
             ItemStackHelper.loadAllItems(nbt, this.stacks)
         }
 
-        if (nbt.getBoolean("TargetValid") && nbt.hasKey("targetTileX")) {
+        if (nbt.getBooleanOr("TargetValid", false) && nbt.containsTag("targetTileX")) {
             this.targetVec = BlockPos(
-                MathHelper.floor(nbt.getDouble("targetTileX")),
-                MathHelper.floor(nbt.getDouble("targetTileY")),
-                MathHelper.floor(nbt.getDouble("targetTileZ"))
+                MathHelper.floor(nbt.getDoubleOr("targetTileX", 0.0)),
+                MathHelper.floor(nbt.getDoubleOr("targetTileY", 0.0)),
+                MathHelper.floor(nbt.getDoubleOr("targetTileZ", 0.0))
             )
         }
 
-        this.setWaitForPlayer(nbt.getBoolean("WaitingForPlayer"))
-        val autoLaunchValue: Int = nbt.getInteger("AutoLaunchSetting")
+        this.setWaitForPlayer(nbt.getBooleanOr("WaitingForPlayer", false))
+        val autoLaunchValue: Int = nbt.getIntOr("AutoLaunchSetting", 0)
         this.autoLaunchSetting = if (autoLaunchValue == -1) null else EnumAutoLaunch.entries[autoLaunchValue]
-        this.autoLaunchCountdown = nbt.getInteger("TimeUntilAutoLaunch")
-        this.destinationFrequency = nbt.getInteger("DestinationFrequency")
+        this.autoLaunchCountdown = nbt.getIntOr("TimeUntilAutoLaunch", 0)
+        this.destinationFrequency = nbt.getIntOr("DestinationFrequency", 0)
         this.activeLaunchController = BlockVec3.readFromNBT(nbt, "ALCat")
     }
 
@@ -953,7 +957,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
     }
 
     override fun addCargo(stack: ItemStack?, doAdd: Boolean): ICargoEntity.EnumCargoLoadingState {
-        if (this.getSizeInventory() <= 3) {
+        if (this.getContainerSize() <= 3) {
             if (this.autoLaunchSetting == EnumAutoLaunch.CARGO_IS_FULL) {
                 this.autoLaunch()
             }
@@ -967,11 +971,11 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
         while (count < this.stacks!!.size - 2) {
             val stackAt: ItemStack = this.stacks!!.get(count)
 
-            if (!stackAt.isEmpty() && stackAt.getItem() === (stack)!!.getItem() && stackAt.getItemDamage() == (stack)!!.getItemDamage() && stackAt.getCount() < stackAt.getMaxStackSize()) {
+            if (!stackAt.isEmpty() && stackAt.getItem() === (stack)!!.getItem() && stackAt.legacyItemValue == (stack)!!.legacyItemValue && stackAt.getCount() < stackAt.getMaxStackSize()) {
                 if (stackAt.getCount() + (stack)!!.getCount() <= stackAt.getMaxStackSize()) {
                     if (doAdd) {
                         stackAt.grow((stack)!!.getCount())
-                        this.markDirty()
+                        this.setChanged()
                     }
 
                     return ICargoEntity.EnumCargoLoadingState.SUCCESS
@@ -982,7 +986,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
 
                     if (doAdd) {
                         stackAt.setCount(stackAt.getMaxStackSize())
-                        this.markDirty()
+                        this.setChanged()
                     }
 
                     (stack)!!.setCount(surplus)
@@ -1007,7 +1011,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
             if (stackAt.isEmpty()) {
                 if (doAdd) {
                     this.stacks!!.set(count, stack)
-                    this.markDirty()
+                    this.setChanged()
                 }
 
                 return ICargoEntity.EnumCargoLoadingState.SUCCESS
@@ -1035,7 +1039,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
                 }
 
                 if (doRemove) {
-                    this.markDirty()
+                    this.setChanged()
                 }
                 return ICargoEntity.RemovalResult(ICargoEntity.EnumCargoLoadingState.SUCCESS, resultStack)
             }
@@ -1048,7 +1052,7 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
         return ICargoEntity.RemovalResult(ICargoEntity.EnumCargoLoadingState.EMPTY, ItemStack.EMPTY)
     }
 
-    override fun getStackInSlot(index: Int): ItemStack {
+    override fun getItem(index: Int): ItemStack {
         if (this.stacks == null) {
             return ItemStack.EMPTY
         }
@@ -1056,31 +1060,31 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
         return this.stacks!!.get(index)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        return ItemStackHelper.getAndRemove(this.stacks, index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        return ContainerHelper.takeItem(this.stacks, index)
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.stacks!!.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
@@ -1088,15 +1092,15 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
         return false
     }
 
-    override fun isUsableByPlayer(entityplayer: EntityPlayer): Boolean {
+    override fun stillValid(entityplayer: EntityPlayer): Boolean {
         return !this.isDead && entityplayer.getDistanceSq(this) <= 64.0
     }
 
-    override fun isItemValidForSlot(i: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(i: Int, itemstack: ItemStack): Boolean {
         return false
     }
 
-    override fun markDirty() {
+    override fun setChanged() {
     }
 
     override fun isEmpty(): Boolean {
@@ -1156,18 +1160,18 @@ abstract class EntityAutoRocket(world: World?) : EntitySpaceshipBase(world), ILa
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSoundUpdater(): ITickable? {
         return this.rocketSoundUpdater
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setSoundUpdater(player: EntityPlayerSP?): ISound {
         this.rocketSoundUpdater = SoundUpdaterRocket(player, this)
         return this.rocketSoundUpdater as ISound
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun isInRangeToRender3d(x: Double, y: Double, z: Double): Boolean {
         val d0: Double = this.posX - x
         val d1: Double = this.posY - y

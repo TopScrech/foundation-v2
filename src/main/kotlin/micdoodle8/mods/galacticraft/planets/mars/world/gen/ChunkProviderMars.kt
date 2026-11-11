@@ -10,10 +10,10 @@ import micdoodle8.mods.galacticraft.core.world.gen.dungeon.DungeonConfiguration
 import micdoodle8.mods.galacticraft.core.world.gen.dungeon.MapGenDungeon
 import micdoodle8.mods.galacticraft.planets.mars.blocks.BlockBasicMars
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
-import net.minecraft.util.math.ChunkPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 
 open class ChunkProviderMars constructor(par1World: World?, seed: Long, mapFeaturesEnabled: Boolean) :
@@ -24,8 +24,8 @@ open class ChunkProviderMars constructor(par1World: World?, seed: Long, mapFeatu
 
     private val dungeonGenerator: MapGenDungeon = MapGenDungeonMars(
         DungeonConfiguration(
-            (MarsBlocks.marsBlock)!!.getDefaultState()
-                .withProperty(
+            (MarsBlocks.marsBlock)!!.defaultBlockState()
+                .setValue(
                     BlockBasicMars.BASIC_TYPE,
                     BlockBasicMars.EnumBlockBasic.DUNGEON_BRICK
                 ), 30, 8, 16, 7, 7, RoomBossMars::class.java, RoomTreasureMars::class.java

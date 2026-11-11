@@ -3,9 +3,9 @@ package micdoodle8.mods.galacticraft.core.entities.player
 import api.player.server.ServerPlayerAPI
 import api.player.server.ServerPlayerBase
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
-import net.minecraft.entity.Entity
-import net.minecraft.entity.MoverType
-import net.minecraft.util.DamageSource
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.MoverType
+import net.minecraft.world.damagesource.DamageSource
 
 open class GCPlayerBaseMP constructor(playerAPI: ServerPlayerAPI) : ServerPlayerBase(playerAPI) {
     private fun getClientHandler(): IPlayerServer? {

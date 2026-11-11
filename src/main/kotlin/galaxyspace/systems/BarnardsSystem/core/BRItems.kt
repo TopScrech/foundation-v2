@@ -6,8 +6,8 @@ import galaxyspace.systems.BarnardsSystem.core.prefab.items.ItemBasicBR
 import galaxyspace.systems.BarnardsSystem.core.prefab.items.ItemFoodBR
 import galaxyspace.core.prefab.items.ItemDoorGS
 import galaxyspace.core.GSItems
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.oredict.OreDictionary
 
 object BRItems {

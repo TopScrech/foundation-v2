@@ -1,16 +1,18 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.items
 
+import foundation.item.legacyItemValue
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.items.ItemBlockDesc
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.asteroids.blocks.BlockWalkway
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.item.ItemStack
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemBlockWalkway constructor(block: Block?) : ItemBlockDesc(block) {
     init {
@@ -18,16 +20,16 @@ open class ItemBlockWalkway constructor(block: Block?) : ItemBlockDesc(block) {
         this.setHasSubtypes(true)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(
         itemStack: ItemStack,
         worldIn: World?,
         tooltip: MutableList<String?>,
         flagIn: ITooltipFlag
     ) {
-        if (itemStack.getItemDamage() == BlockWalkway.EnumWalkwayType.WALKWAY_WIRE.getMeta()) {
+        if (itemStack.legacyItemValue == BlockWalkway.EnumWalkwayType.WALKWAY_WIRE.getMeta()) {
             tooltip.add(EnumColor.AQUA.toString() + GCCoreUtil.translate("tile.aluminum_wire.alu_wire.name"))
-        } else if (itemStack.getItemDamage() == BlockWalkway.EnumWalkwayType.WALKWAY_PIPE.getMeta()) {
+        } else if (itemStack.legacyItemValue == BlockWalkway.EnumWalkwayType.WALKWAY_PIPE.getMeta()) {
             tooltip.add(EnumColor.AQUA.toString() + GCCoreUtil.translate((GCBlocks.oxygenPipe)!!.getTranslationKey() + ".name"))
         }
 
@@ -40,7 +42,7 @@ open class ItemBlockWalkway constructor(block: Block?) : ItemBlockDesc(block) {
 
     public override fun getTranslationKey(itemstack: ItemStack): String {
         val name: String =
-            micdoodle8.mods.galacticraft.planets.asteroids.blocks.BlockWalkway.EnumWalkwayType.entries.toTypedArray()[itemstack.getItemDamage()].getName()
+            micdoodle8.mods.galacticraft.planets.asteroids.blocks.BlockWalkway.EnumWalkwayType.entries.toTypedArray()[itemstack.legacyItemValue].getName()
         return this.getBlock().getTranslationKey() + "." + name
     }
 

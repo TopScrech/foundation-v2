@@ -8,10 +8,10 @@ import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.mars.inventory.ContainerSchematicTier2Rocket
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
 import org.lwjgl.opengl.GL11
 
 open class GuiSchematicTier2Rocket constructor(par1InventoryPlayer: InventoryPlayer, pos: BlockPos) :
@@ -83,6 +83,6 @@ open class GuiSchematicTier2Rocket constructor(par1InventoryPlayer: InventoryPla
 
     companion object {
         private val tier2SchematicTexture =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/schematic_rocket_t2.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/schematic_rocket_t2.png")
     }
 }

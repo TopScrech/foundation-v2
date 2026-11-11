@@ -3,9 +3,9 @@ package asmodeuscore.core.handler.capabilities
 import asmodeuscore.AsmodeusCore
 import asmodeuscore.core.handler.capabilities.ACCapabilityStatsHandler
 import asmodeuscore.core.handler.capabilities.ACStatsCapability
-import net.minecraft.nbt.NBTBase
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
+import net.minecraft.nbt.Tag as NBTBase
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.CapabilityInject
 import net.minecraftforge.common.capabilities.CapabilityManager
@@ -17,11 +17,11 @@ object ACCapabilityStatsHandler {
     var AC_STATS_CAPABILITY: Capability<IStatsCapability?>? = null
 
     @JvmField
-    val AC_PLAYER_PROPERTIES: ResourceLocation = ResourceLocation(AsmodeusCore.ASSET_PREFIX, "player_stats")
+    val AC_PLAYER_PROPERTIES: ResourceLocation = ResourceLocation.fromNamespaceAndPath(AsmodeusCore.ASSET_PREFIX, "player_stats")
 
     @JvmField
     val AC_PLAYER_PROPERTIES_CLIENT: ResourceLocation =
-        ResourceLocation(AsmodeusCore.ASSET_PREFIX, "player_stats_client")
+        ResourceLocation.fromNamespaceAndPath(AsmodeusCore.ASSET_PREFIX, "player_stats_client")
 
     @JvmStatic
     fun register() {

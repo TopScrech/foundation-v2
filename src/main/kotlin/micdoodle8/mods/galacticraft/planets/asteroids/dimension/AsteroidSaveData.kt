@@ -1,10 +1,13 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.dimension
 
 import micdoodle8.mods.galacticraft.core.Constants
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.world.storage.WorldSavedData
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.saveddata.SavedData
+import net.minecraft.world.level.Level
+import com.mojang.serialization.Codec
+import foundation.persistence.FoundationSavedData
 
-open class AsteroidSaveData constructor(s: String?) : WorldSavedData(saveDataID) {
+open class AsteroidSaveData constructor(@Suppress("UNUSED_PARAMETER") s: String?) : SavedData() {
     @JvmField
     var datacompound: NBTTagCompound
 
@@ -12,16 +15,25 @@ open class AsteroidSaveData constructor(s: String?) : WorldSavedData(saveDataID)
         this.datacompound = NBTTagCompound()
     }
 
-    override fun readFromNBT(nbt: NBTTagCompound) {
-        this.datacompound = nbt.getCompoundTag("asteroids")
+    open fun readFromNBT(nbt: NBTTagCompound) {
+        this.datacompound = nbt.getCompoundOrEmpty("asteroids")
     }
 
-    override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
-        nbt.setTag("asteroids", this.datacompound)
+    open fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
+        nbt.put("asteroids", this.datacompound)
         return nbt
     }
 
     companion object {
+        @JvmField
+        val CODEC: Codec<AsteroidSaveData> = NBTTagCompound.CODEC.xmap(
+            { tag -> AsteroidSaveData("").also { it.readFromNBT(tag) } },
+            { data -> data.writeToNBT(NBTTagCompound()) }
+        )
+
+        @JvmStatic
+        fun get(world: Level): AsteroidSaveData = FoundationSavedData.getShared(world, saveDataID, { AsteroidSaveData("") }, CODEC)
+
         @JvmField
         val saveDataID: String = Constants.GCDATAFOLDER + "GCAsteroidData"
     }

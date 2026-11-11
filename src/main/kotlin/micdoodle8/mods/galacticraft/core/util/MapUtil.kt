@@ -23,25 +23,24 @@ import micdoodle8.mods.galacticraft.core.client.DynamicTextureProper
 import micdoodle8.mods.galacticraft.core.client.screen.DrawGameScreen
 import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
-import net.minecraft.block.material.MapColor
+import net.minecraft.world.level.material.MapColor
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.client.resources.IResourceManager
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProviderSurface
 import net.minecraft.world.WorldType
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraftforge.common.DimensionManager
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.apache.commons.io.FileUtils
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -121,19 +120,19 @@ object MapUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun resetClient() {
         resetClientFlag.set(true)
         //Threadsafe
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun resetClientBody() {
         ClientProxyCore.overworldTexturesValid = false
         clientRequests.clear()
         overworldImageBytesPart = null
-        val baseFolder: File = File(FMLClientHandler.instance().getClient().gameDir, "assets/galacticraftMaps")
+        val baseFolder: File = File(Minecraft.getInstance().gameDir, "assets/galacticraftMaps")
         if (baseFolder.exists() && baseFolder.isDirectory()) {
             for (f: File in baseFolder.listFiles()) {
                 if (f.isFile()) {
@@ -144,7 +143,7 @@ object MapUtil {
         (GalacticraftCore.packetPipeline)!!.sendToServer(
             PacketSimple(
                 PacketSimple.EnumSimplePacket.S_REQUEST_OVERWORLD_IMAGE,
-                GCCoreUtil.getDimensionID(FMLClientHandler.instance().getClient().world),
+                GCCoreUtil.getDimensionID(Minecraft.getInstance().level),
                 arrayOf<Any?>()
             )
         )
@@ -168,7 +167,7 @@ object MapUtil {
                     for (z: Int in 0..15) {
                         for (x: Int in 0..15) {
                             var l4: Int = chunk.getHeight(BlockPos(x, 0, z)) + 1
-                            var state: IBlockState = Blocks.AIR.getDefaultState()
+                            var state: IBlockState = Blocks.AIR.defaultBlockState()
 
                             if (l4 > 1) {
                                 do {
@@ -325,14 +324,14 @@ object MapUtil {
             (GalacticraftCore.packetPipeline)!!.sendTo(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.C_SEND_OVERWORLD_IMAGE,
-                    GCCoreUtil.getDimensionID(client.world),
+                    GCCoreUtil.getDimensionID(client.level()),
                     arrayOf<Any>(cx, map.size, largeMapPartA)
                 ), client
             )
             (GalacticraftCore.packetPipeline)!!.sendTo(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.C_SEND_OVERWORLD_IMAGE,
-                    GCCoreUtil.getDimensionID(client.world),
+                    GCCoreUtil.getDimensionID(client.level()),
                     arrayOf<Any>(cx + 1, map.size, largeMapPartB)
                 ), client
             )
@@ -341,7 +340,7 @@ object MapUtil {
             (GalacticraftCore.packetPipeline)!!.sendTo(
                 PacketSimple(
                     PacketSimple.EnumSimplePacket.C_SEND_OVERWORLD_IMAGE,
-                    GCCoreUtil.getDimensionID(client.world),
+                    GCCoreUtil.getDimensionID(client.level()),
                     arrayOf<Any>(cx, cz, map)
                 ), client
             )
@@ -684,10 +683,10 @@ object MapUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun writeImgToFile(img: BufferedImage, name: String) {
         if (GalacticraftCore.enableJPEG) {
-            val folder: File = File(FMLClientHandler.instance().getClient().gameDir, "assets/galacticraftMaps")
+            val folder: File = File(Minecraft.getInstance().gameDir, "assets/galacticraftMaps")
 
             try {
                 val outputStreamA: ImageOutputStream = FileImageOutputStream(File(folder, name))
@@ -729,7 +728,7 @@ object MapUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @Throws(IOException::class)
     fun receiveOverworldImageCompressed(cx: Int, cz: Int, raw: ByteArray) {
         var raw: ByteArray = raw
@@ -768,7 +767,7 @@ object MapUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @Throws(IOException::class)
     fun getOverworldImageFromRaw(cx: Int, cz: Int, raw: ByteArray) {
         val folder: File? = getClientMapsFolder()
@@ -857,11 +856,11 @@ object MapUtil {
                 }
             }
 
-            val rm: IResourceManager = Minecraft.getMinecraft().getResourceManager()
+            val rm: IResourceManager = Minecraft.getInstance().getResourceManager()
             var paletteImage: BufferedImage? = null
             try {
                 val `in`: InputStream =
-                    rm.getResource(ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png"))
+                    rm.getResource(ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png"))
                         .getInputStream()
                 paletteImage = ImageIO.read(`in`)
                 `in`.close()
@@ -898,14 +897,14 @@ object MapUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getMap(image: IntArray, world: World, pos: BlockPos): Boolean {
         val xCoord: Int = pos.getX()
         val zCoord: Int = pos.getZ()
         val cx: Int = convertMap(xCoord)
         val cz: Int = convertMap(zCoord)
 
-        val baseFolder: File = File(FMLClientHandler.instance().getClient().gameDir, "assets/galacticraftMaps")
+        val baseFolder: File = File(Minecraft.getInstance().gameDir, "assets/galacticraftMaps")
         if (!baseFolder.exists() && !baseFolder.mkdirs()) {
             GCLog.severe("Base folder(s) could not be created: " + baseFolder.getAbsolutePath())
             return false
@@ -980,7 +979,7 @@ object MapUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private fun makeRGBimage(
         array: IntArray,
         baseFolder: File,
@@ -1003,7 +1002,7 @@ object MapUtil {
                 (GalacticraftCore.packetPipeline)!!.sendToServer(
                     PacketSimple(
                         PacketSimple.EnumSimplePacket.S_REQUEST_MAP_IMAGE,
-                        GCCoreUtil.getDimensionID(FMLClientHandler.instance().getClient().world),
+                        GCCoreUtil.getDimensionID(Minecraft.getInstance().level),
                         arrayOf<Any>(dim, cx, cz)
                     )
                 )
@@ -1220,7 +1219,7 @@ object MapUtil {
                     for (z: Int in 0..15) {
                         for (x: Int in 0..15) {
                             var l4: Int = chunk.getHeightValue(x, z) + 1
-                            var state: IBlockState = Blocks.AIR.getDefaultState()
+                            var state: IBlockState = Blocks.AIR.defaultBlockState()
                             var pos: BlockPos? = null
 
                             if (l4 > 1) {
@@ -1251,9 +1250,9 @@ object MapUtil {
     }
 
     @JvmStatic
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun getClientMapsFolder(): File? {
-        val folder: File = File(FMLClientHandler.instance().getClient().gameDir, "assets/galacticraftMaps")
+        val folder: File = File(Minecraft.getInstance().gameDir, "assets/galacticraftMaps")
         try {
             if (folder.exists() || folder.mkdirs()) {
                 return folder

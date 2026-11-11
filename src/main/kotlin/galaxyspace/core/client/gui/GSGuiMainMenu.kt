@@ -9,7 +9,7 @@ import net.minecraft.client.gui.GuiConfirmOpenLink
 import net.minecraft.client.gui.GuiLanguage
 import net.minecraft.client.gui.GuiMultiplayer
 import net.minecraft.client.gui.GuiOptions
-import net.minecraft.client.gui.GuiScreen
+import net.minecraft.client.gui.screens.Screen as GuiScreen
 import net.minecraft.client.gui.GuiWorldSelection
 import net.minecraft.client.gui.GuiYesNo
 import net.minecraft.client.gui.GuiYesNoCallback
@@ -29,17 +29,17 @@ import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.client.resources.I18n
 import net.minecraft.realms.RealmsBridge
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.text.TextFormatting
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.ChatFormatting as TextFormatting
 import net.minecraft.world.storage.ISaveFormat
 import net.minecraft.world.storage.WorldInfo
 import net.minecraftforge.fml.client.GuiModList
 import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.ModContainer
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.apache.commons.io.Charsets
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -53,7 +53,7 @@ import java.net.URI
 import java.util.*
 import kotlin.math.max
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GSGuiMainMenu constructor() : GuiScreen(), GuiYesNoCallback {
     /** Counts the number of screen updates.  */
     private val updateCounter: Float
@@ -89,7 +89,7 @@ open class GSGuiMainMenu constructor() : GuiScreen(), GuiYesNoCallback {
             val arraylist: ArrayList<String?> = ArrayList<String?>()
             bufferedreader = BufferedReader(
                 InputStreamReader(
-                    Minecraft.getMinecraft().getResourceManager().getResource(splashTexts).getInputStream(),
+                    Minecraft.getInstance().getResourceManager().getResource(splashTexts).getInputStream(),
                     Charsets.UTF_8
                 )
             )
@@ -901,26 +901,26 @@ open class GSGuiMainMenu constructor() : GuiScreen(), GuiYesNoCallback {
 
         /** The RNG used by the Main Menu Screen.  */
         private val rand = Random()
-        private val splashTexts = ResourceLocation("texts/splashes.txt")
-        private val minecraftTitleTextures = ResourceLocation("textures/gui/title/minecraft.png")
-        private val mainmenu1 = ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX + ":" + "textures/gui/guimenu.png")
-        private val edition = ResourceLocation("textures/gui/title/edition.png")
+        private val splashTexts = ResourceLocation.parse("texts/splashes.txt")
+        private val minecraftTitleTextures = ResourceLocation.parse("textures/gui/title/minecraft.png")
+        private val mainmenu1 = ResourceLocation.parse(GalaxySpace.Companion.ASSET_PREFIX + ":" + "textures/gui/guimenu.png")
+        private val edition = ResourceLocation.parse("textures/gui/title/edition.png")
 
         /** An array of all the paths to the panorama pictures.  */
         private val background: Array<ResourceLocation?> = ((arrayOf<ResourceLocation>(
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX + ":" + "textures/gui/backgrounds/bg1.png"),
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX + ":" + "textures/gui/backgrounds/bg2.png"),
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX + ":" + "textures/gui/backgrounds/bg3.png"),
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX + ":" + "textures/gui/backgrounds/bgH.png")
+            ResourceLocation.parse(GalaxySpace.Companion.ASSET_PREFIX + ":" + "textures/gui/backgrounds/bg1.png"),
+            ResourceLocation.parse(GalaxySpace.Companion.ASSET_PREFIX + ":" + "textures/gui/backgrounds/bg2.png"),
+            ResourceLocation.parse(GalaxySpace.Companion.ASSET_PREFIX + ":" + "textures/gui/backgrounds/bg3.png"),
+            ResourceLocation.parse(GalaxySpace.Companion.ASSET_PREFIX + ":" + "textures/gui/backgrounds/bgH.png")
         ) as Array<ResourceLocation?>?))!!
 
         private val PANORAMA_PATHS: Array<ResourceLocation?> = ((arrayOf<ResourceLocation>(
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/backgrounds/panorama/panorama_0.png"),
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/backgrounds/panorama/panorama_1.png"),
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/backgrounds/panorama/panorama_2.png"),
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/backgrounds/panorama/panorama_3.png"),
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/backgrounds/panorama/panorama_4.png"),
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/backgrounds/panorama/panorama_5.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/backgrounds/panorama/panorama_0.png"),
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/backgrounds/panorama/panorama_1.png"),
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/backgrounds/panorama/panorama_2.png"),
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/backgrounds/panorama/panorama_3.png"),
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/backgrounds/panorama/panorama_4.png"),
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.Companion.ASSET_PREFIX, "textures/gui/backgrounds/panorama/panorama_5.png")
         ) as Array<ResourceLocation?>?))!!
 
 

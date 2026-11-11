@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.entities
 
+import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
+
 import micdoodle8.mods.galacticraft.api.entity.IEntityBreathable
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.GCBlocks
@@ -8,17 +10,17 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
 import net.minecraft.entity.SharedMonsterAttributes
 import net.minecraft.entity.monster.EntitySkeleton
-import net.minecraft.init.Items
-import net.minecraft.init.MobEffects
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.item.Items
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.network.datasync.DataParameter
 import net.minecraft.network.datasync.DataSerializers
 import net.minecraft.network.datasync.EntityDataManager
-import net.minecraft.util.DamageSource
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.ForgeHooks
 import kotlin.math.abs
 
@@ -43,8 +45,8 @@ open class EntityEvolvedSkeleton constructor(worldIn: World) : EntitySkeleton(wo
             this.motionY = 0.24
         }
 
-        if (this.isPotionActive(MobEffects.JUMP_BOOST)) {
-            this.motionY += ((this.getActivePotionEffect(MobEffects.JUMP_BOOST)!!.getAmplifier() + 1) * 0.1f).toDouble()
+        if (this.hasEffect(MobEffects.JUMP_BOOST)) {
+            this.motionY += ((this.getEffect(MobEffects.JUMP_BOOST)!!.getAmplifier() + 1) * 0.1f).toDouble()
         }
 
         if (this.isSprinting()) {
@@ -62,7 +64,7 @@ open class EntityEvolvedSkeleton constructor(worldIn: World) : EntitySkeleton(wo
         when (r) {
             0, 1, 2, 3, 4, 5 -> this.entityDropItem(ItemStack(GCBlocks.oxygenPipe), 0.0f)
             6 ->             //Oxygen tank half empty or less
-                this.entityDropItem(ItemStack(GCItems.oxTankMedium, 1, 901 + this.rand.nextInt(900)), 0.0f)
+                this.entityDropItem(ItemOxygenTank.stack(requireNotNull(GCItems.oxTankMedium), 1, 901 + this.rand.nextInt(900)), 0.0f)
 
             7, 8 -> this.dropItem(GCItems.canister, 1)
             else -> if (ConfigManagerCore.challengeMobDropsAndSpawning) this.dropItem(Items.PUMPKIN_SEEDS, 1)
@@ -139,12 +141,12 @@ open class EntityEvolvedSkeleton constructor(worldIn: World) : EntitySkeleton(wo
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
         super.readEntityFromNBT(nbt)
-        this.tumbling = nbt.getFloat("tumbling")
+        this.tumbling = nbt.getFloatOr("tumbling", 0f)
     }
 
     override fun writeEntityToNBT(nbt: NBTTagCompound) {
         super.writeEntityToNBT(nbt)
-        nbt.setFloat("tumbling", this.tumbling)
+        nbt.putFloat("tumbling", this.tumbling)
     }
 
     open fun getSpinPitch(): Float {

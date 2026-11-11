@@ -7,9 +7,9 @@ import micdoodle8.mods.galacticraft.core.util.CompatibilityManager
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
 
 abstract class GuiContainerGC(container: Container) : GuiContainer(container) {
     @JvmField
@@ -35,8 +35,8 @@ abstract class GuiContainerGC(container: Container) : GuiContainer(container) {
         for (i1: Int in this.inventorySlots.inventorySlots.indices) {
             val slot: Slot = this.inventorySlots.inventorySlots.get(i1)
 
-            if (slot.isEnabled() && this.isPointInRegion(slot.xPos, slot.yPos, 16, 16, par1, par2)) {
-                val itemStack: ItemStack = slot.getStack()
+            if (slot.isActive() && this.isPointInRegion(slot.x, slot.y, 16, 16, par1, par2)) {
+                val itemStack: ItemStack = slot.getItem()
 
                 if (!itemStack.isEmpty()) {
                     val list: MutableList<*> = itemStack.getTooltip(

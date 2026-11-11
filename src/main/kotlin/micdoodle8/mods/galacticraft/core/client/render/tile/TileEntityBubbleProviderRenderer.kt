@@ -9,8 +9,8 @@ import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.block.model.IBakedModel
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL12
 
@@ -91,7 +91,7 @@ open class TileEntityBubbleProviderRenderer<E> constructor(
             if (sphere == null) {
                 try {
                     sphere = ClientUtil.modelFromOBJ(
-                        ResourceLocation(Constants.ASSET_PREFIX, "sphere.obj"),
+                        ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "sphere.obj"),
                         ImmutableList.of<String?>("Sphere")
                     )
                 } catch (e: Exception) {

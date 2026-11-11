@@ -13,8 +13,8 @@ import net.minecraft.client.renderer.InventoryEffectRenderer
 import net.minecraft.client.renderer.OpenGlHelper
 import net.minecraft.client.renderer.RenderHelper
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import kotlin.math.atan
 import kotlin.math.sin
 
@@ -120,38 +120,38 @@ open class GuiExtendedInventory constructor(player: EntityPlayer, inventory: Inv
     }
 
     companion object {
-        private val inventoryTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/inventory.png")
+        private val inventoryTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/inventory.png")
         private var rotation = 0.0f
 
         @JvmStatic
         fun drawPlayerOnGui(mc: Minecraft, x: Int, y: Int, scale: Int) {
-            val rendermanager: RenderManager = Minecraft.getMinecraft().getRenderManager()
+            val rendermanager: RenderManager = Minecraft.getInstance().getRenderManager()
             GlStateManager.enableColorMaterial()
             GlStateManager.pushMatrix()
             GlStateManager.translate(x.toFloat(), y.toFloat(), 50.0f)
             GlStateManager.scale(-scale.toFloat(), scale.toFloat(), scale.toFloat())
             GlStateManager.rotate(180.0f, 0.0f, 0.0f, 1.0f)
-            val f2: Float = mc.player.renderYawOffset
-            val f3: Float = mc.player.rotationYaw
-            val f4: Float = mc.player.rotationPitch
-            val f5: Float = mc.player.rotationYawHead
+            val f2: Float = mc.player.yBodyRot
+            val f3: Float = mc.player.yRot
+            val f4: Float = mc.player.xRot
+            val f5: Float = mc.player.yHeadRot
             GlStateManager.rotate(135.0f, 0.0f, 1.0f, 0.0f)
             RenderHelper.enableStandardItemLighting()
             GlStateManager.rotate(-135.0f, 0.0f, 1.0f, 0.0f)
-            mc.player.renderYawOffset = rotation
-            mc.player.rotationYaw = atan((32 / 40.0f).toDouble()).toFloat() * 40.0f
-            mc.player.rotationYaw = rotation
-            mc.player.rotationYawHead = mc.player.rotationYaw
-            mc.player.rotationPitch = sin((Minecraft.getSystemTime() / 500.0f).toDouble()).toFloat() * 3.0f
+            mc.player.yBodyRot = rotation
+            mc.player.yRot = atan((32 / 40.0f).toDouble()).toFloat() * 40.0f
+            mc.player.yRot = rotation
+            mc.player.yHeadRot = mc.player.yRot
+            mc.player.xRot = sin((Minecraft.getSystemTime() / 500.0f).toDouble()).toFloat() * 3.0f
             GlStateManager.translate(0.0f, mc.player.getYOffset().toFloat(), 0.0f)
             rendermanager.setPlayerViewY(180.0f)
             rendermanager.setRenderShadow(false)
             rendermanager.renderEntity(mc.player, 0.0, 0.0, 0.0, 0.0f, 1.0f, false)
             rendermanager.setRenderShadow(true)
-            mc.player.renderYawOffset = f2
-            mc.player.rotationYaw = f3
-            mc.player.rotationPitch = f4
-            mc.player.rotationYawHead = f5
+            mc.player.yBodyRot = f2
+            mc.player.yRot = f3
+            mc.player.xRot = f4
+            mc.player.yHeadRot = f5
             GlStateManager.popMatrix()
             RenderHelper.disableStandardItemLighting()
             GlStateManager.disableRescaleNormal()

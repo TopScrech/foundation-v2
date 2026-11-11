@@ -29,7 +29,7 @@ import java.util.ArrayList
 import net.minecraft.world.biome.Biome.BiomeProperties
 
 import asmodeuscore.core.utils.worldengine2.world.properties.WE_IBiomeProperties.IReliefLayerTerrainPropertiesInBiome
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 
 /**
  * Класс с пользовательскими настройками биома, генератор читает их.

@@ -1,8 +1,8 @@
 package micdoodle8.mods.galacticraft.planets.venus.tile
 
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
 
 open class TileEntitySolarArrayModule : TileEntitySolarTransmitter() {
     override fun canConnect(direction: EnumFacing?, type: NetworkType?): Boolean {

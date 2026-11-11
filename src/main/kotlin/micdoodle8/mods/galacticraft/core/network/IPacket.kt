@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.core.network
 
 import io.netty.buffer.ByteBuf
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 
 interface IPacket {
     fun encodeInto(buffer: ByteBuf?)

@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.item.FoundationFrequencyModules
+import net.minecraft.network.chat.Component
+import foundation.persistence.containsTag
+
 import java.util.UUID
 import micdoodle8.mods.galacticraft.core.GCItems
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
@@ -8,21 +12,21 @@ import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.tile.TileEntityTelemetry
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+
+import net.minecraft.world.level.Level as World
 
 open class BlockTelemetry constructor(assetName: String?) : BlockAdvancedTile(Material.IRON), IShiftDescription,
     ISortableBlock {
@@ -40,7 +44,7 @@ open class BlockTelemetry constructor(assetName: String?) : BlockAdvancedTile(Ma
         placer: EntityLivingBase,
         stack: ItemStack
     ) {
-        val angle: Int = MathHelper.floor(placer.rotationYaw * 4.0f / 360.0f + 0.5) and 3
+        val angle: Int = MathHelper.floor(placer.yRot * 4.0f / 360.0f + 0.5) and 3
         var change: Int = 0
 
         when (angle) {
@@ -50,7 +54,7 @@ open class BlockTelemetry constructor(assetName: String?) : BlockAdvancedTile(Ma
             3 -> change = 5
         }
 
-        worldIn.setBlockState(pos, getStateFromMeta(change), 3)
+        worldIn.setBlock(pos, getStateFromMeta(change), 3)
     }
 
     override fun onUseWrench(
@@ -77,7 +81,7 @@ open class BlockTelemetry constructor(assetName: String?) : BlockAdvancedTile(Ma
             5 -> change = 0
         }
         change += (12 and metadata)
-        (world)!!.setBlockState(pos, getStateFromMeta(change), 2)
+        (world)!!.setBlock(pos, getStateFromMeta(change), 2)
 
         return true
     }
@@ -102,40 +106,31 @@ open class BlockTelemetry constructor(assetName: String?) : BlockAdvancedTile(Ma
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        if (!(world)!!.isRemote) {
-            val tile: TileEntity? = (world)!!.getTileEntity(pos)
+        if (!(world)!!.isClientSide) {
+            val tile: TileEntity? = (world)!!.getBlockEntity(pos)
             if (tile is TileEntityTelemetry) {
-                val held: ItemStack = (entityPlayer)!!.inventory.getCurrentItem()
+                val held: ItemStack = (entityPlayer)!!.inventory.getSelectedItem()
                 //Look for Frequency Module
-                if (!held.isEmpty() && held.getItem() === GCItems.basicItem && held.getItemDamage() == 19) {
-                    var fmData: NBTTagCompound? = held.getTagCompound()
-                    if (fmData != null && fmData.hasKey("linkedUUIDMost") && fmData.hasKey("linkedUUIDLeast")) {
-                        val uuid: UUID = UUID(fmData.getLong("linkedUUIDMost"), fmData.getLong("linkedUUIDLeast"))
+                if (FoundationFrequencyModules.isModule(held)) {
+                    val uuid = FoundationFrequencyModules.linkedEntity(held)
+                    if (uuid != null) {
                         tile.addTrackedEntity(uuid)
-                        (entityPlayer)!!.sendMessage(TextComponentString(GCCoreUtil.translate("gui.telemetry_succeed.message")))
+                        entityPlayer.sendSystemMessage(Component.translatable("gui.telemetry_succeed.message"))
                     } else {
-                        (entityPlayer)!!.sendMessage(TextComponentString(GCCoreUtil.translate("gui.telemetry_fail.message")))
-
-                        if (fmData == null) {
-                            fmData = NBTTagCompound()
-                            held.setTagCompound(fmData)
-                        }
+                        entityPlayer.sendSystemMessage(Component.translatable("gui.telemetry_fail.message"))
                     }
-                    fmData.setInteger("teCoordX", (pos)!!.getX())
-                    fmData.setInteger("teCoordY", (pos)!!.getY())
-                    fmData.setInteger("teCoordZ", (pos)!!.getZ())
-                    fmData.setInteger("teDim", GCCoreUtil.getDimensionID(world))
+                    FoundationFrequencyModules.bindTelemetry(held, world.dimension(), requireNotNull(pos))
                     return true
                 }
 
                 val wearing: ItemStack? = (GCPlayerStats.get((entityPlayer)!!))!!.getFrequencyModuleInSlot()
                 if (wearing != null) {
-                    if (wearing.hasTagCompound() && wearing.getTagCompound()!!.hasKey("teDim")) {
+                    if (FoundationFrequencyModules.hasTelemetry(wearing)) {
                         return false
                     }
-                    (entityPlayer)!!.sendMessage(TextComponentString(GCCoreUtil.translate("gui.telemetry_fail_wearing_it.message")))
+                    (entityPlayer)!!.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.telemetry_fail_wearing_it.message")))
                 } else {
-                    (entityPlayer)!!.sendMessage(TextComponentString(GCCoreUtil.translate("gui.telemetry_fail_no_frequency_module.message")))
+                    (entityPlayer)!!.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.telemetry_fail_no_frequency_module.message")))
                 }
             }
         }

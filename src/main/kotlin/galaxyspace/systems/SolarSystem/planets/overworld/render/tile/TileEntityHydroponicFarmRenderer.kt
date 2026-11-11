@@ -8,7 +8,7 @@ import galaxyspace.core.util.GSUtils
 import com.google.common.base.Function
 import micdoodle8.mods.galacticraft.core.client.model.OBJLoaderGC
 import micdoodle8.mods.galacticraft.core.util.ClientUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
@@ -18,8 +18,8 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.init.Blocks
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.client.model.IModel
 import net.minecraftforge.client.model.obj.OBJModel
 import java.lang.Exception
@@ -33,10 +33,10 @@ open class TileEntityHydroponicFarmRenderer : TileEntitySpecialRenderer<TileEnti
         if (main == null) {
             try {
                 val model: IModel =
-                    OBJLoaderGC.instance.loadModel(ResourceLocation(GalaxySpace.MODID, "hydroponic_farm.obj"))
+                    OBJLoaderGC.instance.loadModel(ResourceLocation.fromNamespaceAndPath(GalaxySpace.MODID, "hydroponic_farm.obj"))
                 val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> =
                     Function { location: ResourceLocation? ->
-                        Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+                        Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
                     }
 
                 main = model.bake(
@@ -103,17 +103,17 @@ open class TileEntityHydroponicFarmRenderer : TileEntitySpecialRenderer<TileEnti
 
         sprite = (GSUtils.getBlockTexture(block, "_stage_" + meta))!!
         if (block === Blocks.MELON_STEM || block === Blocks.PUMPKIN_STEM) {
-            val texMap: TextureMap = Minecraft.getMinecraft().getTextureMapBlocks()
+            val texMap: TextureMap = Minecraft.getInstance().getTextureMapBlocks()
             sprite = texMap.getAtlasSprite("minecraft" + ":blocks/melon_stem_disconnected")
             GL11.glColor3f(1.0f, 1.0f, 0.0f)
         }
         if (block === Blocks.CACTUS) {
-            val texMap: TextureMap = Minecraft.getMinecraft().getTextureMapBlocks()
+            val texMap: TextureMap = Minecraft.getInstance().getTextureMapBlocks()
             sprite = texMap.getAtlasSprite("minecraft" + ":blocks/cactus_side")
             GL11.glColor3f(1.0f, 1.0f, 1.0f)
         }
         if (block === Blocks.BROWN_MUSHROOM) {
-            val texMap: TextureMap = Minecraft.getMinecraft().getTextureMapBlocks()
+            val texMap: TextureMap = Minecraft.getInstance().getTextureMapBlocks()
             sprite = texMap.getAtlasSprite("minecraft" + ":blocks/mushroom_brown")
             GL11.glColor3f(1.0f, 1.0f, 1.0f)
         }

@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.kuiperbelt.dimension
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.systems.SolarSystem.planets.kuiperbelt.dimension.WorldProviderKuiperBelt
 import micdoodle8.mods.galacticraft.api.vector.BlockVec3
 import micdoodle8.mods.galacticraft.api.vector.Vector3
@@ -10,14 +12,14 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.planets.asteroids.blocks.AsteroidBlocks
 import micdoodle8.mods.galacticraft.planets.asteroids.entities.EntityEntryPod
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
-import net.minecraft.world.WorldServer
+import net.minecraft.world.entity.Entity
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraft.world.gen.ChunkProviderServer
-import net.minecraftforge.fml.common.FMLLog
+import foundation.logging.FoundationLog as FMLLog
 import java.util.Random
 import kotlin.math.abs
 
@@ -110,23 +112,23 @@ open class TeleportTypeKuiperBelt : ITeleportType {
 
     private fun goodAsteroidEntry(world: World, x: Int, yorig: Int, z: Int): Boolean {
         for (k: Int in 208 downTo 49) {
-            if (!world.isAirBlock(BlockPos(x, k, z))) {
+            if (!world.isEmptyBlock(BlockPos(x, k, z))) {
                 if (abs(k - yorig) > 20) {
                     continue
                 }
                 //Clear the downward path of small asteroids and any other asteroid rock
                 for (y: Int in k + 2..255) {
                     if (world.getBlockState(BlockPos(x, y, z)).getBlock() === AsteroidBlocks.blockBasic) {
-                        world.setBlockToAir(BlockPos(x, y, z))
+                        world.setBlockAndUpdate(BlockPos(x, y, z), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                     }
                     if (world.getBlockState(BlockPos(x - 1, y, z)).getBlock() === AsteroidBlocks.blockBasic) {
-                        world.setBlockToAir(BlockPos(x - 1, y, z))
+                        world.setBlockAndUpdate(BlockPos(x - 1, y, z), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                     }
                     if (world.getBlockState(BlockPos(x, y, z - 1)).getBlock() === AsteroidBlocks.blockBasic) {
-                        world.setBlockToAir(BlockPos(x, y, z - 1))
+                        world.setBlockAndUpdate(BlockPos(x, y, z - 1), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                     }
                     if (world.getBlockState(BlockPos(x - 1, y, z - 1)).getBlock() === AsteroidBlocks.blockBasic) {
-                        world.setBlockToAir(BlockPos(x - 1, y, z - 1))
+                        world.setBlockAndUpdate(BlockPos(x - 1, y, z - 1), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                     }
                 }
                 if (ConfigManagerCore.enableDebug) {
@@ -142,25 +144,25 @@ open class TeleportTypeKuiperBelt : ITeleportType {
         this.loadChunksAround(x, z, -1, world.getChunkProvider() as ChunkProviderServer)
 
         for (k: Int in 255 downTo 49) {
-            if (!world.isAirBlock(BlockPos(x, k, z))) {
+            if (!world.isEmptyBlock(BlockPos(x, k, z))) {
                 this.makePlatform(world, x, k - 1, z)
                 return
             }
-            if (!world.isAirBlock(BlockPos(x - 1, k, z))) {
+            if (!world.isEmptyBlock(BlockPos(x - 1, k, z))) {
                 this.makePlatform(world, x - 1, k - 1, z)
                 return
             }
-            if (!world.isAirBlock(BlockPos(x - 1, k, z - 1))) {
+            if (!world.isEmptyBlock(BlockPos(x - 1, k, z - 1))) {
                 this.makePlatform(world, x - 1, k - 1, z - 1)
                 return
             }
-            if (!world.isAirBlock(BlockPos(x, k, z - 1))) {
+            if (!world.isEmptyBlock(BlockPos(x, k, z - 1))) {
                 this.makePlatform(world, x, k - 1, z - 1)
                 return
             }
         }
 
-        this.makePlatform(world, x, 48 + world.rand.nextInt(128), z)
+        this.makePlatform(world, x, 48 + world.random.nextInt(128), z)
         return
     }
 
@@ -201,14 +203,14 @@ open class TeleportTypeKuiperBelt : ITeleportType {
     }
 
     private fun doBlock(world: World, x: Int, y: Int, z: Int) {
-        val meta: Int = (world.rand.nextFloat() * 1.5f).toInt()
-        if (world.isAirBlock(BlockPos(x, y, z))) {
-            world.setBlockState(BlockPos(x, y, z), (AsteroidBlocks.blockBasic)!!.getStateFromMeta(meta), 2)
+        val meta: Int = (world.random.nextFloat() * 1.5f).toInt()
+        if (world.isEmptyBlock(BlockPos(x, y, z))) {
+            world.setBlock(BlockPos(x, y, z), (AsteroidBlocks.blockBasic)!!.getStateFromMeta(meta), 2)
         }
     }
 
     override fun getEntitySpawnLocation(world: WorldServer?, entity: Entity?): Vector3 {
-        return Vector3((entity)!!.posX, if (ConfigManagerCore.disableLander) 250.0 else 900.0, (entity)!!.posZ)
+        return Vector3((entity)!!.x, if (ConfigManagerCore.disableLander) 250.0 else 900.0, (entity)!!.z)
     }
 
     override fun getParaChestSpawnLocation(world: WorldServer?, player: EntityPlayerMP?, rand: Random?): Vector3? {
@@ -244,12 +246,12 @@ open class TeleportTypeKuiperBelt : ITeleportType {
                     player.capabilities.isFlying = false
                 }
 
-                if (!(newWorld)!!.isRemote) {
+                if (!(newWorld)!!.isClientSide) {
                     val entryPod: EntityEntryPod = EntityEntryPod(player)
 
                     CompatibilityManager.forceLoadChunks(newWorld as WorldServer)
                     entryPod.forceSpawn = true
-                    newWorld.spawnEntity(entryPod)
+                    newWorld.addFreshEntity(entryPod)
                     CompatibilityManager.forceLoadChunksEnd(newWorld)
                 }
 

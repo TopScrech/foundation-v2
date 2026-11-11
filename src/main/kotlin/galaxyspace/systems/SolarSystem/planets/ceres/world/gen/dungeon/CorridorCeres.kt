@@ -8,10 +8,10 @@ import asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart.Corrido
 import asmodeuscore.core.astronomy.dimension.world.gen.dungeons.standart.DungeonConfiguration
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.blocks.BlockUnlitTorch
-import net.minecraft.init.Blocks
-import net.minecraft.util.EnumFacing
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import java.util.Random
 
 open class CorridorCeres : Corridor {
@@ -28,7 +28,7 @@ open class CorridorCeres : Corridor {
         direction: EnumFacing?
     ) : super(configuration, rand, blockPosX, blockPosZ, sizeX, sizeY, sizeZ, direction) {
         this.setCoordBaseMode(EnumFacing.SOUTH)
-        this.boundingBox = StructureBoundingBox(
+        this.boundingBox = BoundingBox(
             blockPosX,
             configuration.getYPosition(),
             blockPosZ,
@@ -41,19 +41,19 @@ open class CorridorCeres : Corridor {
     override fun addComponentParts(
         worldIn: World,
         randomIn: Random,
-        structureBoundingBoxIn: StructureBoundingBox
+        structureBoundingBoxIn: BoundingBox
     ): Boolean {
-        for (i: Int in 0..<this.boundingBox.getXSize()) {
-            for (j: Int in 0..<this.boundingBox.getYSize()) {
-                for (k: Int in 0..<this.boundingBox.getZSize()) {
+        for (i: Int in 0..<this.boundingBox.getXSpan()) {
+            for (j: Int in 0..<this.boundingBox.getYSpan()) {
+                for (k: Int in 0..<this.boundingBox.getZSpan()) {
                     if (((this.getDirection())!!
-                            .getAxis() == EnumFacing.Axis.Z && (i == 0 || i == this.boundingBox.getXSize() - 1)) || j == 0 || j == this.boundingBox.getYSize() - 1 ||
+                            .getAxis() == EnumFacing.Axis.Z && (i == 0 || i == this.boundingBox.getXSpan() - 1)) || j == 0 || j == this.boundingBox.getYSpan() - 1 ||
                         ((this.getDirection())!!
-                            .getAxis() == EnumFacing.Axis.X && (k == 0 || k == this.boundingBox.getZSize() - 1))
+                            .getAxis() == EnumFacing.Axis.X && (k == 0 || k == this.boundingBox.getZSpan() - 1))
                     ) {
                         if (j == (this.configuration)!!.getHallwayHeight()) this.setBlockState(
                             worldIn,
-                            GSBlocks.CERES_BLOCKS.getDefaultState().withProperty(
+                            GSBlocks.CERES_BLOCKS.defaultBlockState().setValue(
                                 CeresBlocks.BASIC_TYPE,
                                 EnumCeresBlocks.CERES_DUNGEON_TOP
                             ),
@@ -64,7 +64,7 @@ open class CorridorCeres : Corridor {
                         )
                         else if (j == 0) this.setBlockState(
                             worldIn,
-                            GSBlocks.CERES_BLOCKS.getDefaultState().withProperty(
+                            GSBlocks.CERES_BLOCKS.defaultBlockState().setValue(
                                 CeresBlocks.BASIC_TYPE,
                                 EnumCeresBlocks.CERES_DUNGEON_FLOOR
                             ),
@@ -75,13 +75,13 @@ open class CorridorCeres : Corridor {
                         )
                         else this.setBlockState(worldIn, (this.configuration)!!.getBrickBlock(), i, j, k, boundingBox)
                     } else {
-                        if (j == this.boundingBox.getYSize() - 4) {
+                        if (j == this.boundingBox.getYSpan() - 4) {
                             if ((this.getDirection())!!
-                                    .getAxis() == EnumFacing.Axis.Z && (k + 1) % 4 == 0 && (i == 1 || i == this.boundingBox.getXSize() - 2)
+                                    .getAxis() == EnumFacing.Axis.Z && (k + 1) % 4 == 0 && (i == 1 || i == this.boundingBox.getXSpan() - 2)
                             ) {
                                 this.setBlockState(
                                     worldIn,
-                                    (GCBlocks.unlitTorch)!!.getDefaultState().withProperty(
+                                    (GCBlocks.unlitTorch)!!.defaultBlockState().setValue(
                                         BlockUnlitTorch.FACING,
                                         if (i == 1) EnumFacing.WEST.getOpposite() else EnumFacing.EAST.getOpposite()
                                     ),
@@ -92,11 +92,11 @@ open class CorridorCeres : Corridor {
                                 )
                                 continue
                             } else if ((this.getDirection())!!
-                                    .getAxis() == EnumFacing.Axis.X && (i + 1) % 4 == 0 && (k == 1 || k == this.boundingBox.getZSize() - 2)
+                                    .getAxis() == EnumFacing.Axis.X && (i + 1) % 4 == 0 && (k == 1 || k == this.boundingBox.getZSpan() - 2)
                             ) {
                                 this.setBlockState(
                                     worldIn,
-                                    (GCBlocks.unlitTorch)!!.getDefaultState().withProperty(
+                                    (GCBlocks.unlitTorch)!!.defaultBlockState().setValue(
                                         BlockUnlitTorch.FACING,
                                         if (k == 1) EnumFacing.NORTH.getOpposite() else EnumFacing.SOUTH.getOpposite()
                                     ),
@@ -109,7 +109,7 @@ open class CorridorCeres : Corridor {
                             }
                         }
 
-                        this.setBlockState(worldIn, Blocks.AIR.getDefaultState(), i, j, k, this.boundingBox)
+                        this.setBlockState(worldIn, Blocks.AIR.defaultBlockState(), i, j, k, this.boundingBox)
                     }
                 }
             }

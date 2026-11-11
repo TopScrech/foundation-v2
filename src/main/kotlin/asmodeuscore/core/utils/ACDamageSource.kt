@@ -1,20 +1,12 @@
 package asmodeuscore.core.utils
 
-import asmodeuscore.core.utils.ACDamageSource
-import net.minecraft.util.DamageSource
+import foundation.damage.FoundationDamageTypes
+import net.minecraft.resources.ResourceKey
+import net.minecraft.world.damagesource.DamageType
 
-open class ACDamageSource constructor(damageType: String) : DamageSource(damageType) {
-    companion object {
-        @JvmField
-        val solar: DamageSource = ACDamageSource("solar").setDamageBypassesArmor()
-
-        @JvmField
-        val pressure: DamageSource = ACDamageSource("pressure").setDamageBypassesArmor()
-
-        @JvmField
-        val heat: DamageSource = ACDamageSource("heat").setDamageBypassesArmor()
-
-        @JvmField
-        val cold: DamageSource = ACDamageSource("cold").setDamageBypassesArmor()
-    }
+object ACDamageSource {
+    @JvmField val solar: ResourceKey<DamageType> = FoundationDamageTypes.key("asmodeuscore:solar")
+    @JvmField val pressure: ResourceKey<DamageType> = FoundationDamageTypes.key("asmodeuscore:pressure")
+    @JvmField val heat: ResourceKey<DamageType> = FoundationDamageTypes.key("asmodeuscore:heat")
+    @JvmField val cold: ResourceKey<DamageType> = FoundationDamageTypes.key("asmodeuscore:cold")
 }

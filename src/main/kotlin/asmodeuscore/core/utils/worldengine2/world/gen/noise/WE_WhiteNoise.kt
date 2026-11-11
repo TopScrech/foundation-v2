@@ -25,9 +25,10 @@
  */
 package asmodeuscore.core.utils.worldengine2.world.gen.noise
 
+import foundation.math.LegacyTerrainMath
+
 import asmodeuscore.core.utils.worldengine2.util.ISmartMathFunction
 import asmodeuscore.core.utils.worldengine2.util.WE_RegionBuffer
-import net.minecraft.util.math.MathHelper
 import kotlin.math.pow
 
 /**
@@ -77,7 +78,7 @@ open class WE_WhiteNoise constructor(genSeed: Long) {
      */
     open fun vecGen2D(x: Long, z: Long): Array<Double> {
         val angle: Double = gen2D(x, z) * Math.PI
-        return arrayOf<Double>(MathHelper.cos(angle.toFloat()).toDouble(), MathHelper.sin(angle.toFloat()).toDouble())
+        return arrayOf<Double>(LegacyTerrainMath.cos(angle.toFloat()).toDouble(), LegacyTerrainMath.sin(angle.toFloat()).toDouble())
     }
 
     /** Добавляет буфер для временного хранения значений.  */

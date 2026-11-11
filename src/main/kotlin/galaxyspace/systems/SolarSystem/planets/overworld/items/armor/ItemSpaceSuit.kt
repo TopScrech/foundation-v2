@@ -1,5 +1,12 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items.armor
 
+import net.minecraft.network.chat.Component
+
+import foundation.item.legacyItemValue
+
+import foundation.inventory.armorItems
+import foundation.persistence.containsTag
+
 import java.util.HashMap
 
 import asmodeuscore.core.client.render.ModelOBJArmor
@@ -26,23 +33,22 @@ import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.settings.GameSettings
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.enchantment.Enchantment
-import net.minecraft.entity.Entity
+import net.minecraft.world.item.enchantment.Enchantment
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityLiving
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.DamageSource
-import net.minecraft.util.NonNullList
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.util.text.TextFormatting
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.core.NonNullList
+
+import net.minecraft.ChatFormatting as TextFormatting
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.ISpecialArmor
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.input.Keyboard
 import java.util.*
 import kotlin.math.min
@@ -63,31 +69,31 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
 
         if (!stack.hasTagCompound()) stack.setTagCompound(NBTTagCompound())
 
-        if (!stack.getTagCompound()!!.hasKey(mod_count)) {
-            stack.getTagCompound()!!.setInteger(mod_count, getModificationCount(stack))
+        if (!stack.getTagCompound()!!.containsTag(mod_count)) {
+            stack.getTagCompound()!!.putInt(mod_count, getModificationCount(stack))
         }
 
-        if (!stack.getTagCompound()!!.hasKey("Unbreakable")) stack.getTagCompound()!!.setBoolean("Unbreakable", true)
+        if (!stack.getTagCompound()!!.containsTag("Unbreakable")) stack.getTagCompound()!!.putBoolean("Unbreakable", true)
 
         when (getArmorType(stack)) {
-            EntityEquipmentSlot.HEAD -> if (!stack.getTagCompound()!!.hasKey(suit_buttons[0])) stack.getTagCompound()!!
-                .setBoolean(suit_buttons[0], false)
+            EntityEquipmentSlot.HEAD -> if (!stack.getTagCompound()!!.containsTag(suit_buttons[0])) stack.getTagCompound()!!
+                .putBoolean(suit_buttons[0], false)
 
-            EntityEquipmentSlot.CHEST -> if (!stack.getTagCompound()!!.hasKey(suit_buttons[1])) stack.getTagCompound()!!
-                .setBoolean(suit_buttons[1], false)
+            EntityEquipmentSlot.CHEST -> if (!stack.getTagCompound()!!.containsTag(suit_buttons[1])) stack.getTagCompound()!!
+                .putBoolean(suit_buttons[1], false)
 
-            EntityEquipmentSlot.LEGS -> if (!stack.getTagCompound()!!.hasKey(suit_buttons[2])) stack.getTagCompound()!!
-                .setBoolean(suit_buttons[2], false)
+            EntityEquipmentSlot.LEGS -> if (!stack.getTagCompound()!!.containsTag(suit_buttons[2])) stack.getTagCompound()!!
+                .putBoolean(suit_buttons[2], false)
 
-            EntityEquipmentSlot.FEET -> if (!stack.getTagCompound()!!.hasKey(suit_buttons[3])) stack.getTagCompound()!!
-                .setBoolean(suit_buttons[3], false)
+            EntityEquipmentSlot.FEET -> if (!stack.getTagCompound()!!.containsTag(suit_buttons[3])) stack.getTagCompound()!!
+                .putBoolean(suit_buttons[3], false)
 
             else -> {}
         }
     }
 
     private fun pressed() {
-        val mc: Minecraft = Minecraft.getMinecraft()
+        val mc: Minecraft = Minecraft.getInstance()
 
         if (mc.gameSettings.keyBindJump.isKeyDown()) pressedKey[0] = true
         else pressedKey[0] = false
@@ -99,7 +105,7 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
         else pressedKey[2] = false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun renderHelmetOverlay(
         stack: ItemStack,
         player: EntityPlayer,
@@ -119,16 +125,16 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
     }
 
     override fun onArmorTick(world: World, player: EntityPlayer, itemStack: ItemStack) {
-        if (!world.isRemote && !player.capabilities.isCreativeMode) {
-            if (player.world.provider is IGalacticraftWorldProvider) {
-                if ((player.world.provider as IGalacticraftWorldProvider).shouldCorrodeArmor()) {
+        if (!world.isClientSide && !player.capabilities.isCreativeMode) {
+            if (player.level().provider is IGalacticraftWorldProvider) {
+                if ((player.level().provider as IGalacticraftWorldProvider).shouldCorrodeArmor()) {
                     val stats: GCPlayerStats = (GCPlayerStats.get(player))!!
                     if ((stats.getShieldControllerInSlot())!!.isEmpty()) this.discharge(itemStack, 50f, true)
                 }
             }
         }
 
-        if (world.isRemote) {
+        if (world.isClientSide) {
             pressed()
         }
 
@@ -147,7 +153,7 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
                         )
                         if (itemStack.getTagCompound()!!
                                 .getBoolean(suit_buttons[3 - getArmorType(itemStack).getIndex()])
-                        ) if (player.ticksExisted % 20 == 0) this.discharge(
+                        ) if (player.tickCount % 20 == 0) this.discharge(
                             itemStack,
                             (modules)!!.getDischargeCount().toFloat(),
                             true
@@ -162,7 +168,7 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
                         if (itemStack.getTagCompound()!!.getBoolean("jump") && getElectricityStored(itemStack) >= 5) {
                             if (player.onGround) this.jumpCharge = 1.0f
 
-                            if (player.motionY >= 0.0 && this.jumpCharge > 0.0f && !player.isInWater()) {
+                            if (player.deltaMovement.y >= 0.0 && this.jumpCharge > 0.0f && !player.isInWater()) {
                                 /*if (this.jumpCharge == 1.0f) {
 	                                player.motionX *= 3.5;
 	                                player.motionZ *= 3.5;
@@ -194,7 +200,7 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
         return energyToTransfer
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun addInformation(stack: ItemStack, world: World?, list: MutableList<String?>, flagIn: ITooltipFlag) {
         addInfo(stack, world, list, flagIn)
 
@@ -213,16 +219,16 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
         //list.add(EnumColor.DARK_GREEN + GCCoreUtil.translate("gui.module.caninstall"));
         list.add(
             EnumColor.GREY.toString() + GCCoreUtil.translate("gui.module.available_modules") + " " + stack.getTagCompound()!!
-                .getInteger(mod_count)
+                .getIntOr(mod_count, 0)
         )
         list.add("")
         list.add(EnumColor.AQUA.toString() + GCCoreUtil.translate("gui.module.list"))
         if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
             for (s in (this.getAvailableModules())!!) {
                 if ((s)!!.getEquipmentSlot() == getArmorType(stack) && stack.getTagCompound()!!
-                        .hasKey((s)!!.getName())
+                        .containsTag((s)!!.getName())
                 ) list.addAll(
-                    FMLClientHandler.instance().getClient().fontRenderer.listFormattedStringToWidth(
+                    Minecraft.getInstance().fontRenderer.listFormattedStringToWidth(
                         this.check(
                             stack,
                             ((s)!!.getName())!!
@@ -235,7 +241,7 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
                 EnumColor.DARK_AQUA.toString() + GCCoreUtil.translateWithFormat(
                     "item_desc.shift.name",
                     GameSettings.getKeyDisplayString(
-                        FMLClientHandler.instance().getClient().gameSettings.keyBindSneak.getKeyCode()
+                        Minecraft.getInstance().gameSettings.keyBindSneak.getKeyCode()
                     )
                 )
             )
@@ -260,14 +266,14 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
     }
 
     fun needText(player: EntityPlayer, text: String?) {
-        player.sendMessage(TextComponentString(TextFormatting.DARK_RED.toString() + GCCoreUtil.translate("gui.message." + text)))
+        player.sendSystemMessage(Component.literal(TextFormatting.DARK_RED.toString() + GCCoreUtil.translate("gui.message." + text)))
     }
 
     fun installText(player: EntityPlayer, text: String?) {
-        player.sendMessage(TextComponentString(TextFormatting.DARK_GREEN.toString() + GCCoreUtil.translate("gui.message.install." + text)))
+        player.sendSystemMessage(Component.literal(TextFormatting.DARK_GREEN.toString() + GCCoreUtil.translate("gui.message.install." + text)))
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getArmorModel(
         entityLiving: EntityLivingBase,
         itemStack: ItemStack,
@@ -293,7 +299,7 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
     }
 
     public override fun getMaxElectricityStored(stack: ItemStack?): Float {
-        val energy: Boolean = (stack)!!.hasTagCompound() && (stack)!!.getTagCompound()!!.hasKey("energy")
+        val energy: Boolean = (stack)!!.hasTagCompound() && (stack)!!.getTagCompound()!!.containsTag("energy")
         when (getArmorType((stack)!!).getIndex()) {
             0 -> return if (energy) 100000.0f else 25000.0f
             1 -> return if (energy) 150000.0f else 50000.0f
@@ -304,14 +310,14 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
     }
 
     override fun gravityOverrideIfLow(player: EntityPlayer?): Int {
-        if (!(player)!!.inventory.armorInventory.get(0).isEmpty() && !(player)!!.inventory.armorInventory.get(0)
+        if (!(player)!!.inventory.armorItems.get(0).isEmpty() && !(player)!!.inventory.armorItems.get(0)
                 .hasTagCompound()
-        ) (player)!!.inventory.armorInventory.get(0).setTagCompound(NBTTagCompound())
+        ) (player)!!.inventory.armorItems.get(0).setTagCompound(NBTTagCompound())
 
-        return if (!(player)!!.inventory.armorInventory.get(0).isEmpty() && (player)!!.inventory.armorInventory.get(0)
+        return if (!(player)!!.inventory.armorItems.get(0).isEmpty() && (player)!!.inventory.armorItems.get(0)
                 .getTagCompound()!!.getBoolean(suit_buttons[3])
-            && (player)!!.inventory.armorInventory.get(0).getTagCompound()!!.getBoolean("gravity")
-            && getElectricityStored((player)!!.inventory.armorInventory.get(0)) > 0
+            && (player)!!.inventory.armorItems.get(0).getTagCompound()!!.getBoolean("gravity")
+            && getElectricityStored((player)!!.inventory.armorItems.get(0)) > 0
         ) 100 else 0
     }
 
@@ -352,7 +358,7 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun hasEffect(stack: ItemStack): Boolean {
         return false
     }
@@ -378,13 +384,13 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
     }
 
     override fun getFuel(stack: ItemStack?): Int {
-        return (stack)!!.getTagCompound()!!.getInteger(IJetpackArmor.TAG_FUEL)
+        return (stack)!!.getTagCompound()!!.getIntOr(IJetpackArmor.TAG_FUEL, 0)
     }
 
     override fun canFly(stack: ItemStack?, player: EntityPlayer?): Boolean {
         if ((stack)!!.hasTagCompound() && (stack)!!.getTagCompound()!!.getBoolean("jetpack") && (stack)!!.getTagCompound()!!
                 .getBoolean(suit_buttons[1])
-        ) if ((stack)!!.getItemDamage() < (stack)!!.getMaxDamage()) {
+        ) if ((stack)!!.legacyItemValue < (stack)!!.getMaxDamage()) {
             return true
         }
         return false
@@ -396,7 +402,7 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
 
     override fun switchState(stack: ItemStack?, state: Boolean) {
         if (!(stack)!!.isEmpty() && (stack)!!.hasTagCompound()) (stack)!!.getTagCompound()!!
-            .setBoolean(IJetpackArmor.TAG_ACT, state)
+            .putBoolean(IJetpackArmor.TAG_ACT, state)
         else {
             (stack)!!.setTagCompound(NBTTagCompound())
         }
@@ -453,8 +459,8 @@ abstract class ItemSpaceSuit(name: String?, materialIn: ArmorMaterial?, armorInd
             model.bipedBody.showModel = model.bipedRightArm.showModel
             model.bipedHeadwear.showModel = model.bipedBody.showModel
             model.bipedHead.showModel = model.bipedHeadwear.showModel
-            model.isSneak = entityLiving.isSneaking()
-            model.isRiding = entityLiving.isRiding()
+            model.isSneak = entityLiving.isShiftKeyDown()
+            model.isRiding = entityLiving.isPassenger()
             model.isChild = entityLiving.isChild()
 
             return model

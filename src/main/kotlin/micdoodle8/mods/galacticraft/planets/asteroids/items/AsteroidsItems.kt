@@ -7,11 +7,11 @@ import micdoodle8.mods.galacticraft.core.items.ItemCanisterGeneric
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.wrappers.PartialCanister
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
-import net.minecraft.init.SoundEvents
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.Item
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemArmor
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.common.util.EnumHelper
 import net.minecraftforge.oredict.OreDictionary
 
@@ -81,7 +81,7 @@ object AsteroidsItems {
     var strangeSeed: Item? = null
 
     @JvmField
-    var TOOL_TITANIUM: Item.ToolMaterial? = EnumHelper.addToolMaterial("titanium", 4, 760, 14.0f, 4.0f, 16)
+    var TOOL_TITANIUM: net.minecraft.world.item.ToolMaterial = foundation.item.FoundationTitaniumTools.BASE_MATERIAL
 
     @JvmField
     var ARMOR_TITANIUM: ItemArmor.ArmorMaterial? = EnumHelper.addArmorMaterial(
@@ -121,7 +121,6 @@ object AsteroidsItems {
 
         registerItems()
 
-        registerHarvestLevels()
 
         (GalacticraftCore.proxy)!!.registerCanister(
             PartialCanister(
@@ -156,13 +155,6 @@ object AsteroidsItems {
         OreDictionary.registerOre("shardTitanium", ItemStack(basicItem, 1, 4))
         OreDictionary.registerOre("shardIron", ItemStack(basicItem, 1, 3))
         OreDictionary.registerOre("dustTitanium", ItemStack(basicItem, 1, 9))
-    }
-
-    @JvmStatic
-    fun registerHarvestLevels() {
-        titaniumPickaxe!!.setHarvestLevel("pickaxe", 5)
-        titaniumAxe!!.setHarvestLevel("axe", 5)
-        titaniumSpade!!.setHarvestLevel("shovel", 5)
     }
 
     @JvmStatic

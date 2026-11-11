@@ -1,5 +1,11 @@
 package micdoodle8.mods.galacticraft.planets.mars.blocks
 
+import foundation.item.legacyItemValue
+
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
@@ -7,37 +13,37 @@ import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntitySlimelingEgg
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.ITileEntityProvider
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyBool
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.BooleanProperty as PropertyBool
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.enchantment.EnchantmentHelper
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Enchantments
-import net.minecraft.item.Item
+import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.enchantment.Enchantments
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemPickaxe
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraft.stats.StatList
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class BlockSlimelingEgg constructor(assetName: String?) : Block(Material.ROCK), ITileEntityProvider,
-    IShiftDescription, ISortableBlock {
+    IShiftDescription, ISortableBlock, LegacyBlockMetadata {
     enum class EnumEggColor(private val meta: Int, private val serializedName: String) : IStringSerializable {
         RED(0, "red"),
         BLUE(1, "blue"),
@@ -47,7 +53,9 @@ open class BlockSlimelingEgg constructor(assetName: String?) : Block(Material.RO
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
     }
@@ -56,8 +64,8 @@ open class BlockSlimelingEgg constructor(assetName: String?) : Block(Material.RO
         //        this.setBlockBounds(0.25F, 0.0F, 0.25F, 0.75F, 0.625F, 0.75F);
         this.setTranslationKey(assetName)
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(EGG_COLOR, EnumEggColor.RED)
-                .withProperty(BROKEN, false)
+            this.blockState.getBaseState().setValue(EGG_COLOR, EnumEggColor.RED)
+                .setValue(BROKEN, false)
         )
     }
 
@@ -93,13 +101,13 @@ open class BlockSlimelingEgg constructor(assetName: String?) : Block(Material.RO
         val l: Int = state.getBlock().getMetaFromState(state)
 
         if (l < 3) {
-            world.setBlockState(pos, state.getBlock().getStateFromMeta(l + 3), 2)
+            world.setBlock(pos, state.getBlock().getStateFromMeta(l + 3), 2)
 
-            val tile: TileEntity? = world.getTileEntity(pos)
+            val tile: TileEntity? = world.getBlockEntity(pos)
 
             if (tile is TileEntitySlimelingEgg) {
-                tile.timeToHatch = world.rand.nextInt(30 + time) + time
-                tile.lastTouchedPlayerUUID = player.getUniqueID().toString()
+                tile.timeToHatch = world.random.nextInt(30 + time) + time
+                tile.lastTouchedPlayerUUID = player.getUUID().toString()
                 tile.lastTouchedPlayerName = player.getName()
             }
 
@@ -119,11 +127,11 @@ open class BlockSlimelingEgg constructor(assetName: String?) : Block(Material.RO
         player: EntityPlayer,
         willHarvest: Boolean
     ): Boolean {
-        val currentStack: ItemStack = player.getHeldItemMainhand()
+        val currentStack: ItemStack = player.getMainHandItem()
         if (currentStack != null && currentStack.getItem() is ItemPickaxe) {
-            return world.setBlockToAir(pos)
+            return world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
         } else if (player.capabilities.isCreativeMode) {
-            return world.setBlockToAir(pos)
+            return world.setBlockAndUpdate(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
         } else {
             beginHatch(world, pos, player, 0)
             return false
@@ -166,22 +174,22 @@ open class BlockSlimelingEgg constructor(assetName: String?) : Block(Material.RO
                     currentStack
                 ) > 0
             ) {
-                val itemstack: ItemStack = ItemStack(MarsItems.deshPickSlime, 1, currentStack.getItemDamage())
+                val itemstack: ItemStack = ItemStack(MarsItems.deshPickSlime, 1, currentStack.legacyItemValue)
                 if (currentStack.getTagCompound() != null) {
                     itemstack.setTagCompound(currentStack.getTagCompound()!!.copy())
                 }
-                player.inventory.setInventorySlotContents(player.inventory.currentItem, itemstack)
+                player.inventory.setItem(player.inventory.selectedSlot, itemstack)
             }
         }
     }
 
     /*@Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public IIcon getIcon(int side, int metadata)
     {
         return this.icons[metadata % 6];
     }*/
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
@@ -244,9 +252,9 @@ open class BlockSlimelingEgg constructor(assetName: String?) : Block(Material.RO
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(EGG_COLOR, EnumEggColor.entries[meta % 3])
-            .withProperty(BROKEN, meta - 3 >= 0)
+        return this.defaultBlockState()
+            .setValue(EGG_COLOR, EnumEggColor.entries[meta % 3])
+            .setValue(BROKEN, meta - 3 >= 0)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {

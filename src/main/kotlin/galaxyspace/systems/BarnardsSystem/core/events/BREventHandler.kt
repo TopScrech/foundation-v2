@@ -1,5 +1,7 @@
 package galaxyspace.systems.BarnardsSystem.core.events
 
+import net.minecraft.network.chat.Component
+
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent
 import net.minecraftforge.fml.common.eventhandler.Event.Result
 
@@ -13,17 +15,17 @@ import galaxyspace.core.handler.capabilities.GSStatsCapability
 import galaxyspace.core.handler.capabilities.StatsCapability
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.WorldUtil
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
+
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.event.entity.living.LivingEvent
 import net.minecraftforge.event.entity.player.UseHoeEvent
 import net.minecraftforge.event.furnace.FurnaceFuelBurnTimeEvent
 import net.minecraftforge.fml.common.eventhandler.Event
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 
 open class BREventHandler {
     @SubscribeEvent
@@ -31,13 +33,13 @@ open class BREventHandler {
         val world: World = event.getWorld()
         val state: IBlockState = world.getBlockState(event.getPos())
 
-        if (state === BRBlocks.BARNARDA_C_GRASS.getDefaultState() || state === BRBlocks.BARNARDA_C_BLOCKS.getDefaultState()
-                .withProperty(
+        if (state === BRBlocks.BARNARDA_C_GRASS.defaultBlockState() || state === BRBlocks.BARNARDA_C_BLOCKS.defaultBlockState()
+                .setValue(
                     Barnarda_C_Blocks.Companion.BASIC_TYPE,
                     EnumBlockBarnardaC.DIRT
                 )
         ) {
-            world.setBlockState(event.getPos(), BRBlocks.BARNARDA_C_FARMLAND.getDefaultState(), 3)
+            world.setBlock(event.getPos(), BRBlocks.BARNARDA_C_FARMLAND.defaultBlockState(), 3)
             event.setResult(Event.Result.ALLOW)
         }
     }
@@ -57,7 +59,7 @@ open class BREventHandler {
     @SubscribeEvent
     open fun onEntityUpdate(event: LivingEvent.LivingUpdateEvent) {
         val living: EntityLivingBase = event.getEntityLiving()
-        val world: World? = living.world
+        val world: World? = living.level()
 
         if (living is EntityPlayerMP) {
             val player: EntityPlayerMP = living
@@ -72,7 +74,7 @@ open class BREventHandler {
 
                 gsstats.setBarnardaSurvivalMode()
 
-                player.sendMessage(TextComponentString(EnumColor.BRIGHT_GREEN.toString() + "[BETA] Welcome in survival mode on Barnarda C."))
+                player.sendSystemMessage(Component.literal(EnumColor.BRIGHT_GREEN.toString() + "[BETA] Welcome in survival mode on Barnarda C."))
             }
         }
     }

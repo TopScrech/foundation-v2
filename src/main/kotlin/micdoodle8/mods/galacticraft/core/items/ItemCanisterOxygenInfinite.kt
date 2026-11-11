@@ -10,17 +10,17 @@ import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.item.EnumRarity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemCanisterOxygenInfinite constructor(assetName: String?) : Item(), IItemOxygenSupply, ISortableItem {
     init {
@@ -50,7 +50,7 @@ open class ItemCanisterOxygenInfinite constructor(assetName: String?) : Item(), 
     }
 
     /*@Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void registerIcons(IIconRegister iconRegister)
     {
         this.itemIcon = iconRegister.registerIcon(Constants.TEXTURE_PREFIX + "oxygenCanisterInfinite");
@@ -74,7 +74,7 @@ open class ItemCanisterOxygenInfinite constructor(assetName: String?) : Item(), 
         return (par1ItemStack)!!.getMaxDamage()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
@@ -84,7 +84,7 @@ open class ItemCanisterOxygenInfinite constructor(assetName: String?) : Item(), 
     }
 
     override fun onItemRightClick(worldIn: World, player: EntityPlayer, hand: EnumHand): ActionResult<ItemStack?> {
-        var itemStack: ItemStack = player.getHeldItem(hand)
+        var itemStack: ItemStack = player.getItemInHand(hand)
         if (player is EntityPlayerMP) {
             val stats: GCPlayerStats = (GCPlayerStats.get(player))!!
             val gear: ItemStack = (stats.getExtendedInventory())!!.getStackInSlot(2)

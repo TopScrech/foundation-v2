@@ -1,9 +1,9 @@
 package galaxyspace.core.handler.capabilities
 
 import galaxyspace.core.handler.capabilities.GSCapabilityStatsHandler
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.ICapabilitySerializable
 import java.lang.ref.WeakReference

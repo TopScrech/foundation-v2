@@ -1,13 +1,15 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
-import net.minecraft.block.Block
-import net.minecraft.init.Blocks
+import foundation.block.getStateFromMeta
+
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
 import net.minecraft.tileentity.TileEntityMobSpawner
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
 import net.minecraft.world.EnumSkyBlock
-import net.minecraft.world.World
-import net.minecraft.world.gen.structure.StructureBoundingBox
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.levelgen.structure.BoundingBox
 import net.minecraft.world.gen.structure.StructureComponent
 import java.util.Random
 
@@ -23,18 +25,18 @@ abstract class StructureComponentMoon : StructureComponent {
         var4: Int,
         var5: Int,
         var6: ResourceLocation?,
-        var7: StructureBoundingBox
+        var7: BoundingBox
     ): TileEntityMobSpawner? {
         var var8: TileEntityMobSpawner? = null
         val var9: Int = this.getXWithOffset(var3, var5)
         val var10: Int = this.getYWithOffset(var4)
         val var11: Int = this.getZWithOffset(var3, var5)
 
-        if (var7.isVecInside(BlockPos(var9, var10, var11)) && var1.getBlockState(BlockPos(var9, var10, var11))
+        if (var7.isInside(BlockPos(var9, var10, var11)) && var1.getBlockState(BlockPos(var9, var10, var11))
                 .getBlock() !== Blocks.MOB_SPAWNER
         ) {
-            var1.setBlockState(BlockPos(var9, var10, var11), Blocks.MOB_SPAWNER.getDefaultState(), 2)
-            var8 = var1.getTileEntity(BlockPos(var9, var10, var11)) as TileEntityMobSpawner?
+            var1.setBlock(BlockPos(var9, var10, var11), Blocks.MOB_SPAWNER.defaultBlockState(), 2)
+            var8 = var1.getBlockEntity(BlockPos(var9, var10, var11)) as TileEntityMobSpawner?
 
             if (var8 != null) {
                 var8.getSpawnerBaseLogic().setEntityId(var6)
@@ -72,13 +74,13 @@ abstract class StructureComponentMoon : StructureComponent {
     //    }
     override fun getXWithOffset(var1: Int, var2: Int): Int {
         when (this.getCoordBaseMode()!!.getHorizontalIndex()) {
-            0 -> return this.boundingBox.minX + var1
+            0 -> return this.boundingBox.minX() + var1
 
-            1 -> return this.boundingBox.maxX - var2
+            1 -> return this.boundingBox.maxX() - var2
 
-            2 -> return this.boundingBox.maxX - var1
+            2 -> return this.boundingBox.maxX() - var1
 
-            3 -> return this.boundingBox.minX + var2
+            3 -> return this.boundingBox.minX() + var2
 
             else -> return var1
         }
@@ -90,13 +92,13 @@ abstract class StructureComponentMoon : StructureComponent {
 
     override fun getZWithOffset(var1: Int, var2: Int): Int {
         when (this.getCoordBaseMode()!!.getHorizontalIndex()) {
-            0 -> return this.boundingBox.minZ + var2
+            0 -> return this.boundingBox.minZ() + var2
 
-            1 -> return this.boundingBox.minZ + var1
+            1 -> return this.boundingBox.minZ() + var1
 
-            2 -> return this.boundingBox.maxZ - var2
+            2 -> return this.boundingBox.maxZ() - var2
 
-            3 -> return this.boundingBox.maxZ - var1
+            3 -> return this.boundingBox.maxZ() - var1
 
             else -> return var2
         }
@@ -107,13 +109,13 @@ abstract class StructureComponentMoon : StructureComponent {
             return var1
         } else {
             when ((this.getCoordBaseMode()!!.getHorizontalIndex() + var3) % 4) {
-                0 -> return this.boundingBox.minX + var1
+                0 -> return this.boundingBox.minX() + var1
 
-                1 -> return this.boundingBox.maxX - var2
+                1 -> return this.boundingBox.maxX() - var2
 
-                2 -> return this.boundingBox.maxX - var1
+                2 -> return this.boundingBox.maxX() - var1
 
-                3 -> return this.boundingBox.minX + var2
+                3 -> return this.boundingBox.minX() + var2
 
                 else -> return var1
             }
@@ -125,13 +127,13 @@ abstract class StructureComponentMoon : StructureComponent {
             return var1
         } else {
             when ((this.getCoordBaseMode()!!.getHorizontalIndex() + var3) % 4) {
-                0 -> return this.boundingBox.minZ + var2
+                0 -> return this.boundingBox.minZ() + var2
 
-                1 -> return this.boundingBox.minZ + var1
+                1 -> return this.boundingBox.minZ() + var1
 
-                2 -> return this.boundingBox.maxZ - var2
+                2 -> return this.boundingBox.maxZ() - var2
 
-                3 -> return this.boundingBox.maxZ - var1
+                3 -> return this.boundingBox.maxZ() - var1
 
                 else -> return var2
             }
@@ -139,7 +141,7 @@ abstract class StructureComponentMoon : StructureComponent {
     }
 
     //    @Override
-    //    protected Block getBlockAtCurrentPosition(World var1, int var2, int var3, int var4, StructureBoundingBox var5)
+    //    protected Block getBlockAtCurrentPosition(World var1, int var2, int var3, int var4, BoundingBox var5)
     //    {
     //        return super.getBlockAtCurrentPosition(var1, var2, var3, var4, var5);
     //    }
@@ -151,20 +153,20 @@ abstract class StructureComponentMoon : StructureComponent {
         var5: Int,
         var6: Int,
         var7: Int,
-        var8: StructureBoundingBox
+        var8: BoundingBox
     ) {
         val var9: Int = this.getXWithOffsetAsIfRotated(var4, var6, var7)
         val var10: Int = this.getYWithOffset(var5)
         val var11: Int = this.getZWithOffsetAsIfRotated(var4, var6, var7)
 
-        if (var8.isVecInside(BlockPos(var9, var10, var11))) {
-            var1.setBlockState(BlockPos(var9, var10, var11), var2.getStateFromMeta(var3), 2)
+        if (var8.isInside(BlockPos(var9, var10, var11))) {
+            var1.setBlock(BlockPos(var9, var10, var11), var2.getStateFromMeta(var3), 2)
         }
     }
 
     protected fun fillBlocksRotated(
         var1: World,
-        var2: StructureBoundingBox,
+        var2: BoundingBox,
         var3: Int,
         var4: Int,
         var5: Int,
@@ -186,7 +188,7 @@ abstract class StructureComponentMoon : StructureComponent {
 
     protected fun fillAirRotated(
         var1: World,
-        var2: StructureBoundingBox,
+        var2: BoundingBox,
         var3: Int,
         var4: Int,
         var5: Int,
@@ -233,12 +235,12 @@ abstract class StructureComponentMoon : StructureComponent {
     fun nullifySkyLightForBoundingBox(var1: World) {
         this.nullifySkyLight(
             var1,
-            this.boundingBox.minX - 1,
-            this.boundingBox.minY - 1,
-            this.boundingBox.minZ - 1,
-            this.boundingBox.maxX + 1,
-            this.boundingBox.maxY + 1,
-            this.boundingBox.maxZ + 1
+            this.boundingBox.minX() - 1,
+            this.boundingBox.minY() - 1,
+            this.boundingBox.minZ() - 1,
+            this.boundingBox.maxX() + 1,
+            this.boundingBox.maxY() + 1,
+            this.boundingBox.maxZ() + 1
         )
     }
 
@@ -285,9 +287,9 @@ abstract class StructureComponentMoon : StructureComponent {
             var7: Int,
             var8: Int,
             var9: Int
-        ): StructureBoundingBox {
+        ): BoundingBox {
             when (var9) {
-                0 -> return StructureBoundingBox(
+                0 -> return BoundingBox(
                     var0 + var3,
                     var1 + var4,
                     var2 + var5,
@@ -296,7 +298,7 @@ abstract class StructureComponentMoon : StructureComponent {
                     var2 + var8 + var5
                 )
 
-                1 -> return StructureBoundingBox(
+                1 -> return BoundingBox(
                     var0 - var8 + var5,
                     var1 + var4,
                     var2 + var3,
@@ -305,7 +307,7 @@ abstract class StructureComponentMoon : StructureComponent {
                     var2 + var6 + var3
                 )
 
-                2 -> return StructureBoundingBox(
+                2 -> return BoundingBox(
                     var0 - var6 - var3,
                     var1 + var4,
                     var2 - var8 - var5,
@@ -314,7 +316,7 @@ abstract class StructureComponentMoon : StructureComponent {
                     var2 - var5
                 )
 
-                3 -> return StructureBoundingBox(
+                3 -> return BoundingBox(
                     var0 + var5,
                     var1 + var4,
                     var2 - var6,
@@ -323,7 +325,7 @@ abstract class StructureComponentMoon : StructureComponent {
                     var2 + var3
                 )
 
-                else -> return StructureBoundingBox(
+                else -> return BoundingBox(
                     var0 + var3,
                     var1 + var4,
                     var2 + var5,

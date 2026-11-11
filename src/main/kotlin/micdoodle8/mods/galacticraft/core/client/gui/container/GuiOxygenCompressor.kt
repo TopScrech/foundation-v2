@@ -10,8 +10,8 @@ import micdoodle8.mods.galacticraft.core.items.ItemOxygenTank
 import micdoodle8.mods.galacticraft.core.tile.TileEntityOxygenCompressor
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 import kotlin.math.floor
@@ -158,13 +158,13 @@ open class GuiOxygenCompressor constructor(
     }
 
     private fun getStatus(): String? {
-        if (this.compressor!!.getStackInSlot(0) == null || this.compressor.getStackInSlot(0)
+        if (this.compressor!!.getItem(0) == null || this.compressor.getItem(0)
                 .getItem() !is ItemOxygenTank
         ) {
             return EnumColor.DARK_RED.toString() + GCCoreUtil.translate("gui.status.missingtank.name")
         }
 
-        if (this.compressor.getStackInSlot(0) != null && this.compressor.getStackInSlot(0).getItemDamage() == 0) {
+        if (this.compressor.getItem(0) != null && ItemOxygenTank.used(this.compressor.getItem(0)) == 0) {
             return EnumColor.DARK_RED.toString() + GCCoreUtil.translate("gui.status.fulltank.name")
         }
 
@@ -218,6 +218,6 @@ open class GuiOxygenCompressor constructor(
     }
 
     companion object {
-        private val compressorTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/compressor.png")
+        private val compressorTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/compressor.png")
     }
 }

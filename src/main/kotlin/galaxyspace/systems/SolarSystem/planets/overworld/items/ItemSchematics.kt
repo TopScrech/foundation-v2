@@ -1,145 +1,27 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.items
 
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.NonNullList
-import net.minecraft.util.ResourceLocation
-
-import galaxyspace.GalaxySpace
-import galaxyspace.core.GSItems
+import foundation.item.FoundationItemProperties
 import galaxyspace.core.configs.GSConfigCore
-import galaxyspace.core.util.GSCreativeTabs
-import micdoodle8.mods.galacticraft.api.recipe.ISchematicItem
 import micdoodle8.mods.galacticraft.api.recipe.SchematicRegistry
-import micdoodle8.mods.galacticraft.core.items.ISortableItem
 import micdoodle8.mods.galacticraft.core.items.ItemSchematic
-import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
-import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.client.util.ITooltipFlag
-import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.*
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.item.Rarity
+import net.minecraft.world.item.context.UseOnContext
 
-// These static methods intentionally hide methods inherited from Java classes
-@Suppress("ACCIDENTAL_OVERRIDE")
-open class ItemSchematics constructor() : ItemSchematic("schematics"), ISchematicItem, ISortableItem {
-    override fun getCreativeTab(): CreativeTabs? {
-        return GSCreativeTabs.GSItemsTab
-    }
-
-    override fun onItemUse(
-        playerIn: EntityPlayer,
-        worldIn: World,
-        pos: BlockPos,
-        hand: EnumHand,
-        facing: EnumFacing,
-        hitX: Float,
-        hitY: Float,
-        hitZ: Float
-    ): EnumActionResult {
-        return EnumActionResult.FAIL
-    }
-
-    override fun getSubItems(tab: CreativeTabs, list: NonNullList<ItemStack>) {
-        if (tab === GSCreativeTabs.GSItemsTab || tab === CreativeTabs.SEARCH) {
-            var i: Int
-
-            i = if (GSConfigCore.enableAdvancedRocketCraft) 0 else 5
-            while (i < 7) {
-                list.add(ItemStack(this, 1, i))
-                i++
-            }
-        }
-    }
-
-    @SideOnly(Side.CLIENT)
-    override fun addInformation(stack: ItemStack, world: World?, list: MutableList<String?>, flagIn: ITooltipFlag) {
-        val meta: Int = stack.getItemDamage()
-
-        when (meta) {
-            0 -> list.add(GCCoreUtil.translate("item.rocket_cone.name"))
-            1 -> list.add(GCCoreUtil.translate("item.rocket_body.name"))
-            2 -> list.add(GCCoreUtil.translate("item.rocket_engine.name"))
-            3 -> list.add(GCCoreUtil.translate("item.rocket_booster.name"))
-            4 -> list.add(GCCoreUtil.translate("item.rocket_stabiliser.name"))
-            5 -> list.add(GCCoreUtil.translate("item.oxygen_tank_epp_1.name"))
-            6 -> list.add(GCCoreUtil.translate("tile.port_nuclear_reactor.name"))
-        }
-    }
-
-    override fun getCategory(meta: Int): EnumSortCategoryItem {
-        return EnumSortCategoryItem.SCHEMATIC
-    }
-
-    override fun getIndex(damage: Int): Int {
-        return damage + indexOffset
-    }
-
+open class ItemSchematics : ItemSchematic(
+    FoundationItemProperties.named("galaxyspace", "schematics").stacksTo(1).rarity(Rarity.RARE),
+    models.zip(tooltips).map { (model, tooltip) -> Definition("galaxyspace:item/schematics/$model", tooltip) }, "item.schematics.name"
+) {
+    override fun creativeMetadata(): List<Int> = ((if (GSConfigCore.enableAdvancedRocketCraft) 0 else 5) until 7).toList()
+    // GalaxySpace intentionally prohibited placing these schematics on walls
+    override fun useOn(context: UseOnContext): InteractionResult = InteractionResult.FAIL
     companion object {
-        private const val indexOffset = 0
-
-        @JvmStatic
-        fun registerSchematicItems() {
-            SchematicRegistry.registerSchematicItem(ItemStack(GSItems.SCHEMATICS, 1, 0))
-            SchematicRegistry.registerSchematicItem(ItemStack(GSItems.SCHEMATICS, 1, 1))
-            SchematicRegistry.registerSchematicItem(ItemStack(GSItems.SCHEMATICS, 1, 2))
-            SchematicRegistry.registerSchematicItem(ItemStack(GSItems.SCHEMATICS, 1, 3))
-            SchematicRegistry.registerSchematicItem(ItemStack(GSItems.SCHEMATICS, 1, 4))
-            SchematicRegistry.registerSchematicItem(ItemStack(GSItems.SCHEMATICS, 1, 5))
-            SchematicRegistry.registerSchematicItem(ItemStack(GSItems.SCHEMATICS, 1, 6))
-        }
-
-        @JvmStatic
-        @SideOnly(value = Side.CLIENT)
-        fun registerTextures() {
-            SchematicRegistry.registerTexture(
-                ResourceLocation(
-                    GalaxySpace.ASSET_PREFIX,
-                    "textures/items/schematics/schematic_1.png"
-                )
-            )
-            SchematicRegistry.registerTexture(
-                ResourceLocation(
-                    GalaxySpace.ASSET_PREFIX,
-                    "textures/items/schematics/schematic_2.png"
-                )
-            )
-            SchematicRegistry.registerTexture(
-                ResourceLocation(
-                    GalaxySpace.ASSET_PREFIX,
-                    "textures/items/schematics/schematic_3.png"
-                )
-            )
-            SchematicRegistry.registerTexture(
-                ResourceLocation(
-                    GalaxySpace.ASSET_PREFIX,
-                    "textures/items/schematics/schematic_4.png"
-                )
-            )
-            SchematicRegistry.registerTexture(
-                ResourceLocation(
-                    GalaxySpace.ASSET_PREFIX,
-                    "textures/items/schematics/schematic_5.png"
-                )
-            )
-            SchematicRegistry.registerTexture(
-                ResourceLocation(
-                    GalaxySpace.ASSET_PREFIX,
-                    "textures/items/schematics/schematic_6.png"
-                )
-            )
-            SchematicRegistry.registerTexture(
-                ResourceLocation(
-                    GalaxySpace.ASSET_PREFIX,
-                    "textures/items/schematics/schematic_7.png"
-                )
-            )
+        @JvmField val models = listOf("schematic_cone", "schematic_body", "schematic_engine", "schematic_booster", "schematic_stabiliser", "schematic_oxygen_tank", "schematic_port_nuclear_reactor")
+        @JvmField val tooltips = listOf("item.rocket_cone.name", "item.rocket_body.name", "item.rocket_engine.name", "item.rocket_booster.name", "item.rocket_stabiliser.name", "item.oxygen_tank_epp_1.name", "tile.port_nuclear_reactor.name")
+        @JvmStatic fun registerSchematicItems() { registerFamily("galaxyspace:schematics", 7) }
+        @JvmStatic fun registerTextures() {
+            for (name in models) SchematicRegistry.registerTexture(Identifier.parse("galaxyspace:textures/items/schematics/$name.png"))
         }
     }
 }

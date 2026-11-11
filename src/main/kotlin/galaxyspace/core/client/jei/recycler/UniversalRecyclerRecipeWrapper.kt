@@ -7,7 +7,7 @@ import javax.annotation.Nonnull
 import mezz.jei.api.ingredients.IIngredients
 import mezz.jei.api.recipe.IRecipeWrapper
 import net.minecraft.client.Minecraft
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.fluids.FluidStack
 import java.util.*
 

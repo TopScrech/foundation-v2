@@ -1,5 +1,7 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.world.gen.we
 
+import foundation.block.getStateFromMeta
+
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
 import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_BiomeLayer
 import galaxyspace.systems.BarnardsSystem.core.configs.BRConfigCore
@@ -7,9 +9,9 @@ import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.world.gen.we.Barnar
 import galaxyspace.core.prefab.world.gen.WorldGenCircleBlock
 import asmodeuscore.core.utils.worldengine.WE_Biome
 import net.minecraft.entity.passive.EntitySquid
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class Barnarda_C_Ocean constructor(min: Double, max: Double, frozen: Boolean) : WE_Biome(
@@ -61,9 +63,9 @@ open class Barnarda_C_Ocean constructor(min: Double, max: Double, frozen: Boolea
             false
         )
 
-        if (frozen) standardBiomeLayers.add(Blocks.ICE.getDefaultState(), 64, 0, -1, 0, true)
+        if (frozen) standardBiomeLayers.add(Blocks.ICE.defaultBlockState(), 64, 0, -1, 0, true)
 
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         createChunkGen_InXZ_List.add(standardBiomeLayers)
     }
 
@@ -73,7 +75,7 @@ open class Barnarda_C_Ocean constructor(min: Double, max: Double, frozen: Boolea
         var pos: BlockPos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
         var circle: WorldGenCircleBlock = WorldGenCircleBlock(
-            Blocks.CLAY.getDefaultState(),
+            Blocks.CLAY.defaultBlockState(),
             (rand)!!.nextInt(5) + 3,
             BRBlocks.BARNARDA_C_BLOCKS.getStateFromMeta(0)
         )
@@ -82,10 +84,10 @@ open class Barnarda_C_Ocean constructor(min: Double, max: Double, frozen: Boolea
             randPosZ = z + (rand)!!.nextInt(8) + 8
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-            circle.generate((world)!!, (rand)!!, pos.down())
+            circle.generate((world)!!, (rand)!!, pos.below())
         }
         circle = WorldGenCircleBlock(
-            Blocks.GRAVEL.getDefaultState(),
+            Blocks.GRAVEL.defaultBlockState(),
             (rand)!!.nextInt(16) + 5,
             BRBlocks.BARNARDA_C_BLOCKS.getStateFromMeta(0)
         )
@@ -93,7 +95,7 @@ open class Barnarda_C_Ocean constructor(min: Double, max: Double, frozen: Boolea
             randPosX = x + (rand)!!.nextInt(8) + 8
             randPosZ = z + (rand)!!.nextInt(8) + 8
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
-            circle.generate((world)!!, (rand)!!, pos.down())
+            circle.generate((world)!!, (rand)!!, pos.below())
         }
     }
 

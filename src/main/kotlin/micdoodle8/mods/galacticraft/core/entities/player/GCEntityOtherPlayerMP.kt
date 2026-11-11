@@ -10,11 +10,11 @@ import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import net.minecraft.client.entity.EntityOtherPlayerMP
 import net.minecraft.client.network.NetworkPlayerInfo
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class GCEntityOtherPlayerMP constructor(par1World: World, profile: GameProfile) :
     EntityOtherPlayerMP(par1World, profile) {
@@ -42,7 +42,7 @@ open class GCEntityOtherPlayerMP constructor(par1World: World, profile: GameProf
         return vanillaCape
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getBrightnessForRender(): Int {
         var height: Double = this.posY + this.getEyeHeight().toDouble()
         if (height > 255.0) height = 255.0

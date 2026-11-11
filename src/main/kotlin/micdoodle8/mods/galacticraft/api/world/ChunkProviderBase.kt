@@ -1,8 +1,8 @@
 package micdoodle8.mods.galacticraft.api.world
 
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.gen.IChunkGenerator
 
 abstract class ChunkProviderBase : IChunkGenerator {

@@ -1,26 +1,28 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.blocks
 
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.core.blocks.BlockTileGC
 import micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityMinerBase
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.BlockFaceShape
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.BlockRenderLayer
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
 import net.minecraft.util.math.RayTraceResult
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.Random
 
@@ -90,7 +92,7 @@ open class BlockMinerBaseFull constructor(assetName: String?) : BlockTileGC(Mate
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val tileEntity: TileEntity? = worldIn.getTileEntity(pos)
+        val tileEntity: TileEntity? = worldIn.getBlockEntity(pos)
 
         if (tileEntity is TileEntityMinerBase) {
             tileEntity.onBlockRemoval()
@@ -111,7 +113,7 @@ open class BlockMinerBaseFull constructor(assetName: String?) : BlockTileGC(Mate
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val tileEntity: TileEntity? = (worldIn)!!.getTileEntity(pos)
+        val tileEntity: TileEntity? = (worldIn)!!.getBlockEntity(pos)
         if (tileEntity is TileEntityMinerBase) {
             return tileEntity.onActivated(playerIn)
         } else {
@@ -155,14 +157,14 @@ open class BlockMinerBaseFull constructor(assetName: String?) : BlockTileGC(Mate
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val te: TileEntity? = (world)!!.getTileEntity(pos)
+        val te: TileEntity? = (world)!!.getBlockEntity(pos)
         if (te is TileEntityMinerBase) {
             te.updateFacing()
         }
         return true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT
     }

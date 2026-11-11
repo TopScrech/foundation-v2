@@ -6,11 +6,11 @@ import asmodeuscore.core.network.packet.AsmodeusPacketHandler
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.SimpleChannelInboundHandler
 import asmodeuscore.api.network.IMessage
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.network.INetHandler
 import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.lang.Exception
 
 @Sharable

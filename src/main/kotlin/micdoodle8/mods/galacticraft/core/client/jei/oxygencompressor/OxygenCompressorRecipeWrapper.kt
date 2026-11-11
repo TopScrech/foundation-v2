@@ -5,7 +5,7 @@ import javax.annotation.Nonnull
 import mezz.jei.api.ingredients.IIngredients
 import mezz.jei.api.recipe.BlankRecipeWrapper
 import mezz.jei.api.recipe.wrapper.ICraftingRecipeWrapper
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 open class OxygenCompressorRecipeWrapper constructor(@field:Nonnull @param:Nonnull private val output: ItemStack) :
     BlankRecipeWrapper(), ICraftingRecipeWrapper {

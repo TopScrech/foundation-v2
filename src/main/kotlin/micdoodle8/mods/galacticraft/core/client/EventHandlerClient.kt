@@ -8,13 +8,12 @@ import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.client.entity.EntityPlayerSP
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.client.player.LocalPlayer as EntityPlayerSP
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraftforge.client.event.RenderPlayerEvent
-import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.common.eventhandler.EventPriority
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import org.lwjgl.opengl.GL11
 
 open class EventHandlerClient {
@@ -24,8 +23,8 @@ open class EventHandlerClient {
 
         val player: EntityPlayer = event.getEntityPlayer()
 
-        if (player.getRidingEntity() is ICameraZoomEntity && player === Minecraft.getMinecraft().player && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0) {
-            val entity: Entity? = player.getRidingEntity()
+        if (player.getVehicle() is ICameraZoomEntity && player === Minecraft.getInstance().player && Minecraft.getInstance().gameSettings.thirdPersonView == 0) {
+            val entity: Entity? = player.getVehicle()
             var rotateOffset: Float = (entity as ICameraZoomEntity).getRotateOffset()
             if (rotateOffset > -10f) {
                 rotateOffset += ClientProxyCore.PLAYER_Y_OFFSET
@@ -120,7 +119,7 @@ open class EventHandlerClient {
 
     companion object {
         @JvmField
-        var mc: Minecraft = FMLClientHandler.instance().getClient()
+        var mc: Minecraft = Minecraft.getInstance()
 
         @JvmField
         var sneakRenderOverride: Boolean = false

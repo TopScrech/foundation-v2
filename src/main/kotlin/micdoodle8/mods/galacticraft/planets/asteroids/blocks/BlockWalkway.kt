@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.blocks.BlockTransmitter
@@ -12,30 +15,30 @@ import micdoodle8.mods.galacticraft.core.tile.TileEntityNull
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.OxygenUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class BlockWalkway constructor(assetName: String?) : BlockTransmitter(Material.IRON), ITileEntityProvider,
-    IShiftDescription, ISortableBlock {
+    IShiftDescription, ISortableBlock, LegacyBlockMetadata {
     enum class EnumWalkwayType(private val meta: Int, private val serializedName: String) : IStringSerializable {
         WALKWAY(0, "walkway"),
         WALKWAY_WIRE(1, "walkway_wire"),
@@ -45,7 +48,9 @@ open class BlockWalkway constructor(assetName: String?) : BlockTransmitter(Mater
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -66,7 +71,7 @@ open class BlockWalkway constructor(assetName: String?) : BlockTransmitter(Mater
         this.hasTileEntity = true
         this.setDefaultState(
             this.blockState.getBaseState()
-                .withProperty(WALKWAY_TYPE, EnumWalkwayType.WALKWAY)
+                .setValue(WALKWAY_TYPE, EnumWalkwayType.WALKWAY)
         )
     }
 
@@ -81,7 +86,7 @@ open class BlockWalkway constructor(assetName: String?) : BlockTransmitter(Mater
         return AABB_UNCONNECTED
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun shouldSideBeRendered(
         blockState: IBlockState,
         blockAccess: IBlockAccess,
@@ -91,7 +96,7 @@ open class BlockWalkway constructor(assetName: String?) : BlockTransmitter(Mater
         return true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
@@ -148,7 +153,7 @@ open class BlockWalkway constructor(assetName: String?) : BlockTransmitter(Mater
     //    @Override
     //    public void setBlockBoundsBasedOnState(IBlockAccess worldIn, BlockPos pos)
     //    {
-    //        TileEntity tileEntity = worldIn.getTileEntity(pos);
+    //        TileEntity tileEntity = worldIn.getBlockEntity(pos);
     //        TileEntity[] connectable = new TileEntity[6];
     //
     //        if (tileEntity != null)
@@ -196,7 +201,7 @@ open class BlockWalkway constructor(assetName: String?) : BlockTransmitter(Mater
     //    @Override
     //    public void addCollisionBoxesToList(World worldIn, BlockPos pos, IBlockState state, AxisAlignedBB mask, List<AxisAlignedBB> list, Entity collidingEntity)
     //    {
-    //        TileEntity tileEntity = worldIn.getTileEntity(pos);
+    //        TileEntity tileEntity = worldIn.getBlockEntity(pos);
     //        TileEntity[] connectable = new TileEntity[6];
     //
     //        if (this.getNetworkType(state) != null)
@@ -279,14 +284,14 @@ open class BlockWalkway constructor(assetName: String?) : BlockTransmitter(Mater
     }
 
     override fun getActualState(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState {
-        var connectable: Array<Any?> = arrayOfNulls<Any>(EnumFacing.VALUES.size)
+        var connectable: Array<Any?> = arrayOfNulls<Any>(EnumFacing.values().size)
 
         var tileEntity: TileEntity? = null
 
         if (state.getValue(WALKWAY_TYPE) != EnumWalkwayType.WALKWAY) {
-            tileEntity = worldIn.getTileEntity(pos)
+            tileEntity = worldIn.getBlockEntity(pos)
         }
-        for (direction: EnumFacing in EnumFacing.VALUES) {
+        for (direction: EnumFacing in EnumFacing.values()) {
             if (direction == EnumFacing.UP || (direction == EnumFacing.DOWN && tileEntity == null)) {
                 continue
             }
@@ -311,16 +316,16 @@ open class BlockWalkway constructor(assetName: String?) : BlockTransmitter(Mater
             }
         }
 
-        return state.withProperty(NORTH, connectable[EnumFacing.NORTH.ordinal] != null)
-            .withProperty(EAST, connectable[EnumFacing.EAST.ordinal] != null)
-            .withProperty(SOUTH, connectable[EnumFacing.SOUTH.ordinal] != null)
-            .withProperty(WEST, connectable[EnumFacing.WEST.ordinal] != null)
-            .withProperty(DOWN, connectable[EnumFacing.DOWN.ordinal] != null)
+        return state.setValue(NORTH, connectable[EnumFacing.NORTH.ordinal] != null)
+            .setValue(EAST, connectable[EnumFacing.EAST.ordinal] != null)
+            .setValue(SOUTH, connectable[EnumFacing.SOUTH.ordinal] != null)
+            .setValue(WEST, connectable[EnumFacing.WEST.ordinal] != null)
+            .setValue(DOWN, connectable[EnumFacing.DOWN.ordinal] != null)
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(WALKWAY_TYPE, (EnumWalkwayType.Companion.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(WALKWAY_TYPE, (EnumWalkwayType.Companion.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -337,7 +342,7 @@ open class BlockWalkway constructor(assetName: String?) : BlockTransmitter(Mater
         return this.getMetaFromState(state)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT
     }

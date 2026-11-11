@@ -6,9 +6,9 @@ import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent
 
 import micdoodle8.mods.galacticraft.planets.asteroids.dimension.WorldProviderAsteroids
 import micdoodle8.mods.galacticraft.planets.asteroids.entities.EntitySmallAsteroid
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.PlayerEvent
 import kotlin.math.cos
 import kotlin.math.sin
@@ -53,37 +53,37 @@ open class AsteroidsPlayerHandler {
     }
 
     open fun onPlayerUpdate(player: EntityPlayerMP) {
-        if (!player.world.isRemote && player.world.provider is WorldProviderAsteroids) {
+        if (!player.level().isRemote && player.level().provider is WorldProviderAsteroids) {
             val f: Int = 50
 
-            if (player.world.rand.nextInt(f) == 0 && player.posY < 260.0) {
-                val closestPlayer: EntityPlayer? = player.world.getClosestPlayerToEntity(player, 100.0)
+            if (player.level().rand.nextInt(f) == 0 && player.y < 260.0) {
+                val closestPlayer: EntityPlayer? = player.level().getClosestPlayerToEntity(player, 100.0)
 
-                if (closestPlayer == null || closestPlayer.getEntityId() <= player.getEntityId()) {
+                if (closestPlayer == null || closestPlayer.getId() <= player.getId()) {
                     val x: Double
                     val y: Double
                     val z: Double
                     val motX: Double
                     val motY: Double
                     val motZ: Double
-                    val r: Double = player.world.rand.nextInt(60) + 30.0
-                    val theta: Double = Math.PI * 2.0 * player.world.rand.nextDouble()
-                    x = player.posX + cos(theta) * r
-                    y = player.posY + player.world.rand.nextInt(5)
-                    z = player.posZ + sin(theta) * r
-                    motX = (player.posX - x + (player.world.rand.nextDouble() - 0.5) * 40) / 400.0f
-                    motY = (player.world.rand.nextDouble() - 0.5) * 0.4
-                    motZ = (player.posZ - z + (player.world.rand.nextDouble() - 0.5) * 40) / 400.0f
+                    val r: Double = player.level().rand.nextInt(60) + 30.0
+                    val theta: Double = Math.PI * 2.0 * player.level().rand.nextDouble()
+                    x = player.x + cos(theta) * r
+                    y = player.y + player.level().rand.nextInt(5)
+                    z = player.z + sin(theta) * r
+                    motX = (player.x - x + (player.level().rand.nextDouble() - 0.5) * 40) / 400.0f
+                    motY = (player.level().rand.nextDouble() - 0.5) * 0.4
+                    motZ = (player.z - z + (player.level().rand.nextDouble() - 0.5) * 40) / 400.0f
 
-                    val smallAsteroid: EntitySmallAsteroid = EntitySmallAsteroid(player.world)
+                    val smallAsteroid: EntitySmallAsteroid = EntitySmallAsteroid(player.level())
                     smallAsteroid.setPosition(x, y, z)
                     smallAsteroid.motionX = motX
                     smallAsteroid.motionY = motY
                     smallAsteroid.motionZ = motZ
-                    smallAsteroid.spinYaw = player.world.rand.nextFloat() * 4
-                    smallAsteroid.spinPitch = player.world.rand.nextFloat() * 2
+                    smallAsteroid.spinYaw = player.level().rand.nextFloat() * 4
+                    smallAsteroid.spinPitch = player.level().rand.nextFloat() * 2
 
-                    player.world.spawnEntity(smallAsteroid)
+                    player.level().spawnEntity(smallAsteroid)
                 }
             }
         }

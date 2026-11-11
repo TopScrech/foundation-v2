@@ -11,8 +11,8 @@ import micdoodle8.mods.galacticraft.core.Constants
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.Vec3d
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraftforge.fml.client.FMLClientHandler
 
 open class SkyProviderCeres : SkyProviderBase() {
@@ -104,7 +104,7 @@ open class SkyProviderCeres : SkyProviderBase() {
     }
 
     override fun sunImage(): ResourceLocation {
-        return ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
+        return ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sun_blank.png")
     }
 
     override fun modeLight(): ModeLight {
@@ -124,14 +124,14 @@ open class SkyProviderCeres : SkyProviderBase() {
     }
 
     companion object {
-        //private static final ResourceLocation meteor1Texture = new ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/environment/background/meteor1.png");
-        //private static final ResourceLocation meteor2Texture = new ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/environment/background/meteor2.png");
-        //private static final ResourceLocation meteor3Texture = new ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/environment/background/meteor3.png");
+        //private static final ResourceLocation meteor1Texture = new ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/environment/background/meteor1.png");
+        //private static final ResourceLocation meteor2Texture = new ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/environment/background/meteor2.png");
+        //private static final ResourceLocation meteor3Texture = new ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/environment/background/meteor3.png");
         private val meteorpoleTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/environment/background/meteorpole.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/environment/background/meteorpole.png")
 
         private val jupiterTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/jupiter.png")
-        private val marsTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/mars.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/celestialbodies/sol/jupiter.png")
+        private val marsTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/mars.png")
     }
 }

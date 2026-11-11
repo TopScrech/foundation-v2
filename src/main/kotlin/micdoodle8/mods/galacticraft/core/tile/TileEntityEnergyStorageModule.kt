@@ -1,5 +1,6 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import net.minecraft.world.ContainerHelper
 import java.util.EnumSet
 import micdoodle8.mods.galacticraft.api.item.IItemElectricBase
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType
@@ -11,21 +12,21 @@ import micdoodle8.mods.galacticraft.core.energy.item.ItemElectricBase
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseUniversalElectricalSource
 import micdoodle8.mods.galacticraft.core.inventory.IInventoryDefaults
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
 import java.util.HashSet
 import kotlin.math.floor
 
 open class TileEntityEnergyStorageModule @JvmOverloads constructor(tier: Int = 1) :
     TileBaseUniversalElectricalSource(), ISidedInventory, IInventoryDefaults, IConnector, IMachineSides {
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent? = super<TileBaseUniversalElectricalSource>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = super<TileBaseUniversalElectricalSource>.getDisplayName()
 
     private var stacks: NonNullList<ItemStack> = NonNullList.withSize<ItemStack>(2, ItemStack.EMPTY)
 
@@ -54,7 +55,7 @@ open class TileEntityEnergyStorageModule @JvmOverloads constructor(tier: Int = 1
             //for version update compatibility
             val b: Block = this.world.getBlockState(this.getPos()).getBlock()
             if (b === GCBlocks.machineBase) {
-                this.world.setBlockState(this.getPos(), (GCBlocks.machineTiered)!!.getDefaultState(), 2)
+                this.world.setBlock(this.getPos(), (GCBlocks.machineTiered)!!.defaultBlockState(), 2)
             } else if (metadata >= 8) {
                 this.setTier2()
             }
@@ -100,7 +101,7 @@ open class TileEntityEnergyStorageModule @JvmOverloads constructor(tier: Int = 1
             this.initialised = false
         }
 
-        this.stacks = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.stacks = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
         ItemStackHelper.loadAllItems(nbt, this.stacks)
 
         this.readMachineSidesFromNBT(nbt) //Needed by IMachineSides
@@ -120,40 +121,40 @@ open class TileEntityEnergyStorageModule @JvmOverloads constructor(tier: Int = 1
         return nbt
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.stacks.size
     }
 
-    override fun getStackInSlot(var1: Int): ItemStack {
+    override fun getItem(var1: Int): ItemStack {
         return this.stacks.get(var1)
     }
 
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        val itemstack: ItemStack = ItemStackHelper.getAndSplit(this.stacks, index, count)
+    override fun removeItem(index: Int, count: Int): ItemStack {
+        val itemstack: ItemStack = ContainerHelper.removeItem(this.stacks, index, count)
 
         if (!itemstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
 
         return itemstack
     }
 
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        val oldstack: ItemStack = ItemStackHelper.getAndRemove(this.stacks, index)
+    override fun removeItemNoUpdate(index: Int): ItemStack {
+        val oldstack: ItemStack = ContainerHelper.takeItem(this.stacks, index)
         if (!oldstack.isEmpty()) {
-            this.markDirty()
+            this.setChanged()
         }
         return oldstack
     }
 
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+    override fun setItem(index: Int, stack: ItemStack) {
         this.stacks.set(index, stack)
 
-        if (stack.getCount() > this.getInventoryStackLimit()) {
-            stack.setCount(this.getInventoryStackLimit())
+        if (stack.getCount() > this.getMaxStackSize()) {
+            stack.setCount(this.getMaxStackSize())
         }
 
-        this.markDirty()
+        this.setChanged()
     }
 
     override fun isEmpty(): Boolean {
@@ -166,16 +167,16 @@ open class TileEntityEnergyStorageModule @JvmOverloads constructor(tier: Int = 1
         return true
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate(if (this.tierGC == 1) "tile.machine.1.name" else "tile.machine.8.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable(if (this.tierGC == 1) "tile.machine.1.name" else "tile.machine.8.name")
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 1
     }
 
-    override fun isUsableByPlayer(par1EntityPlayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && par1EntityPlayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
     }
@@ -185,7 +186,7 @@ open class TileEntityEnergyStorageModule @JvmOverloads constructor(tier: Int = 1
         return IntArray(0)
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         return ItemElectricBase.isElectricItem(itemstack.getItem())
     }
 
@@ -194,7 +195,7 @@ open class TileEntityEnergyStorageModule @JvmOverloads constructor(tier: Int = 1
     //    {
     //        return new int[] { 0, 1 };
     //    }
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
         if (itemstack.getItem() is IItemElectricBase) {
             if (slotID == 0) {
                 return (itemstack.getItem() as IItemElectricBase).getTransfer(itemstack) > 0
@@ -205,7 +206,7 @@ open class TileEntityEnergyStorageModule @JvmOverloads constructor(tier: Int = 1
         return false
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         if (itemstack.getItem() is IItemElectricBase) {
             if (slotID == 0) {
                 return (itemstack.getItem() as IItemElectricBase).getTransfer(itemstack) <= 0

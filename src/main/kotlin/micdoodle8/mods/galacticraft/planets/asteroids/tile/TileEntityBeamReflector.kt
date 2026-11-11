@@ -7,9 +7,9 @@ import micdoodle8.mods.galacticraft.api.power.ILaserNode
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.energy.tile.EnergyStorage
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -100,7 +100,7 @@ open class TileEntityBeamReflector : TileEntityBeamOutput(), ILaserNode {
 
     private var renderAABB: AxisAlignedBB? = null
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         if (this.renderAABB == null) {
             this.renderAABB = AxisAlignedBB(pos, pos.add(1, 2, 1))
@@ -108,7 +108,7 @@ open class TileEntityBeamReflector : TileEntityBeamOutput(), ILaserNode {
         return this.renderAABB!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return Constants.RENDERDISTANCE_SHORT
     }

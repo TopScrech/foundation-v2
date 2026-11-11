@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.entities
 
+import net.minecraft.network.chat.Component
+
 import java.util.Random
 
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
@@ -9,16 +11,16 @@ import micdoodle8.mods.galacticraft.core.tile.TileEntityTreasureChest
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.entity.item.EntityXPOrb
 import net.minecraft.entity.monster.EntityMob
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
 import net.minecraft.server.MinecraftServer
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumParticleTypes
-import net.minecraft.util.text.TextComponentString
+
 import net.minecraft.world.BossInfo
 import net.minecraft.world.BossInfoServer
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.common.network.NetworkRegistry
 import java.util.*
 
@@ -112,7 +114,7 @@ abstract class EntityBossBase(world: World) : EntityMob(world), IBoss {
             var chest: TileEntityTreasureChest? = null
 
             if (this.spawner != null && this.spawner!!.getChestPos() != null) {
-                val chestTest: TileEntity? = this.world.getTileEntity(this.spawner!!.getChestPos())
+                val chestTest: TileEntity? = this.world.getBlockEntity(this.spawner!!.getChestPos())
 
                 if (chestTest != null && chestTest is TileEntityTreasureChest) {
                     chest = chestTest
@@ -135,8 +137,8 @@ abstract class EntityBossBase(world: World) : EntityMob(world), IBoss {
                         chest.locked = true
                     }
 
-                    for (k: Int in 0..<chest.getSizeInventory()) {
-                        chest.setInventorySlotContents(k, ItemStack.EMPTY)
+                    for (k: Int in 0..<chest.getContainerSize()) {
+                        chest.setItem(k, ItemStack.EMPTY)
                     }
 
                     chest.fillWithLoot(null)
@@ -147,8 +149,8 @@ abstract class EntityBossBase(world: World) : EntityMob(world), IBoss {
 //                    WeightedRandomChestContent.generateChestContents(this.rand, info.getItems(this.rand), chest, info.getCount(this.rand));
 //                    WeightedRandomChestContent.generateChestContents(this.rand, info.getItems(this.rand), chest, info.getCount(this.rand));
                     val schematic: ItemStack = this.getGuaranteedLoot(this.rand)
-                    val slot: Int = this.rand.nextInt(chest.getSizeInventory())
-                    chest.setInventorySlotContents(slot, schematic)
+                    val slot: Int = this.rand.nextInt(chest.getContainerSize())
+                    chest.setItem(slot, schematic)
                 }
             }
 
@@ -185,7 +187,7 @@ abstract class EntityBossBase(world: World) : EntityMob(world), IBoss {
                 )
 
                 for (p: EntityPlayer in entitiesWithin2) {
-                    p.sendMessage(TextComponentString(GCCoreUtil.translate("gui.skeleton_boss.message")))
+                    p.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.skeleton_boss.message")))
                 }
 
                 this.setDead()

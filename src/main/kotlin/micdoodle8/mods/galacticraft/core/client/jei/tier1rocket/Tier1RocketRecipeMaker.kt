@@ -4,8 +4,8 @@ import java.util.ArrayList
 
 import micdoodle8.mods.galacticraft.api.GalacticraftRegistry
 import micdoodle8.mods.galacticraft.api.recipe.INasaWorkbenchRecipe
-import net.minecraft.init.Blocks
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.ItemStack
 
 object Tier1RocketRecipeMaker {
     @JvmStatic

@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.api.prefab.world.gen
 
+import foundation.block.getStateFromMeta
+
 import java.util.List
 
 import micdoodle8.mods.galacticraft.api.prefab.core.BlockMetaPair
@@ -7,14 +9,14 @@ import micdoodle8.mods.galacticraft.api.world.ChunkProviderBase
 import micdoodle8.mods.galacticraft.core.perlin.generator.Gradient
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.core.world.gen.EnumCraterSize
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockFalling
 import net.minecraft.entity.EnumCreatureType
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import java.lang.Exception
 import java.util.Random
@@ -172,7 +174,7 @@ abstract class ChunkProviderSpace(@JvmField protected val world: World, seed: Lo
                     val index: Int = this.getIndex(var8, var16, var9)
 
                     if (var16 <= 0 + this.rand.nextInt(5)) {
-                        primer.setBlockState(var8, var16, var9, Blocks.BEDROCK.getDefaultState())
+                        primer.setBlockState(var8, var16, var9, Blocks.BEDROCK.defaultBlockState())
                         //                        arrayOfIDs[index] = Blocks.BEDROCK;
                     } else {
 //                        final Block var18 = arrayOfIDs[index];
@@ -297,7 +299,7 @@ abstract class ChunkProviderSpace(@JvmField protected val world: World, seed: Lo
                     var helper: Int = 0
                     for (y: Int in 127 downTo 1) {
                         if (Blocks.AIR !== primer.getBlockState(x, y, z).getBlock() && helper <= yDev) {
-                            primer.setBlockState(x, y, z, Blocks.AIR.getDefaultState())
+                            primer.setBlockState(x, y, z, Blocks.AIR.defaultBlockState())
                             //                            chunkArray[this.getIndex(x, y, z)] = Blocks.AIR;
 //                            metaArray[this.getIndex(x, y, z)] = 0;
                             helper++

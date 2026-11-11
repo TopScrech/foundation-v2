@@ -9,11 +9,11 @@ import micdoodle8.mods.galacticraft.api.world.BiomeGenBaseGC
 import micdoodle8.mods.galacticraft.api.world.EnumAtmosphericGas
 import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
 import micdoodle8.mods.galacticraft.api.world.IMobSpawnBiome
-import net.minecraft.block.Block
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.level.block.Block
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraft.util.text.translation.I18n
 import net.minecraft.world.WorldProvider
-import net.minecraft.world.biome.Biome
+import net.minecraft.world.level.biome.Biome
 import java.lang.Exception
 import java.util.ArrayList
 import java.util.Arrays

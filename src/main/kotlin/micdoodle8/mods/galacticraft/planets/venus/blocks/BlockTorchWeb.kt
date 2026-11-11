@@ -1,36 +1,39 @@
 package micdoodle8.mods.galacticraft.planets.venus.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.init.Blocks
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.IShearable
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.ArrayList
 import java.util.Random
 
 open class BlockTorchWeb constructor(assetName: String?) : Block(Material.CIRCUITS), IShearable, IShiftDescription,
-    ISortableBlock {
+    ISortableBlock, LegacyBlockMetadata {
     enum class EnumWebType(private val meta: Int, private val serializedName: String) : IStringSerializable {
         WEB_0(0, "web_torch_0"),
         WEB_1(1, "web_torch_1");
@@ -39,7 +42,9 @@ open class BlockTorchWeb constructor(assetName: String?) : Block(Material.CIRCUI
             return this.meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -96,7 +101,7 @@ open class BlockTorchWeb constructor(assetName: String?) : Block(Material.CIRCUI
         return 0
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftBlocksTab
     }
@@ -127,7 +132,7 @@ open class BlockTorchWeb constructor(assetName: String?) : Block(Material.CIRCUI
     }
 
     open fun canBlockStay(world: World, pos: BlockPos, state: IBlockState): Boolean {
-        val blockUp: IBlockState = world.getBlockState(pos.up())
+        val blockUp: IBlockState = world.getBlockState(pos.above())
 
         val meta: Int = this.getMetaFromState(state)
 
@@ -151,7 +156,7 @@ open class BlockTorchWeb constructor(assetName: String?) : Block(Material.CIRCUI
     protected open fun checkAndDropBlock(world: World, pos: BlockPos, state: IBlockState) {
         if (!this.canBlockStay(world, pos, state)) {
             this.dropBlockAsItem(world, pos, state, 0)
-            world.setBlockState(pos, Blocks.AIR.getDefaultState(), 3)
+            world.setBlock(pos, Blocks.AIR.defaultBlockState(), 3)
         }
     }
 
@@ -186,14 +191,14 @@ open class BlockTorchWeb constructor(assetName: String?) : Block(Material.CIRCUI
         return true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState()
-            .withProperty(WEB_TYPE, (EnumWebType.Companion.byMetadata(meta))!!)
+        return this.defaultBlockState()
+            .setValue(WEB_TYPE, (EnumWebType.Companion.byMetadata(meta))!!)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {

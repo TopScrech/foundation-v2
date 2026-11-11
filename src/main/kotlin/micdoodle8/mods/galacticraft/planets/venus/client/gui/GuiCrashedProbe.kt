@@ -6,8 +6,8 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.venus.inventory.ContainerCrashedProbe
 import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntityCrashedProbe
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 
 open class GuiCrashedProbe constructor(
     par1InventoryPlayer: InventoryPlayer?,
@@ -42,6 +42,6 @@ open class GuiCrashedProbe constructor(
     }
 
     companion object {
-        private val guiTexture = ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/crashed_probe.png")
+        private val guiTexture = ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/crashed_probe.png")
     }
 }

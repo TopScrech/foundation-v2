@@ -1,28 +1,30 @@
 package galaxyspace.core.prefab.tile
 
+import foundation.persistence.containsTag
+
 import galaxyspace.core.prefab.tile.TileEntityChestGS
 import galaxyspace.core.prefab.world.DoubleChestItemHandlerGS
-import net.minecraft.block.Block
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.init.SoundEvents
-import net.minecraft.inventory.Container
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
 import net.minecraft.inventory.ContainerChest
-import net.minecraft.inventory.IInventory
+import net.minecraft.world.Container as IInventory
 import net.minecraft.inventory.InventoryLargeChest
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import net.minecraft.tileentity.TileEntityLockableLoot
-import net.minecraft.util.EnumFacing
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraft.util.ITickable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
+import net.minecraft.core.NonNullList
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
 import net.minecraftforge.common.capabilities.Capability
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.items.CapabilityItemHandler
 import net.minecraftforge.items.IItemHandler
 
@@ -60,7 +62,7 @@ abstract class TileEntityChestGS @JvmOverloads constructor(private val block: Bl
         chestContents = NonNullList.withSize<ItemStack>(27, ItemStack.EMPTY)
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return 27
     }
 
@@ -76,10 +78,10 @@ abstract class TileEntityChestGS @JvmOverloads constructor(private val block: Bl
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.chestContents = NonNullList.withSize<ItemStack>(this.getSizeInventory(), ItemStack.EMPTY)
+        this.chestContents = NonNullList.withSize<ItemStack>(this.getContainerSize(), ItemStack.EMPTY)
 
-        if (nbt.hasKey("CustomName", 8)) {
-            this.customName = nbt.getString("CustomName")
+        if (nbt.containsTag("CustomName", 8)) {
+            this.customName = nbt.getStringOr("CustomName", "")
         }
         if (!this.checkLootAndRead(nbt)) {
             ItemStackHelper.loadAllItems(nbt, this.chestContents)
@@ -90,7 +92,7 @@ abstract class TileEntityChestGS @JvmOverloads constructor(private val block: Bl
         super.writeToNBT(nbt)
 
         if (this.hasCustomName()) {
-            nbt.setString("CustomName", this.customName)
+            nbt.putString("CustomName", this.customName)
         }
         if (!this.checkLootAndWrite(nbt)) {
             ItemStackHelper.saveAllItems(nbt, this.chestContents)
@@ -98,7 +100,7 @@ abstract class TileEntityChestGS @JvmOverloads constructor(private val block: Bl
         return nbt
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
@@ -213,8 +215,8 @@ abstract class TileEntityChestGS @JvmOverloads constructor(private val block: Bl
         }
     }
 
-    override fun openInventory(player: EntityPlayer) {
-        if (!player.isSpectator()) {
+    override fun startOpen(player: net.minecraft.world.entity.ContainerUser) {
+        if (!player.getLivingEntity().isSpectator()) {
             if (this.numPlayersUsing < 0) {
                 this.numPlayersUsing = 0
             }
@@ -224,7 +226,7 @@ abstract class TileEntityChestGS @JvmOverloads constructor(private val block: Bl
         }
     }
 
-    override fun closeInventory(player: EntityPlayer) {
+    override fun stopOpen(player: net.minecraft.world.entity.ContainerUser) {
         if (!player.isSpectator() && this.getBlockType() === this.block) {
             --this.numPlayersUsing
             this.world.addBlockEvent(this.pos, this.getBlockType(), 1, this.numPlayersUsing)
@@ -232,7 +234,7 @@ abstract class TileEntityChestGS @JvmOverloads constructor(private val block: Bl
         }
     }
 
-    override fun isItemValidForSlot(index: Int, stack: ItemStack): Boolean {
+    override fun canPlaceItem(index: Int, stack: ItemStack): Boolean {
         return true
     }
 
@@ -267,7 +269,7 @@ abstract class TileEntityChestGS @JvmOverloads constructor(private val block: Bl
         return super.getCapability<T?>(capability, facing)
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         return AxisAlignedBB(this.getPos().add(-1, 0, -1), this.getPos().add(2, 2, 2))
     }

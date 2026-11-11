@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.items
 
+import net.minecraft.network.chat.Component
+
+import foundation.inventory.mainItems
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.items.ISortableItem
 import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
@@ -7,24 +10,24 @@ import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryItem
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.asteroids.entities.EntityGrapple
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.enchantment.EnchantmentHelper
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Enchantments
-import net.minecraft.init.Items
-import net.minecraft.init.SoundEvents
+import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.enchantment.Enchantments
+import net.minecraft.world.item.Items
+import net.minecraft.sounds.SoundEvents
 import net.minecraft.item.EnumAction
 import net.minecraft.item.EnumRarity
 import net.minecraft.item.ItemBow
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.ActionResult
-import net.minecraft.util.EnumActionResult
-import net.minecraft.util.EnumHand
-import net.minecraft.util.SoundCategory
-import net.minecraft.util.text.TextComponentString
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.InteractionResult as EnumActionResult
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.sounds.SoundSource as SoundCategory
+
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class ItemGrappleHook constructor(assetName: String?) : ItemBow(), ISortableItem {
     init {
@@ -37,12 +40,12 @@ open class ItemGrappleHook constructor(assetName: String?) : ItemBow(), ISortabl
         return false
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCreativeTab(): CreativeTabs? {
         return GalacticraftCore.galacticraftItemsTab
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRarity(par1ItemStack: ItemStack): EnumRarity {
         return (ClientProxyCore.galacticraftItem)!!
     }
@@ -60,7 +63,7 @@ open class ItemGrappleHook constructor(assetName: String?) : ItemBow(), ISortabl
         ) > 0
         var string: ItemStack? = null
 
-        for (itemstack: ItemStack? in player.inventory.mainInventory) {
+        for (itemstack: ItemStack? in player.inventory.mainItems) {
             if (itemstack != null && itemstack.getItem() === Items.STRING) {
                 string = itemstack
                 canShoot = true
@@ -76,17 +79,17 @@ open class ItemGrappleHook constructor(assetName: String?) : ItemBow(), ISortabl
 
             worldIn.playSound(
                 null as EntityPlayer?,
-                player.posX,
-                player.posY,
-                player.posZ,
+                player.x,
+                player.y,
+                player.z,
                 SoundEvents.ENTITY_ARROW_SHOOT,
                 SoundCategory.NEUTRAL,
                 1.0f,
                 1.0f / (itemRand.nextFloat() * 0.4f + 1.2f) + 0.5f
             )
 
-            if (!worldIn.isRemote) {
-                worldIn.spawnEntity(grapple)
+            if (!worldIn.isClientSide) {
+                worldIn.addFreshEntity(grapple)
             }
 
             stack.damageItem(1, player)
@@ -96,11 +99,11 @@ open class ItemGrappleHook constructor(assetName: String?) : ItemBow(), ISortabl
                 string.shrink(1)
 
                 if (string.isEmpty()) {
-                    player.inventory.deleteStack(string)
+                    player.inventory.removeItem(string)
                 }
             }
-        } else if (worldIn.isRemote) {
-            player.sendMessage(TextComponentString(GCCoreUtil.translate("gui.message.grapple.fail")))
+        } else if (worldIn.isClientSide) {
+            player.sendSystemMessage(Component.literal(GCCoreUtil.translate("gui.message.grapple.fail")))
         }
     }
 
@@ -114,7 +117,7 @@ open class ItemGrappleHook constructor(assetName: String?) : ItemBow(), ISortabl
 
     override fun onItemRightClick(worldIn: World, playerIn: EntityPlayer, hand: EnumHand): ActionResult<ItemStack?> {
         playerIn.setActiveHand(hand)
-        return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, playerIn.getHeldItem(hand))
+        return ActionResult<ItemStack?>(EnumActionResult.SUCCESS, playerIn.getItemInHand(hand))
     }
 
     override fun getCategory(meta: Int): EnumSortCategoryItem {

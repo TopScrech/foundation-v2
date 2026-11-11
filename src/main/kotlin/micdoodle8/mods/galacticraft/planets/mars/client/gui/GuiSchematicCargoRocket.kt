@@ -7,9 +7,9 @@ import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.planets.GalacticraftPlanets
 import micdoodle8.mods.galacticraft.planets.mars.inventory.ContainerSchematicCargoRocket
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
 import org.lwjgl.opengl.GL11
 
 open class GuiSchematicCargoRocket constructor(par1InventoryPlayer: InventoryPlayer, pos: BlockPos) :
@@ -73,6 +73,6 @@ open class GuiSchematicCargoRocket constructor(par1InventoryPlayer: InventoryPla
 
     companion object {
         private val cargoRocketTexture =
-            ResourceLocation(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/schematic_rocket_cargo.png")
+            ResourceLocation.fromNamespaceAndPath(GalacticraftPlanets.ASSET_PREFIX, "textures/gui/schematic_rocket_cargo.png")
     }
 }

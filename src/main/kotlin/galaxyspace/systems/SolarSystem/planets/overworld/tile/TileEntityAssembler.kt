@@ -1,5 +1,9 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
+import foundation.item.legacyItemValue
+
+import foundation.persistence.listOfType
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import galaxyspace.core.GSItems
@@ -16,19 +20,19 @@ import micdoodle8.mods.galacticraft.core.network.IPacketReceiver
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.init.SoundEvents
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.WorldlyContainer as ISidedInventory
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.SoundCategory
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.sounds.SoundSource as SoundCategory
+import net.minecraftforge.fml.LogicalSide as Side
 import net.minecraftforge.oredict.OreDictionary
 import java.util.ArrayList
 import java.util.Random
@@ -101,7 +105,7 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
                 this.processTicks = 0;
             }*/
             if (updateInv) {
-                this.markDirty()
+                this.setChanged()
             }
         }
     }
@@ -122,7 +126,7 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
 
         result += contents1
 
-        return result <= this.getInventoryStackLimit() && result <= itemstack.getMaxStackSize()
+        return result <= this.getMaxStackSize() && result <= itemstack.getMaxStackSize()
     }
 
     open fun updateInput() {
@@ -163,17 +167,17 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.processTicks = nbt.getInteger("smeltingTicks")
+        this.processTicks = nbt.getIntOr("smeltingTicks", 0)
 
         this.inventory = NonNullList.withSize<ItemStack>(
-            this.getSizeInventory() - this.testCraftMatrix.getSizeInventory(),
+            this.getContainerSize() - this.testCraftMatrix.getSizeInventory(),
             ItemStack.EMPTY
         )
-        val nbttaglist: NBTTagList = nbt.getTagList("Items", 10)
+        val nbttaglist: NBTTagList = nbt.listOfType("Items", 10)
 
-        for (i: Int in 0..<nbttaglist.tagCount()) {
-            val nbttagcompound: NBTTagCompound = nbttaglist.getCompoundTagAt(i)
-            val j: Int = nbttagcompound.getByte("Slot").toInt() and 255
+        for (i: Int in 0..<nbttaglist.size) {
+            val nbttagcompound: NBTTagCompound = nbttaglist.getCompoundOrEmpty(i)
+            val j: Int = nbttagcompound.getByteOr("Slot", 0).toInt() and 255
 
             if (j >= 0 && j < this.getInventory().size) {
                 this.getInventory().set(j, ItemStack(nbttagcompound))
@@ -187,7 +191,7 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setInteger("smeltingTicks", this.processTicks)
+        nbt.putInt("smeltingTicks", this.processTicks)
         val var2: NBTTagList = NBTTagList()
         var var3: Int
 
@@ -195,9 +199,9 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
         while (var3 < this.getInventory().size) {
             if (!this.getInventory().get(var3).isEmpty()) {
                 val var4: NBTTagCompound = NBTTagCompound()
-                var4.setByte("Slot", var3.toByte())
+                var4.putByte("Slot", var3.toByte())
                 this.getInventory().get(var3).writeToNBT(var4)
-                var2.appendTag(var4)
+                var2.add(var4)
             }
             ++var3
         }
@@ -206,23 +210,23 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
         while (var3 < this.testCraftMatrix.getSizeInventory()) {
             if (this.testCraftMatrix.getStackInSlot(var3) != null) {
                 val var4: NBTTagCompound = NBTTagCompound()
-                var4.setByte("Slot", (var3 + this.getInventory().size) as Byte)
+                var4.putByte("Slot", (var3 + this.getInventory().size) as Byte)
                 this.testCraftMatrix.getStackInSlot(var3).writeToNBT(var4)
-                var2.appendTag(var4)
+                var2.add(var4)
             }
             ++var3
         }
 
-        nbt.setTag("Items", var2)
+        nbt.put("Items", var2)
         return nbt
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return this.getInventory().size + this.testCraftMatrix.getSizeInventory()
     }
 
 
-    override fun getStackInSlot(par1: Int): ItemStack {
+    override fun getItem(par1: Int): ItemStack {
         if (par1 >= this.getInventory().size) {
             return this.testCraftMatrix.getStackInSlot(par1 - this.getInventory().size)
         }
@@ -230,7 +234,7 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
         return this.getInventory().get(par1)
     }
 
-    override fun decrStackSize(par1: Int, par2: Int): ItemStack {
+    override fun removeItem(par1: Int, par2: Int): ItemStack {
         if (par1 >= this.getInventory().size) {
             val result: ItemStack = this.testCraftMatrix.decrStackSize(par1 - this.getInventory().size, par2)
             if (result != null) {
@@ -253,7 +257,7 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
                     this.getInventory().set(par1, ItemStack.EMPTY)
                 }
 
-                this.markDirty()
+                this.setChanged()
                 return var3
             }
         } else {
@@ -261,7 +265,7 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
         }
     }
 
-    override fun removeStackFromSlot(par1: Int): ItemStack {
+    override fun removeItemNoUpdate(par1: Int): ItemStack {
         if (par1 >= this.getInventory().size) {
             return this.testCraftMatrix.removeStackFromSlot(par1 - this.getInventory().size)
         }
@@ -269,44 +273,44 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
         if (!this.getInventory().get(par1).isEmpty()) {
             val var2: ItemStack = this.getInventory().get(par1)
             this.getInventory().set(par1, ItemStack.EMPTY)
-            this.markDirty()
+            this.setChanged()
             return var2
         } else {
             return ItemStack.EMPTY
         }
     }
 
-    override fun setInventorySlotContents(par1: Int, stack: ItemStack) {
+    override fun setItem(par1: Int, stack: ItemStack) {
         if (par1 >= this.getInventory().size) {
             this.testCraftMatrix.setInventorySlotContents(par1 - this.getInventory().size, stack)
             this.updateInput()
         } else {
             this.getInventory().set(par1, stack)
 
-            if (!stack.isEmpty() && stack.getCount() > this.getInventoryStackLimit()) {
-                stack.setCount(this.getInventoryStackLimit())
+            if (!stack.isEmpty() && stack.getCount() > this.getMaxStackSize()) {
+                stack.setCount(this.getMaxStackSize())
             }
         }
-        this.markDirty()
+        this.setChanged()
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun isUsableByPlayer(entityplayer: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && entityplayer.getDistanceSq(
+    override fun stillValid(entityplayer: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && entityplayer.getDistanceSq(
             this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5
         ) <= 64.0
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemStack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemStack: ItemStack): Boolean {
         if (slotID == 0) {
             return itemStack != null && ItemElectricBase.isElectricItem(itemStack.getItem())
         } else if (slotID >= 6) {
             /*if (this.producingStack != null)
         	{
-                ItemStack stackInSlot = this.getStackInSlot(slotID);
+                ItemStack stackInSlot = this.getItem(slotID);
                 return stackInSlot != null && stackInSlot.isItemEqual(itemStack);
         	}*/
 
@@ -317,7 +321,7 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
     }
 
 
-    override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    override fun getSlotsForFace(side: EnumFacing): IntArray {
         if (side == EnumFacing.DOWN) {
             return intArrayOf(1)
         }
@@ -328,7 +332,7 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
             if (removeSlots.contains(i)) {
                 continue
             }
-            val stack1: ItemStack = this.getStackInSlot(i)
+            val stack1: ItemStack = this.getItem(i)
             if (stack1.isEmpty()) {
                 continue
             }
@@ -337,7 +341,7 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
                 if (removeSlots.contains(j)) {
                     continue
                 }
-                val stack2: ItemStack = this.getStackInSlot(j)
+                val stack2: ItemStack = this.getItem(j)
                 if (stack2.isEmpty()) {
                     continue
                 }
@@ -370,11 +374,11 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
         return slots
     }
 
-    override fun canInsertItem(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing?): Boolean {
-        return this.isItemValidForSlot(slotID, par2ItemStack)
+    override fun canPlaceItemThroughFace(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, par2ItemStack)
     }
 
-    override fun canExtractItem(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing?): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, par2ItemStack: ItemStack, par3: EnumFacing): Boolean {
         return slotID == 1
     }
 
@@ -383,7 +387,7 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
     }
 
     override fun getBatteryInSlot(): ItemStack {
-        return this.getStackInSlot(0)
+        return this.getItem(0)
     }
 
     open fun isItemCompressorInput(stack: ItemStack, id: Int): Boolean {
@@ -391,13 +395,13 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
             if (recipe is ShapedRecipesGC) {
                 if (id >= recipe.recipeItems.size) continue
                 val itemstack1: ItemStack = recipe.recipeItems[id]
-                if (stack.getItem() === itemstack1.getItem() && (itemstack1.getItemDamage() == 32767 || stack.getItemDamage() == itemstack1.getItemDamage())) {
+                if (stack.getItem() === itemstack1.getItem() && (itemstack1.legacyItemValue == 32767 || stack.legacyItemValue == itemstack1.legacyItemValue)) {
                     for (i: Int in recipe.recipeItems.indices) {
                         if (i == id) continue
                         val itemstack2: ItemStack = recipe.recipeItems[i]
-                        if (stack.getItem() === itemstack2.getItem() && (itemstack2.getItemDamage() == 32767 || stack.getItemDamage() == itemstack2.getItemDamage())) {
-                            val is3: ItemStack = this.getStackInSlot(id + 3)
-                            val is4: ItemStack = this.getStackInSlot(i + 3)
+                        if (stack.getItem() === itemstack2.getItem() && (itemstack2.legacyItemValue == 32767 || stack.legacyItemValue == itemstack2.legacyItemValue)) {
+                            val is3: ItemStack = this.getItem(id + 3)
+                            val is4: ItemStack = this.getItem(i + 3)
                             return is3.isEmpty() || !is4.isEmpty() && is3.getCount() < is4.getCount()
                         }
                     }
@@ -438,12 +442,12 @@ open class TileEntityAssembler constructor() : TileEntityElectricInventory("tile
                 //Shapeless recipe can go into (match) number of slots
                 var slotsFilled: Int = 0
                 for (i: Int in 3..11) {
-                    val inMatrix: ItemStack = this.getStackInSlot(i)
+                    val inMatrix: ItemStack = this.getItem(i)
                     if (!inMatrix.isEmpty() && inMatrix.isItemEqual(stack)) slotsFilled++
                 }
 
                 if (slotsFilled < match) {
-                    return this.getStackInSlot(id + 3).isEmpty()
+                    return this.getItem(id + 3).isEmpty()
                 }
 
                 return randnum.nextInt(match) == 0

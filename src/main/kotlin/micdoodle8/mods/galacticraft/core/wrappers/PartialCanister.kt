@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.core.wrappers
 
-import net.minecraft.item.Item
+import net.minecraft.world.item.Item
 
 /**
  * Used to register canisters with partially filled textures

@@ -1,28 +1,32 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import foundation.item.legacyItemValue
+
+import foundation.persistence.listOfType
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.inventory.IInventoryDefaults
 import micdoodle8.mods.galacticraft.core.inventory.PersistantInventoryCrafting
 import micdoodle8.mods.galacticraft.core.network.PacketDynamicInventory
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import micdoodle8.mods.galacticraft.core.util.RecipeUtil
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.ISidedInventory
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.WorldlyContainer as ISidedInventory
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.CraftingManager
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.fml.LogicalSide as Side
 import java.lang.Exception
 
 open class TileEntityCrafting constructor() : TileEntity(), IInventoryDefaults, ISidedInventory {
-    override fun getDisplayName(): net.minecraft.util.text.ITextComponent? = super<TileEntity>.getDisplayName()
+    override fun getDisplayName(): net.minecraft.network.chat.Component = super<TileEntity>.getDisplayName()
 
     @JvmField
     var craftMatrix: PersistantInventoryCrafting = PersistantInventoryCrafting()
@@ -59,11 +63,11 @@ open class TileEntityCrafting constructor() : TileEntity(), IInventoryDefaults, 
         return this.memory.get(i)
     }
 
-    override fun getSizeInventory(): Int {
+    override fun getContainerSize(): Int {
         return SIZEINVENTORY
     }
 
-    override fun getStackInSlot(par1: Int): ItemStack {
+    override fun getItem(par1: Int): ItemStack {
         if (par1 < SIZEINVENTORY) return this.craftMatrix.getStackInSlot(par1)
 
 
@@ -76,17 +80,17 @@ open class TileEntityCrafting constructor() : TileEntity(), IInventoryDefaults, 
         return ItemStack.EMPTY
     }
 
-    override fun decrStackSize(par1: Int, par2: Int): ItemStack {
+    override fun removeItem(par1: Int, par2: Int): ItemStack {
         if (par1 >= 0 && par1 < SIZEINVENTORY) {
             val result: ItemStack = this.craftMatrix.decrStackSize(par1, par2)
-            this.markDirty()
+            this.setChanged()
             return result
         } else if (par1 == SIZEINVENTORY) {
             if (this.stillMatchesRecipe()) {
                 val craftingResult: ItemStack = CraftingManager.findMatchingResult(this.craftMatrix, this.getWorld())
                 if (!craftingResult.isEmpty()) {
                     this.pullOneResultStack()
-                    this.markDirty()
+                    this.setChanged()
                     return craftingResult
                 }
             }
@@ -139,19 +143,19 @@ open class TileEntityCrafting constructor() : TileEntity(), IInventoryDefaults, 
         return true
     }
 
-    override fun removeStackFromSlot(par1: Int): ItemStack {
+    override fun removeItemNoUpdate(par1: Int): ItemStack {
         if (par1 >= 0) {
-            this.markDirty()
+            this.setChanged()
             return this.craftMatrix.removeStackFromSlot(par1)
         } else {
             return ItemStack.EMPTY
         }
     }
 
-    override fun setInventorySlotContents(par1: Int, stack: ItemStack) {
+    override fun setItem(par1: Int, stack: ItemStack) {
         if (par1 >= 0 && par1 < SIZEINVENTORY) {
             this.craftMatrix.setInventorySlotContents(par1, stack)
-            this.markDirty()
+            this.setChanged()
         } else if (par1 == SIZEINVENTORY && stack.isEmpty()) {
             if (this.stillMatchesRecipe()) {
                 val craftingResult: ItemStack = CraftingManager.findMatchingResult(this.craftMatrix, this.getWorld())
@@ -162,8 +166,8 @@ open class TileEntityCrafting constructor() : TileEntity(), IInventoryDefaults, 
         }
     }
 
-    override fun getName(): String {
-        return GCCoreUtil.translate("container.magneticcrafting.name")
+    override fun getName(): net.minecraft.network.chat.Component {
+        return net.minecraft.network.chat.Component.translatable("container.magneticcrafting.name")
     }
 
     override fun hasCustomName(): Boolean {
@@ -175,11 +179,11 @@ open class TileEntityCrafting constructor() : TileEntity(), IInventoryDefaults, 
         if (GCCoreUtil.getEffectiveSide() == Side.SERVER) {
             this.craftMatrix.clear()
             for (i: Int in 0..<SIZEINVENTORY) this.memory.set(i, ItemStack.EMPTY)
-            val contents: NBTTagList = nbt.getTagList("Items", 10)
-            if (contents != null && contents.tagCount() > 0) {
-                for (i: Int in 0..<contents.tagCount()) {
-                    val var4: NBTTagCompound = contents.getCompoundTagAt(i)
-                    val slot: Int = var4.getByte("Slot").toInt() and 255
+            val contents: NBTTagList = nbt.listOfType("Items", 10)
+            if (contents != null && contents.size > 0) {
+                for (i: Int in 0..<contents.size) {
+                    val var4: NBTTagCompound = contents.getCompoundOrEmpty(i)
+                    val slot: Int = var4.getByteOr("Slot", 0).toInt() and 255
 
                     if (slot < SIZEINVENTORY) {
                         this.craftMatrix.setInventorySlotContents(slot, ItemStack(var4))
@@ -197,37 +201,37 @@ open class TileEntityCrafting constructor() : TileEntity(), IInventoryDefaults, 
         for (i: Int in 0..<SIZEINVENTORY) {
             if (!this.craftMatrix.getStackInSlot(i).isEmpty()) {
                 val var4: NBTTagCompound = NBTTagCompound()
-                var4.setByte("Slot", (i).toByte())
+                var4.putByte("Slot", (i).toByte())
                 this.craftMatrix.getStackInSlot(i).writeToNBT(var4)
-                var2.appendTag(var4)
+                var2.add(var4)
             }
         }
         for (i: Int in 0..<SIZEINVENTORY) {
             if (!this.memory.get(i).isEmpty()) {
                 val var4: NBTTagCompound = NBTTagCompound()
-                var4.setByte("Slot", (i + SIZEINVENTORY).toByte())
+                var4.putByte("Slot", (i + SIZEINVENTORY).toByte())
                 this.memory.get(i).writeToNBT(var4)
-                var2.appendTag(var4)
+                var2.add(var4)
             }
         }
 
-        nbt.setTag("Items", var2)
+        nbt.put("Items", var2)
         return nbt
     }
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun isUsableByPlayer(player: EntityPlayer): Boolean {
-        return this.world.getTileEntity(this.getPos()) === this && player.getDistanceSq(
+    override fun stillValid(player: EntityPlayer): Boolean {
+        return this.world.getBlockEntity(this.getPos()) === this && player.getDistanceSq(
             this.getPos().getX() + 0.5,
             this.getPos().getY() + 0.5,
             this.getPos().getZ() + 0.5
         ) <= 64.0
     }
 
-    override fun isItemValidForSlot(par1: Int, par2ItemStack: ItemStack): Boolean {
+    override fun canPlaceItem(par1: Int, par2ItemStack: ItemStack): Boolean {
         return true
     }
 
@@ -240,13 +244,13 @@ open class TileEntityCrafting constructor() : TileEntity(), IInventoryDefaults, 
         return intArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
     }
 
-    override fun canInsertItem(index: Int, stack: ItemStack, direction: EnumFacing): Boolean {
+    override fun canPlaceItemThroughFace(index: Int, stack: ItemStack, direction: EnumFacing?): Boolean {
         if (index >= SIZEINVENTORY) return false
         val override: Boolean = this.overriddenMemory()
         val target: ItemStack = if (override) this.craftMatrix.getStackInSlot(index).copy() else this.memory.get(index)
 
         if (!target.isEmpty() && !stack.isEmpty() && sameItem(target, stack)) {
-            val is3: ItemStack = this.getStackInSlot(index)
+            val is3: ItemStack = this.getItem(index)
             if (is3.isEmpty()) return true
             val currentSize: Int = is3.getCount()
 
@@ -273,7 +277,7 @@ open class TileEntityCrafting constructor() : TileEntity(), IInventoryDefaults, 
         return false
     }
 
-    override fun canExtractItem(index: Int, stack: ItemStack, direction: EnumFacing): Boolean {
+    override fun canTakeItemThroughFace(index: Int, stack: ItemStack, direction: EnumFacing): Boolean {
         return index == SIZEINVENTORY && this.stillMatchesRecipe()
     }
 
@@ -281,7 +285,7 @@ open class TileEntityCrafting constructor() : TileEntity(), IInventoryDefaults, 
      * Does not include a null check, do a null check first
      */
     private fun sameItem(target: ItemStack, stack: ItemStack): Boolean {
-        return target.getItem() === stack.getItem() && (!stack.getHasSubtypes() || stack.getMetadata() == target.getMetadata()) && RecipeUtil.areItemStackTagsEqual(
+        return target.getItem() === stack.getItem() && (!stack.getHasSubtypes() || stack.legacyItemValue == target.legacyItemValue) && RecipeUtil.areItemStackTagsEqual(
             stack,
             target
         )
@@ -343,7 +347,7 @@ open class TileEntityCrafting constructor() : TileEntity(), IInventoryDefaults, 
     }
 
     private fun matchingStacks(stack: ItemStack, target: ItemStack): Boolean {
-        return !target.isEmpty() && target.getItem() === stack.getItem() && (!stack.getHasSubtypes() || stack.getMetadata() == target.getMetadata()) && RecipeUtil.areItemStackTagsEqual(
+        return !target.isEmpty() && target.getItem() === stack.getItem() && (!stack.getHasSubtypes() || stack.legacyItemValue == target.legacyItemValue) && RecipeUtil.areItemStackTagsEqual(
             stack,
             target
         ) && target.isStackable() && target.getCount() < target.getMaxStackSize()

@@ -1,15 +1,17 @@
 package asmodeuscore.core.utils.worldengine.standardcustomgen.help
 
+import foundation.block.getStateFromMeta
+
 import java.util.ArrayList
 import java.util.Random
 
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockSapling
 import net.minecraft.block.material.Material
-import net.minecraft.init.Blocks
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.gen.feature.WorldGenerator
 import java.util.*
 import kotlin.math.abs
@@ -56,7 +58,7 @@ open class WE_TreeGen constructor(doBlockNotify: Boolean) : WorldGenerator(doBlo
         }
 
         for (ix: Int in this.am.indices) {
-            if (b.getMaterial(b.getDefaultState()) === this.am.get(ix)) {
+            if (b.getMaterial(b.defaultBlockState()) === this.am.get(ix)) {
                 return true
             }
         }
@@ -66,8 +68,8 @@ open class WE_TreeGen constructor(doBlockNotify: Boolean) : WorldGenerator(doBlo
 
     open fun isReplaceable(world: World, pos: BlockPos): Boolean {
         val b: Block = world.getBlockState(pos).getBlock()
-        return b.isAir(b.getDefaultState(), world, pos) || b.isLeaves(
-            b.getDefaultState(),
+        return b.isAir(b.defaultBlockState(), world, pos) || b.isLeaves(
+            b.defaultBlockState(),
             world,
             pos
         ) || b.isWood(world, pos) || this.cb(b)
@@ -119,16 +121,16 @@ open class WE_TreeGen constructor(doBlockNotify: Boolean) : WorldGenerator(doBlo
             if (!flag) {
                 return false
             } else {
-                val block2: Block = world.getBlockState(BlockPos(position.down())).getBlock()
+                val block2: Block = world.getBlockState(BlockPos(position.below())).getBlock()
                 val isSoil: Boolean = block2.canSustainPlant(
-                    block2.getDefaultState(),
+                    block2.defaultBlockState(),
                     world,
-                    position.down(),
+                    position.below(),
                     EnumFacing.UP,
                     this.bSapling as BlockSapling?
                 )
                 if (isSoil && position.getY() < 256 - l - 1) {
-                    block2.onPlantGrow(block2.getDefaultState(), world, position.down(), position)
+                    block2.onPlantGrow(block2.defaultBlockState(), world, position.below(), position)
                     val b0x: Byte = 3
                     val b1: Byte = 0
 
@@ -143,8 +145,8 @@ open class WE_TreeGen constructor(doBlockNotify: Boolean) : WorldGenerator(doBlo
                                 val l2: Int = k2 - position.getZ()
                                 if (abs(j2) != l1 || abs(l2) != l1 || rand.nextInt(2) != 0 && i3 != 0) {
                                     val block1: Block = world.getBlockState(BlockPos(i2, k1x, k2)).getBlock()
-                                    if (block1.isAir(block1.getDefaultState(), world, BlockPos(i2, k1x, k2))
-                                        || block1.isLeaves(block1.getDefaultState(), world, BlockPos(i2, k1x, k2))
+                                    if (block1.isAir(block1.defaultBlockState(), world, BlockPos(i2, k1x, k2))
+                                        || block1.isLeaves(block1.defaultBlockState(), world, BlockPos(i2, k1x, k2))
                                     ) {
                                         this.setBlockAndNotifyAdequately(
                                             world,
@@ -158,20 +160,20 @@ open class WE_TreeGen constructor(doBlockNotify: Boolean) : WorldGenerator(doBlo
                     }
 
                     for (var21: Int in 0..<l) {
-                        val block: Block = world.getBlockState(position.up(var21)).getBlock()
+                        val block: Block = world.getBlockState(position.above(var21)).getBlock()
                         if (block.isAir(
-                                block.getDefaultState(),
+                                block.defaultBlockState(),
                                 world,
-                                position.up(var21)
-                            ) || block.isLeaves(block.getDefaultState(), world, position.up(var21))
+                                position.above(var21)
+                            ) || block.isLeaves(block.defaultBlockState(), world, position.above(var21))
                         ) {
                             this.setBlockAndNotifyAdequately(
                                 world,
-                                position.up(var21),
+                                position.above(var21),
                                 this.bWood.getStateFromMeta(this.metaWood)
                             )
                             if (this.vinesGrow && var21 > 0) {
-                                if (rand.nextInt(3) > 0 && world.isAirBlock(
+                                if (rand.nextInt(3) > 0 && world.isEmptyBlock(
                                         BlockPos(
                                             position.getX() - 1,
                                             position.getY() + var21,
@@ -186,7 +188,7 @@ open class WE_TreeGen constructor(doBlockNotify: Boolean) : WorldGenerator(doBlo
                                     )
                                 }
 
-                                if (rand.nextInt(3) > 0 && world.isAirBlock(
+                                if (rand.nextInt(3) > 0 && world.isEmptyBlock(
                                         BlockPos(
                                             position.getX() + 1,
                                             position.getY() + var21,
@@ -201,7 +203,7 @@ open class WE_TreeGen constructor(doBlockNotify: Boolean) : WorldGenerator(doBlo
                                     )
                                 }
 
-                                if (rand.nextInt(3) > 0 && world.isAirBlock(
+                                if (rand.nextInt(3) > 0 && world.isEmptyBlock(
                                         BlockPos(
                                             position.getX(),
                                             position.getY() + var21,
@@ -216,7 +218,7 @@ open class WE_TreeGen constructor(doBlockNotify: Boolean) : WorldGenerator(doBlo
                                     )
                                 }
 
-                                if (rand.nextInt(3) > 0 && world.isAirBlock(
+                                if (rand.nextInt(3) > 0 && world.isEmptyBlock(
                                         BlockPos(
                                             position.getX(),
                                             position.getY() + var21,

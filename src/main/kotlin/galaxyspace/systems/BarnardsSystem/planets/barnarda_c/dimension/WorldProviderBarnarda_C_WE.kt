@@ -1,5 +1,10 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.dimension
 
+import foundation.block.LegacyVanillaBlockStates
+import foundation.block.LegacyVanillaBlockIds
+
+import foundation.block.getStateFromMeta
+
 import galaxyspace.systems.BarnardsSystem.BarnardsSystemBodies
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.dimension.WorldProviderBarnarda_C_WE
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
@@ -33,19 +38,19 @@ import micdoodle8.mods.galacticraft.api.galaxies.CelestialBody
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import micdoodle8.mods.galacticraft.core.event.EventHandlerGC
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
-import net.minecraft.block.Block
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Blocks
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.DimensionType
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.dimension.DimensionType
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.max
 
 open class WorldProviderBarnarda_C_WE : WE_WorldProviderSpace(), IProviderFreeze, IProviderWeather {
@@ -78,12 +83,12 @@ open class WorldProviderBarnarda_C_WE : WE_WorldProviderSpace(), IProviderFreeze
         return WE_ChunkProviderSpace::class.java
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCloudHeight(): Float {
         return 180.0f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun calcSunriseSunsetColors(celestialAngle: Float, partialTicks: Float): FloatArray? {
         return super.calcSunriseSunsetColors(celestialAngle, partialTicks)
         /*  float f = 0.4F;
@@ -109,7 +114,7 @@ open class WorldProviderBarnarda_C_WE : WE_WorldProviderSpace(), IProviderFreeze
 
     /*
     @Override
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public Vector3 getFogColor() {
     	
     	float f = 1.0F - this.getStarBrightness(1.0F);
@@ -121,14 +126,14 @@ open class WorldProviderBarnarda_C_WE : WE_WorldProviderSpace(), IProviderFreeze
     	float f = 0.6F - this.getStarBrightness(1.0F);
         return new Vector3(100 / 255.0F * f, 220 / 255.0F * f, 250 / 255.0F * f);
     }*/
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getFogColor(): Vector3 {
         val f: Float = 1.0f - this.getStarBrightness(1.0f)
 
         return Vector3((140 / 255.0f * f).toDouble(), (167 / 255.0f * f).toDouble(), (207 / 255.0f * f).toDouble())
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyColor(): Vector3 {
         var f: Float = 0.5f - this.getStarBrightness(1.0f)
         f = max(f, 0.0f)
@@ -151,7 +156,7 @@ open class WorldProviderBarnarda_C_WE : WE_WorldProviderSpace(), IProviderFreeze
         return !ConfigManagerCore.forceOverworldRespawn
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getStarBrightness(par1: Float): Float {
         val f: Float = this.world.getCelestialAngle(par1)
         var f1: Float = 1.0f - (MathHelper.cos(f * (Math.PI.toFloat() * 2f)) * 2.0f + 0.25f)
@@ -164,7 +169,7 @@ open class WorldProviderBarnarda_C_WE : WE_WorldProviderSpace(), IProviderFreeze
         return f1 * f1 * 0.5f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSunBrightness(par1: Float): Float {
         val f1: Float = this.world.getCelestialAngle(1.0f)
         var f2: Float = 1.0f - (MathHelper.cos(f1 * 3.1415927f * 2.0f) * 2.0f + 0.2f)
@@ -174,14 +179,14 @@ open class WorldProviderBarnarda_C_WE : WE_WorldProviderSpace(), IProviderFreeze
         return f2 * 0.8f
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getCloudRenderer(): IRenderHandler? {
         if (super.getCloudRenderer() == null) this.setCloudRenderer(CloudProviderBarnarda_C())
 
         return super.getCloudRenderer()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSkyRenderer(): IRenderHandler? {
         if (super.getSkyRenderer() == null) {
             this.setSkyRenderer(SkyProviderBarnarda_C())
@@ -236,7 +241,7 @@ open class WorldProviderBarnarda_C_WE : WE_WorldProviderSpace(), IProviderFreeze
         val terrainGenerator: WE_TerrainGenerator = WE_TerrainGenerator()
         terrainGenerator.worldStoneBlock = BRBlocks.BARNARDA_C_BLOCKS.getStateFromMeta(1)
         terrainGenerator.worldSeaGen = true
-        terrainGenerator.worldSeaGenBlock = Blocks.WATER.getDefaultState()
+        terrainGenerator.worldSeaGenBlock = Blocks.WATER.defaultBlockState()
         terrainGenerator.worldSeaGenMaxY = 64
         cp.createChunkGen_List.add(terrainGenerator)
 
@@ -253,7 +258,7 @@ open class WorldProviderBarnarda_C_WE : WE_WorldProviderSpace(), IProviderFreeze
         val rg: WE_RavineGen = WE_RavineGen()
         rg.replaceBlocksList.clear()
         rg.addReplacingBlock(terrainGenerator.worldStoneBlock)
-        rg.lavaBlock = Blocks.LAVA.getDefaultState()
+        rg.lavaBlock = Blocks.LAVA.defaultBlockState()
         rg.lavaMaxY = 15
         cp.createChunkGen_List.add(rg)
 
@@ -387,13 +392,13 @@ open class WorldProviderBarnarda_C_WE : WE_WorldProviderSpace(), IProviderFreeze
             30
         )
         //Gravel
-        standardOres.add(Blocks.GRAVEL.getDefaultState(), terrainGenerator.worldStoneBlock, 15, 5, 150, 20)
+        standardOres.add(Blocks.GRAVEL.defaultBlockState(), terrainGenerator.worldStoneBlock, 15, 5, 150, 20)
         //Granite
-        standardOres.add(Blocks.STONE.getStateFromMeta(1), terrainGenerator.worldStoneBlock, 15, 5, 150, 20)
+        standardOres.add(LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.STONE, 1), terrainGenerator.worldStoneBlock, 15, 5, 150, 20)
         //Diorite
-        standardOres.add(Blocks.STONE.getStateFromMeta(3), terrainGenerator.worldStoneBlock, 15, 5, 150, 20)
+        standardOres.add(LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.STONE, 3), terrainGenerator.worldStoneBlock, 15, 5, 150, 20)
         //Andesite
-        standardOres.add(Blocks.STONE.getStateFromMeta(5), terrainGenerator.worldStoneBlock, 15, 5, 150, 20)
+        standardOres.add(LegacyVanillaBlockStates.state(LegacyVanillaBlockIds.STONE, 5), terrainGenerator.worldStoneBlock, 15, 5, 150, 20)
 
         cp.decorateChunkGen_List.add(standardOres)
 

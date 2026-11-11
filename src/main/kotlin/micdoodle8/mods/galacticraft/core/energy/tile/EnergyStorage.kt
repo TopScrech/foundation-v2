@@ -1,7 +1,7 @@
 package micdoodle8.mods.galacticraft.core.energy.tile
 
 import micdoodle8.mods.galacticraft.api.power.IEnergyStorageGC
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
 import kotlin.math.max
 import kotlin.math.min
 
@@ -21,24 +21,25 @@ open class EnergyStorage constructor(
     constructor(capacity: Float, maxTransfer: Float) : this(capacity, 2.5f * maxTransfer, maxTransfer)
 
     init {
+        require(capacity.isFinite() && capacity >= 0f) { "Energy capacity must be finite and nonnegative" }
+        require(maxReceive.isFinite() && maxReceive >= 0f) { "Energy receive rate must be finite and nonnegative" }
+        require(maxExtract.isFinite() && maxExtract >= 0f) { "Energy extraction rate must be finite and nonnegative" }
         this.maxExtractRemaining = maxExtract
     }
 
     open fun readFromNBT(nbt: NBTTagCompound): EnergyStorage {
-        this.energy = nbt.getFloat("EnergyF")
+        setEnergyStored(nbt.getFloatOr("EnergyF", 0f))
         return this
     }
 
     open fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
-        if (this.energy < 0) {
-            this.energy = 0f
-        }
-
-        nbt.setFloat("EnergyF", min(this.energy, this.capacity))
+        setEnergyStored(this.energy)
+        nbt.putFloat("EnergyF", this.energy)
         return nbt
     }
 
     open fun setCapacity(capacity: Float) {
+        require(capacity.isFinite() && capacity >= 0f) { "Energy capacity must be finite and nonnegative" }
         this.capacity = capacity
 
         if (this.energy > capacity) {
@@ -51,6 +52,7 @@ open class EnergyStorage constructor(
      * Call this AFTER setMaxExtract().
      */
     open fun setMaxReceive(maxReceive: Float) {
+        require(maxReceive.isFinite() && maxReceive >= 0f) { "Energy receive rate must be finite and nonnegative" }
         this.maxReceive = maxReceive
     }
 
@@ -67,13 +69,14 @@ open class EnergyStorage constructor(
      * calling setMaxExtract().
      */
     open fun setMaxExtract(maxExtract: Float) {
+        require(maxExtract.isFinite() && maxExtract >= 0f) { "Energy extraction rate must be finite and nonnegative" }
         this.maxExtract = maxExtract
         this.maxExtractRemaining = maxExtract
         this.maxReceive = 2.5f * maxExtract
     }
 
     open fun setEnergyStored(energy: Float) {
-        this.energy = max(0f, min(energy, this.capacity))
+        this.energy = if (energy.isFinite()) energy.coerceIn(0f, capacity) else 0f
     }
 
     open fun getMaxReceive(): Float {
@@ -85,6 +88,7 @@ open class EnergyStorage constructor(
     }
 
     override fun receiveEnergyGC(maxReceive: Float, simulate: Boolean): Float {
+        if (!maxReceive.isFinite() || maxReceive <= 0f) return 0f
         val energyReceived: Float = min(this.capacity - this.energy, min(this.maxReceive, maxReceive))
 
         if (!simulate) {
@@ -94,14 +98,11 @@ open class EnergyStorage constructor(
         return energyReceived
     }
 
-    open fun receiveEnergyGC(amount: Float): Float {
-        val energyReceived: Float = min(this.capacity - this.energy, min(this.maxReceive, amount))
-        this.energy += energyReceived
-        return energyReceived
-    }
+    open fun receiveEnergyGC(amount: Float): Float = receiveEnergyGC(amount, false)
 
     override fun extractEnergyGC(amount: Float, simulate: Boolean): Float {
-        val energyExtracted: Float = min(this.energy, min(this.maxExtractRemaining, amount))
+        if (!amount.isFinite() || amount <= 0f) return 0f
+        val energyExtracted: Float = min(this.energy, min(this.maxExtractRemaining.coerceAtLeast(0f), amount))
 
         if (!simulate) {
             this.energy -= energyExtracted
@@ -111,6 +112,7 @@ open class EnergyStorage constructor(
     }
 
     open fun extractEnergyGCnoMax(amount: Float, simulate: Boolean): Float {
+        if (!amount.isFinite() || amount <= 0f) return 0f
         val energyExtracted: Float = min(this.energy, amount)
 
         if (!simulate) {

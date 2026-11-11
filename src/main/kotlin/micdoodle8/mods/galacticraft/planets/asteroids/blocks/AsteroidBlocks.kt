@@ -1,14 +1,16 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.blocks
 
+import foundation.block.getStateFromMeta
+
 import micdoodle8.mods.galacticraft.core.GCBlocks
 import micdoodle8.mods.galacticraft.core.items.ItemBlockDesc
 import micdoodle8.mods.galacticraft.core.items.ItemBlockGC
 import micdoodle8.mods.galacticraft.planets.asteroids.items.ItemBlockAsteroids
 import micdoodle8.mods.galacticraft.planets.asteroids.items.ItemBlockShortRangeTelepad
 import micdoodle8.mods.galacticraft.planets.asteroids.items.ItemBlockWalkway
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.item.ItemBlock
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.oredict.OreDictionary
 
 object AsteroidBlocks {

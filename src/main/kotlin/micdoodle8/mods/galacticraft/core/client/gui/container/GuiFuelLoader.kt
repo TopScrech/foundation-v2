@@ -13,8 +13,8 @@ import micdoodle8.mods.galacticraft.core.tile.TileEntityFuelLoader
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 import kotlin.math.floor
 import kotlin.math.min
@@ -176,6 +176,6 @@ open class GuiFuelLoader constructor(
     }
 
     companion object {
-        private val fuelLoaderTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/fuel_loader.png")
+        private val fuelLoaderTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/fuel_loader.png")
     }
 }

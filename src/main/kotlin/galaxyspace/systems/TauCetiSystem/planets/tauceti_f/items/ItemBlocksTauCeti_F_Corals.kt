@@ -1,9 +1,11 @@
 package galaxyspace.systems.TauCetiSystem.planets.tauceti_f.items
 
+import foundation.item.legacyItemValue
+
 import galaxyspace.systems.TauCetiSystem.planets.tauceti_f.blocks.TauCeti_F_Corals.EnumBlockCorals
 import galaxyspace.core.prefab.items.GSItemBlockDesc
-import net.minecraft.block.Block
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.ItemStack
 
 open class ItemBlocksTauCeti_F_Corals constructor(block: Block?) : GSItemBlockDesc((block)!!) {
     init {
@@ -16,7 +18,7 @@ open class ItemBlocksTauCeti_F_Corals constructor(block: Block?) : GSItemBlockDe
     }
 
     override fun getTranslationKey(`is`: ItemStack): String {
-        val metadata: Int = `is`.getItemDamage()
+        val metadata: Int = `is`.legacyItemValue
 
         if (metadata > EnumBlockCorals.entries.size) return "tile." + (EnumBlockCorals.Companion.byMetadata(0))!!.getName()
 

@@ -1,14 +1,14 @@
 package asmodeuscore.core.utils
 
 import asmodeuscore.core.utils.ACCompatibilityManager
-import net.minecraftforge.fml.common.Loader
+import net.minecraftforge.fml.ModList
 
 object ACCompatibilityManager {
-    private val addonEPLoaded = Loader.isModLoaded("extraplanets")
-    private val addonPPLoaded = Loader.isModLoaded("planetprogression")
-    private val galacticraftLoaded = Loader.isModLoaded("galacticraftcore")
-    private val beyondspaceLoaded = Loader.isModLoaded("beyondspace")
-    private val galaxyspaceLoaded = Loader.isModLoaded("galaxyspace")
+    private val addonEPLoaded = ModList.isLoaded("extraplanets")
+    private val addonPPLoaded = ModList.isLoaded("planetprogression")
+    private val galacticraftLoaded = ModList.isLoaded("galacticraftcore")
+    private val beyondspaceLoaded = ModList.isLoaded("beyondspace")
+    private val galaxyspaceLoaded = ModList.isLoaded("galaxyspace")
 
     @JvmStatic
     fun isExtraPlanetsLoaded(): Boolean {

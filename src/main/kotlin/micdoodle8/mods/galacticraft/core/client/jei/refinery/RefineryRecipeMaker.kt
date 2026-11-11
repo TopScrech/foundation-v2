@@ -3,7 +3,7 @@ package micdoodle8.mods.galacticraft.core.client.jei.refinery
 import java.util.ArrayList
 
 import micdoodle8.mods.galacticraft.core.GCItems
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 object RefineryRecipeMaker {
     @JvmStatic

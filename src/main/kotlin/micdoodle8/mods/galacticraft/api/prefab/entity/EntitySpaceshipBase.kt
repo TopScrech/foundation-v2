@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.api.prefab.entity
 
+import foundation.persistence.containsTag
+import foundation.persistence.listOfType
+
 import com.google.common.base.Predicate
 import io.netty.buffer.ByteBuf
 import micdoodle8.mods.galacticraft.api.GalacticraftRegistry
@@ -17,28 +20,28 @@ import micdoodle8.mods.galacticraft.core.tile.TileEntityTelemetry
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.DamageSourceGC
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.MoverType
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.MoverType
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.DamageSource
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.nbt.ListTag as NBTTagList
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.entity.EntityEvent
 import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import java.lang.Exception
 import java.util.ArrayList
@@ -364,7 +367,7 @@ abstract class EntitySpaceshipBase(par1World: World?) : Entity(par1World), IPack
 
     protected open fun failRocket() {
         for (passenger: Entity in this.getPassengers()) {
-            passenger.attackEntityFrom(DamageSourceGC.spaceshipCrash, (4.0 * 20 + 1.0).toInt().toFloat())
+            foundation.damage.FoundationDamageTypes.hurt(passenger, DamageSourceGC.spaceshipCrash, (4.0 * 20 + 1.0).toInt().toFloat())
         }
 
         if (!ConfigManagerCore.disableSpaceshipGrief) {
@@ -374,7 +377,7 @@ abstract class EntitySpaceshipBase(par1World: World?) : Entity(par1World), IPack
         this.setDead()
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun setPositionAndRotationDirect(
         x: kotlin.Double,
         y: kotlin.Double,
@@ -387,8 +390,8 @@ abstract class EntitySpaceshipBase(par1World: World?) : Entity(par1World), IPack
         this.setRotation(yaw, pitch)
         if (this.syncAdjustFlag && this.world.isBlockLoaded(BlockPos(x, 255.0, z)) && this.hasValidFuel()) {
             val p: EntityPlayer = FMLClientHandler.instance().getClientPlayerEntity()
-            val dx: kotlin.Double = x - p.posX
-            val dz: kotlin.Double = z - p.posZ
+            val dx: kotlin.Double = x - p.x
+            val dz: kotlin.Double = z - p.z
             if (dx * dx + dz * dz < 1024) {
                 if (!this.world.loadedEntityList.contains(this)) {
                     try {
@@ -435,21 +438,21 @@ abstract class EntitySpaceshipBase(par1World: World?) : Entity(par1World), IPack
     }
 
     override fun writeEntityToNBT(nbt: NBTTagCompound) {
-        nbt.setInteger("launchPhase", this.launchPhase + 1)
-        nbt.setInteger("timeUntilLaunch", this.timeUntilLaunch)
+        nbt.putInt("launchPhase", this.launchPhase + 1)
+        nbt.putInt("timeUntilLaunch", this.timeUntilLaunch)
         if (telemetryList.size > 0) {
             val teleNBTList: NBTTagList = NBTTagList()
             for (vec: BlockVec3Dim in ArrayList<BlockVec3Dim>(this.telemetryList)) {
                 val tag: NBTTagCompound = NBTTagCompound()
                 vec.writeToNBT(tag)
-                teleNBTList.appendTag(tag)
+                teleNBTList.add(tag)
             }
-            nbt.setTag("telemetryList", teleNBTList)
+            nbt.put("telemetryList", teleNBTList)
         }
     }
 
     override fun readEntityFromNBT(nbt: NBTTagCompound) {
-        this.timeUntilLaunch = nbt.getInteger("timeUntilLaunch")
+        this.timeUntilLaunch = nbt.getIntOr("timeUntilLaunch", 0)
 
         var hasOldTags: Boolean = false
 
@@ -457,7 +460,7 @@ abstract class EntitySpaceshipBase(par1World: World?) : Entity(par1World), IPack
         if (nbt.getKeySet().contains("launched")) {
             hasOldTags = true
 
-            val launched: Boolean = nbt.getBoolean("launched")
+            val launched: Boolean = nbt.getBooleanOr("launched", false)
 
             if (launched) {
                 this.setLaunchPhase(EnumLaunchPhase.LAUNCHED)
@@ -468,7 +471,7 @@ abstract class EntitySpaceshipBase(par1World: World?) : Entity(par1World), IPack
         if (nbt.getKeySet().contains("ignite")) {
             hasOldTags = true
 
-            val ignite: Int = nbt.getInteger("ignite")
+            val ignite: Int = nbt.getIntOr("ignite", 0)
 
             if (ignite == 1) {
                 this.setLaunchPhase(EnumLaunchPhase.IGNITED)
@@ -481,16 +484,16 @@ abstract class EntitySpaceshipBase(par1World: World?) : Entity(par1World), IPack
                 this.setLaunchPhase(EnumLaunchPhase.UNIGNITED)
             }
         } else {
-            this.setLaunchPhase(EnumLaunchPhase.entries[nbt.getInteger("launchPhase") - 1])
+            this.setLaunchPhase(EnumLaunchPhase.entries[nbt.getIntOr("launchPhase", 0) - 1])
         }
 
         //Update all Telemetry Units which are still tracking this rocket
         this.telemetryList.clear()
-        if (nbt.hasKey("telemetryList")) {
-            val teleNBT: NBTTagList = nbt.getTagList("telemetryList", 10)
-            if (teleNBT.tagCount() > 0) {
-                for (j: Int in teleNBT.tagCount() - 1 downTo 0) {
-                    val tag1: NBTTagCompound = teleNBT.getCompoundTagAt(j)
+        if (nbt.containsTag("telemetryList")) {
+            val teleNBT: NBTTagList = nbt.listOfType("telemetryList", 10)
+            if (teleNBT.size > 0) {
+                for (j: Int in teleNBT.size - 1 downTo 0) {
+                    val tag1: NBTTagCompound = teleNBT.getCompoundOrEmpty(j)
                     if (tag1 != null) {
                         this.telemetryList.add(BlockVec3Dim.readFromNBT(tag1))
                     }
@@ -527,7 +530,7 @@ abstract class EntitySpaceshipBase(par1World: World?) : Entity(par1World), IPack
     open fun onReachAtmosphere() {
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     fun spawnParticle(
         var1: String?,
         var2: kotlin.Double,
@@ -618,7 +621,7 @@ abstract class EntitySpaceshipBase(par1World: World?) : Entity(par1World), IPack
         this.ignoreFrustumCheck = true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getBrightnessForRender(): Int {
         var height: kotlin.Double = this.posY + this.getEyeHeight().toDouble()
         if (height > 255.0) height = 255.0

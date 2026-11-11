@@ -1,9 +1,9 @@
 package asmodeuscore.core.astronomy.dimension.world
 
-import net.minecraft.block.state.IBlockState
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.chunk.IChunkProvider
 import net.minecraft.world.gen.IChunkGenerator
 import net.minecraftforge.fml.common.IWorldGenerator
@@ -76,7 +76,7 @@ open class OreGenerator constructor(
                                 val state: IBlockState = par1World.getBlockState(pos)
 
                                 if (var39 * var39 + var42 * var42 + var45 * var45 < 1.0 && state === this.replaceBlock) {
-                                    par1World.setBlockState(BlockPos(var38, var41, var44), this.oreBlock, 2)
+                                    par1World.setBlock(BlockPos(var38, var41, var44), this.oreBlock, 2)
                                 }
                             }
                         }

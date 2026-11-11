@@ -1,5 +1,6 @@
 package galaxyspace.core
 
+import foundation.item.FoundationItemVariants
 import galaxyspace.core.prefab.items.ItemAxeGS
 import galaxyspace.core.prefab.items.ItemFluidCanisterGS
 import galaxyspace.core.prefab.items.ItemHoeGS
@@ -46,11 +47,11 @@ import micdoodle8.mods.galacticraft.core.wrappers.PartialCanister
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
 import micdoodle8.mods.galacticraft.planets.venus.VenusItems
-import net.minecraft.init.SoundEvents
-import net.minecraft.inventory.EntityEquipmentSlot
-import net.minecraft.item.Item
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.entity.EquipmentSlot as EntityEquipmentSlot
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemArmor
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraftforge.common.util.EnumHelper
 import net.minecraftforge.fluids.FluidRegistry
 import net.minecraftforge.oredict.OreDictionary
@@ -390,29 +391,29 @@ object GSItems {
 
     @JvmStatic
     fun oreDictRegistration() {
-        OreDictionary.registerOre("ingotCobalt", ItemStack(INGOTS, 1, 0))
-        OreDictionary.registerOre("ingotMagnesium", ItemStack(INGOTS, 1, 1))
-        OreDictionary.registerOre("ingotNickel", ItemStack(INGOTS, 1, 2))
+        OreDictionary.registerOre("ingotCobalt", FoundationItemVariants.stack(GSItems.INGOTS, 1, 0))
+        OreDictionary.registerOre("ingotMagnesium", FoundationItemVariants.stack(GSItems.INGOTS, 1, 1))
+        OreDictionary.registerOre("ingotNickel", FoundationItemVariants.stack(GSItems.INGOTS, 1, 2))
         OreDictionary.registerOre("dustSulfur", ItemStack(BASIC, 1, 7))
         OreDictionary.registerOre("waferModern", ItemStack(BASIC, 1, 5))
 
         if (GSConfigCore.enablePlateOreDict) {
-            OreDictionary.registerOre("plateCopper", ItemStack(GCItems.basicItem, 1, 6))
-            OreDictionary.registerOre("plateTin", ItemStack(GCItems.basicItem, 1, 7))
-            OreDictionary.registerOre("plateAluminum", ItemStack(GCItems.basicItem, 1, 8))
-            OreDictionary.registerOre("plateSteel", ItemStack(GCItems.basicItem, 1, 9))
-            OreDictionary.registerOre("plateBronze", ItemStack(GCItems.basicItem, 1, 10))
-            OreDictionary.registerOre("plateIron", ItemStack(GCItems.basicItem, 1, 11))
-            OreDictionary.registerOre("plateDesh", ItemStack(MarsItems.marsItemBasic, 1, 5))
-            OreDictionary.registerOre("plateTitanium", ItemStack(AsteroidsItems.basicItem, 1, 6))
+            OreDictionary.registerOre("plateCopper", FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 6))
+            OreDictionary.registerOre("plateTin", FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 7))
+            OreDictionary.registerOre("plateAluminum", FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 8))
+            OreDictionary.registerOre("plateSteel", FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 9))
+            OreDictionary.registerOre("plateBronze", FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 10))
+            OreDictionary.registerOre("plateIron", FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 1, 11))
+            OreDictionary.registerOre("plateDesh", FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 1, 5))
+            OreDictionary.registerOre("plateTitanium", FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 1, 6))
         }
 
-        OreDictionary.registerOre("plateCoal", ItemStack(COMPRESSED_PLATES, 1, 0))
-        OreDictionary.registerOre("plateCobalt", ItemStack(COMPRESSED_PLATES, 1, 1))
-        OreDictionary.registerOre("plateMagnesium", ItemStack(COMPRESSED_PLATES, 1, 2))
-        OreDictionary.registerOre("plateNickel", ItemStack(COMPRESSED_PLATES, 1, 3))
+        OreDictionary.registerOre("plateCoal", FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 0))
+        OreDictionary.registerOre("plateCobalt", FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 1))
+        OreDictionary.registerOre("plateMagnesium", FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 2))
+        OreDictionary.registerOre("plateNickel", FoundationItemVariants.stack(GSItems.COMPRESSED_PLATES, 1, 3))
 
-        OreDictionary.registerOre("ingotLead", ItemStack(VenusItems.basicItem, 1, 1))
+        OreDictionary.registerOre("ingotLead", FoundationItemVariants.stack(requireNotNull(VenusItems.basicItem), 1, 1))
     }
 
     @JvmStatic

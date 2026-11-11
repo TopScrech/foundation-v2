@@ -1,5 +1,9 @@
 package galaxyspace.systems.ACentauriSystem.planets.proxima_b.world.gen.we
 
+import foundation.block.getStateFromMeta
+
+import foundation.level.offset
+
 import galaxyspace.systems.ACentauriSystem.core.ACBlocks
 import galaxyspace.systems.ACentauriSystem.planets.proxima_b.blocks.Proxima_B_Blocks.EnumBlockProximaB
 import galaxyspace.systems.ACentauriSystem.planets.proxima_b.blocks.Proxima_B_Blocks
@@ -16,9 +20,9 @@ import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedEnderman
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSkeleton
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedSpider
 import micdoodle8.mods.galacticraft.core.entities.EntityEvolvedZombie
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class Proxima_B_Forest constructor(chunk: WE_ChunkProvider?) :
@@ -62,7 +66,7 @@ open class Proxima_B_Forest constructor(chunk: WE_ChunkProvider?) :
             0,
             false
         )
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         createChunkGen_InXZ_List.add(standardBiomeLayers)
     }
 
@@ -74,17 +78,17 @@ open class Proxima_B_Forest constructor(chunk: WE_ChunkProvider?) :
         var cangen: Boolean = true
 
         for (pos1: BlockPos in BlockPos.getAllInBox(
-            pos.add(-3, -1, -3),
-            pos.add(3, -1, 3)
-        )) if ((world)!!.isAirBlock(pos1)) cangen = false
+            pos.offset(-3, -1, -3),
+            pos.offset(3, -1, 3)
+        )) if ((world)!!.isEmptyBlock(pos1)) cangen = false
 
         if (!(world)!!.isAreaLoaded(
                 pos,
                 13,
                 false
             )
-        ) if (cangen && (world)!!.getBlockState(pos.down()) === ACBlocks.PROXIMA_B_BLOCKS.getDefaultState()
-                .withProperty(
+        ) if (cangen && (world)!!.getBlockState(pos.below()) === ACBlocks.PROXIMA_B_BLOCKS.defaultBlockState()
+                .setValue(
                     Proxima_B_Blocks.Companion.BASIC_TYPE,
                     EnumBlockProximaB.SURFACE
                 )
@@ -92,17 +96,17 @@ open class Proxima_B_Forest constructor(chunk: WE_ChunkProvider?) :
             when ((rand)!!.nextInt(2)) {
                 0 -> WorldGenTree_BigJungle(
                     ACBlocks.PROXIMA_B_LOG_1.getStateFromMeta(0),
-                    Blocks.AIR.getDefaultState(),
+                    Blocks.AIR.defaultBlockState(),
                     (rand)!!.nextInt(3)
                 ).generate((world)!!, (rand)!!, pos)
 
                 1 -> WorldGenTree_BigJungle2(
                     ACBlocks.PROXIMA_B_LOG_1.getStateFromMeta(0),
-                    Blocks.AIR.getDefaultState(),
+                    Blocks.AIR.defaultBlockState(),
                     (rand)!!.nextInt(3)
                 ).generate((world)!!, (rand)!!, pos)
             }
-            //new WorldGenTree_BigJungle(ACBlocks.PROXINA_B_LOG_1.getStateFromMeta(0), Blocks.AIR.getDefaultState(), rand.nextInt(3)).generate(world, rand, pos);
+            //new WorldGenTree_BigJungle(ACBlocks.PROXINA_B_LOG_1.getStateFromMeta(0), Blocks.AIR.defaultBlockState(), rand.nextInt(3)).generate(world, rand, pos);
         }
 
         for (i: Int in 0..7) {
@@ -111,7 +115,7 @@ open class Proxima_B_Forest constructor(chunk: WE_ChunkProvider?) :
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
             cangen = true
-            for (pos1: BlockPos in BlockPos.getAllInBox(pos.add(-3, -1, -3), pos.add(3, -1, 3))) if ((world)!!.isAirBlock(
+            for (pos1: BlockPos in BlockPos.getAllInBox(pos.offset(-3, -1, -3), pos.offset(3, -1, 3))) if ((world)!!.isEmptyBlock(
                     pos1
                 ) || (world)!!.getBlockState(pos1) === ACBlocks.PROXIMA_B_LOG_1.getStateFromMeta(0)
             ) cangen = false
@@ -121,8 +125,8 @@ open class Proxima_B_Forest constructor(chunk: WE_ChunkProvider?) :
                     13,
                     false
                 )
-            ) if (cangen && (world)!!.getBlockState(pos.down()) === ACBlocks.PROXIMA_B_BLOCKS.getDefaultState()
-                    .withProperty(
+            ) if (cangen && (world)!!.getBlockState(pos.below()) === ACBlocks.PROXIMA_B_BLOCKS.defaultBlockState()
+                    .setValue(
                         Proxima_B_Blocks.Companion.BASIC_TYPE,
                         EnumBlockProximaB.SURFACE
                     )
@@ -130,13 +134,13 @@ open class Proxima_B_Forest constructor(chunk: WE_ChunkProvider?) :
                 when ((rand)!!.nextInt(2)) {
                     0 -> WorldGenTree_Forest(
                         ACBlocks.PROXIMA_B_LOG_1.getStateFromMeta(0),
-                        Blocks.AIR.getDefaultState(),
+                        Blocks.AIR.defaultBlockState(),
                         (rand)!!.nextInt(3)
                     ).generate((world)!!, (rand)!!, pos)
 
                     1 -> WorldGenTree_Forest2(
                         ACBlocks.PROXIMA_B_LOG_1.getStateFromMeta(0),
-                        Blocks.AIR.getDefaultState(),
+                        Blocks.AIR.defaultBlockState(),
                         (rand)!!.nextInt(3)
                     ).generate((world)!!, (rand)!!, pos)
                 }
@@ -149,12 +153,12 @@ open class Proxima_B_Forest constructor(chunk: WE_ChunkProvider?) :
             randPosZ = z + (rand)!!.nextInt(16) + 8
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-            if ((world)!!.getBlockState(pos.down()) === ACBlocks.PROXIMA_B_BLOCKS.getDefaultState()
-                    .withProperty(
+            if ((world)!!.getBlockState(pos.below()) === ACBlocks.PROXIMA_B_BLOCKS.defaultBlockState()
+                    .setValue(
                         Proxima_B_Blocks.Companion.BASIC_TYPE,
                         EnumBlockProximaB.SURFACE
                     )
-            ) (world)!!.setBlockState(pos, Blocks.DEADBUSH.getDefaultState())
+            ) (world)!!.setBlockAndUpdate(pos, Blocks.DEADBUSH.defaultBlockState())
         }
 
         val kx: Int = x + (rand)!!.nextInt(16) + 8
@@ -163,10 +167,10 @@ open class Proxima_B_Forest constructor(chunk: WE_ChunkProvider?) :
         if ((rand)!!.nextInt(50) == 0) {
             val l2: Int = (world)!!.getHeight(BlockPos(kx, 0, kz)).getY() - 20 - (rand)!!.nextInt(25)
             WorldGenPool(
-                ACBlocks.PROXIMA_B_BLOCKS.getDefaultState().withProperty(
+                ACBlocks.PROXIMA_B_BLOCKS.defaultBlockState().setValue(
                     Proxima_B_Blocks.Companion.BASIC_TYPE,
                     EnumBlockProximaB.STONE
-                ), (GCFluids.fluidOil)!!.getBlock().getDefaultState(), 5
+                ), (GCFluids.fluidOil)!!.getBlock().defaultBlockState(), 5
             ).generate((world)!!, (rand)!!, BlockPos(x, l2, z))
         }
     }

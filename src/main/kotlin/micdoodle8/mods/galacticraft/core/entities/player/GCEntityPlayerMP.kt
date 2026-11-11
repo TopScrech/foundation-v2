@@ -2,13 +2,13 @@ package micdoodle8.mods.galacticraft.core.entities.player
 
 import com.mojang.authlib.GameProfile
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
-import net.minecraft.entity.Entity
-import net.minecraft.entity.MoverType
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.MoverType
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.management.PlayerInteractionManager
-import net.minecraft.util.DamageSource
-import net.minecraft.world.WorldServer
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.server.level.ServerLevel as WorldServer
 
 /**
  * This class provides various hooks which are missing from Forge or don't quite do what we need.

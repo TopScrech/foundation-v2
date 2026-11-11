@@ -1,5 +1,9 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.item.legacyItemValue
+
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.api.tile.IColorable
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType
 import micdoodle8.mods.galacticraft.core.GCBlocks
@@ -9,45 +13,45 @@ import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.tile.TileEntityFluidPipe
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.init.Items
-import net.minecraft.item.EnumDyeColor
-import net.minecraft.item.Item
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.DyeColor as EnumDyeColor
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemDye
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
 open class BlockFluidPipe constructor(assetName: String?, mode: EnumPipeMode?) : BlockTransmitter(Material.GLASS),
-    ITileEntityProvider, IShiftDescription, ISortableBlock {
+    ITileEntityProvider, IShiftDescription, ISortableBlock, LegacyBlockMetadata {
     private val mode: EnumPipeMode?
 
     init {
         this.setHardness(0.3f)
         this.setSoundType(SoundType.GLASS)
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(COLOR, EnumDyeColor.WHITE)
+            this.blockState.getBaseState().setValue(COLOR, EnumDyeColor.WHITE)
         )
         this.setTranslationKey(assetName)
         this.mode = mode
@@ -60,7 +64,7 @@ open class BlockFluidPipe constructor(assetName: String?, mode: EnumPipeMode?) :
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val tile: TileEntityFluidPipe? = worldIn.getTileEntity(pos) as TileEntityFluidPipe?
+        val tile: TileEntityFluidPipe? = worldIn.getBlockEntity(pos) as TileEntityFluidPipe?
         val pipeColor: Int = (state.getValue(COLOR))!!.getDyeDamage()
 
         if (!ignoreDrop && tile != null && pipeColor != 15) {
@@ -99,8 +103,8 @@ open class BlockFluidPipe constructor(assetName: String?, mode: EnumPipeMode?) :
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        if (!(world)!!.isRemote) {
-            val tile: TileEntityFluidPipe? = (world)!!.getTileEntity(pos) as TileEntityFluidPipe?
+        if (!(world)!!.isClientSide) {
+            val tile: TileEntityFluidPipe? = (world)!!.getBlockEntity(pos) as TileEntityFluidPipe?
             tile!!.switchType()
         }
 
@@ -118,26 +122,26 @@ open class BlockFluidPipe constructor(assetName: String?, mode: EnumPipeMode?) :
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        val tileEntity: TileEntityFluidPipe? = worldIn.getTileEntity(pos) as TileEntityFluidPipe?
+        val tileEntity: TileEntityFluidPipe? = worldIn.getBlockEntity(pos) as TileEntityFluidPipe?
 
         if (super.onBlockActivated(worldIn, pos, state, playerIn, hand, side, hitX, hitY, hitZ)) {
             return true
         }
 
-        if (!worldIn.isRemote) {
-            val stack: ItemStack = playerIn.inventory.getCurrentItem()
+        if (!worldIn.isClientSide) {
+            val stack: ItemStack = playerIn.inventory.getSelectedItem()
 
             if (!stack.isEmpty()) {
                 if (stack.getItem() is ItemDye) {
-                    val dyeColor: Int = playerIn.inventory.getCurrentItem().getItemDamage()
+                    val dyeColor: Int = playerIn.inventory.getSelectedItem().legacyItemValue
 
                     val colorBefore: Byte = tileEntity!!.getColor(state)
 
                     tileEntity.onColorUpdate()
 
-                    worldIn.setBlockState(
+                    worldIn.setBlockAndUpdate(
                         pos,
-                        state.withProperty(COLOR, EnumDyeColor.byDyeDamage(dyeColor))
+                        state.setValue(COLOR, EnumDyeColor.byDyeDamage(dyeColor))
                     )
 
                     (GalacticraftCore.Companion.packetPipeline)!!.sendToAllAround(
@@ -156,7 +160,7 @@ open class BlockFluidPipe constructor(assetName: String?, mode: EnumPipeMode?) :
                     )
 
                     if (colorBefore != dyeColor.toByte() && !playerIn.capabilities.isCreativeMode) {
-                        playerIn.inventory.getCurrentItem().shrink(1)
+                        playerIn.inventory.getSelectedItem().shrink(1)
                     }
 
                     if (colorBefore != dyeColor.toByte() && colorBefore.toInt() != 15) {
@@ -165,8 +169,8 @@ open class BlockFluidPipe constructor(assetName: String?, mode: EnumPipeMode?) :
 
                     //					GCCorePacketManager.sendPacketToClients(GCCorePacketManager.getPacket(GalacticraftCore.CHANNELENTITIES, tileEntity, tileEntity.getColor(), (byte) -1)); TODO Fix pipe color
                     val tileVec: BlockPos = tileEntity.getPos()
-                    for (dir: EnumFacing in EnumFacing.VALUES) {
-                        val tileAt: TileEntity? = worldIn.getTileEntity(tileVec.offset(dir))
+                    for (dir: EnumFacing in EnumFacing.values()) {
+                        val tileAt: TileEntity? = worldIn.getBlockEntity(tileVec.offset(dir))
 
                         if (tileAt != null && tileAt is IColorable) {
                             (tileAt as IColorable).onAdjacentColorChanged(dir)
@@ -190,7 +194,7 @@ open class BlockFluidPipe constructor(assetName: String?, mode: EnumPipeMode?) :
         val entityitem: EntityItem =
             EntityItem(worldIn, pos.getX() + d0, pos.getY() + d1, pos.getZ() + d2, ItemStack(Items.DYE, 1, colorBefore))
         entityitem.setDefaultPickupDelay()
-        worldIn.spawnEntity(entityitem)
+        worldIn.addFreshEntity(entityitem)
     }
 
     override fun shouldSideBeRendered(
@@ -223,7 +227,7 @@ open class BlockFluidPipe constructor(assetName: String?, mode: EnumPipeMode?) :
         return TileEntityFluidPipe()
     }
 
-    //    @SideOnly(Side.CLIENT)
+    //    @OnlyIn(Dist.CLIENT)
     //    @Override
     //    public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World worldIn, BlockPos pos)
     //    {
@@ -245,13 +249,13 @@ open class BlockFluidPipe constructor(assetName: String?, mode: EnumPipeMode?) :
         return true
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public override fun getRenderLayer(): BlockRenderLayer {
         return BlockRenderLayer.CUTOUT
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        return this.getDefaultState().withProperty(COLOR, EnumDyeColor.byMetadata(meta))
+        return this.defaultBlockState().setValue(COLOR, EnumDyeColor.byMetadata(meta))
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -274,7 +278,9 @@ open class BlockFluidPipe constructor(assetName: String?, mode: EnumPipeMode?) :
             return meta
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
@@ -288,7 +294,7 @@ open class BlockFluidPipe constructor(assetName: String?, mode: EnumPipeMode?) :
 
     companion object {
         @JvmField
-        val COLOR: PropertyEnum<EnumDyeColor?> = PropertyEnum.create<EnumDyeColor?>("color", EnumDyeColor::class.java)
+        val COLOR: PropertyEnum<EnumDyeColor> = PropertyEnum.create<EnumDyeColor>("color", EnumDyeColor::class.java)
 
         @JvmField
         var ignoreDrop: Boolean = false

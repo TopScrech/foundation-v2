@@ -4,7 +4,7 @@ import javax.annotation.Nonnull
 
 import mezz.jei.api.ingredients.IIngredients
 import mezz.jei.api.recipe.IRecipeWrapper
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 
 open class CircuitFabricatorRecipeWrapper constructor(
     @field:Nonnull @param:Nonnull private val input: MutableList<Any?>,

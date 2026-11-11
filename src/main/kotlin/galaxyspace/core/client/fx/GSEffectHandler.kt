@@ -3,16 +3,15 @@ package galaxyspace.core.client.fx
 import micdoodle8.mods.galacticraft.api.vector.Vector3
 import net.minecraft.client.Minecraft
 import net.minecraft.client.particle.Particle
-import net.minecraft.entity.EntityLivingBase
-import net.minecraftforge.fml.client.FMLClientHandler
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 object GSEffectHandler {
     @JvmStatic
     fun spawnParticle(particleID: String, position: Vector3, motion: Vector3, vararg otherInfo: Any?) {
-        val mc: Minecraft? = FMLClientHandler.instance().getClient()
+        val mc: Minecraft? = Minecraft.getInstance()
 
         if (mc != null && mc.getRenderViewEntity() != null && mc.effectRenderer != null) {
             val dX: Double = mc.getRenderViewEntity()!!.posX - position.x

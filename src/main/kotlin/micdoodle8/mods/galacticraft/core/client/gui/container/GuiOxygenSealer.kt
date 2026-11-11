@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.client.gui.container
 
+import foundation.block.getMetaFromState
+
 import micdoodle8.mods.galacticraft.core.network.PacketSimple.EnumSimplePacket
 import java.util.ArrayList
 
@@ -14,13 +16,13 @@ import micdoodle8.mods.galacticraft.core.network.PacketSimple
 import micdoodle8.mods.galacticraft.core.tile.TileEntityOxygenSealer
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.gui.GuiButton
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
 import org.lwjgl.opengl.GL11
 import kotlin.math.floor
 import kotlin.math.min
@@ -321,6 +323,6 @@ open class GuiOxygenSealer constructor(
     }
 
     companion object {
-        private val sealerTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/oxygen_sealer.png")
+        private val sealerTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/oxygen_sealer.png")
     }
 }

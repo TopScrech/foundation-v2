@@ -1,15 +1,15 @@
 package micdoodle8.mods.galacticraft.core.inventory
 
 import micdoodle8.mods.galacticraft.api.recipe.ISchematicItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.IInventory
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.Container as IInventory
 import net.minecraft.inventory.InventoryCraftResult
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 
 open class ContainerSchematic constructor(par1InventoryPlayer: InventoryPlayer, pos: BlockPos?) : Container() {
     @JvmField
@@ -21,7 +21,7 @@ open class ContainerSchematic constructor(par1InventoryPlayer: InventoryPlayer, 
 
     init {
         this.world = par1InventoryPlayer.player.world
-        this.addSlotToContainer(SlotSpecific(this.craftMatrix, 0, 80, 1, ISchematicItem::class.java))
+        this.addSlot(SlotSpecific(this.craftMatrix, 0, 80, 1, ISchematicItem::class.java))
         var var6: Int
         var var7: Int
 
@@ -30,7 +30,7 @@ open class ContainerSchematic constructor(par1InventoryPlayer: InventoryPlayer, 
         while (var6 < 3) {
             var7 = 0
             while (var7 < 9) {
-                this.addSlotToContainer(
+                this.addSlot(
                     Slot(
                         par1InventoryPlayer,
                         var7 + var6 * 9 + 9,
@@ -45,17 +45,17 @@ open class ContainerSchematic constructor(par1InventoryPlayer: InventoryPlayer, 
 
         var6 = 0
         while (var6 < 9) {
-            this.addSlotToContainer(Slot(par1InventoryPlayer, var6, 8 + var6 * 18, 169 - 59 + 16))
+            this.addSlot(Slot(par1InventoryPlayer, var6, 8 + var6 * 18, 169 - 59 + 16))
             ++var6
         }
 
-        this.onCraftMatrixChanged(this.craftMatrix)
+        this.slotsChanged(this.craftMatrix)
     }
 
-    override fun onContainerClosed(par1EntityPlayer: EntityPlayer) {
-        super.onContainerClosed(par1EntityPlayer)
+    override fun removed(par1EntityPlayer: EntityPlayer) {
+        super.removed(par1EntityPlayer)
 
-        if (!this.world.isRemote) {
+        if (!this.world.isClientSide) {
             for (var2: Int in 0..0) {
                 val var3: ItemStack = this.craftMatrix.removeStackFromSlot(var2)
 
@@ -66,30 +66,30 @@ open class ContainerSchematic constructor(par1InventoryPlayer: InventoryPlayer, 
         }
     }
 
-    override fun canInteractWith(entityplayer: EntityPlayer): Boolean {
+    override fun stillValid(entityplayer: EntityPlayer): Boolean {
         return true
     }
 
-    override fun transferStackInSlot(par1EntityPlayer: EntityPlayer, par2: Int): ItemStack {
+    override fun quickMoveStack(par1EntityPlayer: EntityPlayer, par2: Int): ItemStack {
         var var3: ItemStack = ItemStack.EMPTY
         val var4: Slot? = this.inventorySlots.get(par2)
 
-        if (var4 != null && var4.getHasStack()) {
-            val var5: ItemStack = var4.getStack()
+        if (var4 != null && var4.hasItem()) {
+            val var5: ItemStack = var4.getItem()
             var3 = var5.copy()
 
             if (par2 < 1) {
-                if (!this.mergeItemStack(var5, 1, this.inventorySlots.size, true)) {
+                if (!this.moveItemStackTo(var5, 1, this.inventorySlots.size, true)) {
                     return ItemStack.EMPTY
                 }
-            } else if (!this.mergeItemStack(var5, 0, 1, false)) {
+            } else if (!this.moveItemStackTo(var5, 0, 1, false)) {
                 return ItemStack.EMPTY
             }
 
             if (var5.getCount() == 0) {
-                var4.putStack(ItemStack.EMPTY)
+                var4.set(ItemStack.EMPTY)
             } else {
-                var4.onSlotChanged()
+                var4.setChanged()
             }
         }
 

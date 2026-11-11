@@ -27,38 +27,37 @@ import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntityCrashedProbe
 import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntityGeothermalGenerator
 import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntitySolarArrayController
 import micdoodle8.mods.galacticraft.planets.venus.tile.TileEntityTreasureChestVenus
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.particle.Particle
 import net.minecraft.client.renderer.block.model.ModelBakery
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.renderer.block.statemap.StateMapperBase
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.client.event.ModelBakeEvent
 import net.minecraftforge.client.event.TextureStitchEvent
 import net.minecraftforge.client.model.ModelLoader
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.common.model.IModelState
-import net.minecraftforge.fml.client.FMLClientHandler
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.client.registry.IRenderFactory
 import net.minecraftforge.fml.client.registry.RenderingRegistry
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
 open class VenusModuleClient : IPlanetsModuleClient {
-    override fun preInit(event: FMLPreInitializationEvent?) {
+    override fun preInit() {
         MinecraftForge.EVENT_BUS.register(this)
         RenderingRegistry.registerEntityRenderingHandler<EntityJuicer>(
             EntityJuicer::class.java,
@@ -75,7 +74,7 @@ open class VenusModuleClient : IPlanetsModuleClient {
     }
 
     private fun addPlanetVariants(name: String, vararg variants: String?) {
-        val itemBlockVariants: Item? = Item.REGISTRY.getObject(ResourceLocation(Constants.MOD_ID_PLANETS, name))
+        val itemBlockVariants: Item? = Item.REGISTRY.getObject(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID_PLANETS, name))
         val variants0: Array<ResourceLocation?> = arrayOfNulls<ResourceLocation>(variants.size)
         for (i: Int in variants.indices) {
             variants0[i] = ResourceLocation(GalacticraftPlanets.TEXTURE_PREFIX + variants[i])
@@ -123,7 +122,7 @@ open class VenusModuleClient : IPlanetsModuleClient {
         val sludge: Item = Item.getItemFromBlock(VenusBlocks.sulphuricAcid)
         ModelBakery.registerItemVariants(
             sludge,
-            ResourceLocation(GalacticraftPlanets.TEXTURE_PREFIX + "sulphuric_acid")
+            ResourceLocation.parse(GalacticraftPlanets.TEXTURE_PREFIX + "sulphuric_acid")
         )
         ModelLoader.setCustomMeshDefinition(
             sludge,
@@ -142,18 +141,18 @@ open class VenusModuleClient : IPlanetsModuleClient {
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun loadTextures(event: TextureStitchEvent.Pre) {
         registerTexture(event, "pod_flame")
         registerTexture(event, "web")
     }
 
     private fun registerTexture(event: TextureStitchEvent.Pre, texture: String) {
-        event.getMap().registerSprite(ResourceLocation(GalacticraftPlanets.TEXTURE_PREFIX + "blocks/" + texture))
+        event.getMap().registerSprite(ResourceLocation.parse(GalacticraftPlanets.TEXTURE_PREFIX + "blocks/" + texture))
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     open fun onModelBakeEvent(event: ModelBakeEvent?) {
     }
 
@@ -187,7 +186,7 @@ open class VenusModuleClient : IPlanetsModuleClient {
 
     override fun getGuiElement(side: Side?, ID: Int, player: EntityPlayer?, world: World?, x: Int, y: Int, z: Int): Any? {
         if (side == Side.CLIENT) {
-            val tile: TileEntity? = (world)!!.getTileEntity(BlockPos(x, y, z))
+            val tile: TileEntity? = (world)!!.getBlockEntity(BlockPos(x, y, z))
 
             if (ID == GuiIdsPlanets.MACHINE_VENUS) {
                 if (tile is TileEntityGeothermalGenerator) {
@@ -204,7 +203,7 @@ open class VenusModuleClient : IPlanetsModuleClient {
     }
 
     override fun spawnParticle(particleID: String?, position: Vector3?, motion: Vector3?, vararg extraData: Any?) {
-        val mc: Minecraft? = FMLClientHandler.instance().getClient()
+        val mc: Minecraft? = Minecraft.getInstance()
 
         if (mc != null && mc.getRenderViewEntity() != null && mc.effectRenderer != null) {
             val dX: Double = mc.getRenderViewEntity()!!.posX - (position)!!.x

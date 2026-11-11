@@ -12,11 +12,11 @@ import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.tick.TickHandlerClient
 import micdoodle8.mods.galacticraft.core.tick.TickHandlerServer
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.network.INetHandler
-import net.minecraft.world.World
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fml.common.network.NetworkRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import java.lang.Exception
 import java.util.Queue
 
@@ -37,7 +37,7 @@ open class GalacticraftPacketHandler constructor() : SimpleChannelInboundHandler
     }
 
     open fun unload(world: World) {
-        val side: Side = if (world.isRemote) Side.CLIENT else Side.SERVER
+        val side: Side = if (world.isClientSide) Side.CLIENT else Side.SERVER
         val dimId: Int = GCCoreUtil.getDimensionID(world)
         val queue: Queue<PacketPlayerPair?> = getQueue(side, dimId)
         queue.clear()
@@ -45,7 +45,7 @@ open class GalacticraftPacketHandler constructor() : SimpleChannelInboundHandler
 
     open fun tick(world: World) {
         var pair: PacketPlayerPair?
-        val side: Side = if (world.isRemote) Side.CLIENT else Side.SERVER
+        val side: Side = if (world.isClientSide) Side.CLIENT else Side.SERVER
         val dimID: Int = GCCoreUtil.getDimensionID(world)
         val queue: Queue<PacketPlayerPair?> = getQueue(side, dimID)
         while ((queue.poll().also { pair = it }) != null) {

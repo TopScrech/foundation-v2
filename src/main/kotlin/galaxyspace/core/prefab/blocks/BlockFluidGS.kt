@@ -1,5 +1,7 @@
 package galaxyspace.core.prefab.blocks
 
+import foundation.level.offset
+
 import javax.annotation.Nonnull
 
 import galaxyspace.core.configs.GSConfigCore
@@ -7,17 +9,17 @@ import galaxyspace.core.events.GSEventHandler
 import galaxyspace.core.GSFluids
 import micdoodle8.mods.galacticraft.core.util.OxygenUtil
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
-import net.minecraft.init.MobEffects
-import net.minecraft.potion.PotionEffect
-import net.minecraft.util.DamageSource
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.effect.MobEffectInstance as PotionEffect
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import net.minecraftforge.fluids.BlockFluidClassic
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
@@ -60,9 +62,9 @@ open class BlockFluidGS @JvmOverloads constructor(
         if (isFlammable && GSConfigCore.enableGasExplosion) {
             var flag: Boolean = false
             for (around: BlockPos in BlockPos.getAllInBox(-1, -1, -1, 1, 1, 1)) {
-                if (world.getBlockState(pos.add(around)).getBlock() === Blocks.FIRE) flag = true
-                if (world.getBlockState(pos.add(around)).getBlock() === Blocks.TORCH) flag = true
-                if (world.getBlockState(pos.add(around)).getBlock() === Blocks.MAGMA) flag = true
+                if (world.getBlockState(pos.offset(around)).getBlock() === Blocks.FIRE) flag = true
+                if (world.getBlockState(pos.offset(around)).getBlock() === Blocks.TORCH) flag = true
+                if (world.getBlockState(pos.offset(around)).getBlock() === Blocks.MAGMA) flag = true
 
                 if (flag) {
                     world.newExplosion(
@@ -115,7 +117,7 @@ open class BlockFluidGS @JvmOverloads constructor(
                 val living: EntityLivingBase = entity
                 if (living is EntityPlayerMP) {
                     if (!living.capabilities.isCreativeMode) {
-                        if (!living.isPotionActive(MobEffects.BLINDNESS)) living.addPotionEffect(
+                        if (!living.hasEffect(MobEffects.BLINDNESS)) living.addEffect(
                             PotionEffect(
                                 MobEffects.BLINDNESS,
                                 20 * 5,
@@ -124,8 +126,8 @@ open class BlockFluidGS @JvmOverloads constructor(
                         )
 
                         if (!OxygenUtil.hasValidOxygenSetup(living) && !GSEventHandler.isValidOxygenTanks(living)) {
-                            if (!living.isPotionActive(MobEffects.POISON)) {
-                                living.addPotionEffect(PotionEffect(MobEffects.POISON, 20 * 5, 4))
+                            if (!living.hasEffect(MobEffects.POISON)) {
+                                living.addEffect(PotionEffect(MobEffects.POISON, 20 * 5, 4))
                             }
                         } else {
                             GSEventHandler.consumeOxygenFromTank(living, 1)

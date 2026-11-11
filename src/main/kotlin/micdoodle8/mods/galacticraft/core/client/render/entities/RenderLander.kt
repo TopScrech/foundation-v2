@@ -6,14 +6,14 @@ import micdoodle8.mods.galacticraft.core.entities.EntityLander
 import net.minecraft.client.renderer.culling.ICamera
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 import kotlin.math.sin
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderLander constructor(manager: RenderManager) : Render<EntityLander>(manager) {
     @JvmField
     protected var landerModel: ModelLander
@@ -63,6 +63,6 @@ open class RenderLander constructor(manager: RenderManager) : Render<EntityLande
     }
 
     companion object {
-        private val landerTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/lander.png")
+        private val landerTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/lander.png")
     }
 }

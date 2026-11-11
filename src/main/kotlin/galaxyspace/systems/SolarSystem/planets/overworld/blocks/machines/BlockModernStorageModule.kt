@@ -1,5 +1,8 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.blocks.machines
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+
 import galaxyspace.GalaxySpace
 import asmodeuscore.api.item.IShiftDescription
 import galaxyspace.systems.SolarSystem.planets.overworld.blocks.machines.BlockModernStorageModule
@@ -10,24 +13,26 @@ import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseUniversalElectrical
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.SoundType
-import net.minecraft.block.properties.PropertyDirection
-import net.minecraft.block.properties.PropertyInteger
+import net.minecraft.world.level.block.SoundType
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
+import net.minecraft.world.level.block.state.properties.IntegerProperty as PropertyInteger
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 
 open class BlockModernStorageModule constructor() : BlockTileGC(GCBlocks.machine), IShiftDescription,
-    ISortableBlock {
+    ISortableBlock, LegacyBlockMetadata {
     init {
         this.setTranslationKey("modern_storage_module")
         this.setHardness(1.0f)
@@ -41,9 +46,9 @@ open class BlockModernStorageModule constructor() : BlockTileGC(GCBlocks.machine
         placer: EntityLivingBase,
         stack: ItemStack
     ) {
-        val angle: Int = MathHelper.floor(placer.rotationYaw * 4.0f / 360.0f + 0.5) and 3
+        val angle: Int = MathHelper.floor(placer.yRot * 4.0f / 360.0f + 0.5) and 3
         val change: Int = EnumFacing.byHorizontalIndex(angle).getOpposite().getHorizontalIndex()
-        worldIn.setBlockState(pos, getStateFromMeta(change), 3)
+        worldIn.setBlock(pos, getStateFromMeta(change), 3)
     }
 
     override fun onUseWrench(
@@ -59,9 +64,9 @@ open class BlockModernStorageModule constructor() : BlockTileGC(GCBlocks.machine
     ): Boolean {
         val metadata: Int = getMetaFromState((world)!!.getBlockState(pos))
         val change: Int = (world)!!.getBlockState(pos).getValue(FACING).rotateY().getHorizontalIndex()
-        (world)!!.setBlockState(pos, this.getStateFromMeta(metadata - (metadata % 4) + change), 3)
+        (world)!!.setBlock(pos, this.getStateFromMeta(metadata - (metadata % 4) + change), 3)
 
-        val te: TileEntity? = (world)!!.getTileEntity(pos)
+        val te: TileEntity? = (world)!!.getBlockEntity(pos)
         if (te is TileBaseUniversalElectrical) {
             te.updateFacing()
         }
@@ -80,7 +85,7 @@ open class BlockModernStorageModule constructor() : BlockTileGC(GCBlocks.machine
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        if (!(world)!!.isRemote) {
+        if (!(world)!!.isClientSide) {
             (entityPlayer)!!.openGui(GalaxySpace.instance, -1, world, (pos)!!.getX(), (pos)!!.getY(), (pos)!!.getZ())
         }
 
@@ -109,7 +114,7 @@ open class BlockModernStorageModule constructor() : BlockTileGC(GCBlocks.machine
 
     override fun getStateFromMeta(meta: Int): IBlockState {
         val enumfacing: EnumFacing = EnumFacing.byHorizontalIndex(meta % 4)
-        return this.getDefaultState().withProperty(FACING, enumfacing)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -121,16 +126,16 @@ open class BlockModernStorageModule constructor() : BlockTileGC(GCBlocks.machine
     }
 
     override fun getActualState(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState {
-        val tile: TileEntity? = worldIn.getTileEntity(pos)
+        val tile: TileEntity? = worldIn.getBlockEntity(pos)
 
 
         val energyLevel: Int = (tile as TileEntityModernStorageModule).scaledEnergyLevel
-        return state.withProperty(FILL_VALUE, energyLevel)
+        return state.setValue(FILL_VALUE, energyLevel)
     }
 
     companion object {
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL)
+        val FACING: EnumProperty<Direction> = BlockStateProperties.HORIZONTAL_FACING
 
         @JvmField
         val FILL_VALUE: PropertyInteger = PropertyInteger.create("fill_value", 0, 16)

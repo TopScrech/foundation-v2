@@ -1,9 +1,11 @@
 package galaxyspace.systems.SolarSystem.planets.mercury.items
 
+import foundation.item.legacyItemValue
+
 import galaxyspace.core.prefab.items.GSItemBlockDesc
 import galaxyspace.systems.SolarSystem.planets.mercury.blocks.MercuryBlocks
-import net.minecraft.block.Block
-import net.minecraft.item.ItemStack
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.item.ItemStack
 
 open class ItemBlocksMercury constructor(block: Block?) : GSItemBlockDesc((block)!!) {
     init {
@@ -16,7 +18,7 @@ open class ItemBlocksMercury constructor(block: Block?) : GSItemBlockDesc((block
     }
 
     override fun getTranslationKey(`is`: ItemStack): String {
-        val metadata: Int = `is`.getItemDamage()
+        val metadata: Int = `is`.legacyItemValue
 
         return "tile." + (MercuryBlocks.EnumBlockMercury.byMetadata(metadata))!!.getName()
     }

@@ -20,12 +20,13 @@ import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseUniversalElectrical
 import micdoodle8.mods.galacticraft.core.energy.tile.TileBaseUniversalElectricalSource
 import micdoodle8.mods.galacticraft.core.tile.ReceiverMode
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraftforge.fml.LogicalSide as Side
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import kotlin.math.min
 
 open class TileEntityBeamReceiver : TileEntityBeamOutput(), IEnergyHandlerGC, ILaserNode {
@@ -50,7 +51,7 @@ open class TileEntityBeamReceiver : TileEntityBeamOutput(), IEnergyHandlerGC, IL
         super.update()
 
         if (this.preLoadFacing != -1) {
-            this.setFacing(EnumFacing.byIndex(this.preLoadFacing))
+            this.setFacing(EnumFacing.from3DDataValue(this.preLoadFacing))
             this.preLoadFacing = -1
         }
 
@@ -64,7 +65,7 @@ open class TileEntityBeamReceiver : TileEntityBeamOutput(), IEnergyHandlerGC, IL
 
                     if (electricalTile.storage.getEnergyStoredGC() > 0) {
                         val source: EnergySource.EnergySourceAdjacent =
-                            EnergySource.EnergySourceAdjacent(EnumFacing.byIndex(this.facing!!.getIndex() xor 1))
+                            EnergySource.EnergySourceAdjacent(EnumFacing.from3DDataValue(this.facing!!.getIndex() xor 1))
                         val toSend: Float =
                             min(electricalTile.storage.getMaxExtract(), electricalTile.storage.getEnergyStoredGC())
                         val transmitted: Float = this.getTarget()!!.receiveEnergyGC(
@@ -135,9 +136,9 @@ open class TileEntityBeamReceiver : TileEntityBeamOutput(), IEnergyHandlerGC, IL
         val headVec: Vector3 =
             Vector3(this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5)
         if (this.facing != null) {
-            headVec.x += ((this.facing)!!.getXOffset() * 0.1f)!!
-            headVec.y += ((this.facing)!!.getYOffset() * 0.1f)!!
-            headVec.z += ((this.facing)!!.getZOffset() * 0.1f)!!
+            headVec.x += ((this.facing)!!.getStepX() * 0.1f)!!
+            headVec.y += ((this.facing)!!.getStepY() * 0.1f)!!
+            headVec.z += ((this.facing)!!.getStepZ() * 0.1f)!!
         }
         return headVec
     }
@@ -146,9 +147,9 @@ open class TileEntityBeamReceiver : TileEntityBeamOutput(), IEnergyHandlerGC, IL
         val headVec: Vector3 =
             Vector3(this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5)
         if (this.facing != null) {
-            headVec.x += ((this.facing)!!.getXOffset() * 0.1f)!!
-            headVec.y += ((this.facing)!!.getYOffset() * 0.1f)!!
-            headVec.z += ((this.facing)!!.getZOffset() * 0.1f)!!
+            headVec.x += ((this.facing)!!.getStepX() * 0.1f)!!
+            headVec.y += ((this.facing)!!.getStepY() * 0.1f)!!
+            headVec.z += ((this.facing)!!.getStepZ() * 0.1f)!!
         }
         return headVec
     }
@@ -164,7 +165,7 @@ open class TileEntityBeamReceiver : TileEntityBeamOutput(), IEnergyHandlerGC, IL
 
         val tile: TileEntity? = BlockVec3(this).getTileEntityOnSide(this.world, (this.facing)!!)
 
-        if (tile == null || tile.isInvalid()) {
+        if (tile == null || tile.isRemoved()) {
             this.setFacing(null)
         }
 
@@ -306,12 +307,12 @@ open class TileEntityBeamReceiver : TileEntityBeamOutput(), IEnergyHandlerGC, IL
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.preLoadFacing = nbt.getInteger("FacingSide")
+        this.preLoadFacing = nbt.getIntOr("FacingSide", 0)
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setInteger("FacingSide", if (this.facing == null) this.preLoadFacing else this.facing!!.ordinal)
+        nbt.putInt("FacingSide", if (this.facing == null) this.preLoadFacing else this.facing!!.ordinal)
         return nbt
     }
 
@@ -321,7 +322,7 @@ open class TileEntityBeamReceiver : TileEntityBeamOutput(), IEnergyHandlerGC, IL
 
     private var renderAABB: AxisAlignedBB? = null
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getRenderBoundingBox(): AxisAlignedBB {
         if (this.renderAABB == null) {
             this.renderAABB = AxisAlignedBB(pos, pos.add(1, 2, 1))
@@ -329,7 +330,7 @@ open class TileEntityBeamReceiver : TileEntityBeamOutput(), IEnergyHandlerGC, IL
         return this.renderAABB!!
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getMaxRenderDistanceSquared(): Double {
         return Constants.RENDERDISTANCE_SHORT
     }

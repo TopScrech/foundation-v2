@@ -5,12 +5,12 @@ import galaxyspace.core.prefab.blocks.BlockFluidGS
 import galaxyspace.core.prefab.blocks.BlockFluidNatureGas
 import galaxyspace.systems.SolarSystem.moons.titan.blocks.BlockLiquidEthaneMethane
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.material.EnumPushReaction
-import net.minecraft.block.material.MapColor
+import net.minecraft.world.level.material.MapColor
 import net.minecraft.block.material.Material
 import net.minecraft.block.material.MaterialLiquid
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
 
@@ -77,7 +77,7 @@ object GSFluids {
 
         (GalacticraftCore.proxy)!!.registerFluidTexture(
             LiquidEthaneMethane,
-            ResourceLocation(GalaxySpace.Companion.ASSET_PREFIX, "textures/fluids/liquid_ethanemethane_still.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.Companion.ASSET_PREFIX, "textures/fluids/liquid_ethanemethane_still.png")
         )
 
         BlockFluidRegistration()
@@ -111,9 +111,9 @@ object GSFluids {
 
         if (returnFluid == null) {
             val textureStill: ResourceLocation =
-                ResourceLocation(GalaxySpace.Companion.TEXTURE_PREFIX + "fluids/" + fluidTexture + "_still")
+                ResourceLocation.parse(GalaxySpace.Companion.TEXTURE_PREFIX + "fluids/" + fluidTexture + "_still")
             val textureFlowing: ResourceLocation =
-                ResourceLocation(GalaxySpace.Companion.TEXTURE_PREFIX + "fluids/" + fluidTexture + "_flowing")
+                ResourceLocation.parse(GalaxySpace.Companion.TEXTURE_PREFIX + "fluids/" + fluidTexture + "_flowing")
             FluidRegistry.registerFluid(
                 Fluid(fluidName, textureStill, textureFlowing).setDensity(density).setViscosity(viscosity)
                     .setTemperature(temperature).setGaseous(gaseous)

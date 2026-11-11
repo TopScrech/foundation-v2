@@ -21,14 +21,14 @@ package net.minecraftforge.common
 
 import javax.annotation.Nonnull
 
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.SharedMonsterAttributes
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.player.Player as EntityPlayer
 import net.minecraft.item.ItemArmor
-import net.minecraft.item.ItemStack
-import net.minecraft.util.CombatRules
-import net.minecraft.util.DamageSource
-import net.minecraft.util.NonNullList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.damagesource.CombatRules
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.core.NonNullList
 import java.util.ArrayList
 import java.util.Arrays
 import kotlin.math.max

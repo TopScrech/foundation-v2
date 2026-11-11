@@ -1,0 +1,90 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "minecraft:component",
+    "component": "foundation:legacy_metadata",
+    "cases": [
+      {
+        "when": 0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_modules/module_lander_1"
+        }
+      },
+      {
+        "when": 1,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_modules/module_lander_2"
+        }
+      },
+      {
+        "when": 2,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_modules/module_lander_3"
+        }
+      },
+      {
+        "when": 3,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_modules/module_small_fuelcanister"
+        }
+      },
+      {
+        "when": 4,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_modules/ion_engine"
+        }
+      },
+      {
+        "when": 5,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_modules/plasma_engine"
+        }
+      },
+      {
+        "when": 6,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_modules/sublight_engine"
+        }
+      },
+      {
+        "when": 7,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_modules/blackhole_engine"
+        }
+      },
+      {
+        "when": 8,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_modules/license_t4"
+        }
+      },
+      {
+        "when": 9,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_modules/license_t5"
+        }
+      },
+      {
+        "when": 10,
+        "model": {
+          "type": "minecraft:model",
+          "model": "galaxyspace:item/rocket_modules/license_t6"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "galaxyspace:item/rocket_modules/module_lander_1"
+    }
+  }
+}

@@ -40,9 +40,6 @@ import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityUniversa
 import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityWindGenerator
 import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityWindSolarPanel
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber
-import net.minecraftforge.fml.common.Mod.EventHandler
-import net.minecraftforge.fml.common.Mod.Instance
-import net.minecraftforge.fml.common.discovery.ASMDataTable.ASMData
 
 import asmodeuscore.AsmodeusCore
 import asmodeuscore.api.IBodies
@@ -78,88 +75,63 @@ import micdoodle8.mods.galacticraft.core.Constants
 import micdoodle8.mods.galacticraft.core.util.CreativeTabGC
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.item.crafting.IRecipe
 import net.minecraftforge.client.event.ModelRegistryEvent
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fluids.FluidRegistry
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.ModMetadata
-import net.minecraftforge.fml.common.SidedProxy
-import net.minecraftforge.fml.common.discovery.ASMDataTable
-import net.minecraftforge.fml.common.event.FMLInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent as FMLInitializationEvent
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent as FMLPostInitializationEvent
 import net.minecraftforge.fml.common.eventhandler.EventPriority
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import net.minecraftforge.fml.common.network.NetworkRegistry
 import net.minecraftforge.fml.common.registry.GameRegistry
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.Logger
 import java.io.File
 import java.util.function.Consumer
 
-@Mod(
-    modid = GalaxySpace.Companion.MODID,
-    version = FoundationMetadata.VERSION,
-    dependencies = Constants.DEPENDENCIES_FORGE + "required-after:galacticraftcore; required-after:galacticraftplanets; required-after:asmodeuscore@[1.0.4,)",
-    acceptedMinecraftVersions = "[1.12.2]",
-    name = FoundationMetadata.NAME,
-    guiFactory = "galaxyspace.core.client.gui.GSConfigGuiFactory"
-)
-open class GalaxySpace {
+@Mod(GalaxySpace.MODID)
+open class GalaxySpace(context: net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext) {
+
     //public static List<IBodies> bodies = new ArrayList<IBodies>();
     private val pages: MutableList<IBookPage?> = ArrayList<IBookPage?>()
 
-    @Mod.EventHandler
-    open fun preInit(event: FMLPreInitializationEvent) {
-        GSConfigDimensions(File(event.getModConfigurationDirectory(), "GalaxySpace/dimensions.conf"))
-        GSConfigSchematics(File(event.getModConfigurationDirectory(), "GalaxySpace/schematics.conf"))
-        GSConfigCore(File(event.getModConfigurationDirectory(), "GalaxySpace/core.conf"))
-        GSConfigEnergy(File(event.getModConfigurationDirectory(), "GalaxySpace/energy.conf"))
-        GSConfigWorld(File(event.getModConfigurationDirectory(), "GalaxySpace/world.conf"))
+    open fun preInit() {
+        GSConfigDimensions(File(foundation.bootstrap.FoundationBootstrap.configDirectory, "GalaxySpace/dimensions.conf"))
+        GSConfigSchematics(File(foundation.bootstrap.FoundationBootstrap.configDirectory, "GalaxySpace/schematics.conf"))
+        GSConfigCore(File(foundation.bootstrap.FoundationBootstrap.configDirectory, "GalaxySpace/core.conf"))
+        GSConfigEnergy(File(foundation.bootstrap.FoundationBootstrap.configDirectory, "GalaxySpace/energy.conf"))
+        GSConfigWorld(File(foundation.bootstrap.FoundationBootstrap.configDirectory, "GalaxySpace/world.conf"))
 
-        this.initModInfo(event.getModMetadata())
 
         debug = GSConfigCore.enableDebug
-        log = event.getModLog()
+        log = org.apache.logging.log4j.LogManager.getLogger(MODID)
 
         BodiesRegistry.setMaxTier(6)
 
         GSBlocks.initialize()
         GSFluids.initialize()
         GSItems.initialize()
-        GSPotions.initialize()
 
-        proxy!!.preload(event)
+        proxy!!.preload()
         proxy!!.register_event(GSEventHandler())
 
         for (list in AsmodeusCore.bodies) {
-            (list)!!.preInitialization(event)
+            (list)!!.preInitialization()
 
-            if ((list)!!.canRegister()) (list)!!.preInit(event)
+            if ((list)!!.canRegister()) (list)!!.preInit()
         }
 
-        if (event.getSide() == Side.CLIENT) for (data: ASMDataTable.ASMData in event.getAsmData()
-            .getAll(IPage::class.java.getName())) {
-            val page: IBookPage?
-            try {
-                page = Class.forName(data.getClassName()).newInstance() as IBookPage?
-                pages.add(page)
-            } catch (e: InstantiationException) {
-                e.printStackTrace()
-            } catch (e: IllegalAccessException) {
-                e.printStackTrace()
-            } catch (e: ClassNotFoundException) {
-                e.printStackTrace()
-            }
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT) {
+            pages.addAll(foundation.bootstrap.FoundationBootstrap.discover(IPage::class.java, IBookPage::class.java))
         }
         GSCapabilityStatsHandler.register()
     }
 
-    @Mod.EventHandler
     open fun init(event: FMLInitializationEvent) {
         proxy!!.registerRender()
         proxy!!.load()
@@ -177,7 +149,7 @@ open class GalaxySpace {
         for (list in AsmodeusCore.bodies) if ((list)!!.canRegister()) (list)!!.init(event)
 
 
-        if (event.getSide() == Side.CLIENT) {
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist == net.minecraftforge.api.distmarker.Dist.CLIENT) {
             BookRegister.registerCatergories()
             pages.forEach(Consumer { page: IBookPage? -> BookUtils.addGuideBookPage((page)!!) })
         }
@@ -192,7 +164,6 @@ open class GalaxySpace {
             CreativeTabGC(CreativeTabs.getNextID(), "galaxyspace_rocket", ItemStack(GSItems.ROCKET_TIER_4), null)
     }
 
-    @Mod.EventHandler
     open fun postInit(event: FMLPostInitializationEvent?) {
         proxy!!.postload()
 
@@ -291,14 +262,6 @@ open class GalaxySpace {
         }
     }
 
-    private fun initModInfo(info: ModMetadata) {
-        info.autogenerated = false
-        info.modId = MODID
-        info.name = FoundationMetadata.NAME
-        info.version = FoundationMetadata.VERSION
-        info.description = FoundationMetadata.DESCRIPTION
-        info.authorList = mutableListOf<String?>("Vi[Told]#1308", "AstroMaster#5045")
-    }
 
     @Mod.EventBusSubscriber(modid = MODID)
     object RegistrationHandler {
@@ -314,7 +277,7 @@ open class GalaxySpace {
             GSBlocks.oreDictRegistration()
             GSItems.oreDictRegistration()
 
-            for (list in AsmodeusCore.bodies) if ((list)!!.canRegister()) (list)!!.registerItems(event)
+            for (list in AsmodeusCore.bodies) if ((list)!!.canRegister()) (list)!!.registerItems()
         }
 
         @JvmStatic
@@ -323,6 +286,16 @@ open class GalaxySpace {
             for (list in AsmodeusCore.bodies) if ((list)!!.canRegister()) (list)!!.registerRecipes()
         }
     }
+
+    init {
+        GSPotions.install(context)
+        foundation.level.FoundationLevels.install()
+        instance = this
+        proxy = foundation.bootstrap.FoundationBootstrap.createProxy(CommonProxy::class.java, "galaxyspace.core.proxy.ClientProxy")
+        preInit()
+        foundation.bootstrap.FoundationBootstrap.attach(context, { init(it) }, { postInit(it) })
+    }
+
 
     companion object {
         const val major_version: Int = 2
@@ -352,14 +325,9 @@ open class GalaxySpace {
 
         //---------------------------------------------
         @JvmField
-        @Mod.Instance(MODID)
         var instance: GalaxySpace? = null
 
         @JvmField
-        @SidedProxy(
-            clientSide = "galaxyspace.core.proxy.ClientProxy",
-            serverSide = "galaxyspace.core.proxy.CommonProxy"
-        )
         var proxy: CommonProxy? = null
 
         init {

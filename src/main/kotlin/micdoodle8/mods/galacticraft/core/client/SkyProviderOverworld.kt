@@ -15,15 +15,14 @@ import micdoodle8.mods.galacticraft.core.proxy.ClientProxyCore
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
 import net.minecraft.client.Minecraft
-import net.minecraft.client.multiplayer.WorldClient
+import net.minecraft.client.multiplayer.ClientLevel as WorldClient
 import net.minecraft.client.renderer.*
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.launchwrapper.Launch
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.Vec3d
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.phys.Vec3 as Vec3d
 import net.minecraftforge.client.IRenderHandler
-import net.minecraftforge.fml.client.FMLClientHandler
 import org.lwjgl.opengl.GL11
 import org.lwjgl.util.glu.Project
 import java.lang.reflect.Method
@@ -34,9 +33,9 @@ open class SkyProviderOverworld constructor() : IRenderHandler() {
     private val starGLCallList = GLAllocation.generateDisplayLists(7)
     private val glSkyList: Int
     private val glSkyList2: Int
-    private val planetToRender = ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png")
+    private val planetToRender = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/celestialbodies/earth.png")
 
-    private val minecraft: Minecraft = FMLClientHandler.instance().getClient()
+    private val minecraft: Minecraft = Minecraft.getInstance()
 
     init {
         GL11.glPushMatrix()
@@ -157,7 +156,7 @@ open class SkyProviderOverworld constructor() : IRenderHandler() {
         }
 
         var theta: Float =
-            MathHelper.sqrt(((mc.player.posY).toFloat() - Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT) / 1000.0f)
+            MathHelper.sqrt(((mc.player.y).toFloat() - Constants.OVERWORLD_SKYPROVIDER_STARTHEIGHT) / 1000.0f)
         val var21: Float = max(1.0f - theta * 4.0f, 0.0f)
 
         GL11.glDisable(GL11.GL_TEXTURE_2D)
@@ -183,7 +182,7 @@ open class SkyProviderOverworld constructor() : IRenderHandler() {
         GL11.glDepthMask(false)
         GL11.glEnable(GL11.GL_FOG)
         GL11.glColor3f(i, x, var5)
-        if (mc.player.posY < 214) {
+        if (mc.player.y < 214) {
             GL11.glCallList(this.glSkyList)
         }
         GL11.glDisable(GL11.GL_FOG)
@@ -263,7 +262,7 @@ open class SkyProviderOverworld constructor() : IRenderHandler() {
         GL11.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f)
 
         GL11.glRotatef(this.minecraft.world.getCelestialAngle(partialTicks) * 360.0f, 1.0f, 0.0f, 0.0f)
-        val playerHeight: Double = this.minecraft.player.posY
+        val playerHeight: Double = this.minecraft.player.y
 
         //Draw stars
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
@@ -357,7 +356,7 @@ open class SkyProviderOverworld constructor() : IRenderHandler() {
             var scale: Float = 850 * (0.25f - theta / 10000.0f)
             scale = max(scale, 0.2f)
             GL11.glScalef(scale, 1.0f, scale)
-            GL11.glTranslatef(0.0f, -mc.player.posY.toFloat(), 0.0f)
+            GL11.glTranslatef(0.0f, -mc.player.y.toFloat(), 0.0f)
             //	        if (ClientProxyCore.overworldTextureLocal != null)
 //	        {
 //	            GL11.glBindTexture(GL11.GL_TEXTURE_2D, ClientProxyCore.overworldTextureLocal.getGlTextureId());
@@ -468,8 +467,8 @@ open class SkyProviderOverworld constructor() : IRenderHandler() {
     }
 
     companion object {
-        private val moonTexture = ResourceLocation("textures/environment/moon_phases.png")
-        private val sunTexture = ResourceLocation("textures/environment/sun.png")
+        private val moonTexture = ResourceLocation.parse("textures/environment/moon_phases.png")
+        private val sunTexture = ResourceLocation.parse("textures/environment/sun.png")
 
         private var optifinePresent = false
 

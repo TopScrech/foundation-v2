@@ -10,13 +10,13 @@ import net.minecraft.client.renderer.entity.RenderBiped
 import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.renderer.entity.layers.LayerBipedArmor
 import net.minecraft.client.renderer.entity.layers.LayerHeldItem
-import net.minecraft.entity.EntityLivingBase
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderEvolvedSkeleton constructor(manager: RenderManager) :
     RenderBiped<EntityEvolvedSkeleton>(manager, ModelEvolvedSkeleton(), 0.6f) {
     private val model = ModelEvolvedSkeleton(0.2f)
@@ -70,7 +70,7 @@ open class RenderEvolvedSkeleton constructor(manager: RenderManager) :
     }
 
     companion object {
-        private val skeletonTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/skeleton.png")
-        private val powerTexture = ResourceLocation(Constants.ASSET_PREFIX, "textures/model/power.png")
+        private val skeletonTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/skeleton.png")
+        private val powerTexture = ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/model/power.png")
     }
 }

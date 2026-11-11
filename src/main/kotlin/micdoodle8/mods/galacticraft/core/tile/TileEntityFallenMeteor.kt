@@ -4,8 +4,8 @@ import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import io.netty.buffer.ByteBuf
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraftforge.fml.LogicalSide as Side
 
 open class TileEntityFallenMeteor : TileEntityAdvanced() {
     @JvmField
@@ -45,12 +45,12 @@ open class TileEntityFallenMeteor : TileEntityAdvanced() {
 
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
-        this.heatLevel = nbt.getInteger("MeteorHeatLevel")
+        this.heatLevel = nbt.getIntOr("MeteorHeatLevel", 0)
     }
 
     override fun writeToNBT(nbt: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(nbt)
-        nbt.setInteger("MeteorHeatLevel", this.heatLevel)
+        nbt.putInt("MeteorHeatLevel", this.heatLevel)
         return nbt
     }
 

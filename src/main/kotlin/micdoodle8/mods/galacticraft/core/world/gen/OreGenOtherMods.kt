@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.world.gen
 
+import foundation.level.offset
+
 import micdoodle8.mods.galacticraft.api.event.wgen.GCCoreEventPopulate
 import micdoodle8.mods.galacticraft.api.vector.BlockTuple
 import micdoodle8.mods.galacticraft.api.world.IGalacticraftWorldProvider
@@ -11,12 +13,12 @@ import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.core.util.GCLog
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
 import micdoodle8.mods.galacticraft.planets.mars.dimension.WorldProviderMars
-import net.minecraft.block.Block
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Block
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import net.minecraft.world.WorldProvider
 import net.minecraft.world.gen.feature.WorldGenerator
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent
 import java.lang.Exception
 import java.util.ArrayList
 import java.util.Locale
@@ -71,7 +73,7 @@ open class OreGenOtherMods {
 
     open fun genStandardOre1(amountPerChunk: Int, worldGenerator: WorldGenerator, minY: Int, maxY: Int) {
         for (var5: Int in 0..<amountPerChunk) {
-            val blockpos: BlockPos = this.pos!!.add(
+            val blockpos: BlockPos = this.pos!!.offset(
                 this.randomGenerator!!.nextInt(16),
                 this.randomGenerator!!.nextInt(maxY - minY) + minY,
                 this.randomGenerator!!.nextInt(16)

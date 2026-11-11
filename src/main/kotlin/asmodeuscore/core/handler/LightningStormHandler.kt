@@ -8,17 +8,17 @@ import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.entity.effect.EntityLightningBolt
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.core.BlockPos
+import net.minecraft.world.phys.Vec3 as Vec3d
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 object LightningStormHandler {
     @JvmStatic
     fun spawnLightning(player: EntityPlayerMP) {
-        val world: World = player.getEntityWorld()
+        val world: World = player.level()
         if (world.provider is IProviderWeather) {
             if ((world.provider as IProviderWeather).getWeather() == null) return
 
@@ -26,10 +26,10 @@ object LightningStormHandler {
                 val f: Int = (((world.provider as IProviderWeather).getWeather())!!.getWeatherFrequence() * 100.0).toInt()
 
                 if (f > 0) {
-                    if (world.rand.nextInt(f) == 0) createLightning(player, world)
+                    if (world.random.nextInt(f) == 0) createLightning(player, world)
 
 
-                    if (world.rand.nextInt(f * 3) == 0) createLightning(player, world)
+                    if (world.random.nextInt(f * 3) == 0) createLightning(player, world)
                 }
             }
         }
@@ -38,14 +38,14 @@ object LightningStormHandler {
 
     @JvmStatic
     private fun createLightning(player: EntityPlayerMP, world: World) {
-        val closestPlayer: EntityPlayer? = world.getClosestPlayerToEntity(player, 100.0)
+        val closestPlayer: EntityPlayer? = world.getNearestPlayer(player, 100.0)
 
-        if (closestPlayer == null || closestPlayer.getEntityId() <= player.getEntityId()) {
-            val x: Double = player.posX + world.rand.nextInt(40) - 50
-            val z: Double = player.posZ + world.rand.nextInt(40) - 50
+        if (closestPlayer == null || closestPlayer.getId() <= player.getId()) {
+            val x: Double = player.x + world.random.nextInt(40) - 50
+            val z: Double = player.z + world.random.nextInt(40) - 50
             //double y = world.getTopSolidOrLiquidBlock((int)x, (int)z) - 1;//player.posY + (int)(((ILightning)world.provider).getYPosLightning());
             val y: Double =
-                world.getTopSolidOrLiquidBlock(BlockPos(x.toInt().toDouble(), player.posY, z.toInt().toDouble())).getY()
+                world.getTopSolidOrLiquidBlock(BlockPos(x.toInt().toDouble(), player.y, z.toInt().toDouble())).getY()
                     .toDouble()
 
 

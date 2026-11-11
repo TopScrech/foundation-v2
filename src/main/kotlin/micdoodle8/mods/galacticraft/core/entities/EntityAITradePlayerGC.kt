@@ -1,8 +1,8 @@
 package micdoodle8.mods.galacticraft.core.entities
 
 import net.minecraft.entity.ai.EntityAIBase
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.Container
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
 
 open class EntityAITradePlayerGC constructor(private val villager: EntityAlienVillager) : EntityAIBase() {
     init {

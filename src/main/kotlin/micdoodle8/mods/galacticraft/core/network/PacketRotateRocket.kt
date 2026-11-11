@@ -2,8 +2,8 @@ package micdoodle8.mods.galacticraft.core.network
 
 import io.netty.buffer.ByteBuf
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.player.Player as EntityPlayer
 
 open class PacketRotateRocket : PacketBase {
     private var entityID = 0
@@ -12,10 +12,10 @@ open class PacketRotateRocket : PacketBase {
 
     constructor() : super()
 
-    constructor(rotateableEntity: Entity) : super(GCCoreUtil.getDimensionID(rotateableEntity.world)) {
-        this.entityID = rotateableEntity.getEntityId()
-        this.entityPitch = rotateableEntity.rotationPitch
-        this.entityYaw = rotateableEntity.rotationYaw
+    constructor(rotateableEntity: Entity) : super(GCCoreUtil.getDimensionID(rotateableEntity.level())) {
+        this.entityID = rotateableEntity.getId()
+        this.entityPitch = rotateableEntity.xRot
+        this.entityYaw = rotateableEntity.yRot
     }
 
     override fun encodeInto(buffer: ByteBuf?) {
@@ -36,11 +36,11 @@ open class PacketRotateRocket : PacketBase {
     }
 
     override fun handleServerSide(player: EntityPlayer?) {
-        val entity: Entity? = (player)!!.world.getEntityByID(this.entityID)
+        val entity: Entity? = (player)!!.level().getEntityByID(this.entityID)
 
         if (entity != null) {
-            entity.rotationPitch = this.entityPitch
-            entity.rotationYaw = this.entityYaw
+            entity.xRot = this.entityPitch
+            entity.yRot = this.entityYaw
         }
     }
 }

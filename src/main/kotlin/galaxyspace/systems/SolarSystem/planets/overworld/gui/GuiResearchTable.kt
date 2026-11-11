@@ -14,10 +14,10 @@ import galaxyspace.systems.SolarSystem.planets.overworld.inventory.ContainerRese
 import galaxyspace.systems.SolarSystem.planets.overworld.tile.TileEntityResearchTable
 import micdoodle8.mods.galacticraft.core.util.ColorUtil
 import net.minecraft.client.renderer.RenderHelper
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.inventory.Slot
-import net.minecraft.item.ItemStack
-import net.minecraft.util.ResourceLocation
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.ItemStack
+import net.minecraft.resources.Identifier as ResourceLocation
 import org.lwjgl.opengl.GL11
 import java.io.IOException
 
@@ -232,6 +232,6 @@ constructor(inventoryPlayer: InventoryPlayer?, private val tile: TileEntityResea
 
     companion object {
         private val iconsTexture =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/gui/researches/research_icons.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/gui/researches/research_icons.png")
     }
 }

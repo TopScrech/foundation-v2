@@ -1,5 +1,7 @@
 package galaxyspace.systems.ACentauriSystem.planets.proxima_b.world.gen.we
 
+import foundation.block.getStateFromMeta
+
 import asmodeuscore.core.utils.worldengine.standardcustomgen.WE_BiomeLayer
 import galaxyspace.systems.ACentauriSystem.core.ACBlocks
 import galaxyspace.systems.ACentauriSystem.planets.proxima_b.blocks.Proxima_B_Blocks.EnumBlockProximaB
@@ -7,9 +9,9 @@ import galaxyspace.systems.ACentauriSystem.planets.proxima_b.blocks.Proxima_B_Bl
 import galaxyspace.core.prefab.world.gen.WorldGenPool
 import asmodeuscore.core.utils.worldengine.WE_Biome
 import micdoodle8.mods.galacticraft.core.GCFluids
-import net.minecraft.init.Blocks
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class Proxima_B_Ocean constructor() :
@@ -48,7 +50,7 @@ open class Proxima_B_Ocean constructor() :
             0,
             false
         )
-        standardBiomeLayers.add(Blocks.BEDROCK.getDefaultState(), 0, 2, 0, 0, true)
+        standardBiomeLayers.add(Blocks.BEDROCK.defaultBlockState(), 0, 2, 0, 0, true)
         createChunkGen_InXZ_List.add(standardBiomeLayers)
     }
 
@@ -63,12 +65,12 @@ open class Proxima_B_Ocean constructor() :
             randPosZ = z + (rand)!!.nextInt(16) + 8
             pos = (world)!!.getHeight(BlockPos(randPosX, 0, randPosZ))
 
-            if ((world)!!.getBlockState(pos.down()) === ACBlocks.PROXIMA_B_BLOCKS.getDefaultState()
-                    .withProperty(
+            if ((world)!!.getBlockState(pos.below()) === ACBlocks.PROXIMA_B_BLOCKS.defaultBlockState()
+                    .setValue(
                         Proxima_B_Blocks.BASIC_TYPE,
                         EnumBlockProximaB.SURFACE
                     )
-            ) (world)!!.setBlockState(pos, Blocks.DEADBUSH.getDefaultState())
+            ) (world)!!.setBlockAndUpdate(pos, Blocks.DEADBUSH.defaultBlockState())
         }
 
         val kx: Int = x + (rand)!!.nextInt(16) + 8
@@ -77,10 +79,10 @@ open class Proxima_B_Ocean constructor() :
         if ((rand)!!.nextInt(50) == 0) {
             val l2: Int = (world)!!.getTopSolidOrLiquidBlock(BlockPos(kx, 0, kz)).getY() - 20 - (rand)!!.nextInt(25)
             WorldGenPool(
-                ACBlocks.PROXIMA_B_BLOCKS.getDefaultState().withProperty(
+                ACBlocks.PROXIMA_B_BLOCKS.defaultBlockState().setValue(
                     Proxima_B_Blocks.BASIC_TYPE,
                     EnumBlockProximaB.STONE
-                ), (GCFluids.fluidOil)!!.getBlock().getDefaultState(), 5
+                ), (GCFluids.fluidOil)!!.getBlock().defaultBlockState(), 5
             ).generate((world)!!, (rand)!!, BlockPos(x, l2, z))
         }
     }

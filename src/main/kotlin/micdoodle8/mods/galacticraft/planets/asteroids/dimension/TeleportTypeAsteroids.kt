@@ -1,5 +1,8 @@
 package micdoodle8.mods.galacticraft.planets.asteroids.dimension
 
+import foundation.item.FoundationItemVariants
+import foundation.block.getStateFromMeta
+
 import java.util.Random
 
 import micdoodle8.mods.galacticraft.api.entity.IRocketType
@@ -17,22 +20,22 @@ import micdoodle8.mods.galacticraft.planets.asteroids.entities.EntityEntryPod
 import micdoodle8.mods.galacticraft.planets.asteroids.items.AsteroidsItems
 import micdoodle8.mods.galacticraft.planets.mars.blocks.MarsBlocks
 import micdoodle8.mods.galacticraft.planets.mars.items.MarsItems
-import net.minecraft.entity.Entity
+import net.minecraft.world.entity.Entity
 import net.minecraft.entity.EntityList
 import net.minecraft.entity.passive.EntityCow
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.init.Blocks
-import net.minecraft.init.Items
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.world.item.Items
 import net.minecraft.init.PotionTypes
 import net.minecraft.item.ItemMonsterPlacer
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraft.potion.PotionUtils
-import net.minecraft.util.NonNullList
-import net.minecraft.util.ResourceLocation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.World
-import net.minecraft.world.WorldServer
+import net.minecraft.core.NonNullList
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraft.core.BlockPos
+import net.minecraft.util.Mth as MathHelper
+import net.minecraft.world.level.Level as World
+import net.minecraft.server.level.ServerLevel as WorldServer
 import net.minecraft.world.gen.ChunkProviderServer
 import java.util.*
 import kotlin.math.abs
@@ -126,23 +129,23 @@ open class TeleportTypeAsteroids : ITeleportType {
 
     private fun goodAsteroidEntry(world: World, x: Int, yorig: Int, z: Int): Boolean {
         for (k: Int in 208 downTo 49) {
-            if (!world.isAirBlock(BlockPos(x, k, z))) {
+            if (!world.isEmptyBlock(BlockPos(x, k, z))) {
                 if (abs(k - yorig) > 20) {
                     continue
                 }
                 //Clear the downward path of small asteroids and any other asteroid rock
                 for (y: Int in k + 2..255) {
                     if (world.getBlockState(BlockPos(x, y, z)).getBlock() === AsteroidBlocks.blockBasic) {
-                        world.setBlockToAir(BlockPos(x, y, z))
+                        world.setBlockAndUpdate(BlockPos(x, y, z), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                     }
                     if (world.getBlockState(BlockPos(x - 1, y, z)).getBlock() === AsteroidBlocks.blockBasic) {
-                        world.setBlockToAir(BlockPos(x - 1, y, z))
+                        world.setBlockAndUpdate(BlockPos(x - 1, y, z), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                     }
                     if (world.getBlockState(BlockPos(x, y, z - 1)).getBlock() === AsteroidBlocks.blockBasic) {
-                        world.setBlockToAir(BlockPos(x, y, z - 1))
+                        world.setBlockAndUpdate(BlockPos(x, y, z - 1), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                     }
                     if (world.getBlockState(BlockPos(x - 1, y, z - 1)).getBlock() === AsteroidBlocks.blockBasic) {
-                        world.setBlockToAir(BlockPos(x - 1, y, z - 1))
+                        world.setBlockAndUpdate(BlockPos(x - 1, y, z - 1), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState())
                     }
                 }
                 if (ConfigManagerCore.enableDebug) {
@@ -158,25 +161,25 @@ open class TeleportTypeAsteroids : ITeleportType {
         this.loadChunksAround(x, z, -1, world.getChunkProvider() as ChunkProviderServer)
 
         for (k: Int in 255 downTo 49) {
-            if (!world.isAirBlock(BlockPos(x, k, z))) {
+            if (!world.isEmptyBlock(BlockPos(x, k, z))) {
                 this.makePlatform(world, x, k - 1, z)
                 return
             }
-            if (!world.isAirBlock(BlockPos(x - 1, k, z))) {
+            if (!world.isEmptyBlock(BlockPos(x - 1, k, z))) {
                 this.makePlatform(world, x - 1, k - 1, z)
                 return
             }
-            if (!world.isAirBlock(BlockPos(x - 1, k, z - 1))) {
+            if (!world.isEmptyBlock(BlockPos(x - 1, k, z - 1))) {
                 this.makePlatform(world, x - 1, k - 1, z - 1)
                 return
             }
-            if (!world.isAirBlock(BlockPos(x, k, z - 1))) {
+            if (!world.isEmptyBlock(BlockPos(x, k, z - 1))) {
                 this.makePlatform(world, x, k - 1, z - 1)
                 return
             }
         }
 
-        this.makePlatform(world, x, 48 + world.rand.nextInt(128), z)
+        this.makePlatform(world, x, 48 + world.random.nextInt(128), z)
         return
     }
 
@@ -217,14 +220,14 @@ open class TeleportTypeAsteroids : ITeleportType {
     }
 
     private fun doBlock(world: World, x: Int, y: Int, z: Int) {
-        val meta: Int = (world.rand.nextFloat() * 1.5f).toInt()
-        if (world.isAirBlock(BlockPos(x, y, z))) {
-            world.setBlockState(BlockPos(x, y, z), (AsteroidBlocks.blockBasic)!!.getStateFromMeta(meta), 2)
+        val meta: Int = (world.random.nextFloat() * 1.5f).toInt()
+        if (world.isEmptyBlock(BlockPos(x, y, z))) {
+            world.setBlock(BlockPos(x, y, z), (AsteroidBlocks.blockBasic)!!.getStateFromMeta(meta), 2)
         }
     }
 
     override fun getEntitySpawnLocation(world: WorldServer?, entity: Entity?): Vector3 {
-        return Vector3((entity)!!.posX, if (ConfigManagerCore.disableLander) 250.0 else 900.0, (entity)!!.posZ)
+        return Vector3((entity)!!.x, if (ConfigManagerCore.disableLander) 250.0 else 900.0, (entity)!!.z)
     }
 
     override fun getParaChestSpawnLocation(world: WorldServer?, player: EntityPlayerMP?, rand: Random?): Vector3? {
@@ -260,12 +263,12 @@ open class TeleportTypeAsteroids : ITeleportType {
                     player.capabilities.isFlying = false
                 }
 
-                if (!(newWorld)!!.isRemote) {
+                if (!(newWorld)!!.isClientSide) {
                     val entryPod: EntityEntryPod = EntityEntryPod(player)
 
                     CompatibilityManager.forceLoadChunks(newWorld as WorldServer)
                     entryPod.forceSpawn = true
-                    newWorld.spawnEntity(entryPod)
+                    newWorld.addFreshEntity(entryPod)
                     CompatibilityManager.forceLoadChunksEnd(newWorld)
                 }
 
@@ -276,9 +279,9 @@ open class TeleportTypeAsteroids : ITeleportType {
 
     override fun setupAdventureSpawn(player: EntityPlayerMP?) {
         val stats: GCPlayerStats = (GCPlayerStats.get((player)!!))!!
-        SchematicRegistry.unlockNewPage(player, ItemStack(GCItems.schematic, 1, 1)) //Knows how to build T2 rocket
-        SchematicRegistry.unlockNewPage(player, ItemStack(MarsItems.schematic, 1, 0)) //Knows how to build T3 rocket
-        SchematicRegistry.unlockNewPage(player, ItemStack(MarsItems.schematic, 1, 2)) //Knows how to build Astro Miner
+        SchematicRegistry.unlockNewPage(player, foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.schematic), 1, 1)) //Knows how to build T2 rocket
+        SchematicRegistry.unlockNewPage(player, foundation.item.FoundationItemVariants.stack(requireNotNull(MarsItems.schematic), 1, 0)) //Knows how to build T3 rocket
+        SchematicRegistry.unlockNewPage(player, foundation.item.FoundationItemVariants.stack(requireNotNull(MarsItems.schematic), 1, 2)) //Knows how to build Astro Miner
         val rocketStacks: NonNullList<ItemStack> = NonNullList.create<ItemStack>()
         stats.setFuelLevel(1000)
         rocketStacks.add(ItemStack(GCItems.oxMask))
@@ -289,13 +292,13 @@ open class TeleportTypeAsteroids : ITeleportType {
         rocketStacks.add(ItemStack(AsteroidsItems.canisterLOX))
         rocketStacks.add(ItemStack(AsteroidsItems.canisterLOX))
         rocketStacks.add(ItemStack(AsteroidsItems.canisterLOX))
-        rocketStacks.add(ItemStack(AsteroidsItems.basicItem, 32, 7))
+        rocketStacks.add(FoundationItemVariants.stack(requireNotNull(AsteroidsItems.basicItem), 32, 7))
         rocketStacks.add(ItemStack(Blocks.GLASS_PANE, 16))
         rocketStacks.add(ItemStack(Blocks.PLANKS, 32, 2))
-        rocketStacks.add(ItemStack(MarsItems.marsItemBasic, 16, 2)) //Desh ingot
-        rocketStacks.add(ItemStack(GCItems.basicItem, 8, 13)) //Basic Wafer
-        rocketStacks.add(ItemStack(GCItems.basicItem, 2, 1)) //Solar Panels
-        rocketStacks.add(ItemStack(GCItems.foodItem, 16, 0)) //Canned food
+        rocketStacks.add(FoundationItemVariants.stack(requireNotNull(MarsItems.marsItemBasic), 16, 2)) //Desh ingot
+        rocketStacks.add(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 8, 13)) //Basic Wafer
+        rocketStacks.add(FoundationItemVariants.stack(requireNotNull(GCItems.basicItem), 2, 1)) //Solar Panels
+        rocketStacks.add(foundation.item.FoundationItemVariants.stack(requireNotNull(GCItems.foodItem), 16, 0)) //Canned food
         rocketStacks.add(ItemStack(Items.EGG, 12))
 
         val spawnEgg: ItemStack = ItemStack(Items.SPAWN_EGG, 2)

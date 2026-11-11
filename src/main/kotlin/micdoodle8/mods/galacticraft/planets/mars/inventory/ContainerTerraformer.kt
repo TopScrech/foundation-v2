@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.planets.mars.inventory
 
+import foundation.item.legacyItemValue
+
 import java.util.ArrayList
 import java.util.LinkedList
 
@@ -7,15 +9,15 @@ import micdoodle8.mods.galacticraft.api.item.IItemElectric
 import micdoodle8.mods.galacticraft.core.energy.EnergyUtil
 import micdoodle8.mods.galacticraft.core.inventory.SlotSpecific
 import micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityTerraformer
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockBush
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.init.Items
-import net.minecraft.inventory.Container
-import net.minecraft.inventory.Slot
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.world.item.Items
+import net.minecraft.world.inventory.AbstractContainerMenu as Container
+import net.minecraft.world.inventory.Slot
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import java.util.*
 
 open class ContainerTerraformer constructor(
@@ -24,7 +26,7 @@ open class ContainerTerraformer constructor(
     player: EntityPlayer
 ) : Container() {
     init {
-        this.addSlotToContainer(
+        this.addSlot(
             SlotSpecific(
                 tileEntity,
                 0,
@@ -35,7 +37,7 @@ open class ContainerTerraformer constructor(
             )
         )
 
-        this.addSlotToContainer(SlotSpecific(tileEntity, 1, 25, 39, IItemElectric::class.java))
+        this.addSlot(SlotSpecific(tileEntity, 1, 25, 39, IItemElectric::class.java))
 
         var var6: Int
         var var7: Int
@@ -58,7 +60,7 @@ open class ContainerTerraformer constructor(
 
             var7 = 0
             while (var7 < 4) {
-                this.addSlotToContainer(
+                this.addSlot(
                     SlotSpecific(
                         tileEntity,
                         var7 + var6 * 4 + 2,
@@ -76,7 +78,7 @@ open class ContainerTerraformer constructor(
         while (var6 < 3) {
             var7 = 0
             while (var7 < 9) {
-                this.addSlotToContainer(Slot(par1InventoryPlayer, var7 + var6 * 9 + 9, 8 + var7 * 18, 155 + var6 * 18))
+                this.addSlot(Slot(par1InventoryPlayer, var7 + var6 * 9 + 9, 8 + var7 * 18, 155 + var6 * 18))
                 ++var7
             }
             ++var6
@@ -84,69 +86,69 @@ open class ContainerTerraformer constructor(
 
         var6 = 0
         while (var6 < 9) {
-            this.addSlotToContainer(Slot(par1InventoryPlayer, var6, 8 + var6 * 18, 213))
+            this.addSlot(Slot(par1InventoryPlayer, var6, 8 + var6 * 18, 213))
             ++var6
         }
 
         tileEntity.openInventory(player)
     }
 
-    override fun onContainerClosed(entityplayer: EntityPlayer) {
-        super.onContainerClosed(entityplayer)
+    override fun removed(entityplayer: EntityPlayer) {
+        super.removed(entityplayer)
         this.tileEntity.closeInventory(entityplayer)
     }
 
-    override fun canInteractWith(par1EntityPlayer: EntityPlayer): Boolean {
+    override fun stillValid(par1EntityPlayer: EntityPlayer): Boolean {
         return this.tileEntity.isUsableByPlayer(par1EntityPlayer)
     }
 
-    override fun transferStackInSlot(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
+    override fun quickMoveStack(par1EntityPlayer: EntityPlayer, par1: Int): ItemStack {
         var var2: ItemStack = ItemStack.EMPTY
         val slot: Slot? = this.inventorySlots.get(par1)
         val b: Int = this.inventorySlots.size
 
-        if (slot != null && slot.getHasStack()) {
-            val var4: ItemStack = slot.getStack()
+        if (slot != null && slot.hasItem()) {
+            val var4: ItemStack = slot.getItem()
             var2 = var4.copy()
 
             if (par1 < b - 36) {
-                if (!this.mergeItemStack(var4, b - 36, b, true)) {
+                if (!this.moveItemStackTo(var4, b - 36, b, true)) {
                     return ItemStack.EMPTY
                 }
             } else {
                 if (EnergyUtil.isElectricItem(var4.getItem())) {
-                    if (!this.mergeItemStack(var4, 1, 2, false)) {
+                    if (!this.moveItemStackTo(var4, 1, 2, false)) {
                         return ItemStack.EMPTY
                     }
                 } else if (var4.getItem() === Items.WATER_BUCKET) {
-                    if (!this.mergeItemStack(var4, 0, 1, false)) {
+                    if (!this.moveItemStackTo(var4, 0, 1, false)) {
                         return ItemStack.EMPTY
                     }
-                } else if (var4.getItem() === Items.DYE && var4.getItemDamage() == 15) {
-                    if (!this.mergeItemStack(var4, 2, 6, false)) {
+                } else if (var4.getItem() === Items.DYE && var4.legacyItemValue == 15) {
+                    if (!this.moveItemStackTo(var4, 2, 6, false)) {
                         return ItemStack.EMPTY
                     }
-                } else if (this.getSlot(6).isItemValid(var4)) {
-                    if (!this.mergeItemStack(var4, 6, 10, false)) {
+                } else if (this.getSlot(6).mayPlace(var4)) {
+                    if (!this.moveItemStackTo(var4, 6, 10, false)) {
                         return ItemStack.EMPTY
                     }
                 } else if (var4.getItem() === Items.WHEAT_SEEDS) {
-                    if (!this.mergeItemStack(var4, 10, 14, false)) {
+                    if (!this.moveItemStackTo(var4, 10, 14, false)) {
                         return ItemStack.EMPTY
                     }
                 } else if (par1 < b - 9) {
-                    if (!this.mergeItemStack(var4, b - 9, b, false)) {
+                    if (!this.moveItemStackTo(var4, b - 9, b, false)) {
                         return ItemStack.EMPTY
                     }
-                } else if (!this.mergeItemStack(var4, b - 36, b - 9, false)) {
+                } else if (!this.moveItemStackTo(var4, b - 36, b - 9, false)) {
                     return ItemStack.EMPTY
                 }
             }
 
             if (var4.isEmpty()) {
-                slot.putStack(ItemStack.EMPTY)
+                slot.set(ItemStack.EMPTY)
             } else {
-                slot.onSlotChanged()
+                slot.setChanged()
             }
 
             if (var4.getCount() == var2.getCount()) {

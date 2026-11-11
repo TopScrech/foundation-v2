@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.planets.overworld.tile
 
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
 import galaxyspace.core.GSItems
@@ -17,13 +19,13 @@ import micdoodle8.mods.galacticraft.core.wrappers.FluidHandlerWrapper
 import micdoodle8.mods.galacticraft.core.wrappers.IFluidHandlerWrapper
 import micdoodle8.mods.galacticraft.planets.asteroids.AsteroidsModule
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.block.state.IBlockState
-import net.minecraft.inventory.ISidedInventory
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.WorldlyContainer as ISidedInventory
 import net.minecraft.inventory.ItemStackHelper
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.NonNullList
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.core.NonNullList
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidRegistry
@@ -31,7 +33,7 @@ import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 
 open class TileEntityLiquidSeparator constructor() :
     TileEntityElectricInventory("tile.liquid_separator.name"), IFluidHandlerWrapper, ISidedInventory,
@@ -265,34 +267,34 @@ var output2: FluidStack?
     override fun readFromNBT(par1NBTTagCompound: NBTTagCompound) {
         super.readFromNBT(par1NBTTagCompound)
 
-        this.processTicks = par1NBTTagCompound.getInteger("smeltingTicks")
+        this.processTicks = par1NBTTagCompound.getIntOr("smeltingTicks", 0)
         ItemStackHelper.loadAllItems(par1NBTTagCompound, this.getInventory())
 
-        this.reverse = par1NBTTagCompound.getBoolean("reverse")
+        this.reverse = par1NBTTagCompound.getBooleanOr("reverse", false)
 
-        if (par1NBTTagCompound.hasKey("baseTank")) this.baseTank.readFromNBT(par1NBTTagCompound.getCompoundTag("baseTank"))
-        if (par1NBTTagCompound.hasKey("waterTank1")) this.waterTank1.readFromNBT(par1NBTTagCompound.getCompoundTag("waterTank1"))
-        if (par1NBTTagCompound.hasKey("waterTank2")) this.waterTank2.readFromNBT(par1NBTTagCompound.getCompoundTag("waterTank2"))
+        if (par1NBTTagCompound.containsTag("baseTank")) this.baseTank.readFromNBT(par1NBTTagCompound.getCompoundOrEmpty("baseTank"))
+        if (par1NBTTagCompound.containsTag("waterTank1")) this.waterTank1.readFromNBT(par1NBTTagCompound.getCompoundOrEmpty("waterTank1"))
+        if (par1NBTTagCompound.containsTag("waterTank2")) this.waterTank2.readFromNBT(par1NBTTagCompound.getCompoundOrEmpty("waterTank2"))
     }
 
     override fun writeToNBT(par1NBTTagCompound: NBTTagCompound): NBTTagCompound {
         super.writeToNBT(par1NBTTagCompound)
-        par1NBTTagCompound.setInteger("smeltingTicks", this.processTicks)
+        par1NBTTagCompound.putInt("smeltingTicks", this.processTicks)
         ItemStackHelper.saveAllItems(par1NBTTagCompound, this.getInventory())
 
-        par1NBTTagCompound.setBoolean("reverse", this.reverse)
+        par1NBTTagCompound.putBoolean("reverse", this.reverse)
 
-        if (this.baseTank.getFluid() != null) par1NBTTagCompound.setTag(
+        if (this.baseTank.getFluid() != null) par1NBTTagCompound.put(
             "baseTank",
             this.baseTank.writeToNBT(NBTTagCompound())
         )
 
-        if (this.waterTank1.getFluid() != null) par1NBTTagCompound.setTag(
+        if (this.waterTank1.getFluid() != null) par1NBTTagCompound.put(
             "waterTank1",
             this.waterTank1.writeToNBT(NBTTagCompound())
         )
 
-        if (this.waterTank2.getFluid() != null) par1NBTTagCompound.setTag(
+        if (this.waterTank2.getFluid() != null) par1NBTTagCompound.put(
             "waterTank2",
             this.waterTank2.writeToNBT(NBTTagCompound())
         )
@@ -301,23 +303,23 @@ var output2: FluidStack?
     }
 
 
-    override fun getInventoryStackLimit(): Int {
+    override fun getMaxStackSize(): Int {
         return 64
     }
 
-    override fun getSlotsForFace(side: EnumFacing?): IntArray {
+    override fun getSlotsForFace(side: EnumFacing): IntArray {
         return intArrayOf(0, 1, 2)
     }
 
-    override fun canInsertItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
-        return this.isItemValidForSlot(slotID, itemstack)
+    override fun canPlaceItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+        return this.canPlaceItem(slotID, itemstack)
     }
 
-    override fun canExtractItem(slotID: Int, itemstack: ItemStack, side: EnumFacing?): Boolean {
+    override fun canTakeItemThroughFace(slotID: Int, itemstack: ItemStack, side: EnumFacing): Boolean {
         return slotID == 0
     }
 
-    override fun isItemValidForSlot(slotID: Int, itemstack: ItemStack): Boolean {
+    override fun canPlaceItem(slotID: Int, itemstack: ItemStack): Boolean {
         when (slotID) {
             0 -> return ItemElectricBase.isElectricItem(itemstack.getItem())
             1 -> return true

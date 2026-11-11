@@ -9,13 +9,13 @@ import micdoodle8.mods.galacticraft.core.inventory.ContainerCircuitFabricator
 import micdoodle8.mods.galacticraft.core.tile.TileEntityCircuitFabricator
 import micdoodle8.mods.galacticraft.core.util.EnumColor
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.entity.player.InventoryPlayer
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.world.entity.player.Inventory as InventoryPlayer
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import org.lwjgl.opengl.GL11
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class GuiCircuitFabricator constructor(
     par1InventoryPlayer: InventoryPlayer,
     private val tileEntity: TileEntityCircuitFabricator
@@ -132,6 +132,6 @@ open class GuiCircuitFabricator constructor(
 
     companion object {
         private val circuitFabricatorTexture =
-            ResourceLocation(Constants.ASSET_PREFIX, "textures/gui/circuit_fabricator.png")
+            ResourceLocation.fromNamespaceAndPath(Constants.ASSET_PREFIX, "textures/gui/circuit_fabricator.png")
     }
 }

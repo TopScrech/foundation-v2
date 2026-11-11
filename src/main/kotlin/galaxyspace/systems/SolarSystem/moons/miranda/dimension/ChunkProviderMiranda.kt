@@ -1,5 +1,7 @@
 package galaxyspace.systems.SolarSystem.moons.miranda.dimension
 
+import foundation.block.getStateFromMeta
+
 import asmodeuscore.core.astronomy.dimension.world.gen.ChunkProviderSpaceLakes
 import galaxyspace.core.GSBlocks
 import com.google.common.collect.Lists
@@ -15,67 +17,67 @@ import galaxyspace.systems.SolarSystem.moons.miranda.world.gen.BiomeDecoratorMir
 import galaxyspace.systems.SolarSystem.moons.miranda.dimension.ChunkProviderMiranda
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.BiomeDecoratorSpace
 import micdoodle8.mods.galacticraft.api.prefab.world.gen.MapGenBaseMeta
-import net.minecraft.block.state.IBlockState
-import net.minecraft.world.World
-import net.minecraft.world.biome.Biome
-import net.minecraft.world.chunk.Chunk
+import net.minecraft.world.level.block.state.BlockState as IBlockState
+import net.minecraft.world.level.Level as World
+import net.minecraft.world.level.biome.Biome
+import net.minecraft.world.level.chunk.LevelChunk as Chunk
 import net.minecraft.world.chunk.ChunkPrimer
 
 
 open class ChunkProviderMiranda constructor(par1World: World?, seed: Long, mapFeaturesEnabled: Boolean) :
     ChunkProviderSpaceLakes((par1World)!!, seed, mapFeaturesEnabled) {
     private val grass = BlockGen(
-        GSBlocks.MIRANDA_BLOCKS.getDefaultState().withProperty(
+        GSBlocks.MIRANDA_BLOCKS.defaultBlockState().setValue(
             MirandaBlocks.Companion.BASIC_TYPE,
             EnumMirandaBlocks.MIRANDA_GRUNT
         ), true
     )
     private val subgrunt = BlockGen(
-        GSBlocks.MIRANDA_BLOCKS.getDefaultState().withProperty(
+        GSBlocks.MIRANDA_BLOCKS.defaultBlockState().setValue(
             MirandaBlocks.Companion.BASIC_TYPE,
             EnumMirandaBlocks.MIRANDA_SUBGRUNT
         ), false
     )
     private val stone = BlockGen(
-        GSBlocks.MIRANDA_BLOCKS.getDefaultState().withProperty(
+        GSBlocks.MIRANDA_BLOCKS.defaultBlockState().setValue(
             MirandaBlocks.Companion.BASIC_TYPE,
             EnumMirandaBlocks.MIRANDA_STONE
         ), false
     )
 
     private val grass_2 = BlockGen(
-        GSBlocks.MIRANDA_BLOCKS.getDefaultState().withProperty(
+        GSBlocks.MIRANDA_BLOCKS.defaultBlockState().setValue(
             MirandaBlocks.Companion.BASIC_TYPE,
             EnumMirandaBlocks.MIRANDA_GRUNT_2
         ), true
     )
     private val subgrunt_2 = BlockGen(
-        GSBlocks.MIRANDA_BLOCKS.getDefaultState().withProperty(
+        GSBlocks.MIRANDA_BLOCKS.defaultBlockState().setValue(
             MirandaBlocks.Companion.BASIC_TYPE,
             EnumMirandaBlocks.MIRANDA_SUBGRUNT_2
         ), false
     )
     private val stone_2 = BlockGen(
-        GSBlocks.MIRANDA_BLOCKS.getDefaultState().withProperty(
+        GSBlocks.MIRANDA_BLOCKS.defaultBlockState().setValue(
             MirandaBlocks.Companion.BASIC_TYPE,
             EnumMirandaBlocks.MIRANDA_STONE_2
         ), false
     )
 
     private val grass_3 = BlockGen(
-        GSBlocks.MIRANDA_BLOCKS.getDefaultState().withProperty(
+        GSBlocks.MIRANDA_BLOCKS.defaultBlockState().setValue(
             MirandaBlocks.Companion.BASIC_TYPE,
             EnumMirandaBlocks.MIRANDA_GRUNT_3
         ), true
     )
     private val subgrunt_3 = BlockGen(
-        GSBlocks.MIRANDA_BLOCKS.getDefaultState().withProperty(
+        GSBlocks.MIRANDA_BLOCKS.defaultBlockState().setValue(
             MirandaBlocks.Companion.BASIC_TYPE,
             EnumMirandaBlocks.MIRANDA_SUBGRUNT_3
         ), false
     )
     private val stone_3 = BlockGen(
-        GSBlocks.MIRANDA_BLOCKS.getDefaultState().withProperty(
+        GSBlocks.MIRANDA_BLOCKS.defaultBlockState().setValue(
             MirandaBlocks.Companion.BASIC_TYPE,
             EnumMirandaBlocks.MIRANDA_STONE_3
         ), false

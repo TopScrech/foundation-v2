@@ -7,11 +7,11 @@ import galaxyspace.core.prefab.entities.EntityAstroWolf
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.entity.RenderLiving
 import net.minecraft.client.renderer.entity.RenderManager
-import net.minecraft.util.ResourceLocation
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.resources.Identifier as ResourceLocation
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 open class RenderAstroWolf constructor(p_i47187_1_: RenderManager) :
     RenderLiving<EntityAstroWolf>(p_i47187_1_, ModelAstroWolf(), 0.5f) {
     init {
@@ -49,18 +49,18 @@ open class RenderAstroWolf constructor(p_i47187_1_: RenderManager) :
      */
     override fun getEntityTexture(entity: EntityAstroWolf): ResourceLocation? {
         if (entity.isTamed()) {
-            return if (entity.wolfInventory.getStackInSlot(1).isEmpty()) TAMED_WOLF_TEXTURES else WOLF_THERMAL
+            return if (entity.wolfInventory.getItem(1).isEmpty()) TAMED_WOLF_TEXTURES else WOLF_THERMAL
         } else {
             return if (entity.isAngry()) ANRGY_WOLF_TEXTURES else WOLF_TEXTURES
         }
     }
 
     companion object {
-        private val WOLF_TEXTURES = ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/model/astro_wolf.png")
+        private val WOLF_TEXTURES = ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/model/astro_wolf.png")
         private val TAMED_WOLF_TEXTURES =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/model/astro_wolf_tame.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/model/astro_wolf_tame.png")
         private val ANRGY_WOLF_TEXTURES =
-            ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/model/astro_wolf_angry.png")
-        private val WOLF_THERMAL = ResourceLocation(GalaxySpace.ASSET_PREFIX, "textures/model/astro_wolf_thermal.png")
+            ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/model/astro_wolf_angry.png")
+        private val WOLF_THERMAL = ResourceLocation.fromNamespaceAndPath(GalaxySpace.ASSET_PREFIX, "textures/model/astro_wolf_thermal.png")
     }
 }

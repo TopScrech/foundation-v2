@@ -1,6 +1,6 @@
 package micdoodle8.mods.galacticraft.api.transmission.tile
 
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 
 /**
  * Applied to TileEntities.

@@ -1,48 +1,52 @@
 package micdoodle8.mods.galacticraft.core.blocks
 
+import foundation.block.LegacyBlockMetadata
+
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
 import micdoodle8.mods.galacticraft.core.items.IShiftDescription
 import micdoodle8.mods.galacticraft.core.tile.TileEntityParaChest
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
 import micdoodle8.mods.galacticraft.core.util.GCCoreUtil
-import net.minecraft.block.Block
+import net.minecraft.world.level.block.Block
 import net.minecraft.block.BlockContainer
 import net.minecraft.block.ITileEntityProvider
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.PropertyDirection
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.EnumProperty
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.core.Direction
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockFaceShape
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.passive.EntityOcelot
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.inventory.IInventory
-import net.minecraft.item.EnumDyeColor
-import net.minecraft.item.ItemStack
-import net.minecraft.tileentity.TileEntity
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.Container as IInventory
+import net.minecraft.world.item.DyeColor as EnumDyeColor
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
 import net.minecraft.util.EnumBlockRenderType
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.world.phys.AABB as AxisAlignedBB
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
 import java.util.Random
 
 open class BlockParaChest constructor(assetName: String?) : BlockContainer(Material.WOOD), ITileEntityProvider,
-    IShiftDescription, ISortableBlock {
+    IShiftDescription, ISortableBlock, LegacyBlockMetadata {
     init {
         this.setHardness(3.0f)
         this.setSoundType(SoundType.WOOD)
         //        this.setBlockBounds(0.0625F, 0.0F, 0.0625F, 0.9375F, 0.875F, 0.9375F);
         this.setTranslationKey(assetName)
         this.setDefaultState(
-            this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH)
+            this.blockState.getBaseState().setValue(FACING, EnumFacing.NORTH)
         )
     }
 
@@ -65,7 +69,7 @@ open class BlockParaChest constructor(assetName: String?) : BlockContainer(Mater
         placer: EntityLivingBase,
         hand: EnumHand
     ): IBlockState {
-        return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing())
+        return this.defaultBlockState().setValue(FACING, placer.getHorizontalFacing())
     }
 
     public override fun getCreativeTab(): CreativeTabs? {
@@ -104,7 +108,7 @@ open class BlockParaChest constructor(assetName: String?) : BlockContainer(Mater
         hitY: Float,
         hitZ: Float
     ): Boolean {
-        if (worldIn.isRemote) {
+        if (worldIn.isClientSide) {
             return true
         } else {
             val iinventory: IInventory? = this.getInventory(worldIn, pos)
@@ -128,7 +132,7 @@ open class BlockParaChest constructor(assetName: String?) : BlockContainer(Mater
     }
 
     override fun neighborChanged(state: IBlockState, worldIn: World, pos: BlockPos, blockIn: Block, fromPos: BlockPos) {
-        val tileentitychest: TileEntityParaChest? = worldIn.getTileEntity(pos) as TileEntityParaChest?
+        val tileentitychest: TileEntityParaChest? = worldIn.getBlockEntity(pos) as TileEntityParaChest?
 
         if (tileentitychest != null) {
             tileentitychest.updateContainingBlockInfo()
@@ -136,12 +140,12 @@ open class BlockParaChest constructor(assetName: String?) : BlockContainer(Mater
     }
 
     override fun breakBlock(worldIn: World, pos: BlockPos, state: IBlockState) {
-        val tileentitychest: TileEntityParaChest? = worldIn.getTileEntity(pos) as TileEntityParaChest?
+        val tileentitychest: TileEntityParaChest? = worldIn.getBlockEntity(pos) as TileEntityParaChest?
 
         if (tileentitychest != null) {
             val syncRandom: Random = GCCoreUtil.getRandom(pos)
-            for (j1: Int in 0..<tileentitychest.getSizeInventory()) {
-                val itemstack: ItemStack = tileentitychest.getStackInSlot(j1)
+            for (j1: Int in 0..<tileentitychest.getContainerSize()) {
+                val itemstack: ItemStack = tileentitychest.getItem(j1)
 
                 if (itemstack != null) {
                     val f: Float = syncRandom.nextFloat() * 0.8f + 0.1f
@@ -161,7 +165,7 @@ open class BlockParaChest constructor(assetName: String?) : BlockContainer(Mater
                         entityitem.motionX = (syncRandom.nextGaussian().toFloat() * f3).toDouble()
                         entityitem.motionY = (syncRandom.nextGaussian().toFloat() * f3 + 0.2f).toDouble()
                         entityitem.motionZ = (syncRandom.nextGaussian().toFloat() * f3).toDouble()
-                        worldIn.spawnEntity(entityitem)
+                        worldIn.addFreshEntity(entityitem)
                     }
                 }
             }
@@ -173,7 +177,7 @@ open class BlockParaChest constructor(assetName: String?) : BlockContainer(Mater
     }
 
     open fun getInventory(par1World: World, pos: BlockPos): IInventory? {
-        val `object`: Any? = par1World.getTileEntity(pos)
+        val `object`: Any? = par1World.getBlockEntity(pos)
 
         if (`object` == null) {
             return null
@@ -199,13 +203,13 @@ open class BlockParaChest constructor(assetName: String?) : BlockContainer(Mater
     }
 
     override fun getStateFromMeta(meta: Int): IBlockState {
-        var enumfacing: EnumFacing = EnumFacing.byIndex(meta)
+        var enumfacing: EnumFacing = EnumFacing.from3DDataValue(meta)
 
         if (enumfacing.getAxis() == EnumFacing.Axis.Y) {
             enumfacing = EnumFacing.NORTH
         }
 
-        return this.getDefaultState().withProperty(FACING, enumfacing)
+        return this.defaultBlockState().setValue(FACING, enumfacing)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -217,12 +221,12 @@ open class BlockParaChest constructor(assetName: String?) : BlockContainer(Mater
     }
 
     override fun getActualState(state: IBlockState, worldIn: IBlockAccess, pos: BlockPos): IBlockState {
-        val tile: TileEntity? = worldIn.getTileEntity(pos)
+        val tile: TileEntity? = worldIn.getBlockEntity(pos)
         if (tile !is TileEntityParaChest) {
             return state
         }
         val chest: TileEntityParaChest = tile
-        return state.withProperty(COLOR, chest.color)
+        return state.setValue(COLOR, chest.color)
     }
 
     override fun getCategory(meta: Int): EnumSortCategoryBlock {
@@ -231,10 +235,10 @@ open class BlockParaChest constructor(assetName: String?) : BlockContainer(Mater
 
     companion object {
         @JvmField
-        val FACING: PropertyDirection = PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL)
+        val FACING: EnumProperty<Direction> = BlockStateProperties.HORIZONTAL_FACING
 
         @JvmField
-        val COLOR: PropertyEnum<EnumDyeColor?> = PropertyEnum.create<EnumDyeColor?>("color", EnumDyeColor::class.java)
+        val COLOR: PropertyEnum<EnumDyeColor> = PropertyEnum.create<EnumDyeColor>("color", EnumDyeColor::class.java)
 
         @JvmField
         protected val NOT_CONNECTED_AABB: AxisAlignedBB = AxisAlignedBB(0.0625, 0.0, 0.0625, 0.9375, 0.875, 0.9375)

@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.command
 
+import net.minecraft.network.chat.Component
+
 import micdoodle8.mods.galacticraft.core.network.PacketSimple.EnumSimplePacket
 
 import micdoodle8.mods.galacticraft.core.GalacticraftCore
@@ -13,9 +15,8 @@ import net.minecraft.command.CommandBase
 import net.minecraft.command.CommandException
 import net.minecraft.command.ICommandSender
 import net.minecraft.command.WrongUsageException
-import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.text.TextComponentString
 
 open class CommandSpaceStationChangeOwner : CommandBase() {
     override fun getUsage(var1: ICommandSender): String {
@@ -88,7 +89,7 @@ open class CommandSpaceStationChangeOwner : CommandBase() {
                     (GalacticraftCore.packetPipeline)!!.sendTo(
                         PacketSimple(
                             PacketSimple.EnumSimplePacket.C_UPDATE_SPACESTATION_CLIENT_ID,
-                            GCCoreUtil.getDimensionID(oldPlayer.world),
+                            GCCoreUtil.getDimensionID(oldPlayer.level()),
                             arrayOf<Any>(WorldUtil.spaceStationDataToString((stats.getSpaceStationDimensionData())!!))
                         ), oldPlayer
                     )
@@ -105,7 +106,7 @@ open class CommandSpaceStationChangeOwner : CommandBase() {
                     (GalacticraftCore.packetPipeline)!!.sendTo(
                         PacketSimple(
                             PacketSimple.EnumSimplePacket.C_UPDATE_SPACESTATION_CLIENT_ID,
-                            GCCoreUtil.getDimensionID(oldPlayer!!.world),
+                            GCCoreUtil.getDimensionID(oldPlayer!!.level()),
                             arrayOf<Any>(WorldUtil.spaceStationDataToString((stats.getSpaceStationDimensionData())!!))
                         ), newPlayer
                     )
@@ -123,8 +124,8 @@ open class CommandSpaceStationChangeOwner : CommandBase() {
         }
 
         if (playerAdmin != null) {
-            playerAdmin.sendMessage(
-                TextComponentString(
+            playerAdmin.sendSystemMessage(
+                Component.literal(
                     GCCoreUtil.translateWithFormat(
                         "gui.spacestation.changesuccess",
                         oldOwner,

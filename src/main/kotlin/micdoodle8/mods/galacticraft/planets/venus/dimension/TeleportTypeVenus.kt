@@ -6,10 +6,10 @@ import micdoodle8.mods.galacticraft.core.entities.player.GCPlayerStats
 import micdoodle8.mods.galacticraft.core.util.CompatibilityManager
 import micdoodle8.mods.galacticraft.core.util.ConfigManagerCore
 import micdoodle8.mods.galacticraft.planets.venus.entities.EntityEntryPodVenus
-import net.minecraft.entity.Entity
-import net.minecraft.entity.player.EntityPlayerMP
-import net.minecraft.world.World
-import net.minecraft.world.WorldServer
+import net.minecraft.world.entity.Entity
+import net.minecraft.server.level.ServerPlayer as EntityPlayerMP
+import net.minecraft.world.level.Level as World
+import net.minecraft.server.level.ServerLevel as WorldServer
 import java.util.Random
 
 open class TeleportTypeVenus : ITeleportType {
@@ -46,7 +46,7 @@ open class TeleportTypeVenus : ITeleportType {
     }
 
     override fun getEntitySpawnLocation(world: WorldServer?, entity: Entity?): Vector3 {
-        return Vector3((entity)!!.posX, 900.0, (entity)!!.posZ)
+        return Vector3((entity)!!.x, 900.0, (entity)!!.z)
     }
 
     override fun getParaChestSpawnLocation(world: WorldServer?, player: EntityPlayerMP?, rand: Random?): Vector3? {
@@ -62,12 +62,12 @@ open class TeleportTypeVenus : ITeleportType {
                     player.capabilities.isFlying = false
                 }
 
-                if (!(newWorld)!!.isRemote) {
+                if (!(newWorld)!!.isClientSide) {
                     val entryPod: EntityEntryPodVenus = EntityEntryPodVenus(player)
 
                     CompatibilityManager.forceLoadChunks(newWorld as WorldServer)
                     entryPod.forceSpawn = true
-                    newWorld.spawnEntity(entryPod)
+                    newWorld.addFreshEntity(entryPod)
                     CompatibilityManager.forceLoadChunksEnd(newWorld)
                 }
 

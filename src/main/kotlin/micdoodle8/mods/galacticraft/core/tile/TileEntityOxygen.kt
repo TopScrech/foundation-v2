@@ -1,5 +1,7 @@
 package micdoodle8.mods.galacticraft.core.tile
 
+import foundation.persistence.containsTag
+
 import micdoodle8.mods.galacticraft.core.energy.EnergyConfigHandler
 import micdoodle8.mods.miccore.Annotations.NetworkedField
 
@@ -15,15 +17,15 @@ import micdoodle8.mods.galacticraft.core.fluid.NetworkHelper
 import micdoodle8.mods.galacticraft.core.wrappers.FluidHandlerWrapper
 import micdoodle8.mods.galacticraft.core.wrappers.IFluidHandlerWrapper
 import micdoodle8.mods.miccore.Annotations
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
-import net.minecraft.util.EnumFacing
+import net.minecraft.nbt.CompoundTag as NBTTagCompound
+import net.minecraft.world.level.block.entity.BlockEntity as TileEntity
+import net.minecraft.core.Direction as EnumFacing
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
-import net.minecraftforge.fml.relauncher.Side
+import net.minecraftforge.fml.LogicalSide as Side
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -95,10 +97,10 @@ abstract class TileEntityOxygen(maxOxygen: Int, @JvmField var oxygenPerTick: Int
     override fun readFromNBT(nbt: NBTTagCompound) {
         super.readFromNBT(nbt)
 
-        if (nbt.hasKey("storedOxygen")) {
-            this.tank.setFluid(FluidStack(GCFluids.fluidOxygenGas, nbt.getInteger("storedOxygen")))
-        } else if (nbt.hasKey("storedOxygenF")) {
-            var oxygen: Int = nbt.getFloat("storedOxygenF").toInt()
+        if (nbt.containsTag("storedOxygen")) {
+            this.tank.setFluid(FluidStack(GCFluids.fluidOxygenGas, nbt.getIntOr("storedOxygen", 0)))
+        } else if (nbt.containsTag("storedOxygenF")) {
+            var oxygen: Int = nbt.getFloatOr("storedOxygenF", 0f).toInt()
             oxygen = min(this.tank.getCapacity(), oxygen)
             this.tank.setFluid(FluidStack(GCFluids.fluidOxygenGas, oxygen))
         } else {

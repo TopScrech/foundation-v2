@@ -16,7 +16,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.texture.TextureMap
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
-import net.minecraft.util.ResourceLocation
+import net.minecraft.resources.Identifier as ResourceLocation
 import net.minecraftforge.client.model.IModel
 import net.minecraftforge.client.model.obj.OBJModel
 import java.lang.Exception
@@ -31,10 +31,10 @@ open class TileEntityModernSolarPanelRenderer : TileEntitySpecialRenderer<TileEn
         if (main == null) {
             try {
                 val model: IModel =
-                    OBJLoaderGC.instance.loadModel(ResourceLocation(GalaxySpace.MODID, "modern_solarpanel.obj"))
+                    OBJLoaderGC.instance.loadModel(ResourceLocation.fromNamespaceAndPath(GalaxySpace.MODID, "modern_solarpanel.obj"))
                 val spriteFunction: Function<ResourceLocation?, TextureAtlasSprite?> =
                     Function { location: ResourceLocation? ->
-                        Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(location.toString())
+                        Minecraft.getInstance().getTextureMapBlocks().getAtlasSprite(location.toString())
                     }
 
                 main = model.bake(

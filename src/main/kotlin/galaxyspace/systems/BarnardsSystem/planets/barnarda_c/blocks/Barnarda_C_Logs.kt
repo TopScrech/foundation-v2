@@ -1,5 +1,10 @@
 package galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks
 
+import foundation.block.LegacyBlockMetadata
+import foundation.block.getStateFromMeta
+
+import foundation.level.offset
+
 import galaxyspace.systems.BarnardsSystem.core.BRBlocks
 import galaxyspace.systems.BarnardsSystem.core.BRItems
 import galaxyspace.systems.BarnardsSystem.planets.barnarda_c.blocks.Barnarda_C_Logs
@@ -7,34 +12,34 @@ import galaxyspace.core.util.GSCreativeTabs
 import galaxyspace.core.prefab.items.ItemAxeGS
 import micdoodle8.mods.galacticraft.core.blocks.ISortableBlock
 import micdoodle8.mods.galacticraft.core.util.EnumSortCategoryBlock
-import net.minecraft.block.Block
-import net.minecraft.block.SoundType
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.SoundType
 import net.minecraft.block.material.Material
-import net.minecraft.block.properties.IProperty
-import net.minecraft.block.properties.PropertyEnum
+import net.minecraft.world.level.block.state.properties.Property as IProperty
+import net.minecraft.world.level.block.state.properties.EnumProperty as PropertyEnum
 import net.minecraft.block.state.BlockStateContainer
-import net.minecraft.block.state.IBlockState
+import net.minecraft.world.level.block.state.BlockState as IBlockState
 import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.entity.EntityLivingBase
+import net.minecraft.world.entity.LivingEntity as EntityLivingBase
 import net.minecraft.entity.item.EntityItem
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.Item
+import net.minecraft.world.entity.player.Player as EntityPlayer
+import net.minecraft.world.item.Item
 import net.minecraft.item.ItemAxe
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import net.minecraft.util.BlockRenderLayer
-import net.minecraft.util.EnumFacing
-import net.minecraft.util.EnumHand
-import net.minecraft.util.IStringSerializable
-import net.minecraft.util.NonNullList
-import net.minecraft.util.Rotation
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
-import net.minecraft.world.World
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import net.minecraft.core.Direction as EnumFacing
+import net.minecraft.world.InteractionHand as EnumHand
+import net.minecraft.util.StringRepresentable as IStringSerializable
+import net.minecraft.core.NonNullList
+import net.minecraft.world.level.block.Rotation
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.BlockGetter as IBlockAccess
+import net.minecraft.world.level.Level as World
+import net.minecraftforge.api.distmarker.OnlyIn
+import net.minecraftforge.api.distmarker.Dist
 import java.util.Random
 
-open class Barnarda_C_Logs constructor(name: String, harvestlevel: Int) : Block(Material.WOOD), ISortableBlock {
+open class Barnarda_C_Logs constructor(name: String, harvestlevel: Int) : Block(Material.WOOD), ISortableBlock, LegacyBlockMetadata {
     init {
         setTranslationKey(name)
         setHarvestLevel("axe", harvestlevel)
@@ -45,7 +50,7 @@ open class Barnarda_C_Logs constructor(name: String, harvestlevel: Int) : Block(
         setDefaultState(this.getStateFromMeta(0))
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     override fun getSubBlocks(tab: CreativeTabs, list: NonNullList<ItemStack>) {
         if (!this.getTranslationKey().contains("barnarda_c_test_glow_log")) {
             list.add(ItemStack(this, 1, 0))
@@ -61,7 +66,7 @@ open class Barnarda_C_Logs constructor(name: String, harvestlevel: Int) : Block(
     override fun getItemDropped(state: IBlockState, rand: Random, fortune: Int): Item {
         if (!this.getTranslationKey()
                 .contains("barnarda_c_test_glow_log")
-        ) return Item.getItemFromBlock(BRBlocks.BARNARDA_C_VIOLET_LOG.getDefaultState().getBlock())
+        ) return Item.getItemFromBlock(BRBlocks.BARNARDA_C_VIOLET_LOG.defaultBlockState().getBlock())
 
         return super.getItemDropped(state, rand, fortune)
     }
@@ -70,12 +75,12 @@ open class Barnarda_C_Logs constructor(name: String, harvestlevel: Int) : Block(
         world: World, pos: BlockPos, state: IBlockState, player: EntityPlayer,
         hand: EnumHand, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float
     ): Boolean {
-        if (!world.isRemote && world.getBlockState(pos) === BRBlocks.BARNARDA_C_VIOLET_GLOW_LOG.getStateFromMeta(0) && (player.getHeldItem(
+        if (!world.isClientSide && world.getBlockState(pos) === BRBlocks.BARNARDA_C_VIOLET_GLOW_LOG.getStateFromMeta(0) && (player.getItemInHand(
                 hand
-            ).getItem() is ItemAxe || player.getHeldItem(hand).getItem() is ItemAxeGS)
+            ).getItem() is ItemAxe || player.getItemInHand(hand).getItem() is ItemAxeGS)
         ) {
-            world.setBlockState(pos, BRBlocks.BARNARDA_C_VIOLET_LOG.getStateFromMeta(0))
-            world.spawnEntity(EntityItem(world, player.posX, player.posY, player.posZ, ItemStack(BRItems.BASIC, 1, 2)))
+            world.setBlockAndUpdate(pos, BRBlocks.BARNARDA_C_VIOLET_LOG.getStateFromMeta(0))
+            world.addFreshEntity(EntityItem(world, player.x, player.y, player.z, ItemStack(BRItems.BASIC, 1, 2)))
             return false
         }
         return false
@@ -85,8 +90,8 @@ open class Barnarda_C_Logs constructor(name: String, harvestlevel: Int) : Block(
         val i: Int = 4
         val j: Int = 5
 
-        if (worldIn.isAreaLoaded(pos.add(-5, -5, -5), pos.add(5, 5, 5))) {
-            for (blockpos: BlockPos in BlockPos.getAllInBox(pos.add(-4, -4, -4), pos.add(4, 4, 4))) {
+        if (worldIn.isAreaLoaded(pos.offset(-5, -5, -5), pos.offset(5, 5, 5))) {
+            for (blockpos: BlockPos in BlockPos.getAllInBox(pos.offset(-4, -4, -4), pos.offset(4, 4, 4))) {
                 val iblockstate: IBlockState = worldIn.getBlockState(blockpos)
 
                 if (iblockstate.getBlock().isLeaves(iblockstate, worldIn, blockpos)) {
@@ -108,7 +113,7 @@ open class Barnarda_C_Logs constructor(name: String, harvestlevel: Int) : Block(
             `enumfacing$axis` = EnumAxis.NONE
         }
 
-        return this.getDefaultState().withProperty(LOG_AXIS, `enumfacing$axis`)
+        return this.defaultBlockState().setValue(LOG_AXIS, `enumfacing$axis`)
     }
 
     override fun getMetaFromState(state: IBlockState): Int {
@@ -137,14 +142,14 @@ open class Barnarda_C_Logs constructor(name: String, harvestlevel: Int) : Block(
         placer: EntityLivingBase
     ): IBlockState {
         return super.getStateForPlacement(worldIn, pos, facing, hitX, hitY, hitZ, meta, placer)
-            .withProperty(LOG_AXIS, EnumAxis.Companion.fromFacingAxis(facing.getAxis()))
+            .setValue(LOG_AXIS, EnumAxis.Companion.fromFacingAxis(facing.getAxis()))
     }
 
     override fun withRotation(state: IBlockState, rot: Rotation): IBlockState {
         when (rot) {
             Rotation.COUNTERCLOCKWISE_90, Rotation.CLOCKWISE_90 -> when (state.getValue(LOG_AXIS) as EnumAxis) {
-                EnumAxis.X -> return state.withProperty(LOG_AXIS, EnumAxis.X)
-                EnumAxis.Z -> return state.withProperty(LOG_AXIS, EnumAxis.Z)
+                EnumAxis.X -> return state.setValue(LOG_AXIS, EnumAxis.X)
+                EnumAxis.Z -> return state.setValue(LOG_AXIS, EnumAxis.Z)
                 else -> return state
             }
 
@@ -182,7 +187,9 @@ open class Barnarda_C_Logs constructor(name: String, harvestlevel: Int) : Block(
             return this.serializedName
         }
 
-        override fun getName(): String {
+        override fun getSerializedName(): String = requireNotNull(getName())
+
+        fun getName(): String {
             return this.serializedName
         }
 
